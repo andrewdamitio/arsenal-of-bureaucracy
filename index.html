@@ -216,6 +216,13 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .pools{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:6px 10px;border-bottom:1px solid #2e2c22;background:#191b16}
 .pool{display:grid;grid-template-columns:18px 1fr 34px;gap:5px;align-items:center;font-size:11px}.pool b{text-align:right;color:#cfc6ad}.pool.over b{color:#e49a8e}.pool .pic{text-align:center}
 #tip{max-width:370px}
+/* rulebook */
+.rbdom{margin:8px 0 14px;padding:8px 10px;background:#f3ebd6;border:1px solid #cbbd95}
+.rbh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:2px solid #8a7850;padding-bottom:4px;margin-bottom:4px}.rbh b{font:700 17px Georgia}.rbh .ic{font-size:18px}
+.rstep{display:flex;flex-direction:column;gap:1px;background:#fbf6e8;border:1px solid #8a7850;padding:4px 7px;border-radius:3px;max-width:180px;font-size:12px;position:relative}
+.rstep .odds{font:700 13px Georgia;color:#3f6b33}.rstep.warm .odds{color:#9a6b10}.rstep.hot{border-color:#a3261c}.rstep.hot .odds{color:#a3261c}
+.rbt{margin-top:8px}.rbt tr.rlon td{background:#e7eedd}.rbt td{vertical-align:middle!important}.rbt .tog{border-color:#8a7850}.lock{font-size:15px;cursor:help}
+.rbic{margin-top:8px;background:var(--panel);border:1px solid var(--line);color:var(--ink);font:12px "Segoe UI",system-ui,sans-serif}
 /* program page */
 .paper .obs{color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif}
 .pstat{font:700 15px Georgia;padding:6px 10px;margin:4px 0 8px;background:#e6dbbd;border-left:5px solid currentColor}.pstat .mini{font-weight:400}
@@ -896,6 +903,99 @@ function icPanel(){if(S.fac!=='US')return '';
   return `<div class="sect"><span>Import controls · FCC & trade powers</span><span>${IC.filter(c=>icOn(c.id)).length} of ${IC.length} in force</span></div>`+IC.map(c=>{const on=icOn(c.id),cost=c.pc[on?1:0];
     return `<div class="icrow ${on?'on':''}" data-fk="ic:${c.id}"><button class="tog ${on?'on':''}" data-a="ic" data-c="${c.id}" ${S.pc>=cost&&(on||!c.req||icOn(c.req))?'':'disabled'} data-tip="${on?'Lift':'Impose'}: ${cost} Political Capital${!on&&c.strain>0?` · civilian strain +${c.strain}`:''}"><i></i></button>
      <div><div class="nm">${c.n} [c:${c.c}]</div><div class="mini">${c.who} · ${on?'in force since '+(S.icSince[c.id]||c.since):(S.icSince[c.id]?'lifted':c.offTxt||'lifted')}</div><span class="fx">${c.up.map(t=>`<span class="up">${t}</span>`).join('')}${c.dn.map(t=>`<span class="dn">${t}</span>`).join('')}</span></div></div>`}).join('')}
+/* ---------- the US rulebook: who can change what, where it stands, and what it does to programs ---------- */
+// kind: law (Congress), court (the courts), exec (the executive can switch it), proposed (the executive can finalize it), bill (pending in Congress)
+const KIND={law:['Statute','Only Congress can change this.'],court:['Court ruling','Only the courts can change this.'],exec:['Executive action','The executive can reverse this.'],proposed:['Proposed rule','Finalizing takes notice and comment, and invites lawsuits.'],bill:['Pending bill','On the congressional agenda.']};
+const DOMAINS=[
+ {id:'permit',n:'Permitting',ic:'🌲',layers:['PERMIT','LEGAL','GRID'],ref:d=>!d.ally&&d.tags.includes('energetic')&&d.tags.includes('greenfield'),
+  steps:[['NEPA review',['ea','eis'],'Assessment ≤1 yr · impact statement ≤2 yr (2023 law)'],['Clean Air Act permit',['caa'],'Months to years'],['Clean Water Act §404',['cwa'],'If wetlands or streams'],['ESA §7 consultation',['esa'],'135 days by statute'],['NHPA §106 review',['nhpa'],'Historic properties'],['State & local',['local'],'Zoning, state permits'],['Grid hookup',['queue'],'Interconnection queue'],['Lawsuit',['lawsuit'],'6 yr to sue; 2 yr under FAST-41']]},
+ {id:'acq',n:'Acquisition',ic:'📑',layers:['PROCURE','PRIME','QUAL'],ref:d=>d.id==='l_int_prime',
+  steps:[['Requirements',['reqcreep'],'The spec moves'],['Source selection',['far'],'RFP to award'],['Bid protest',['protest'],'100 days at GAO'],['Cost accounting',['cas'],'CAS coverage'],['Cyber certification',['cmmc'],'CMMC'],['Prime pushback',['primelobby'],'Incumbents lobby'],['Demand signal',['demand'],'Orders a year at a time'],['First-article test',['fat'],'Qualification']]},
+ {id:'source',n:'Domestic sourcing & import controls',ic:'🏭',layers:['PROTECT','ALLIED','MARKET'],ref:d=>!d.ally&&d.tags.includes('greenfield')&&d.tags.includes('metal')||d.id==='l_surf',
+  steps:[['Buy American & Berry',['buyam'],'Domestic content, specialty metals'],['Jones Act',['jones'],'US-built, US-crewed'],['Security clearances',['clearance'],'Cleared workforce'],['Hidden PRC content',['hidden'],'Found in audits'],['Chinese price collapse',['dump'],'After you build']]},
+ {id:'money',n:'Money',ic:'💵',layers:['FISCAL'],ref:d=>!d.ally&&!d.kind&&d.tags.includes('greenfield'),
+  steps:[['New-start approval',['nostart'],'Not in the budget request'],['Budget scoring',['scoring'],'OMB scores the outlay'],['Continuing resolution',[],'No new starts, no rate increases']]},
+];
+const RULES=[
+ // permitting
+ {id:'rCEQ',dom:'permit',kind:'exec',n:'NEPA regulations rescinded; agencies write their own',since:'11 Apr 2025 (final Jan 2026)',c:'ceqrescind',pc:[12,20],
+  eff:{chance:{eis:.85},wait:{ea:.85,eis:.85},chance2:{lawsuit:1.1}},up:['impact statements less often (×0.85)','reviews shorter (×0.85)'],dn:['procedures in flux invite suits (×1.1)']},
+ {id:'rSeven',dom:'permit',kind:'court',n:'Seven County v. Eagle County: narrower reviews, deference to agencies',since:'29 May 2025',c:'sevencounty',
+  eff:{chance:{lawsuit:.7},wait:{eis:.85}},up:['fewer winning lawsuits (×0.7)','impact statements shorter (×0.85)']},
+ {id:'rFRA',dom:'permit',kind:'law',n:'NEPA deadlines and page limits (Fiscal Responsibility Act)',since:'Jun 2023',c:'ceqrescind',on0:1,
+  eff:{},up:['assessments ≤1 yr, impact statements ≤2 yr','built into the times above']},
+ {id:'rESA',dom:'permit',kind:'exec',n:'Endangered Species Act: "harm" definition rescinded',since:'Jul 2026',c:'esaharm',pc:[8,15],
+  eff:{chance:{esa:.6,lawsuit:1.05}},up:['habitat consultations less often (×0.6)'],dn:['under legal challenge']},
+ {id:'rWOTUS',dom:'permit',kind:'proposed',n:'Narrow "waters of the United States" (Clean Water Act)',since:'proposed Nov 2025',c:'wotus',pc:[14,8],
+  eff:{chance:{cwa:.6,lawsuit:1.1}},up:['fewer §404 permits (×0.6)'],dn:['states and NGOs sue (×1.1)']},
+ {id:'rNSR',dom:'permit',kind:'proposed',n:'Clean Air Act: start non-emitting work before the permit',since:'proposed May 2026',c:'nsr',pc:[12,8],
+  eff:{wait:{caa:.6}},up:['air-permit delays cut (×0.6)']},
+ {id:'rFAST',dom:'permit',kind:'exec',n:'Put defense plants on the FAST-41 dashboard',since:'available; not used for munitions',c:'fast41',pc:[10,4],
+  eff:{tags:['greenfield','mine','smelter','energetic'],wait:{PERMIT:.8},chance:{lawsuit:.75}},up:['coordinated schedules (permitting waits ×0.8)','2-year window to sue (×0.75)']},
+ // acquisition
+ {id:'rWAS',dom:'acq',kind:'exec',n:'Warfighting Acquisition System (portfolio acquisition executives)',since:'7 Nov 2025',c:'was',pc:[10,25],slots:1,
+  eff:{wait:{PROCURE:.85},chance:{reqcreep:.7}},up:['+1 program office','contracting waits ×0.85','requirements creep less (×0.7)']},
+ {id:'rNDAA26',dom:'acq',kind:'law',n:'FY2026 NDAA: portfolio executives in law, commercial solutions openings',since:'18 Dec 2025',c:'ndaa26',
+  eff:{chance:{far:.8,cas:.8}},up:['full competitions less often (×0.8)','cost-accounting fights less often (×0.8)']},
+ {id:'rRFO',dom:'acq',kind:'exec',n:'Revolutionary FAR Overhaul (deviations now, final rules pending)',since:'2025 · proposed rules Jun 2026',c:'rfo',pc:[8,15],
+  eff:{wait:{far:.85,protest:.9}},up:['source selection shorter (×0.85)'],dn:['two rulebooks during the transition']},
+ {id:'rProtest',dom:'acq',kind:'law',n:'Task-order protests only above $35M (FY2025 NDAA)',since:'23 Dec 2024',c:'protest35',on0:1,
+  eff:{chance:{protest:.85}},up:['fewer protests (×0.85)']},
+ {id:'rMYP',dom:'acq',kind:'law',n:'Multiyear authority for named critical munitions',since:'FY2026 appropriations',c:'fy26approp',
+  eff:{tags:['energetic','srm','line'],chance:{demand:.7}},up:['missing demand signal less often for munitions (×0.7)']},
+ // domestic sourcing
+ {id:'rBAA',dom:'source',kind:'law',n:'Buy American: 65% domestic content, 75% from 2029',since:'2024',c:'bam',on0:1,
+  eff:{chance:{buyam:1}},up:['domestic suppliers protected'],dn:['foreign tooling triggers waivers; tighter in 2029']},
+ {id:'rBerry',dom:'source',kind:'law',n:'Berry Amendment & specialty metals (titanium, armor steel)',since:'1941 · 10 U.S.C. 4863',c:'berry',on0:1,
+  eff:{},up:['domestic or qualifying-country metal only'],dn:['shapes the titanium and steel supply shown in the chain']},
+ {id:'rJones',dom:'source',kind:'law',n:'Jones Act (with short emergency waivers)',since:'1920 · 60-day waiver Mar 2026',c:'jonesmap',on0:1,
+  eff:{},up:['protects US yards and crews'],dn:['allied yards can’t help without a waiver']},
+ // money
+ {id:'rOBBBA',dom:'money',kind:'law',n:'Reconciliation: ~$150B for defense through FY2029',since:'4 Jul 2025',c:'obbba',
+  eff:{chance:{nostart:.8}},up:['$25B munitions, $8.2B industrial base fund','fewer missing line items (×0.8)']},
+ {id:'rOSC',dom:'money',kind:'exec',n:'Office of Strategic Capital loans for defense plants',since:'up to $100B authorized Jul 2025',c:'obbba',pc:[8,6],
+  eff:{tags:['greenfield','mine','smelter'],cost:.9,chance:{scoring:.8}},up:['loan-financed plants cost −10%','scoring disputes less often (×0.8)']},
+ {id:'rCR',dom:'money',kind:'law',n:'Continuing resolutions: no new starts, no rate increases',since:'every CR · FY2027 CR to 11 Dec 2026',c:'fy27cr',on0:1,
+  eff:{},up:[],dn:['funding-stage projects freeze while a CR runs']},
+];
+const RD2=Object.fromEntries(RULES.map(r=>[r.id,r]));
+const ruleOn=id=>S.fac==='US'&&!!S.rules?.[id];
+const ruleFits=(r,def)=>!r.eff.tags||!def||r.eff.tags.some(t=>def.tags.includes(t));
+function ruleChance(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)){const e=r.eff;for(const t of [e.chance,e.chance2])if(t)m*=t[o.id]??t[o.layer]??1}return m}
+function ruleWait(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)&&r.eff.wait)m*=r.eff.wait[o.id]??r.eff.wait[o.layer]??1;return m}
+function ruleCost(def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.cost&&ruleFits(r,def))m*=r.eff.cost;return m}
+function setRule(id,on){const r=RD2[id];if(!!S.rules[id]===on)return;S.rules[id]=on;if(r.slots)S.slots+=on?r.slots:-r.slots}
+function toggleRule(id){const r=RD2[id],on=ruleOn(id),cost=r.pc[on?1:0];if(!['exec','proposed'].includes(r.kind)||S.pc<cost)return;
+  S.pc-=cost;setRule(id,!on);S.pages+=on?80:200;if(!on)S.rulesSince[id]=fmtDate(S.w);
+  log(`⚖ ${KIND[r.kind][0]}: ${on?'reversed':r.kind==='proposed'?'finalized':'adopted'} — ${r.n} (${cost} PC).`,'ev');flash('rl:'+id,on?'bad':'good')}
+// a reference project for each domain, so the odds on the process strip are concrete and move when a rule changes
+function domRef(D){return PROJECTS.find(d=>facOk(d)&&D.ref(d))||PROJECTS.find(d=>facOk(d)&&!d.ally)}
+function rulesBody(){
+  if(S.fac!=='US')return '<p class="mini">The rulebook covers the US regime.</p>';
+  const rk=S.fac==='US'?'Congress':'Council';
+  return DOMAINS.map(D=>{const lost=D.layers.reduce((a,l)=>a+(S.ledger[l]?.wk||0),0);
+    const stalled=S.projects.filter(p=>p.obs.length&&D.layers.includes(OD[p.obs[0].id].layer));
+    const steps=D.steps.map(([nm,ids,t])=>{const os=ids.map(i=>OD[i]).filter(o=>o&&facOk(o));
+      // worst case across everything you could launch now, so the odds move when a rule changes
+      const odds=os.map(o=>{let c=0,who=null;for(const d of PROJECTS)if(facOk(d)){const x=obsChance(o,d);if(x>c){c=x;who=d}}return {o,c,who}}),mx=Math.max(0,...odds.map(x=>x.c));
+      const cr=nm==='Continuing resolution';
+      return `<div class="rstep ${mx>=.4?'hot':mx>=.2?'warm':''}" data-tip="${os.length?odds.map(x=>`<b>${V(x.o.n)}</b>: up to ${pct(x.c)}${x.who?` (${x.who.n})`:''}`).join('<br>'):t}"><b>${nm}</b><span class="mini">${t}</span>${os.length?`<span class="odds">${pct(mx)}</span>`:cr?`<span class="odds">${S.cr>0?S.cr+' wk left':'none now'}</span>`:''}</div>`}).join('<span class="sarr">→</span>');
+    const rows=RULES.filter(r=>r.dom===D.id).map(r=>{const on=ruleOn(r.id),k=KIND[r.kind],sw=['exec','proposed'].includes(r.kind),cost=sw?r.pc[on?1:0]:0;
+      const ctl=sw?`<button class="tog ${on?'on':''}" data-a="rule" data-r="${r.id}" ${S.pc>=cost?'':'disabled'} data-tip="${on?'Reverse':r.kind==='proposed'?'Finalize':'Adopt'}: ${cost} Political Capital. ${k[1]}"><i></i></button>`:`<span class="lock" data-tip="${k[1]}">🔒</span>`;
+      return `<tr class="${on?'rlon':''}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td><span class="fx">${(r.up||[]).map(t=>`<span class="up">${t}</span>`).join('')}${(r.dn||[]).map(t=>`<span class="dn">${t}</span>`).join('')}</span></td></tr>`}).join('');
+    const links=(RLINKS[D.id]||[]).filter(([id])=>(RD[id]&&facOk(RD[id]))||(CD[id]&&facOk(CD[id]))).map(([id,why])=>{const R=RD[id],C=CD[id],on=R?passed(id):carveOn(id);
+      return `<tr class="${on?'rlon':''}"><td>${on?'✓':R?'📜':'🖋'}</td><td><b>${R?rname(R):cname(C)}</b><div class="mini">${R?(on?'Enacted':`Pending bill · ${rk}`):(on?'Emergency carve-out in force':'Emergency carve-out · fast, temporary, can be struck down')}</div></td><td><span class="mini">${why}</span> ${on?'':`<span class="linkn" data-a="remedy" data-r="${id}">${R?'On the agenda →':'Use it →'}</span>`}</td></tr>`}).join('');
+    return `<div class="rbdom"><div class="rbh"><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span><span class="mini">${fmt(lost,0)} weeks lost this game</span>${stalled.length?` · <span class="redt mini">stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</span>`:''}</div>
+     <div class="mini" style="margin:2px 0 4px">The process today. Each step shows the highest odds it stops a program you could launch now.</div><div class="steps">${steps}</div>
+     <table class="ctable lev rbt"><colgroup><col style="width:42px"><col style="width:46%"><col></colgroup>${rows}${links}</table>${D.id==='source'?`<div class="rbic">${icPanel()}</div>`:''}</div>`}).join('');
+}
+// pending bills and emergency powers that belong to each domain
+const RLINKS={
+ permit:[['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
+ acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['qualReform','Qualification by similarity.'],['acqWorkforce','More contracting officers.'],['cvQual','Accept allied qualification data now.']],
+ source:[['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Allied yards build Navy auxiliaries.'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
+ money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
+};
 const PROJECTS=[];
 for(const n of NODES){
   const a=ARCH[n.arch];
@@ -1114,12 +1214,12 @@ const OPSD=Object.fromEntries(OPS.map(x=>[x.id,x]));
 /* ---------- REFORMS (slow, permanent, can fail) ---------- */
 const REFORMS=[
  {id:'ceDefense',fac:['US'],n:'Defense Brownfield Categorical Exclusion',d:'Expansions inside existing defense-industrial fences skip the EA.',pc:20,wk:10,p:.8},
- {id:'nepaReform',fac:['US'],n:'Permitting Reform Act',d:'Deadlines with real remedies. EIS chance −50%, EIS duration −40%.',pc:55,wk:26,p:.4},
+ {id:'nepaReform',fac:['US'],n:'SPEED Act (Permitting Overhaul)',d:'Passed the House 221–196 in Dec 2025; a Senate deal followed in Sep 2026. Deadlines with real remedies. EIS chance −50%, EIS duration −40%.',pc:55,wk:26,p:.4},
  {id:'judRev',fac:['US'],n:'NEPA Litigation Reform',d:'Short statute of limitations; remand without vacatur. Lawsuits −50%.',pc:40,wk:20,p:.5},
  {id:'dpaMin',fac:['US'],n:'DPA Critical-Minerals Emergency',d:'Unlocks the emergency mine-permitting track.',pc:25,wk:8,p:.9},
  {id:'dpaFund',fac:['US'],n:'Recapitalize DPA Title III',d:'+30% grant success against dumping. Costs $2B.',pc:20,$:2,wk:16,p:.75},
  {id:'pricefloor',n:'Strategic Price Floors & Offtake',nEU:'Raw Materials Platform: Joint Offtake',d:'Generalize the MP-style $110/kg floor. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
- {id:'multiyear',n:'Multiyear Munitions Procurement',nEU:'Multi-Year Framework Contracts',d:'Demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
+ {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',nEU:'Multi-Year Framework Contracts',d:'Demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
  {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Protests, CAS, and prime objections −50%. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15;queueEvent('blitz')}},
  {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Block further prime mergers; dual-source key subsystems. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20;queueEvent('blitz')}},
  {id:'workforce',n:'Industrial Workforce Act',nEU:'Defence Skills Academy',d:'Labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
@@ -1388,7 +1488,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
      cut:Object.fromEntries(NODES.map(n=>[n.id,1])),stock:{},tmods:[],gmods:[],costMods:[],nflags:{},navBack:[],spot:[],prio:{},carve:{},fw:{},
      projects:[],plants:[],built:{},done:[],reforms:{},bill:null,cr:0,dfars:false,truce:false,tension:0,
      ledger:Object.fromEntries(Object.keys(LAYERS).map(k=>[k,{n:0,wk:0}])),
-     pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},ic:{},icOnshore:0,icSince:{},gone:[],
+     pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},ic:{},icOnshore:0,icSince:{},gone:[],rules:{},rulesSince:{},
      over:false,overWhy:'',modal:null,autoPause:true,exposure:0,tab:'bott',ptab:1,sel:null};
   // size each node from starting demand
   const lineCap0=l=>S.lines[l].base;
@@ -1401,6 +1501,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
     S.nodes[id]={base:tot*c.mix[0],ally:{amt:tot*c.mix[1],adv:n.adv||0,src:''},prc:{amt:tot*c.mix[2]},scale,need0:need[id]};
     S.know[id]=c.kn??40}
   for(const l in LINES)S.know[l]=X.lineKn[l];
+  for(const r of RULES)if(r.on0)setRule(r.id,true);
   for(const e of EVENTS){if(e.fixedW!=null)S.evAt[e.id]=e.fixedW;else if(e.at)S.evAt[e.id]=PLAY0+e.at[0]+Math.floor(rand()*(e.at[1]-e.at[0]))}
   mcInit();S.req0={};for(const t of S.theaters){S.req0[t]={};for(const c of PLAT)S.req0[t][c]=blueAvail(t,c,S.inv)}
   // programs already under way in January 2025
@@ -1597,6 +1698,14 @@ const HIST=[
  {fac:['US'],w0:0,t:'Beijing bans gallium, germanium and antimony exports to the US (Dec 2024)',fx:()=>{for(const id of ['gallium','germanium','antimony'])S.cut[id]=.5},c:'truce'}, // transshipment and stocks kept about half flowing (assumption)
  {w0:weekOf(2025,3,4),t:'China puts heavy rare earths under export licensing (Apr 2025)',fx:()=>{S.cut.hree=.4}},
  {fac:['US'],w0:weekOf(2025,5,13),w1:weekOf(2025,5,24),t:'Twelve-Day War: more than 150 THAAD and ~80 SM-3 interceptors fired defending Israel',use:{interceptors:250},c:'csisday12,csislast'},
+ {fac:['US'],w0:weekOf(2025,3,11),t:'CEQ rescinds its NEPA regulations; each agency now writes its own procedures (Apr 2025)',fx:()=>setRule('rCEQ',true),c:'ceqrescind'},
+ {fac:['US'],w0:weekOf(2025,3,18),t:'Executive order launches the Revolutionary FAR Overhaul (Apr 2025)',fx:()=>setRule('rRFO',true),c:'rfo'},
+ {fac:['US'],w0:weekOf(2025,4,29),t:'Supreme Court, Seven County v. Eagle County: NEPA reviews may be narrower, and courts must defer (29 May 2025)',fx:()=>setRule('rSeven',true),c:'sevencounty'},
+ {fac:['US'],w0:weekOf(2025,6,4),t:'Reconciliation law adds ~$150B for defense through FY2029, including $25B for munitions and $100B of Office of Strategic Capital loan authority (Jul 2025)',fx:()=>{setRule('rOBBBA',true);setRule('rOSC',true)},c:'obbba'},
+ {fac:['US'],w0:weekOf(2025,10,7),t:'Hegseth memo turns the Defense Acquisition System into the Warfighting Acquisition System, run by portfolio acquisition executives (7 Nov 2025)',fx:()=>setRule('rWAS',true),c:'was'},
+ {fac:['US'],w0:weekOf(2025,11,18),t:'FY2026 NDAA signed: portfolio executives in law, commercial solutions openings expanded (18 Dec 2025)',fx:()=>setRule('rNDAA26',true),c:'ndaa26'},
+ {fac:['US'],w0:weekOf(2026,1,6),t:'FY2026 defense appropriations enacted after a short lapse: $838.7B, with multiyear authority for critical munitions (Feb 2026)',fx:()=>setRule('rMYP',true),c:'fy26approp'},
+ {fac:['US'],w0:weekOf(2026,6,10),t:'Endangered Species Act: the regulatory definition of "harm" is rescinded (Jul 2026)',fx:()=>setRule('rESA',true),c:'esaharm'},
  {fac:['US'],w0:weekOf(2025,4,22),t:'FCC bars test labs controlled by foreign adversaries from certifying devices (May 2025)',fx:()=>{S.ic.icLabs=true},c:'badlabs'},
  {fac:['US'],w0:weekOf(2025,11,22),t:'FCC adds all foreign-made drones and critical drone components to the Covered List (22 Dec 2025)',fx:()=>{S.ic.icDrones=true},c:'fccuas'},
  {fac:['US'],w0:weekOf(2026,6,15),t:'FCC closes the component loophole: devices with parts from Covered List firms are barred too (2026)',fx:()=>{S.ic.icParts=true},c:'fccparts'},
@@ -1628,7 +1737,7 @@ function endHistory(quiet){ // quiet: the instant run at game start, no handover
 }
 const REPLAY_MS=[0,180,90,45,20],REEL_HOLD=2400;
 // during the replay you can look at anything, but not act
-const REPLAY_LOCK=new Set(['ic','ct','ctgo','repro','cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
+const REPLAY_LOCK=new Set(['rule','ic','ct','ctgo','repro','cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
 // observed or derived 2025–26 values the replay should land near
 const BACKTEST=[
  {fac:'US',n:'US 155mm output, March 2026',kind:'check',obs:'36,000 rounds a month (DoD IG); 40,000 in mid-2025 (Army)',lo:30000,hi:42000,v:r=>r.mar26.out.shells/12,f:v=>fmtN(v)+'/mo',c:'dodig,army40k'},
@@ -1677,10 +1786,10 @@ function obsChance(o,def){
   if(o.layer==='PRIME')c*=Math.max(.2,S.lev/60);
   const nf=def.t.node?(S.nflags[def.t.node]||{}):{};if(o.layer==='LABOR'&&nf.know)c*=.6;if(o.layer==='QUAL'&&nf.test)c*=.5;if(o.layer==='GRID'&&nf.power)c*=.3;
   if(o.id==='dump'&&def.tags.includes('smelter')&&passed('tariffExempt'))c*=1.4;
-  c*=icObsMult(o,def);
+  c*=icObsMult(o,def)*ruleChance(o,def);
   return Math.min(1,c);
 }
-function waitMult(o){let m=1;if(o.wm)for(const r in o.wm)if(active(r))m*=o.wm[r];if(o.layer==='QUAL'&&carveOn('cvQual'))m*=.6;if(o.layer==='QUAL'&&icOn('icLabs'))m*=1.1;return m}
+function waitMult(o,def){let m=ruleWait(o,def);if(o.wm)for(const r in o.wm)if(active(r))m*=o.wm[r];if(o.layer==='QUAL'&&carveOn('cvQual'))m*=.6;if(o.layer==='QUAL'&&icOn('icLabs'))m*=1.1;return m}
 function optP(o,opt){let p=opt.p??1;if(opt.grant){if(passed('dpaFund'))p+=.3;if(carveOn('cvDPA3'))p+=.4}return Math.min(1,p)}
 function optOk(opt){return (!opt.req||passed(opt.req))&&(opt.pc||0)<=S.pc&&(opt.$||0)<=S.budget+1e-9}
 /* ---------- contracting: who builds it, on what terms ---------- */
@@ -1718,6 +1827,7 @@ function projCost(def){
   c*=1+.25*(S.built[def.id]||0);
   if(S.fac==='EU'&&passed('asap')&&(def.tags.includes('energetic')||def.t.line==='shells'))c*=.7;
   for(const m of S.costMods)c*=m.mult;
+  c*=ruleCost(def);
   if(icOn('ic232')&&droneRel(def))c*=.85; // onshoring program: duty-free equipment for new US drone plants
   if(icOn('icGrid')&&['mod','power'].includes(def.kind))c*=1.1;
   return c;
@@ -1794,7 +1904,7 @@ function chooseOpt(uid,k){
   if(eff.gain)p.gm*=eff.gain;if(eff.adv)p.adv=Math.min(1,p.adv+eff.adv);
   log(`${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');
   if(eff.spawn){p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)});spawnObs(p,V(eff.spawn),true);return}
-  const w=Math.round((eff.wait||0)*waitMult(od));
+  const w=Math.round((eff.wait||0)*waitMult(od,PD[p.def]));
   if(w>0){inst.wait=w;inst.total=w;inst.label=V(opt.l)+(prob<1&&!ok?' (failed — fallback)':'');inst.after=eff.cancel?'cancel':null}
   else if(eff.cancel)cancelProject(p,'mothballed');else{p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)})}
 }
@@ -2391,6 +2501,24 @@ function readyBody(){
    Every [c:id] marker in game text renders as a numbered link to this list.
    Claims without a marker come from earlier research and were not re-checked in the latest audit. */
 const CITES=[
+ // US rulebook
+ {id:'ceqrescind',g:'US rulebook',t:'Removal of National Environmental Policy Act Implementing Regulations (final rule)',pub:'Federal Register',d:'Jan 2026',url:'https://www.federalregister.gov/documents/2026/01/08/2026-00178/removal-of-national-environmental-policy-act-implementing-regulations',use:'CEQ rescinded all its NEPA regulations effective 11 Apr 2025; agencies write their own procedures. The 2023 Fiscal Responsibility Act set 1-year and 2-year deadlines and page limits.'},
+ {id:'sevencounty',g:'US rulebook',t:'Seven County Infrastructure Coalition v. Eagle County, No. 23-975',pub:'Supreme Court of the United States',d:'May 2025',url:'https://www.supremecourt.gov/opinions/24pdf/23-975_9p6b.pdf',use:'NEPA review may stop at the project at hand; courts owe agencies substantial deference.'},
+ {id:'esaharm',g:'US rulebook',t:'Endangered Species Act Regulations (tracker)',pub:'Harvard Environmental & Energy Law Program',d:'2026',url:'https://eelp.law.harvard.edu/tracker/endangered-species-act-regulations/',use:'The regulatory definition of “harm” was rescinded in July 2026; the rule faces legal challenges.'},
+ {id:'wotus',g:'US rulebook',t:'Environmental Policy in Transition: The Top Federal Actions to Watch in 2026',pub:'Goldberg Segalla',d:'2026',url:'https://www.goldbergsegalla.com/blog/environmental-law-monitor/regulations/environmental-policy-in-transition-the-top-federal-actions-to-watch-in-2026/',use:'EPA and the Army Corps proposed a narrower WOTUS definition in Nov 2025.'},
+ {id:'nsr',g:'US rulebook',t:'New Source Review (tracker)',pub:'Harvard Environmental & Energy Law Program',d:'2026',url:'https://eelp.law.harvard.edu/tracker/new-source-review/',use:'May 2026 proposal to let non-emitting parts of a project begin before an NSR permit.'},
+ {id:'fast41',g:'US rulebook',t:'Permitting Council FY2025 Annual Report to Congress',pub:'Federal Permitting Improvement Steering Council',d:'Apr 2026',url:'https://www.permitting.gov/sites/default/files/2026-04/FY25-Annual-Report-to-Congress_508.pdf',use:'FAST-41 is voluntary; manufacturing and mining are eligible sectors; the portfolio grew from 33 to 85 projects in FY2025.'},
+ {id:'speed',g:'US rulebook',t:'Bipartisan Permitting Deal Passes House, Senate Up Next with Speed Bumps Ahead',pub:'Brownstein',d:'Dec 2025',url:'https://www.bhfs.com/insight/bipartisan-permitting-deal-passes-house-senate-up-next-with-speed-bumps-ahead/',use:'The SPEED Act passed the House 221–196; a Senate package followed in Sep 2026.'},
+ {id:'was',g:'US rulebook',t:'Transforming the Defense Acquisition System into the Warfighting Acquisition System',pub:'Secretary of War',d:'Nov 2025',url:'https://media.defense.gov/2025/Nov/10/2003819439/-1/-1/1/TRANSFORMING-THE-DEFENSE-ACQUISITION-SYSTEM-INTO-THE-WARFIGHTING-ACQUISITION-SYSTEM-TO-ACCELERATE-FIELDING-OF-URGENTLY-NEEDED-CAPABILITIES-TO-OUR-WARRIORS.PDF',use:'Portfolio acquisition executives replace program executive offices within two years; two qualified sources for critical content.'},
+ {id:'ndaa26',g:'US rulebook',t:'FY 2026 NDAA: The Substantial Impact on Federal Procurement Law',pub:'Greenberg Traurig',d:'Feb 2026',url:'https://www.gtlaw.com/en/insights/2026/2/fy2026ndaa/fy-2026-ndaa-the-substantial-impact-of-the-fiscal-year-2026-national-defense-authorization-act-on-federal-procurement-law',use:'Signed 18 Dec 2025: portfolio acquisition executives in law, expanded commercial solutions openings, higher thresholds.'},
+ {id:'rfo',g:'US rulebook',t:'The Revolutionary FAR Overhaul: Where It Stands',pub:'FedCon',d:'2026',url:'https://fedcon.com/resources/insights/revolutionary-far-overhaul-status',use:'Running through class deviations; formal proposed rules began 23 Jun 2026; no final rules yet.'},
+ {id:'protest35',g:'US rulebook',t:'FY2025 NDAA Increases the Threshold for DoD Task Order Protests',pub:'National Law Review',d:'2025',url:'https://natlawreview.com/article/fy2025-ndaa-increases-threshold-dod-task-order-protests-and-asks-gao-and-dod',use:'DoD task-order protests at GAO now require an order above $35M (was $25M).'},
+ {id:'fy26approp',g:'US rulebook',t:'FY2026 Department of Defense Appropriations: In Brief',pub:'Congressional Research Service',d:'Apr 2026',url:'https://www.congress.gov/crs_external_products/R/PDF/R48891/R48891.1.pdf',use:'Enacted after a short lapse past 30 Jan 2026: $838.7B; $23.9B for selected missile and munitions programs; multiyear authority for critical munitions.'},
+ {id:'fy27cr',g:'US rulebook',t:'Overview of Continuing Appropriations for FY2027',pub:'Congressional Research Service',d:'2026',url:'https://www.congress.gov/crs-product/R49353',use:'FY2027 began on a CR through 11 Dec 2026: prior-year levels, no new starts, no production-rate increases.'},
+ {id:'obbba',g:'US rulebook',t:'One Big Beautiful Bill Act Makes $150B Investment in Defense',pub:'Covington, Inside Government Contracts',d:'Jul 2025',url:'https://www.insidegovernmentcontracts.com/2025/07/one-big-beautiful-bill-act-makes-150b-investment-in-defense/',use:'About $150B through FY2029: ~$25B munitions, $8.2B Industrial Base Fund, $1B supporting up to $100B of Office of Strategic Capital loans.'},
+ {id:'bam',g:'US rulebook',t:'Final Rule Amends FAR Part 25 Domestic Content Threshold Under the Buy American Act',pub:'Thompson Hine',d:'2022',url:'https://www.thompsonhine.com/insights/final-rule-amends-far-part-25-domestic-content-threshold-under-buy-american-act/',use:'Domestic content threshold 60% → 65% (2024) → 75% (2029).'},
+ {id:'berry',g:'US rulebook',t:'DFARS 252.225-7009, Restriction on Acquisition of Certain Articles Containing Specialty Metals',pub:'Acquisition.gov',d:'current',url:'https://www.acquisition.gov/dfars/252.225-7009-restriction-acquisition-certain-articles-containing-specialty-metals',use:'Specialty metals (titanium, certain steels and alloys) must be melted or produced in the US or a qualifying country.'},
+ {id:'jonesmap',g:'US rulebook',t:'White House Releases America’s Maritime Action Plan',pub:'The Maritime Executive',d:'Feb 2026',url:'https://maritime-executive.com/article/white-house-releases-america-s-maritime-action-plan',use:'Maritime Action Plan (13 Feb 2026) under the April 2025 maritime order; the SHIPS for America Act is pending.'},
  // Import controls
  {id:'fccuas',g:'Import controls',t:'FACT SHEET: FCC Updates Covered List to Include Foreign UAS',pub:'Federal Communications Commission',d:'Dec 2025',url:'https://docs.fcc.gov/public/attachments/DOC-416839A1.pdf',use:'All foreign-produced drones and UAS critical components barred from new equipment authorizations from 22 Dec 2025; earlier authorizations continue.'},
  {id:'fccuasx',g:'Import controls',t:'FCC Issues Exemptions, Clarifications for Sweeping Prohibition of Foreign-Made Drones',pub:'Wiley',d:'2026',url:'https://www.wiley.law/alert-FCC-Issues-Exemptions-Clarifications-for-Sweeping-Prohibition-of-Foreign-Made-Drones',use:'Exemptions run through Blue UAS and Buy American compliance and DoW determinations; allied-produced drones are not broadly exempt.'},
@@ -2501,6 +2629,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['US rulebook','Each rule’s status, date and scope is sourced. How much it changes obstacle odds, waits and costs (the ×multipliers shown on each rule), and the Political Capital needed to adopt, finalize or reverse executive actions, are game assumptions.'],
  ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
  ['Starting inventories','Sourced where marked: US interceptor and strike stocks derived from CSIS 2026 estimates; ship counts from the Navy; aircraft from IISS; PLAN and PLARF counts from the CMPR; Russian missiles from Ukrainian intelligence. US and European shell stocks, European missile and air-defence stocks, Chinese interceptors and shells, and all drone stocks are estimates. Enemy ranges are listed above.'],
  ['Scenarios','Required weeks (Taiwan 3–8, central 4; eastern flank 8–26, central 12), launch rates, interceptors per threat, the share of salvos at defended targets, missiles per PLAN ship, anchored shell/drone/strike burns, allies’ shares, category weights, and the harmonic-mean score are assumptions with the ranges shown.'],
@@ -2576,7 +2705,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views">${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}</div>`}
@@ -2589,9 +2718,9 @@ function flowBody(){
 `;
 }
 function viewHTML(){
-  const T={src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
-  const body=S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='pipe'?pipeBody():readyBody();
-  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  const T={rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const body=S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='pipe'?pipeBody():readyBody();
+  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -2808,7 +2937,7 @@ function renderGame(){
    <div class="sect"><span>Mobilization</span><span>${MOB[S.mob].d}</span></div>
    <div class="mob">${MOB.map((m,i)=>`<button class="btn ${S.mob===i?'on':''}" data-a="mob" data-l="${i}" ${i>S.mob&&(S.urg<m.urg||S.pc<15*(i-S.mob))?'disabled':''} title="Lines ×${m.line}, domestic plants ×${m.dom}; upkeep ${m.upkeep} PC/wk; strain +${m.strain}/wk. Needs urgency ≥${m.urg}.">${m.n}<br><span class="sub">Urgency ≥${m.urg}</span></button>`).join('')}</div>
    ${F().aid&&!S.ceasefire?`<div class="sect"><span>Aid to Ukraine</span><span>${fmtN((F().aid.shells||0)*S.aidLvl)} shells/yr leave your stocks</span></div><div class="mob">${[[1,'Full'],[.5,'Half'],[0,'Stop']].map(([v,l])=>`<button class="btn ${S.aidLvl===v?'on':''}" data-a="aid" data-v="${v}" ${v<S.aidLvl&&S.pc<Math.round(10*(S.aidLvl-v)/.5)?'disabled':''} data-tip="${l} aid: ${fmtN(F().aid.shells*v)} shells and ${fmtN(F().aid.interceptors*v)} interceptors a year to Ukraine.${v<S.aidLvl?` Cutting costs ${Math.round(10*(S.aidLvl-v)/.5)} PC.`:''}">${l}</button>`).join('')}</div>`:''}
-   ${icPanel()}
+   ${S.fac==='US'?`<div class="sect"><span>Import controls & regulations</span><span class="linkn" data-a="view" data-v="rules" style="color:#dcc78e">⚖ Rulebook →</span></div>`:''}
    <div class="sect"><span>DPA priority diversions (${nPrio.length})</span><span>${nPrio.length?'':'click a node to divert'}</span></div>
    ${nPrio.map(id=>`<div class="prow"><span class="linkn" style="color:#8db4e0" data-a="node" data-n="${id}">${ND[id].n}</span><button class="btn sm" data-a="prio" data-n="${id}">release</button></div>`).join('')}
    <div class="sect"><span>Emergency carve-outs</span><span>fast · temporary · fragile</span></div>`;
@@ -2920,6 +3049,7 @@ function whyOff(b){
     case 'whip':return S.bill?.whips>=3?'Every vote that can be whipped has been.':needPC(10);
     case 'spot':return needM(spotCost(d.n));
     case 'prio':return needPC(5);
+    case 'rule':{const r=RD2[d.r];return needPC(r.pc[ruleOn(r.id)?1:0])}
     case 'ic':{const c=ICD[d.c],on=icOn(c.id);if(!on&&c.req&&!icOn(c.req))return `Needs “${ICD[c.req].n}” in force first.`;return needPC(c.pc[on?1:0])}
     case 'repro':return needPC(reproCost());
     case 'ctgo':{const def=PD[S.ct.id];if(slotsUsed()>=S.slots)return busy();return needM(ctCost(def,S.ct))}
@@ -2967,7 +3097,7 @@ document.addEventListener('pointerdown',e=>{
     case 'prog':if(S.modal&&S.modal!=='prog')S.progBack={m:S.modal,sel:S.sel};else if(!S.modal)S.progBack=null;S.modal='prog';S.selP=b.dataset.u;S.speed=0;break;
     case 'progback':S.modal=S.progBack?.m||null;S.sel=S.progBack?.sel||S.sel;S.progBack=null;break;
     case 'rtab':S.rtab=b.dataset.t;S._rtTop=true;break;
-    case 'remedy':if(S.modal==='prog')S.modal=null;S.rtab='agenda';S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
+    case 'remedy':if(S.modal==='prog')S.modal=null;S.rtab=CD[b.dataset.r]?'home':'agenda';S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
     case 'arsenal':S.view=({stock:'arsenal',pipe:'pipe',ready:'ready'})[b.dataset.t]||'arsenal';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
@@ -2989,6 +3119,7 @@ document.addEventListener('pointerdown',e=>{
     case 'spot':spotBuy(b.dataset.n);break;
     case 'repro':reprogram();break;
     case 'ic':toggleIC(b.dataset.c);break;
+    case 'rule':toggleRule(b.dataset.r);break;
     case 'fw':framework(b.dataset.l);break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){if(o.pc)S.pc-=o.pc;if(o.$)S.budget-=o.$;o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;break;
