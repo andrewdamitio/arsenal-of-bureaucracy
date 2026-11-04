@@ -206,6 +206,9 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .rates{margin:4px 0}.rr{display:grid;grid-template-columns:62px 1fr 74px;gap:6px;align-items:center;font-size:11.5px}
 .rb{height:9px;background:#e2d6b6;border:1px solid #cbbd95;position:relative}.rb i{position:absolute;left:0;top:0;bottom:0}
 .rr b{text-align:right}
+/* binding constraints */
+.cstrip{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:6px 8px;margin:4px 0 8px;background:#e6dbbd;border:1px solid #cbbd95;font:12.5px "Segoe UI",system-ui,sans-serif}
+.cstrip>span{display:flex;align-items:center;gap:6px}.cstrip .bind{color:#8a1f15;background:#f0b3a8;padding:2px 6px;margin:-2px -6px;border-radius:2px}
 /* defense needs */
 .throw{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));border-bottom:1px solid var(--brass)}.throw .th{border-right:1px solid #2b2a20}
 .ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px;padding:6px}
@@ -1548,7 +1551,7 @@ function endHistory(){
 }
 const REPLAY_MS=[0,180,90,45,20],REEL_HOLD=2400;
 // during the replay you can look at anything, but not act
-const REPLAY_LOCK=new Set(['cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
+const REPLAY_LOCK=new Set(['repro','cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
 // observed or derived 2025–26 values the replay should land near
 const BACKTEST=[
  {fac:'US',n:'US 155mm output, March 2026',kind:'check',obs:'36,000 rounds a month (DoD IG); 40,000 in mid-2025 (Army)',lo:30000,hi:42000,v:r=>r.mar26.out.shells/12,f:v=>fmtN(v)+'/mo',c:'dodig,army40k'},
@@ -1793,8 +1796,8 @@ function homeTick(lastOut){
 function tick(){
   if(S.over)return;
   S.w++;
-  if(S.fac==='US'&&fyStart()){S.budget+=F().fyBudget;log(`FY${(dateOf(S.w).getFullYear()+1)%100} industrial-base funding: +${money(F().fyBudget)}.`,'good')}
-  if(S.fac==='EU'&&euFyStart()){const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good')}
+  if(S.fac==='US'&&fyStart()){S.budget+=F().fyBudget;S.repro=0;log(`FY${(dateOf(S.w).getFullYear()+1)%100} industrial-base funding: +${money(F().fyBudget)}.`,'good')}
+  if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good')}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
@@ -1918,6 +1921,18 @@ function attachSankey(root=ov){
 /* =====================================================================
    DOSSIER — one page per node / end item, with navigation
    ===================================================================== */
+/* ---------- money and offices: what's binding, and reprogramming when the budget runs dry ---------- */
+function nextFunds(){const d=dateOf(S.w),y=d.getFullYear(),US=S.fac==='US';
+  let t=US?new Date(y,9,1):new Date(y+1,0,1);if(US&&d>=t)t=new Date(y+1,9,1);
+  const w=Math.ceil((t-START)/(7*DAY));return {w,amt:US?F().fyBudget:F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0)}}
+const REPRO=.5,reproCost=()=>Math.round(10*Math.pow(1.6,S.repro||0));
+function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;S.budget+=REPRO;S.repro=(S.repro||0)+1;S.pages+=40;
+  log(`${S.fac==='US'?'Reprogramming approved by the four defense committees':'Budget transfer approved'}: +${money(REPRO)} moved from other accounts (${c} PC).`,'ev')}
+// the strip that sits on top of every list of things to launch: the binding constraint is red
+function constraintStrip(cheapest){const nf=nextFunds(),used=slotsUsed(),broke=isFinite(cheapest)&&S.budget<cheapest,full=used>=S.slots;
+  return `<div class="cstrip"><span class="${broke?'bind':''}">💰 <b>${money(S.budget)}</b> <span class="mini">next +${money(nf.amt)} on ${fmtDate(nf.w)}</span>
+     <button class="pbtn sm" data-a="repro" ${S.pc>=reproCost()?'':'disabled'} data-tip="Move money from other accounts now. Each one this fiscal year costs more Political Capital.">${S.fac==='US'?'Reprogram':'Transfer'} +${money(REPRO)} · ${reproCost()} PC</button></span>
+    <span class="${full?'bind':''}">🏗 <b>${used}/${S.slots}</b> offices busy</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
 function leversFor(id){return PROJECTS.filter(d=>facOk(d)&&d.t.node===id)}
@@ -1938,7 +1953,7 @@ function dossierHTML(id,P){
      <div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
      <div class="dsec"><h4>Made from</h4><div class="chipsP">${L.in.map(i=>pill(i,P)).join('')}</div>${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')}</p>`:''}</div>
      <div class="dsec"><h4>In service</h4><div class="kv"><b>${f.flag} You</b><span>${fmtN(S.inv[l])} · producing ${fmtN(o.yr)}/yr, retiring ${fmtN(S.inv[l]*retRate(l))}/yr</span>${S.theaters.map(t=>{const E=S.enemy[t];return `<b>${E.flag} ${E.n}</b><span>${fmtN(E.inv[l])} · producing ${fmtN(E.prod[l]*E.pm)}/yr</span>`}).join('')}</div></div>
-     <div class="dsec"><h4>Ways to raise output</h4><table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`).join('')}
+     <div class="dsec"><h4>Ways to raise output</h4>${constraintStrip(Math.min(...projs.filter(d=>!d.req||passed(d.req)).map(projCost)))}<table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`).join('')}
       ${S.ready[l]!=null?`<tr><td><b>🔧 Spare-parts priority</b><div class="mini">See Readiness below.</div></td><td>−15% new output, + readiness</td><td>—</td><td>now</td><td>${S.spares[l]?'on':'off'}</td></tr>`:''}
       <tr><td><b>📣 Framework agreement</b><div class="mini">Headline now; audit in three years.</div></td><td>+12 PC now; ±PC on audit</td><td>—</td><td>3 yr</td><td>${S.fw[l]?'active':`<button class="pbtn sm" data-a="fw" data-l="${l}">Announce</button>`}</td></tr>
       <tr><td><b>Priority order</b><div class="mini">Lines higher in the T5 list get scarce shared inputs first.</div></td><td>Currently #${S.order.indexOf(l)+1} of ${S.order.length}</td><td>—</td><td>now</td><td><button class="pbtn sm" data-a="lineup" data-l="${l}" ${S.order.indexOf(l)===0?'disabled':''}>▲ Raise</button></td></tr></table></div>
@@ -1963,7 +1978,7 @@ function dossierHTML(id,P){
        <b>PRC / Russia</b><span>${pct(p.prc/den)} of need${p.lost>.01?` · <span class="redt">${pct(p.lost/den)} currently cut off</span>`:''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?' · <b>DFARS-restricted</b>':''}</span>
        ${p.spot+p.div>0?`<b>Spot / diverted</b><span>${pct((p.spot+p.div)/den)} of need</span>`:''}${S.stock[id]>0?`<b>Stockpile</b><span>${fmt(S.stock[id]/Math.max(s.scale,1e-9),1)} weeks of base demand</span>`:''}</div></div>
      <div class="dsec"><h4>How it's made</h4><div class="steps">${n.in.length?`<div class="step in">${n.in.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join('<br>')}</div><span class="sarr">→</span>`:''}${(I.chain||[]).map(x=>`<div class="step">${x}</div>`).join('<span class="sarr">→</span>')}<span class="sarr">→</span><div class="step out">${n.n}</div></div></div>
-     <div class="dsec"><h4>How to increase supply</h4>
+     <div class="dsec"><h4>How to increase supply</h4>${constraintStrip(Math.min(spotCost(id),...levs.filter(d=>!d.req||passed(d.req)).map(projCost)))}
       <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${Object.entries(groups).map(([g,ds])=>`<tr class="grp"><td colspan="5">${g}</td></tr>${ds.map(d=>{const done=leverDone(d),running=S.projects.some(q=>q.def===d.id);return `<tr class="${d.ally?'al':''}"><td><b>${d.ally?'🤝 ':''}${d.n}</b><div class="mini">${d.d===n.d?'':d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>${leverEffect(d,P)}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${done?'<span class="okt">✓ done</span>':running?'<span class="mini">under way</span>':d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`}).join('')}`).join('')}
       <tr class="grp"><td colspan="5">Short-term measures</td></tr>
        <tr><td><b>💸 Emergency spot purchase</b><div class="mini">Non-Chinese prices run several times higher when PRC supply is cut (game estimate: 1.6–7×).</div></td><td>+25% of scale for 26 weeks</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>Buy</button></td></tr>
@@ -2634,7 +2649,7 @@ function renderModal(){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
     const list=S.ptab==5?ok.filter(d=>d.t.line):ok.filter(d=>d.t.node&&ND[d.t.node].t==S.ptab).sort((a,b)=>P[a.t.node].cover-P[b.t.node].cover);
     html=`<div class="paper wide"><div class="hd"><span class="ic">🏗</span>Launch a Project <span style="margin-left:auto;font-size:13px">Budget ${money(S.budget)} · ${S.slots-slotsUsed()} slots free</span></div>
-     <div class="ptab">${tabs.map(([k,l])=>`<button class="pbtn ${S.ptab==k?'on':''}" data-a="ptab" data-t="${k}">${l}</button>`).join('')}</div>
+     <div style="padding:8px 14px 0">${constraintStrip(Math.min(...ok.filter(d=>!d.req||passed(d.req)).map(projCost)))}</div><div class="ptab">${tabs.map(([k,l])=>`<button class="pbtn ${S.ptab==k?'on':''}" data-a="ptab" data-t="${k}">${l}</button>`).join('')}</div>
      <div style="padding:8px 14px"><table class="ctable"><tr><th>Project · likely barriers</th><th>Target</th><th>Gain</th><th>Cost</th><th>Base time</th><th></th></tr>${list.map(d=>projRow(d,P)).join('')}</table></div>
      <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
   }
@@ -2649,7 +2664,7 @@ function renderModal(){
 }
 // greyed-out buttons say why: hovering shows the reason, clicking pops it up
 function whyOff(b){
-  const d=b.dataset,a=d.a,needPC=n=>`Needs ${n} Political Capital — you have ${Math.floor(S.pc)}.`,needM=n=>`Costs ${money(n)} — the budget holds ${money(S.budget)}.`;
+  const d=b.dataset,a=d.a,needPC=n=>`Needs ${n} Political Capital — you have ${Math.floor(S.pc)}.`,needM=n=>`Costs ${money(n)} — the budget holds ${money(S.budget)}. Next funding ${fmtDate(nextFunds().w)}; or reprogram now.`;
   if(S.replay&&REPLAY_LOCK.has(a))return 'This is the 2025–26 record. You take over in January 2027.';
   const optWhy=o=>o.req&&!passed(o.req)?`Requires the reform ${rname(RD[o.req])}.`:(o.pc||0)>S.pc?needPC(o.pc):(o.$||0)>S.budget?needM(o.$):'';
   const busy=()=>`All ${S.slots} program offices are busy. One frees up when a project finishes.`;
@@ -2667,6 +2682,7 @@ function whyOff(b){
     case 'whip':return S.bill?.whips>=3?'Every vote that can be whipped has been.':needPC(10);
     case 'spot':return needM(spotCost(d.n));
     case 'prio':return needPC(5);
+    case 'repro':return needPC(reproCost());
     case 'up':case 'lineup':return 'Already first in line.';
     case 'dn':return 'Already last in line.';
   }
@@ -2725,6 +2741,7 @@ document.addEventListener('pointerdown',e=>{
     case 'aid':setAid(+b.dataset.v);break;
     case 'prio':togglePrio(b.dataset.n);break;
     case 'spot':spotBuy(b.dataset.n);break;
+    case 'repro':reprogram();break;
     case 'fw':framework(b.dataset.l);break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){if(o.pc)S.pc-=o.pc;if(o.$)S.budget-=o.$;o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;break;
