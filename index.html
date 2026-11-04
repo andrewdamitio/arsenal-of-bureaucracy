@@ -1309,7 +1309,7 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const ORDER=(()=>{const out=[],seen={};const visit=id=>{if(seen[id])return;seen[id]=1;for(const i of ND[id].in)visit(i);out.push(id)};for(const n of NODES)visit(n.id);return out})();
 const CONSUMERS=(()=>{const c={};for(const n of NODES)c[n.id]=[];for(const n of NODES)for(const i of n.in)c[i].push(n.id);for(const l in LINES)for(const i of LINES[l].in)c[i].push('L:'+l);return c})();
 
-function newGame(fac){
+function newGame(fac,watch){ // watch: play 2025–26 on the board instead of starting in January 2027
   const X=FACTIONS[fac];
   S={fac,w:0,speed:0,pc:X.pc0,budget:X.budget0,lev:X.lev0,slots:X.slots,urg:X.urg0,strain:0,mob:0,mobLow:0,
      nodes:{},lines:Object.fromEntries(Object.entries(X.lines).map(([k,v])=>[k,{base:v}])),order:[...X.order],
@@ -1339,7 +1339,7 @@ function newGame(fac){
     S.projects.push(p);enterStage(p)}
   log(`${X.flag} January 2025. ${X.name}: ${X.motto}.`,'ev');
   scenUpdate();S.hist.push(snapshot());
-  beginHistory();
+  beginHistory();if(!watch)endHistory();
 }
 function applyChinaBan(){
   if(S.fac==='US'){cutAll(['gallium','germanium','antimony'],.35);cutAll(['graphite','li_cells'],.5)} // leakage through third countries and stocks (assumption; 2025's ban did not halt US production)
@@ -2592,7 +2592,7 @@ function renderGame(){
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['home','🏛 Home front'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:pr);
   const nd=`<h2>Defense Needs <span class="r"><button class="btn sm" data-a="view" data-v="arsenal">📈 Charts</button></span></h2><div class="throw">${det}</div>${needsHTML(R)}`;
-  const lg=`<div id="log"><h2>The Federal Register</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
+  const lg=`<div id="log"><h2>The Federal Register${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null,lgS=document.getElementById('log')?.scrollTop;
   document.body.classList.toggle('replaying',!!S.replay);
@@ -2723,6 +2723,7 @@ document.addEventListener('pointerdown',e=>{
     case 'range':S.range=b.dataset.r;break;
     case 'flowm':S.flowMode=b.dataset.m;break;
     case 'flowa':S.flowAttr=b.dataset.m;break;
+    case 'watch':newGame(S.fac,true);break;
     case 'rtab':S.rtab=b.dataset.t;S._rtTop=true;break;
     case 'remedy':S.rtab='agenda';S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
