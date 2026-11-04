@@ -11,7 +11,7 @@ body{background:#0e100d radial-gradient(ellipse at top,#22261d 0,#0e100d 70%);co
 .dim{color:var(--dim)}.red{color:var(--red)}.green{color:var(--green)}.gold{color:var(--brass2)}.blue{color:#8db4e0}.amber{color:var(--amber)}
 button{font:inherit}
 .btn{background:linear-gradient(#4b4531,#2c281c);border:1px solid var(--brass);color:var(--ink);padding:3px 9px;cursor:pointer;font-size:12px;border-radius:2px}
-.btn:hover:not(:disabled){background:linear-gradient(#5d5539,#383222);color:#fff}
+.btn:hover:not(:disabled):not(.off){background:linear-gradient(#5d5539,#383222);color:#fff}
 .btn:disabled{opacity:.38;cursor:not-allowed}.btn.sm{padding:1px 6px;font-size:11px}.btn.on{background:linear-gradient(#8a7440,#5a4a26);color:#fff}
 #top{display:flex;align-items:center;gap:5px;padding:6px 10px;height:56px;background:linear-gradient(#2e3129,#1a1c17);border-bottom:2px solid var(--brass);overflow:hidden}
 .logo{font:700 14px Georgia;letter-spacing:.11em;color:var(--brass2);margin-right:4px;white-space:nowrap}.logo small{font-size:10px;color:var(--dim);font-style:italic}
@@ -100,7 +100,7 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .paper .bd{padding:14px 18px;font-size:14px;line-height:1.5}.paper .bd p{margin:0 0 10px}
 .paper .ft{padding:0 18px 16px;display:flex;flex-direction:column;gap:6px}
 .pbtn{background:#d6c79e;border:1px solid #6b5a35;color:#2b241a;padding:6px 10px;text-align:left;cursor:pointer;font:13.5px Georgia}
-.pbtn:hover:not(:disabled){background:#c9b783}.pbtn:disabled{opacity:.45;cursor:not-allowed}
+.pbtn:hover:not(:disabled):not(.off){background:#c9b783}.pbtn:disabled{opacity:.45;cursor:not-allowed}
 .pbtn.sm{font-size:12px;padding:3px 8px}
 .wide{width:min(1060px,100%)}
 .ptab{display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px 0}
@@ -242,7 +242,8 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 #reel .head{background:var(--paper) linear-gradient(#efe6cf,#e2d5b4);color:var(--paperInk);border:3px double #6b5a35;padding:12px 18px;font:600 17px/1.35 Georgia;box-shadow:0 10px 40px #000;text-align:center;animation:hin .35s ease-out both}
 #reel .head small{display:block;font:700 10px "Segoe UI";letter-spacing:.2em;color:#8a1f15;margin-bottom:4px}
 @keyframes hin{from{transform:translateY(-10px) scale(.97);opacity:0}}
-body.replaying :is(#app,#ov) [data-a=launch],body.replaying :is(#app,#ov) [data-a=opt],body.replaying :is(#app,#ov) [data-a=ops],body.replaying :is(#app,#ov) [data-a=intro],body.replaying :is(#app,#ov) [data-a=carve],body.replaying :is(#app,#ov) [data-a=mob],body.replaying :is(#app,#ov) [data-a=aid],body.replaying :is(#app,#ov) [data-a=prio],body.replaying :is(#app,#ov) [data-a=spot],body.replaying :is(#app,#ov) [data-a=fw],body.replaying :is(#app,#ov) [data-a=cat]{opacity:.35;pointer-events:none}
+.btn.off,.pbtn.off{opacity:.38;cursor:not-allowed}.nope{animation:nope .3s}
+@keyframes nope{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 #handover{position:fixed;inset:0;z-index:44;display:flex;align-items:center;justify-content:center;pointer-events:none}
 #handover div{border:4px solid #a3261c;color:#e8b0a0;background:#0e100dd0;padding:10px 28px;font:700 30px Georgia;letter-spacing:.22em;transform:rotate(-3deg);animation:hov 3.6s ease-in both;text-align:center}
 #handover small{display:block;font-size:13px;letter-spacing:.3em;color:var(--brass2)}
@@ -1533,7 +1534,7 @@ function histTick(){
 }
 // 2025–26 plays out on the live board (S.replay); the player watches, then takes over in January 2027
 function beginHistory(){
-  S.histMode=true;S.sim=true;S.replay=true;S.btRec={};S.speed=2;S.lastSpeed=2;
+  S.histMode=true;S.sim=true;S.replay=true;S.btRec={};S.speed=0;S.lastSpeed=2;
   for(const h of HIST)if(h.w0===0&&(!h.fac||h.fac.includes(S.fac))){h.fx?.();log(`📜 ${h.t}${h.c?` [c:${h.c}]`:''}`,'ev');S._reel={t:h.t,w:0,t0:performance.now()}}
 }
 function endHistory(){
@@ -1543,7 +1544,7 @@ function endHistory(){
   for(const k in S.ledger)S.ledger[k]={n:0,wk:0};
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
   log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
-  S._handT0=performance.now();
+  S._handT0=performance.now();S._flW=null;for(const k in FL)delete FL[k]; // handover starts from a clean slate, no flashes
 }
 const REPLAY_MS=[0,180,90,45,20],REEL_HOLD=2400;
 // during the replay you can look at anything, but not act
@@ -2585,10 +2586,10 @@ function renderGame(){
   if(S._rtTop){const el=document.getElementById('right');if(el)el.scrollTop=0;S._rtTop=false}
   const lgEl=document.getElementById('log');if(lgEl&&lgS!=null)lgEl.scrollTop=lgS;
   if(S.view&&S.view!=='cmd'){mountView(vs)}else viewKey='';
-  applyFlashes();applyTrace();
+  applyFlashes();applyTrace();markOff(app);
   if(S._jump){const el=document.getElementById('ag-'+S._jump);if(el)el.scrollIntoView({block:'center'});S._jump=null}
 }
-const waitingToStart=()=>S.w===PLAY0&&!S.speed&&!S.replay&&!S.modal&&!S.queue.length;
+const waitingToStart=()=>(S.replay?S.w===0:S.w===PLAY0)&&!S.speed&&!S.modal&&!S.queue.length;
 function reelHTML(){const now=performance.now();
   if(S.replay)return `<div id="reel"><div class="bar2">${S.speed?'REPLAY':'PAUSED'} <span class="d">${fmtDate(S.w)}</span><span class="rp"><i style="width:${S.w/PLAY0*100}%"></i></span><button class="btn sm" data-a="skip">Skip ▸▸</button></div>${S._reel?`<div class="head"><small>${fmtDate(S._reel.w)}</small>${S._reel.t}</div>`:''}</div>`;
   if(S._handT0&&now-S._handT0<3600)return `<div id="handover"><div style="animation-delay:${Math.round(S._handT0-now)}ms"><small>${fmtDate(S.w)}</small>YOUR WATCH</div></div>`;
@@ -2642,16 +2643,48 @@ function renderModal(){
   const sameK=ov.dataset.k===mkey,sameModal=(ov.dataset.k||'').split('|')[0]===S.modal;
   html=cz(html);ov.innerHTML=html;ov.classList.toggle('show',!!html);ov.dataset.k=html?mkey:'';
   for(const q in saved){const el=ov.querySelector(q);if(el&&(sameK||(q==='.dsb'&&sameModal)))el.scrollTop=saved[q]}
-  CHctx='v';
+  CHctx='v';markOff(ov);
   if(html&&closable()){const pp=ov.querySelector('.paper');if(pp){const r=pp.getBoundingClientRect(),x=document.createElement('button');x.className='xclose';x.dataset.a='close';x.title='Close (Esc)';x.textContent='✕';x.style.top=(r.top+7)+'px';x.style.left=(r.right-41)+'px';ov.appendChild(x)}}
   if(S.modal==='node'){const on=document.querySelector('#ov .dsbi.on');if(on&&S._dsbSel!==S.sel){on.scrollIntoView({block:'nearest'});S._dsbSel=S.sel}}else S._dsbSel=null;
 }
+// greyed-out buttons say why: hovering shows the reason, clicking pops it up
+function whyOff(b){
+  const d=b.dataset,a=d.a,needPC=n=>`Needs ${n} Political Capital — you have ${Math.floor(S.pc)}.`,needM=n=>`Costs ${money(n)} — the budget holds ${money(S.budget)}.`;
+  if(S.replay&&REPLAY_LOCK.has(a))return 'This is the 2025–26 record. You take over in January 2027.';
+  const optWhy=o=>o.req&&!passed(o.req)?`Requires the reform ${rname(RD[o.req])}.`:(o.pc||0)>S.pc?needPC(o.pc):(o.$||0)>S.budget?needM(o.$):'';
+  const busy=()=>`All ${S.slots} program offices are busy. One frees up when a project finishes.`;
+  switch(a){
+    case 'launch':{const def=PD[d.p];if(def.req&&!passed(def.req))return `Requires the reform ${rname(RD[def.req])}.`;if(S.projects.some(p=>p.def===def.id))return 'Already under way.';
+      if(def.kind==='maint'?S.mxDone[def.id]:def.kind&&def.kind!=='cap'&&(S.nflags[def.t.node]||{})[def.kind])return 'Already done.';if(slotsUsed()>=S.slots)return busy();if(S.budget<projCost(def))return needM(projCost(def));break}
+    case 'cat':return busy();
+    case 'opt':{const p=S.projects.find(x=>x.uid==d.u),o=p&&OD[p.obs[0]?.id]?.o[d.k];if(o)return optWhy(o);break}
+    case 'ops':{const pl=S.plants.find(x=>x.uid==d.u),o=pl?.issue&&OPSD[pl.issue.id].o[d.k];if(o)return optWhy(o);break}
+    case 'evopt':{const q=S.queue[0],o=q?.ev&&(V(ED[q.ev].o)||[])[d.k];if(o)return optWhy(o);break}
+    case 'mob':{const m=MOB[d.l];if(S.urg<m.urg)return `Needs urgency ${m.urg} — it's ${Math.round(S.urg)}. Threats, export bans and crises raise it.`;return needPC(15*(d.l-S.mob))}
+    case 'aid':return `Cutting aid costs ${Math.round(10*(S.aidLvl-d.v)/.5)} Political Capital — you have ${Math.floor(S.pc)}.`;
+    case 'carve':{const C=CD[d.c];if(S.urg<C.urg)return `Needs urgency ${C.urg} — it's ${Math.round(S.urg)}. Threats, export bans and crises raise it.`;return needPC(carveCost(C))}
+    case 'intro':{const R=RD[d.r];if(S.bill)return `One bill at a time — ${rname(RD[S.bill.id])} is still being voted on.`;if(R.req&&!passed(R.req))return `Pass ${rname(RD[R.req])} first.`;if(S.pc<reformCost(R))return needPC(reformCost(R));if((R.$||0)>S.budget)return needM(R.$);break}
+    case 'whip':return S.bill?.whips>=3?'Every vote that can be whipped has been.':needPC(10);
+    case 'spot':return needM(spotCost(d.n));
+    case 'prio':return needPC(5);
+    case 'up':case 'lineup':return 'Already first in line.';
+    case 'dn':return 'Already last in line.';
+  }
+  return 'Not available right now.';
+}
+function markOff(root){
+  const off=b=>{b.disabled=false;b.classList.add('off');b.setAttribute('aria-disabled','true');const t=b.getAttribute('title');b.removeAttribute('title');b.dataset.tip=`<b>${whyOff(b)}</b>${t?`<br><span style="opacity:.75">${t}</span>`:''}`};
+  for(const b of root.querySelectorAll('button:disabled'))off(b);
+  if(S?.replay)for(const b of root.querySelectorAll('[data-a]'))if(REPLAY_LOCK.has(b.dataset.a)&&!b.classList.contains('off'))off(b);
+}
+function popWhy(b){const r=b.getBoundingClientRect();showTip(b.dataset.tip,r.left+r.width/2,r.bottom);b.classList.remove('nope');void b.offsetWidth;b.classList.add('nope')}
 function render(){if(!S){renderStart();ov.classList.remove('show');return}renderGame();renderModal();rehover()}
 
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
 document.addEventListener('pointerdown',e=>{
   if(e.button!==0)return;if(e.target===ov&&closable()){S.modal=null;S.navBack=[];render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+  if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
   if(a==='start'){newGame(b.dataset.f);render();return}
   if(!S)return;
