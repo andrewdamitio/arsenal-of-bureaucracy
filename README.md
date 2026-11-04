@@ -2,7 +2,7 @@
 
 A grand strategy game of rearmament, exemptions and self-inflicted wounds, 2027–2037.
 
-Play as the United States or the European Union and rebuild your arsenal against a fast-rearming China and Russia. The obstacles are permitting, qualification, sole-source suppliers, mineral dependence, the Jones Act and a consolidated defense-industrial base.
+Play as the United States and rebuild its arsenal against a fast-rearming China and Russia. (A European Union campaign is parked for now.) The obstacles are permitting, qualification, sole-source suppliers, mineral dependence, the Jones Act and a consolidated defense-industrial base.
 
 **Play it:** open `index.html` in a browser, or use the GitHub Pages link once it's set up (see below).
 

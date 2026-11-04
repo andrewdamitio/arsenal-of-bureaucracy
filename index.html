@@ -128,7 +128,7 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 #start{max-width:1020px;margin:0 auto;padding:30px 20px;text-align:center}
 #start h1{font:700 44px Georgia;letter-spacing:.14em;color:var(--brass2);margin:0}
 #start .tag2{font:italic 16px Georgia;color:var(--dim);margin:6px 0 24px}
-.fcards{display:grid;grid-template-columns:1fr 1fr;gap:18px;text-align:left}
+.fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,560px));justify-content:center;gap:18px;text-align:left}
 .fcard{border:1px solid var(--brass);background:var(--panel);padding:18px;cursor:pointer;transition:.15s}
 .fcard:hover{background:#2c2f26;transform:translateY(-2px)}
 .fcard h3{margin:0 0 4px;font:700 22px Georgia;color:var(--brass2)}.fcard ul{padding-left:18px;color:#cfc8b6;margin:10px 0 0}
@@ -2655,10 +2655,11 @@ function linkify(m){let r=LKC.get(m);if(r!=null)return r;r=m;const hit=[];
   if(LKC.size>600)LKC.clear();LKC.set(m,r);return r}
 const stTag=s=>({ok:'<span class="tag ok">ok</span>',tight:'<span class="tag tight">tight</span>',short:'<span class="tag short">short</span>',cut:'<span class="tag cut">cut</span>',idle:'<span class="tag t">idle</span>'}[s]);
 
+const PLAYABLE=['US']; // the EU campaign is parked while the US regulatory regime is built out; its data stays in place
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
    <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2037 (2025–26 replayed)</div>
-   <div class="fcards">${['US','EU'].map(k=>{const f=FACTIONS[k];return `<div class="fcard" data-a="start" data-f="${k}"><h3>${f.flag} ${f.name}</h3><div class="dim" style="font:italic 13px Georgia">${f.motto}</div><ul>${f.blurb.map(b=>`<li>${b}</li>`).join('')}</ul></div>`}).join('')}</div>
+   <div class="fcards">${PLAYABLE.map(k=>{const f=FACTIONS[k];return `<div class="fcard" data-a="start" data-f="${k}"><h3>${f.flag} ${f.name}</h3><div class="dim" style="font:italic 13px Georgia">${f.motto}</div><ul>${f.blurb.map(b=>`<li>${b}</li>`).join('')}</ul></div>`}).join('')}</div>
    </div>`;app.innerHTML=cz(app.innerHTML);
 }
 function optCost(od,o){
