@@ -905,7 +905,7 @@ function icPanel(){if(S.fac!=='US')return '';
      <div><div class="nm">${c.n} [c:${c.c}]</div><div class="mini">${c.who} · ${on?'in force since '+(S.icSince[c.id]||c.since):(S.icSince[c.id]?'lifted':c.offTxt||'lifted')}</div><span class="fx">${c.up.map(t=>`<span class="up">${t}</span>`).join('')}${c.dn.map(t=>`<span class="dn">${t}</span>`).join('')}</span></div></div>`}).join('')}
 /* ---------- the US rulebook: who can change what, where it stands, and what it does to programs ---------- */
 // kind: law (Congress), court (the courts), exec (the executive can switch it), proposed (the executive can finalize it), bill (pending in Congress)
-const KIND={law:['Statute','Only Congress can change this.'],court:['Court ruling','Only the courts can change this.'],exec:['Executive action','The executive can reverse this.'],proposed:['Proposed rule','Finalizing takes notice and comment, and invites lawsuits.'],bill:['Pending bill','On the congressional agenda.']};
+const KIND={law:['Statute','Only Congress can change this.'],court:['Court ruling','Only the courts can change this.'],exec:['Executive action','The executive can reverse this.'],proposed:['Proposed rule','Finalizing takes notice and comment, and invites lawsuits.'],bill:['Pending bill','On the congressional agenda.'],foreign:['Foreign measure','Beijing decides this.']};
 const DOMAINS=[
  {id:'permit',n:'Permitting',ic:'🌲',layers:['PERMIT','LEGAL','GRID'],ref:d=>!d.ally&&d.tags.includes('energetic')&&d.tags.includes('greenfield'),
   steps:[['NEPA review',['ea','eis'],'Assessment ≤1 yr · impact statement ≤2 yr (2023 law)'],['Clean Air Act permit',['caa'],'Months to years'],['Clean Water Act §404',['cwa'],'If wetlands or streams'],['ESA §7 consultation',['esa'],'135 days by statute'],['NHPA §106 review',['nhpa'],'Historic properties'],['State & local',['local'],'Zoning, state permits'],['Grid hookup',['queue'],'Interconnection queue'],['Lawsuit',['lawsuit'],'6 yr to sue; 2 yr under FAST-41']]},
@@ -913,6 +913,8 @@ const DOMAINS=[
   steps:[['Requirements',['reqcreep'],'The spec moves'],['Source selection',['far'],'RFP to award'],['Bid protest',['protest'],'100 days at GAO'],['Cost accounting',['cas'],'CAS coverage'],['Cyber certification',['cmmc'],'CMMC'],['Prime pushback',['primelobby'],'Incumbents lobby'],['Demand signal',['demand'],'Orders a year at a time'],['First-article test',['fat'],'Qualification']]},
  {id:'source',n:'Domestic sourcing & import controls',ic:'🏭',layers:['PROTECT','ALLIED','MARKET'],ref:d=>!d.ally&&d.tags.includes('greenfield')&&d.tags.includes('metal')||d.id==='l_surf',
   steps:[['Buy American & Berry',['buyam'],'Domestic content, specialty metals'],['Jones Act',['jones'],'US-built, US-crewed'],['Security clearances',['clearance'],'Cleared workforce'],['Hidden PRC content',['hidden'],'Found in audits'],['Chinese price collapse',['dump'],'After you build']]},
+ {id:'export',n:'Export & investment controls',ic:'🛂',layers:['ALLIED'],ref:d=>d.ally,
+  steps:[['Export license (TAA)',['itar'],'State Department approval for allied work'],['Offsets & workshare',['offsets'],'Partners want a share'],['Allies’ own needs',['allyneeds'],'Allies keep output home'],['Hidden PRC content',['hidden'],'Found in audits'],['Beijing’s controls',[],'Minerals, rare earths, the 0.1% rule']]},
  {id:'money',n:'Money',ic:'💵',layers:['FISCAL'],ref:d=>!d.ally&&!d.kind&&d.tags.includes('greenfield'),
   steps:[['New-start approval',['nostart'],'Not in the budget request'],['Budget scoring',['scoring'],'OMB scores the outlay'],['Continuing resolution',[],'No new starts, no rate increases']]},
 ];
@@ -950,6 +952,21 @@ const RULES=[
   eff:{},up:['domestic or qualifying-country metal only'],dn:['shapes the titanium and steel supply shown in the chain']},
  {id:'rJones',dom:'source',kind:'law',n:'Jones Act (with short emergency waivers)',since:'1920 · 60-day waiver Mar 2026',c:'jonesmap',on0:1,
   eff:{},up:['protects US yards and crews'],dn:['allied yards can’t help without a waiver']},
+ // export & investment
+ {id:'rAUKUS',dom:'export',kind:'law',n:'AUKUS license-free defense trade (Australia, UK)',since:'Sep 2024 · ITAR §126.7',c:'aukus',on0:1,
+  eff:{tags:['allied'],chance:{itar:.85}},up:['fewer export licenses for allied work (×0.85)'],dn:['an excluded-technology list still applies']},
+ {id:'rITAR',dom:'export',kind:'proposed',n:'Rewrite the U.S. Munitions List (EO 14268)',since:'proposed 1 Oct 2026',c:'itar26',pc:[12,8],
+  eff:{chance:{itar:.8},wait:{itar:.8}},up:['fewer, faster ITAR licenses (×0.8)'],dn:['some items move to Commerce licensing']},
+ {id:'rMTCR',dom:'export',kind:'exec',n:'Drones exported like fighter jets, not missiles (MTCR reinterpretation)',since:'Sep 2025',c:'mtcr',pc:[6,10],
+  eff:{line:{drones:1.05}},up:['export orders keep drone lines busy (+5%)'],dn:['arms-control critics object']},
+ {id:'rAffil',dom:'export',kind:'exec',n:'BIS Affiliates Rule: controls reach firms 50%-owned by listed entities',since:'29 Sep 2025 · suspended under the truce',c:'affil',pc:[10,15],
+  eff:{chance:{hidden:.7}},up:['PRC-owned affiliates can’t launder supply (×0.7)'],dn:['reinstating it ends the truce: Beijing’s controls snap back'],onOn:()=>affilOn(),onOff:()=>affilOff()},
+ {id:'rChina',dom:'export',kind:'foreign',n:'China’s mineral & rare-earth export controls',since:'Apr 2025 heavy rare earths in force · Oct 2025 package suspended',c:'cnsusp',
+  eff:{},dyn:()=>S.truce?['Suspended under the truce: gallium, germanium, antimony, graphite, the Oct 2025 rare-earth rules','Heavy rare-earth licensing (Apr 2025) still in force']:['In force: gallium, germanium, antimony, graphite and the 0.1% rare-earth rule','Heavy rare-earth licensing (Apr 2025) in force']},
+ {id:'rCOINS',dom:'export',kind:'law',n:'COINS Act: outbound investment screening in law',since:'Dec 2025 · final rule due Mar 2027',c:'coins',
+  eff:{},up:['US capital kept out of PRC chips, AI and quantum'],dn:['no direct effect on your plants']},
+ {id:'rKnown',dom:'export',kind:'exec',n:'CFIUS Known Investor fast track for allied capital',since:'pilot · launch expected early 2027',c:'known',pc:[8,6],
+  eff:{tags:['greenfield','shipyard'],cost:.95},up:['allied co-investment in US plants (−5% cost)'],dn:['screening still applies to everyone else']},
  // money
  {id:'rOBBBA',dom:'money',kind:'law',n:'Reconciliation: ~$150B for defense through FY2029',since:'4 Jul 2025',c:'obbba',
   eff:{chance:{nostart:.8}},up:['$25B munitions, $8.2B industrial base fund','fewer missing line items (×0.8)']},
@@ -963,10 +980,11 @@ const ruleOn=id=>S.fac==='US'&&!!S.rules?.[id];
 const ruleFits=(r,def)=>!r.eff.tags||!def||r.eff.tags.some(t=>def.tags.includes(t));
 function ruleChance(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)){const e=r.eff;for(const t of [e.chance,e.chance2])if(t)m*=t[o.id]??t[o.layer]??1}return m}
 function ruleWait(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)&&r.eff.wait)m*=r.eff.wait[o.id]??r.eff.wait[o.layer]??1;return m}
+function ruleLine(lid){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.line?.[lid])m*=r.eff.line[lid];return m}
 function ruleCost(def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.cost&&ruleFits(r,def))m*=r.eff.cost;return m}
 function setRule(id,on){const r=RD2[id];if(!!S.rules[id]===on)return;S.rules[id]=on;if(r.slots)S.slots+=on?r.slots:-r.slots}
 function toggleRule(id){const r=RD2[id],on=ruleOn(id),cost=r.pc[on?1:0];if(!['exec','proposed'].includes(r.kind)||S.pc<cost)return;
-  S.pc-=cost;setRule(id,!on);S.pages+=on?80:200;if(!on)S.rulesSince[id]=fmtDate(S.w);
+  S.pc-=cost;if(!on&&r.onOn)r.onOn();else if(on&&r.onOff)r.onOff();else setRule(id,!on);S.pages+=on?80:200;if(!on)S.rulesSince[id]=fmtDate(S.w);
   log(`⚖ ${KIND[r.kind][0]}: ${on?'reversed':r.kind==='proposed'?'finalized':'adopted'} — ${r.n} (${cost} PC).`,'ev');flash('rl:'+id,on?'bad':'good')}
 // a reference project for each domain, so the odds on the process strip are concrete and move when a rule changes
 function domRef(D){return PROJECTS.find(d=>facOk(d)&&D.ref(d))||PROJECTS.find(d=>facOk(d)&&!d.ally)}
@@ -978,11 +996,11 @@ function rulesBody(){
     const steps=D.steps.map(([nm,ids,t])=>{const os=ids.map(i=>OD[i]).filter(o=>o&&facOk(o));
       // worst case across everything you could launch now, so the odds move when a rule changes
       const odds=os.map(o=>{let c=0,who=null;for(const d of PROJECTS)if(facOk(d)){const x=obsChance(o,d);if(x>c){c=x;who=d}}return {o,c,who}}),mx=Math.max(0,...odds.map(x=>x.c));
-      const cr=nm==='Continuing resolution';
-      return `<div class="rstep ${mx>=.4?'hot':mx>=.2?'warm':''}" data-tip="${os.length?odds.map(x=>`<b>${V(x.o.n)}</b>: up to ${pct(x.c)}${x.who?` (${x.who.n})`:''}`).join('<br>'):t}"><b>${nm}</b><span class="mini">${t}</span>${os.length?`<span class="odds">${pct(mx)}</span>`:cr?`<span class="odds">${S.cr>0?S.cr+' wk left':'none now'}</span>`:''}</div>`}).join('<span class="sarr">→</span>');
-    const rows=RULES.filter(r=>r.dom===D.id).map(r=>{const on=ruleOn(r.id),k=KIND[r.kind],sw=['exec','proposed'].includes(r.kind),cost=sw?r.pc[on?1:0]:0;
+      const cr=nm==='Continuing resolution',bj=nm==='Beijing’s controls';
+      return `<div class="rstep ${mx>=.4?'hot':mx>=.2?'warm':''}" data-tip="${os.length?odds.map(x=>`<b>${V(x.o.n)}</b>: up to ${pct(x.c)}${x.who?` (${x.who.n})`:''}`).join('<br>'):t}"><b>${nm}</b><span class="mini">${t}</span>${os.length?`<span class="odds">${pct(mx)}</span>`:cr?`<span class="odds">${S.cr>0?S.cr+' wk left':'none now'}</span>`:bj?`<span class="odds">${S.truce?'suspended':'in force'}</span>`:''}</div>`}).join('<span class="sarr">→</span>');
+    const rows=RULES.filter(r=>r.dom===D.id).map(r=>{const on=r.kind==='foreign'?!S.truce:ruleOn(r.id),k=KIND[r.kind],sw=['exec','proposed'].includes(r.kind),cost=sw?r.pc[on?1:0]:0;
       const ctl=sw?`<button class="tog ${on?'on':''}" data-a="rule" data-r="${r.id}" ${S.pc>=cost?'':'disabled'} data-tip="${on?'Reverse':r.kind==='proposed'?'Finalize':'Adopt'}: ${cost} Political Capital. ${k[1]}"><i></i></button>`:`<span class="lock" data-tip="${k[1]}">🔒</span>`;
-      return `<tr class="${on?'rlon':''}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td><span class="fx">${(r.up||[]).map(t=>`<span class="up">${t}</span>`).join('')}${(r.dn||[]).map(t=>`<span class="dn">${t}</span>`).join('')}</span></td></tr>`}).join('');
+      return `<tr class="${on?'rlon':''}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td><span class="fx">${r.dyn?r.dyn().map((t,i)=>`<span class="${S.truce&&i===0?'up':'dn'}">${t}</span>`).join(''):(r.up||[]).map(t=>`<span class="up">${t}</span>`).join('')+(r.dn||[]).map(t=>`<span class="dn">${t}</span>`).join('')}</span></td></tr>`}).join('');
     const links=(RLINKS[D.id]||[]).filter(([id])=>(RD[id]&&facOk(RD[id]))||(CD[id]&&facOk(CD[id]))).map(([id,why])=>{const R=RD[id],C=CD[id],on=R?passed(id):carveOn(id);
       return `<tr class="${on?'rlon':''}"><td>${on?'✓':R?'📜':'🖋'}</td><td><b>${R?rname(R):cname(C)}</b><div class="mini">${R?(on?'Enacted':`Pending bill · ${rk}`):(on?'Emergency carve-out in force':'Emergency carve-out · fast, temporary, can be struck down')}</div></td><td><span class="mini">${why}</span> ${on?'':`<span class="linkn" data-a="remedy" data-r="${id}">${R?'On the agenda →':'Use it →'}</span>`}</td></tr>`}).join('');
     return `<div class="rbdom"><div class="rbh"><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span><span class="mini">${fmt(lost,0)} weeks lost this game</span>${stalled.length?` · <span class="redt mini">stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</span>`:''}</div>
@@ -994,6 +1012,7 @@ const RLINKS={
  permit:[['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
  acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['qualReform','Qualification by similarity.'],['acqWorkforce','More contracting officers.'],['cvQual','Accept allied qualification data now.']],
  source:[['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Allied yards build Navy auxiliaries.'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
+ export:[['itarReform','Extend license-free trade to Japan and Korea.'],['nds','Stockpile what Beijing can switch off.']],
  money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
 };
 const PROJECTS=[];
@@ -1275,7 +1294,11 @@ const EVENTS=[
   body:"DFARS 225.7018 now bans Chinese- and Russian-origin magnets, tungsten, and tantalum \"mined, refined, separated, melted, or produced\" anywhere in the supply chain. Your allied magnet suppliers buy Chinese oxide. Compliant supply shrinks now; new supply (MP's 10X plant, 2028) arrives later.",
   o:[{l:'Comply strictly (+10 PC, +5 urgency; ~80% of PRC-linked supply becomes unusable)',fx:()=>{S.dfars=true;S.pc+=10;S.urg+=5}},
      {l:'Issue non-availability determinations (start the 52-week DFARS carve-out)',fx:()=>{S.dfars=true;startCarve('cvDfars',true)}}]},
- {id:'truce0',fixedW:PLAY0+2,ic:FLAGS.cn,t:'Beijing Decides on Its Suspended Controls',
+ {id:'truce27',fac:['US'],fixedW:PLAY0+1,ic:FLAGS.cn,t:'The Truce Runs Out (10 Jan 2027)',
+  body:"Washington announced in September that the truce would run to 10 January. Beijing never published matching text. Extending keeps its gallium, germanium, antimony and graphite bans and its October 2025 rare-earth rules suspended, and keeps your own Affiliates Rule on ice, so firms 50%-owned by blacklisted Chinese companies stay outside US export controls. Reinstating the rule closes that loophole. Beijing will switch everything back on.",
+  o:[{l:'Extend the truce (−8 PC: hawks call it a giveaway)',pc:8,fx:()=>{S.truce=true;S.urg+=2;log(`${FLAGS.cn} Truce extended; the Affiliates Rule stays suspended.`,'ev')}},
+     {l:'Reinstate the Affiliates Rule (+10 PC; Beijing retaliates)',fx:()=>{S.pc+=10;affilOn()}}]},
+ {id:'truce0',fac:['EU'],fixedW:PLAY0+2,ic:FLAGS.cn,t:'Beijing Decides on Its Suspended Controls',
   fx:()=>{S._tr=rand()<.55;if(S._tr){S.truce=true}else{applyChinaBan()}},
   body:()=>S._tr?"The November 2026 deadlines pass with a quiet one-year extension of the gallium, germanium, antimony, graphite, and rare-earth suspensions. The heavy rare-earth licensing regime from April 2025 stays in force. Everyone knows it can be switched back on.":"Beijing lets the suspensions lapse. Exports of gallium, germanium, and antimony to you are halted again; graphite and battery materials face end-user checks. Heavy rare-earth licensing continues.",
   o:[{l:'Understood. (+urgency)',fx:()=>{S.urg+=S._tr?3:12}}]},
@@ -1512,6 +1535,12 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
   scenUpdate();S.hist.push(snapshot());
   beginHistory();if(!watch)endHistory(true);
 }
+// the 50% Affiliates Rule and Beijing's suspended controls are two halves of one bargain
+const BAN_NODES=['gallium','germanium','antimony','graphite','li_cells','magnets'];
+function affilOn(){setRule('rAffil',true);S.rulesSince.rAffil=fmtDate(S.w);if(S.truce){S.truce=false;applyChinaBan();cutAll(['magnets'],.75);S.urg+=15;S.tension=(S.tension||0)+.1;
+  log(`${FLAGS.cn} Beijing answers the Affiliates Rule: its mineral bans and the 0.1% rare-earth rule are back in force.`,'bad');for(const id of BAN_NODES)flash(id,'bad')}}
+function affilOff(){setRule('rAffil',false);if(!S.truce){if(rand()<.5){S.truce=true;for(const id of BAN_NODES)S.cut[id]=1;log(`${FLAGS.cn} Beijing matches the suspension: the truce is back.`,'good');for(const id of BAN_NODES)flash(id,'good')}
+  else log(`${FLAGS.cn} Beijing pockets the suspension and keeps its controls in force.`,'bad')}}
 function applyChinaBan(){
   if(S.fac==='US'){cutAll(['gallium','germanium','antimony'],.35);cutAll(['graphite','li_cells'],.5)} // leakage through third countries and stocks (assumption; 2025's ban did not halt US production)
   else{cutAll(['gallium','germanium','antimony'],.5);cutAll(['graphite'],.7)}
@@ -1543,7 +1572,7 @@ function nodeSupply(id){
   return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,prc,spot,div,ext,prcExtFrac:ext>0?(prc+allyPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(prcRaw-prc),prcRaw,allyRaw};
 }
 function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors','strike'].includes(lid))?1.1:1)*MOB[S.mob].line}
-function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)}
+function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)*ruleLine(lid)}
 function lineName(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain;return c*lineMultOf(lid)}
 
 function production(commit){
@@ -1706,6 +1735,10 @@ const HIST=[
  {fac:['US'],w0:weekOf(2025,11,18),t:'FY2026 NDAA signed: portfolio executives in law, commercial solutions openings expanded (18 Dec 2025)',fx:()=>setRule('rNDAA26',true),c:'ndaa26'},
  {fac:['US'],w0:weekOf(2026,1,6),t:'FY2026 defense appropriations enacted after a short lapse: $838.7B, with multiyear authority for critical munitions (Feb 2026)',fx:()=>setRule('rMYP',true),c:'fy26approp'},
  {fac:['US'],w0:weekOf(2026,6,10),t:'Endangered Species Act: the regulatory definition of "harm" is rescinded (Jul 2026)',fx:()=>setRule('rESA',true),c:'esaharm'},
+ {fac:['US'],w0:weekOf(2025,8,15),t:'State reinterprets the missile-technology rules: military drones are now reviewed for export like fighter jets (Sep 2025)',fx:()=>setRule('rMTCR',true),c:'mtcr'},
+ {fac:['US'],w0:weekOf(2025,8,29),t:'BIS Affiliates Rule: export controls extend to firms 50%-owned by listed entities (29 Sep 2025)',fx:()=>setRule('rAffil',true),c:'affil'},
+ {fac:['US'],w0:weekOf(2025,10,10)+1,t:'Under the truce, the US suspends the Affiliates Rule for a year (Nov 2025)',fx:()=>setRule('rAffil',false),c:'affil'},
+ {fac:['US'],w0:weekOf(2025,11,18)+1,t:'COINS Act (in the FY2026 NDAA) writes outbound investment screening into law (Dec 2025)',fx:()=>setRule('rCOINS',true),c:'coins'},
  {fac:['US'],w0:weekOf(2025,4,22),t:'FCC bars test labs controlled by foreign adversaries from certifying devices (May 2025)',fx:()=>{S.ic.icLabs=true},c:'badlabs'},
  {fac:['US'],w0:weekOf(2025,11,22),t:'FCC adds all foreign-made drones and critical drone components to the Covered List (22 Dec 2025)',fx:()=>{S.ic.icDrones=true},c:'fccuas'},
  {fac:['US'],w0:weekOf(2026,6,15),t:'FCC closes the component loophole: devices with parts from Covered List firms are barred too (2026)',fx:()=>{S.ic.icParts=true},c:'fccparts'},
@@ -2519,6 +2552,13 @@ const CITES=[
  {id:'bam',g:'US rulebook',t:'Final Rule Amends FAR Part 25 Domestic Content Threshold Under the Buy American Act',pub:'Thompson Hine',d:'2022',url:'https://www.thompsonhine.com/insights/final-rule-amends-far-part-25-domestic-content-threshold-under-buy-american-act/',use:'Domestic content threshold 60% → 65% (2024) → 75% (2029).'},
  {id:'berry',g:'US rulebook',t:'DFARS 252.225-7009, Restriction on Acquisition of Certain Articles Containing Specialty Metals',pub:'Acquisition.gov',d:'current',url:'https://www.acquisition.gov/dfars/252.225-7009-restriction-acquisition-certain-articles-containing-specialty-metals',use:'Specialty metals (titanium, certain steels and alloys) must be melted or produced in the US or a qualifying country.'},
  {id:'jonesmap',g:'US rulebook',t:'White House Releases America’s Maritime Action Plan',pub:'The Maritime Executive',d:'Feb 2026',url:'https://maritime-executive.com/article/white-house-releases-america-s-maritime-action-plan',use:'Maritime Action Plan (13 Feb 2026) under the April 2025 maritime order; the SHIPS for America Act is pending.'},
+ {id:'affil',g:'US rulebook',t:'U.S.-China Trade Truce Extended Two Months: BIS Affiliates Rule Suspension Follows',pub:'Cassidy Levy Kent',d:'Sep 2026',url:'https://www.cmtradelaw.com/2026/09/u-s-china-trade-truce-extended-two-months-bis-affiliates-rule-suspension-follows/',use:'The Affiliates Rule (29 Sep 2025) was suspended for a year from 10 Nov 2025; the US says the truce now runs to 10 Jan 2027.'},
+ {id:'cnsusp',g:'US rulebook',t:'China Pauses Some Rare Earth Export Curbs While Retaining Levers of Control',pub:'Foundation for Defense of Democracies',d:'Nov 2025',url:'https://www.fdd.org/analysis/china-pauses-some-rare-earth-export-curbs-while-retaining-levers-of-control/',use:'China suspended its Oct 2025 package (five more rare earths, the 0.1% extraterritorial rule, battery and graphite items) to 10 Nov 2026; the Apr 2025 heavy rare-earth licensing stayed.'},
+ {id:'itar26',g:'US rulebook',t:'ITAR: Review of the U.S. Munitions List and Related Definitions and License Exemptions (proposed rule)',pub:'Federal Register',d:'Oct 2026',url:'https://www.federalregister.gov/documents/2026/10/01/2026-20079/international-traffic-in-arms-regulations-itar-review-of-the-us-munitions-list-and-related',use:'Proposed under EO 14268 (9 Apr 2025): removes items from the USML and narrows “specially designed.”'},
+ {id:'mtcr',g:'US rulebook',t:'Drone Export Policy Revised',pub:'Washington Trade & Tariff Letter',d:'Sep 2025',url:'https://www.wttlonline.com/stories/drone-export-policy-revised,14323',use:'Military drone exports reviewed like crewed fighter aircraft rather than under MTCR Category I presumption of denial.'},
+ {id:'aukus',g:'US rulebook',t:'DDTC Publishes ITAR Amendments to Implement the AUKUS Exemption',pub:'Crowell & Moring',d:'2024',url:'https://www.crowell.com/en/insights/client-alerts/ddtc-publishes-itar-amendments-to-implement-the-aukus-exemption',use:'ITAR §126.7: license-free defense trade among Australia, the UK and the US, minus an excluded-technology list.'},
+ {id:'coins',g:'US rulebook',t:'Treasury Issues Proposed Rule to Implement Comprehensive Outbound Investment National Security Act',pub:'U.S. Treasury',d:'Oct 2026',url:'https://home.treasury.gov/news/press-releases/sb0667',use:'COINS Act enacted Dec 2025 in the FY2026 NDAA; proposed rule 22 Oct 2026; final rule due 13 Mar 2027.'},
+ {id:'known',g:'US rulebook',t:'Known Investor Program',pub:'CFIUS, U.S. Treasury',d:'2026',url:'https://cfius.gov/initiatives/known-investor-program/',use:'Fast track for allied investors under the Feb 2025 America First Investment Policy; pilot under way, launch expected early 2027.'},
  // Import controls
  {id:'fccuas',g:'Import controls',t:'FACT SHEET: FCC Updates Covered List to Include Foreign UAS',pub:'Federal Communications Commission',d:'Dec 2025',url:'https://docs.fcc.gov/public/attachments/DOC-416839A1.pdf',use:'All foreign-produced drones and UAS critical components barred from new equipment authorizations from 22 Dec 2025; earlier authorizations continue.'},
  {id:'fccuasx',g:'Import controls',t:'FCC Issues Exemptions, Clarifications for Sweeping Prohibition of Foreign-Made Drones',pub:'Wiley',d:'2026',url:'https://www.wiley.law/alert-FCC-Issues-Exemptions-Clarifications-for-Sweeping-Prohibition-of-Foreign-Made-Drones',use:'Exemptions run through Blue UAS and Buy American compliance and DoW determinations; allied-produced drones are not broadly exempt.'},
