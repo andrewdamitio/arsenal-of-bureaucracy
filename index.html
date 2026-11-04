@@ -1339,7 +1339,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
     S.projects.push(p);enterStage(p)}
   log(`${X.flag} January 2025. ${X.name}: ${X.motto}.`,'ev');
   scenUpdate();S.hist.push(snapshot());
-  beginHistory();if(!watch)endHistory();
+  beginHistory();if(!watch)endHistory(true);
 }
 function applyChinaBan(){
   if(S.fac==='US'){cutAll(['gallium','germanium','antimony'],.35);cutAll(['graphite','li_cells'],.5)} // leakage through third countries and stocks (assumption; 2025's ban did not halt US production)
@@ -1540,14 +1540,14 @@ function beginHistory(){
   S.histMode=true;S.sim=true;S.replay=true;S.btRec={};S.speed=0;S.lastSpeed=2;
   for(const h of HIST)if(h.w0===0&&(!h.fac||h.fac.includes(S.fac))){h.fx?.();log(`📜 ${h.t}${h.c?` [c:${h.c}]`:''}`,'ev');S._reel={t:h.t,w:0,t0:performance.now()}}
 }
-function endHistory(){
+function endHistory(quiet){ // quiet: the instant run at game start, no handover stamp
   const X=F();while(S.w<PLAY0)tick();
   S.histMode=false;S.sim=false;S.replay=false;S._reel=null;S.queue=[];
   Object.assign(S,{pc:X.pc0,budget:X.budget0,urg:X.urg0,strain:0,mob:0,mobLow:0,speed:0,cr:0});
   for(const k in S.ledger)S.ledger[k]={n:0,wk:0};
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
   log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
-  S._handT0=performance.now();S._flW=null;for(const k in FL)delete FL[k]; // handover starts from a clean slate, no flashes
+  S._handT0=quiet?0:performance.now();S._flW=null;for(const k in FL)delete FL[k]; // handover starts from a clean slate, no flashes
 }
 const REPLAY_MS=[0,180,90,45,20],REEL_HOLD=2400;
 // during the replay you can look at anything, but not act
