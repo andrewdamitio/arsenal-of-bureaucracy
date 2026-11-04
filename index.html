@@ -216,6 +216,11 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .pools{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:6px 10px;border-bottom:1px solid #2e2c22;background:#191b16}
 .pool{display:grid;grid-template-columns:18px 1fr 34px;gap:5px;align-items:center;font-size:11px}.pool b{text-align:right;color:#cfc6ad}.pool.over b{color:#e49a8e}.pool .pic{text-align:center}
 #tip{max-width:370px}
+/* import controls */
+.icrow{display:grid;grid-template-columns:34px 1fr;gap:8px;padding:6px 10px;border-bottom:1px solid #2b2a20}.icrow.on{background:#1c2619}.icrow .nm{font-weight:600}.icrow .fx{margin-top:3px}
+.tog{width:30px;height:16px;border-radius:8px;border:1px solid #6b6455;background:#2c2b22;position:relative;cursor:pointer;margin-top:2px;padding:0}
+.tog i{position:absolute;top:1px;left:1px;width:12px;height:12px;border-radius:50%;background:#9a968a;transition:left .15s}
+.tog.on{background:#3f6633;border-color:#76b357}.tog.on i{left:15px;background:#dcefc8}.tog.off{opacity:.4;cursor:not-allowed}
 /* binding constraints */
 .cstrip{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:6px 8px;margin:4px 0 8px;background:#e6dbbd;border:1px solid #cbbd95;font:12.5px "Segoe UI",system-ui,sans-serif}
 .cstrip>span{display:flex;align-items:center;gap:6px}.cstrip .bind{color:#8a1f15;background:#f0b3a8;padding:2px 6px;margin:-2px -6px;border-radius:2px}
@@ -841,6 +846,51 @@ const ENEMY_SRC={pac:{strike:'Low end: the CMPR count of PLARF theater missiles 
  eu:{strike:'Ukrainian intelligence: ~1,950 missiles (June 2025), output ~195/month;[c:hur25] more than 200 a month by mid-2026.[c:hur26]',interceptors:'S-400 missiles alone: ~50 a month in 2026.[c:hur26] Other types estimated.',shells:'Output: 3.4M howitzer rounds in 2025 plus imports from North Korea and Iran (5–7M since 2023).[c:estonia] Stock is an estimate.',aircraft:'IISS: ~1,200 combat aircraft (early 2026).[c:iiss26]',drones:'Plan of 2M FPV and 30,000 long-range drones in 2025.[c:rufpv]'}};
 
 /* ---------- PROJECTS (generated per node + explicit line projects) ---------- */
+/* ---------- import controls (US): the FCC's Covered List and the President's trade powers, as switches ---------- */
+const DRONE_PARTS=['li_cells','actuators','pcb','fiber','fpa'];
+const EL_NODES=['pcb','micro','mmic','fpa']; // logic-bearing parts the component rule reaches
+const IC=[
+ {id:'icDrones',n:'Foreign drones & drone parts on the Covered List',who:'FCC',since:'22 Dec 2025',pc:[12,25],strain:8,c:'fccuas',
+  up:['US drone makers keep the home market','onshoring builds'],dn:['allied drone parts barred too','farmers, police & utilities lose new models']},
+ {id:'icAllyEx',n:'Exempt allied drone makers',who:'DoW national-security determinations',offTxt:'not granted',req:'icDrones',pc:[10,6],strain:-4,c:'fccuasx',
+  up:['allied parts flow again'],dn:['hidden PRC content slips in more often']},
+ {id:'ic232',n:'Section 232 tariffs on drones & drone parts',who:'President · Commerce',since:'3 Sep 2026 · parts 9 Feb 2027',pc:[10,15],strain:5,c:'dr232',
+  up:['duty-free equipment for new US drone plants (−15% cost)','onshoring 1.5× faster'],dn:['tariffed parts trim drone output until onshore']},
+ {id:'icParts',n:'Covered parts inside other devices',who:'FCC',since:'2026 · FCC 26-50',pc:[10,15],strain:2,c:'fccparts',
+  up:['PRC parts can’t ride in through allied electronics'],dn:['allied electronics with PRC content are lost']},
+ {id:'icLabs',n:'Foreign-adversary test labs barred',who:'FCC',since:'May 2025',pc:[6,10],strain:0,c:'badlabs',
+  up:['hidden PRC content caught early (×0.6)'],dn:['fewer labs: qualification waits ×1.1']},
+ {id:'icGrid',n:'Foreign inverters & robots on the Covered List',who:'FCC',since:'28 Jul 2026',pc:[8,12],strain:2,c:'fccinv',
+  up:['no remote shutdowns through plant inverters'],dn:['power hookups slip more (×1.15)','automation & firm power +10% cost']},
+ {id:'icRevoke',n:'Pull existing foreign drone authorizations',who:'FCC',offTxt:'never used on drones',req:'icDrones',pc:[30,10],strain:20,c:'fccrevoke',
+  up:['the commercial market moves to US makers (onshoring 2×)'],dn:['grounds fleets already flying']},
+];
+const ICD=Object.fromEntries(IC.map(c=>[c.id,c]));
+const icOn=id=>S.fac==='US'&&!!S.ic?.[id];
+const droneRel=def=>def.t.line==='drones'||DRONE_PARTS.includes(def.t.node);
+// drones line: barred foreign parts cost output until US sources catch up; a protected home market then builds scale
+function icLineMult(lid){if(lid!=='drones'||S.fac!=='US')return 1;const o=S.icOnshore||0;let m=1;
+  if(icOn('icDrones'))m*=1-(icOn('icAllyEx')?.03:.1)*(1-o);
+  if(icOn('ic232'))m*=1-.04*(1-o);
+  return m*(1+.25*o)}
+const icBars=id=>icOn('icParts')&&EL_NODES.includes(id); // PRC-tainted allied supply can't be used
+function icObsMult(o,def){if(S.fac!=='US')return 1;let m=1;const dr=droneRel(def);
+  if(dr&&o.layer==='MARKET'&&icOn('icDrones'))m*=.8-.5*(S.icOnshore||0);
+  if(o.id==='hidden'){if(icOn('icLabs'))m*=.6;if(dr&&icOn('icAllyEx'))m*=1.5}
+  if(o.layer==='GRID'&&icOn('icGrid'))m*=1.15;
+  return Math.max(0,m)}
+function icTick(){if(S.fac!=='US')return;const o=S.icOnshore||0;
+  S.icOnshore=icOn('icDrones')?Math.min(1,o+(1/208)*(icOn('ic232')?1.5:1)*(icOn('icRevoke')?2:1)):Math.max(0,o-1/156);
+  if(icOn('icRevoke')&&S.w-(S.icSince.icRevokeW||0)<26)S.strain=clamp(S.strain+.6,0,100); // grounded fleets keep complaining
+  S.know.drones=Math.min(95,S.know.drones+.02*S.icOnshore)}
+function toggleIC(id){const c=ICD[id],on=icOn(id),cost=c.pc[on?1:0];if(S.pc<cost||(!on&&c.req&&!icOn(c.req)))return;
+  S.pc-=cost;S.ic[id]=!on;S.pages+=on?60:150;if(!on){S.waivers++;S.strain=clamp(S.strain+c.strain,0,100);S.icSince[id]=fmtDate(S.w);if(id==='icRevoke')S.icSince.icRevokeW=S.w}
+  if(on)for(const x of IC)if(x.req===id&&icOn(x.id)){S.ic[x.id]=false;log(`🛂 ${x.n}: lapses with it.`)}
+  log(`🛂 ${c.who}: ${on?'lifted':'imposed'} — ${c.n} (${cost} PC).`,'ev');flash('ic:'+id,on?'bad':'good')}
+function icPanel(){if(S.fac!=='US')return '';
+  return `<div class="sect"><span>Import controls · FCC & trade powers</span><span>${IC.filter(c=>icOn(c.id)).length} of ${IC.length} in force</span></div>`+IC.map(c=>{const on=icOn(c.id),cost=c.pc[on?1:0];
+    return `<div class="icrow ${on?'on':''}" data-fk="ic:${c.id}"><button class="tog ${on?'on':''}" data-a="ic" data-c="${c.id}" ${S.pc>=cost&&(on||!c.req||icOn(c.req))?'':'disabled'} data-tip="${on?'Lift':'Impose'}: ${cost} Political Capital${!on&&c.strain>0?` · civilian strain +${c.strain}`:''}"><i></i></button>
+     <div><div class="nm">${c.n} [c:${c.c}]</div><div class="mini">${c.who} · ${on?'in force since '+(S.icSince[c.id]||c.since):(S.icSince[c.id]?'lifted':c.offTxt||'lifted')}</div><span class="fx">${c.up.map(t=>`<span class="up">${t}</span>`).join('')}${c.dn.map(t=>`<span class="dn">${t}</span>`).join('')}</span></div></div>`}).join('')}
 const PROJECTS=[];
 for(const n of NODES){
   const a=ARCH[n.arch];
@@ -1044,6 +1094,9 @@ const OPS=[
  {id:'tooldown',layer:'ALLIED',tags:['electronics','energetic','line','assembly'],mult:.3,n:'Imported Tool Down',
   t:"A critical Japanese machine is down. The spare part ships in six weeks; the technician needs a visa and site-access clearance.",
   o:[{l:'Wait for parts and tech',wait:12},{l:'Air-freight + expedited access',$:.05,pc:4,wait:4},{l:'Cannibalize the pilot line',yieldMul:.9}]},
+ {id:'remote',layer:'GRID',icOff:'icGrid',tags:['greenfield','brownfield','line','assembly'],mult:.2,n:'Inverter Firmware Shutdown',
+  t:"The plant's foreign-made solar inverters and battery controllers took an overnight update. They are now off, and the vendor's support line is in Shenzhen.",
+  o:[{l:'Rip and replace the inverters',$:.08,wait:8},{l:'Run on grid power alone',yieldMul:.85},{l:'Wait for the vendor',wait:20}]},
  {id:'latemat',layer:'EXPERT',tags:['shipyard','subs','surface','heavy'],mult:.4,n:'Late Material & Design Rework',
   t:"Castings arrive late and modules built last year don't fit modules designed this year. Deliveries slip 24–36 months, like recent Virginias.",
   o:[{l:'Rework in place',wait:26,know:5},{l:'Outsource modules to other yards',$:.3,wait:12,know:6},{l:"Bring in an allied shipbuilder's planners",$:.2,wait:10,know:12}]},
@@ -1330,7 +1383,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
      cut:Object.fromEntries(NODES.map(n=>[n.id,1])),stock:{},tmods:[],gmods:[],costMods:[],nflags:{},navBack:[],spot:[],prio:{},carve:{},fw:{},
      projects:[],plants:[],built:{},done:[],reforms:{},bill:null,cr:0,dfars:false,truce:false,tension:0,
      ledger:Object.fromEntries(Object.keys(LAYERS).map(k=>[k,{n:0,wk:0}])),
-     pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},
+     pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},ic:{},icOnshore:0,icSince:{},
      over:false,overWhy:'',modal:null,autoPause:true,exposure:0,tab:'bott',ptab:1,sel:null};
   // size each node from starting demand
   const lineCap0=l=>S.lines[l].base;
@@ -1371,11 +1424,12 @@ function plantsFor(kind,id){return S.plants.filter(p=>p.kind===kind&&p.target===
 function nodeSupply(id){
   const s=S.nodes[id],c=cutOf(id),mob=MOB[S.mob];
   const nm=tm('node',id);
-  let dom=s.base*tm('cap',id)*nm*mob.dom,domPrc=0,name=s.base,ramp=0;
+  const onsh=S.fac==='US'&&DRONE_PARTS.includes(id)?1+.2*(S.icOnshore||0):1; // onshored drone supply chain: more US motors, cells, boards
+  let dom=s.base*tm('cap',id)*nm*mob.dom*onsh,domPrc=0,name=s.base,ramp=0;
   for(const pl of plantsFor('node',id)){const raw=pl.gain*pl.yield*plantMult(pl)*mob.dom*nm;dom+=raw*(1-pl.adv*(1-c));domPrc+=raw*pl.adv*c;name+=pl.gain;if(!pl.full)ramp+=pl.gain*(1-pl.yield)}
   let allyMult=tm('ally',id);if(id==='shipyard'&&carveOn('cvJones'))allyMult*=1;
   let allyAmt=s.ally.amt+(id==='shipyard'&&carveOn('cvJones')?s.scale*.25:0);
-  const allyRaw=allyAmt*allyMult,ally=allyRaw*(1-s.ally.adv*(1-c)),allyPrc=allyRaw*s.ally.adv*c;
+  const bar=icBars(id),allyRaw=allyAmt*allyMult,ally=allyRaw*(1-s.ally.adv*(bar?1:1-c)),allyPrc=bar?0:allyRaw*s.ally.adv*c;
   const prcRaw=s.prc.amt*tm('prc',id),prc=prcRaw*c;
   let spot=0;for(const x of S.spot)if(x.id===id)spot+=x.amt;
   const div=S.prio[id]?(ND[id].civ||0)*s.scale*.4:0;
@@ -1383,7 +1437,7 @@ function nodeSupply(id){
   return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,prc,spot,div,ext,prcExtFrac:ext>0?(prc+allyPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(prcRaw-prc),prcRaw,allyRaw};
 }
 function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors','strike'].includes(lid))?1.1:1)*MOB[S.mob].line}
-function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)}
+function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)}
 function lineName(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain;return c*lineMultOf(lid)}
 
 function production(commit){
@@ -1538,6 +1592,11 @@ const HIST=[
  {fac:['US'],w0:0,t:'Beijing bans gallium, germanium and antimony exports to the US (Dec 2024)',fx:()=>{for(const id of ['gallium','germanium','antimony'])S.cut[id]=.5},c:'truce'}, // transshipment and stocks kept about half flowing (assumption)
  {w0:weekOf(2025,3,4),t:'China puts heavy rare earths under export licensing (Apr 2025)',fx:()=>{S.cut.hree=.4}},
  {fac:['US'],w0:weekOf(2025,5,13),w1:weekOf(2025,5,24),t:'Twelve-Day War: more than 150 THAAD and ~80 SM-3 interceptors fired defending Israel',use:{interceptors:250},c:'csisday12,csislast'},
+ {fac:['US'],w0:weekOf(2025,4,22),t:'FCC bars test labs controlled by foreign adversaries from certifying devices (May 2025)',fx:()=>{S.ic.icLabs=true},c:'badlabs'},
+ {fac:['US'],w0:weekOf(2025,11,22),t:'FCC adds all foreign-made drones and critical drone components to the Covered List (22 Dec 2025)',fx:()=>{S.ic.icDrones=true},c:'fccuas'},
+ {fac:['US'],w0:weekOf(2026,6,15),t:'FCC closes the component loophole: devices with parts from Covered List firms are barred too (2026)',fx:()=>{S.ic.icParts=true},c:'fccparts'},
+ {fac:['US'],w0:weekOf(2026,6,28),t:'FCC adds foreign-made power inverters and advanced robots to the Covered List (Jul 2026)',fx:()=>{S.ic.icGrid=true},c:'fccinv'},
+ {fac:['US'],w0:weekOf(2026,8,3),t:'Section 232 tariffs on imported drones take effect (3 Sep 2026); drone parts follow on 9 Feb 2027',fx:()=>{S.ic.ic232=true},c:'dr232'},
  {fac:['US'],w0:weekOf(2025,10,10),t:'Beijing suspends its gallium, germanium and antimony ban for a year (Nov 2025)',fx:()=>{for(const id of ['gallium','germanium','antimony'])S.cut[id]=1;S.truce=true},c:'truce'},
  {fac:['US'],w0:weekOf(2026,1,28),w1:weekOf(2026,3,7),t:'Operation Epic Fury (from 28 Feb 2026): the 39-day air and missile campaign against Iran uses ~2,150 long-range strike missiles and ~1,950 interceptors (CSIS ranges, midpoints)',use:{strike:2150,interceptors:1950},c:'epicfury,csislast,twzstock'},
 ];
@@ -1564,7 +1623,7 @@ function endHistory(quiet){ // quiet: the instant run at game start, no handover
 }
 const REPLAY_MS=[0,180,90,45,20],REEL_HOLD=2400;
 // during the replay you can look at anything, but not act
-const REPLAY_LOCK=new Set(['ct','ctgo','repro','cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
+const REPLAY_LOCK=new Set(['ic','ct','ctgo','repro','cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
 // observed or derived 2025–26 values the replay should land near
 const BACKTEST=[
  {fac:'US',n:'US 155mm output, March 2026',kind:'check',obs:'36,000 rounds a month (DoD IG); 40,000 in mid-2025 (Army)',lo:30000,hi:42000,v:r=>r.mar26.out.shells/12,f:v=>fmtN(v)+'/mo',c:'dodig,army40k'},
@@ -1613,9 +1672,10 @@ function obsChance(o,def){
   if(o.layer==='PRIME')c*=Math.max(.2,S.lev/60);
   const nf=def.t.node?(S.nflags[def.t.node]||{}):{};if(o.layer==='LABOR'&&nf.know)c*=.6;if(o.layer==='QUAL'&&nf.test)c*=.5;if(o.layer==='GRID'&&nf.power)c*=.3;
   if(o.id==='dump'&&def.tags.includes('smelter')&&passed('tariffExempt'))c*=1.4;
+  c*=icObsMult(o,def);
   return Math.min(1,c);
 }
-function waitMult(o){let m=1;if(o.wm)for(const r in o.wm)if(active(r))m*=o.wm[r];if(o.layer==='QUAL'&&carveOn('cvQual'))m*=.6;return m}
+function waitMult(o){let m=1;if(o.wm)for(const r in o.wm)if(active(r))m*=o.wm[r];if(o.layer==='QUAL'&&carveOn('cvQual'))m*=.6;if(o.layer==='QUAL'&&icOn('icLabs'))m*=1.1;return m}
 function optP(o,opt){let p=opt.p??1;if(opt.grant){if(passed('dpaFund'))p+=.3;if(carveOn('cvDPA3'))p+=.4}return Math.min(1,p)}
 function optOk(opt){return (!opt.req||passed(opt.req))&&(opt.pc||0)<=S.pc&&(opt.$||0)<=S.budget+1e-9}
 /* ---------- contracting: who builds it, on what terms ---------- */
@@ -1653,6 +1713,8 @@ function projCost(def){
   c*=1+.25*(S.built[def.id]||0);
   if(S.fac==='EU'&&passed('asap')&&(def.tags.includes('energetic')||def.t.line==='shells'))c*=.7;
   for(const m of S.costMods)c*=m.mult;
+  if(icOn('ic232')&&droneRel(def))c*=.85; // onshoring program: duty-free equipment for new US drone plants
+  if(icOn('icGrid')&&['mod','power'].includes(def.kind))c*=1.1;
   return c;
 }
 const slotsUsed=()=>S.projects.filter(p=>!p.inh).length;
@@ -1752,7 +1814,7 @@ function projectsTick(){
     p.prog+=rate;if(p.prog>=p.dur[p.stage]){p.stage++;enterStage(p)}
   }
 }
-function opsMatch(o,pl){const def=PD[pl.def];if(o.kind&&o.kind!==pl.kind)return false;return !o.tags||o.tags.some(t=>def.tags.includes(t)||t===pl.target)}
+function opsMatch(o,pl){const def=PD[pl.def];if(o.icOff&&icOn(o.icOff))return false;if(o.kind&&o.kind!==pl.kind)return false;return !o.tags||o.tags.some(t=>def.tags.includes(t)||t===pl.target)}
 function plantsTick(){
   for(const pl of S.plants){
     const k=pl.target,kn=S.know[k];
@@ -1837,6 +1899,7 @@ function homeTick(lastOut){
   if(S.mob>0&&S.urg<MOB[S.mob].urg-15){if(++S.mobLow>=12&&!S.queue.some(q=>q.ev==='mobFatigue')){queueEvent('mobFatigue');S.mobLow=0}}else S.mobLow=0;
   if(nPrio.length&&rand()<.006*nPrio.length*(.5+S.strain/50)&&!S.queue.some(q=>q.ev==='diversion')){S._div=nPrio[Math.floor(rand()*nPrio.length)];queueEvent('diversion')}
   if(S.strain>=80&&!S.strainHit){S.strainHit=true;queueEvent('strainCrisis')}if(S.strain<60)S.strainHit=false;
+  icTick();
   S.spot.forEach(x=>x.left--);S.spot=S.spot.filter(x=>x.left>0);
   for(const lid in S.fw){const f=S.fw[lid];if(S.w>=f.due){const got=lastOut[lid]?.n||0,r=got/f.target;S.queue.push({sys:'fw',lid,r});S.pc+=r>=.7?10:-20;if(r<.7)S.urg+=0;delete S.fw[lid]}}
   if(S.safeLeft>0&&S.w%13===0){const a=Math.min(1.25,S.safeLeft);S.safeLeft-=a;S.budget+=a;log(`SAFE tranche disbursed: +${money(a)}.`,'good')}
@@ -2267,6 +2330,14 @@ function readyBody(){
    Every [c:id] marker in game text renders as a numbered link to this list.
    Claims without a marker come from earlier research and were not re-checked in the latest audit. */
 const CITES=[
+ // Import controls
+ {id:'fccuas',g:'Import controls',t:'FACT SHEET: FCC Updates Covered List to Include Foreign UAS',pub:'Federal Communications Commission',d:'Dec 2025',url:'https://docs.fcc.gov/public/attachments/DOC-416839A1.pdf',use:'All foreign-produced drones and UAS critical components barred from new equipment authorizations from 22 Dec 2025; earlier authorizations continue.'},
+ {id:'fccuasx',g:'Import controls',t:'FCC Issues Exemptions, Clarifications for Sweeping Prohibition of Foreign-Made Drones',pub:'Wiley',d:'2026',url:'https://www.wiley.law/alert-FCC-Issues-Exemptions-Clarifications-for-Sweeping-Prohibition-of-Foreign-Made-Drones',use:'Exemptions run through Blue UAS and Buy American compliance and DoW determinations; allied-produced drones are not broadly exempt.'},
+ {id:'dr232',g:'Import controls',t:'Trump Administration Imposes Section 232 Tariffs on Drones and Their Parts',pub:'Wiley',d:'Aug 2026',url:'https://www.wiley.law/alert-Trump-Administration-Imposes-Section-232-Tariffs-on-Drones-and-Their-Parts',use:'13 Aug 2026 proclamation: tariffs from 3 Sep 2026 (25% on most drones; 100% on large or thermal drones and critical parts), listed components from 9 Feb 2027; duty-free onshoring program for new US drone plants.'},
+ {id:'fccparts',g:'Import controls',t:'Report and Order closing the Covered List component loophole (FCC 26-50)',pub:'Federal Communications Commission',d:'2026',url:'https://docs.fcc.gov/public/attachments/FCC-26-50A1.pdf',use:'Devices with logic-bearing parts from Covered List entities barred from new authorizations.'},
+ {id:'badlabs',g:'Import controls',t:'FCC bars test labs and certification bodies controlled by foreign adversaries',pub:'Federal Communications Commission',d:'May 2025',url:'https://docs.fcc.gov/public/attachments/DOC-414369A1.pdf',use:'Foreign-adversary-controlled labs barred from the equipment authorization program; withdrawals began Sep 2025.'},
+ {id:'fccinv',g:'Import controls',t:'FCC Adds Foreign-Produced Power Inverters and Advanced Robotic Devices to the Covered List',pub:'Latham & Watkins',d:'Jul 2026',url:'https://www.lw.com/en/insights/fcc-adds-foreign-produced-power-inverters-and-advanced-robotic-devices-to-the-covered-list',use:'New foreign inverters and mobile robots barred from authorization (28 Jul 2026), citing remote-disablement and data risks.'},
+ {id:'fccrevoke',g:'Import controls',t:'FCC Expands Restrictions on Covered List Equipment and Supply Chains',pub:'Cooley',d:'Jul 2026',url:'https://www.cooley.com/news/insight/2026/2026-07-29-fcc-expands-restrictions-on-covered-list-equipment-and-supply-chains',use:'June 2026 (DA 26-635): continued import and marketing of equipment listed in 2024 or earlier prohibited. The power exists; it has not been applied to drones.'},
  // Munitions & energetics
  {id:'dodig',g:'Munitions & energetics',t:'Evaluation of the Army’s 155-mm artillery production ramp (DOWIG-2026-095)',pub:'DoD Office of Inspector General',d:'Jul 2026',url:'https://media.defense.gov/2026/Jul/10/2003960034/-1/-1/1/DOWIG-2026-095_REDACTED_FINAL%20SECURE.PDF',use:'US 155mm output 14,000 → 36,000 rounds/month (Mar 2026) vs 100,000 goal; Mesquite produced no usable metal parts; 71,000/month without Mesquite.'},
  {id:'bdig',g:'Munitions & energetics',t:'Army well short of 155mm ammo production goal, Texas facility in the spotlight',pub:'Breaking Defense',d:'Jul 2026',url:'https://breakingdefense.com/2026/07/army-well-short-of-155mm-ammo-production-goal-texas-facility-in-the-spotlight/',use:'IMT Ingersoll (Canada) near 10,000/month against a 15,000 target.'},
@@ -2369,6 +2440,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
  ['Starting inventories','Sourced where marked: US interceptor and strike stocks derived from CSIS 2026 estimates; ship counts from the Navy; aircraft from IISS; PLAN and PLARF counts from the CMPR; Russian missiles from Ukrainian intelligence. US and European shell stocks, European missile and air-defence stocks, Chinese interceptors and shells, and all drone stocks are estimates. Enemy ranges are listed above.'],
  ['Scenarios','Required weeks (Taiwan 3–8, central 4; eastern flank 8–26, central 12), launch rates, interceptors per threat, the share of salvos at defended targets, missiles per PLAN ship, anchored shell/drone/strike burns, allies’ shares, category weights, and the harmonic-mean score are assumptions with the ranges shown.'],
  ['Platform requirement','Assumes the 2025 platform balance sufficed — no attack came, and CSIS’s base case found the 2026 force could defeat an invasion at very high cost — and scales it with the enemy’s growth in available platforms.'],
@@ -2576,6 +2648,7 @@ function needCard(c,R,pj){
       h+=`<div class="nr" data-tip="${THEATERS[t]}: available ${LINES[c].u} against the force they'd meet"><span>Match ${E.flag}</span>${nb(Math.min(v,1.5)/1.5*100,v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a',mk(66.67))}<span class="v">${pct(v)}</span></div>`}}
   const oMax=Math.max(o.yr,o.capYr,rq.req)*1.08||1;
   h+=`<div class="nr" data-tip="Output ${fmtN(o.yr)}/yr · capacity ${fmtN(o.capYr)}/yr · needed ${fmtN(rq.req)}/yr to reach the requirement by ${fmtDate(by[1])}"><span>Build</span><div class="nb"><i style="width:${o.capYr/oMax*100}%;background:#34404c"></i><i style="width:${o.yr/oMax*100}%;background:${o.yr>=rq.req?'#5f9e4a':'#2f62a0'}"></i>${rq.req>0?mk(rq.req/oMax*100,'req'):''}</div><span class="v"><b>${fmtN(o.yr)}</b>/yr · need ${rq.req>0?fmtN(rq.req):'—'}</span></div>`;
+  if(c==='drones'&&S.fac==='US'){const o=S.icOnshore||0;h+=`<div class="nr" data-tip="How much of the commercial drone supply chain has been rebuilt in the US behind the Covered List${icOn('ic232')?' and the Section 232 tariffs':''}. Lift the controls and it decays."><span>Onshore 🛂</span>${nb(o*100,'#8a7440')}<span class="v">${pct(o)}${icOn('icDrones')?'':' · <span class="red">unprotected</span>'}</span></div>`}
   const yr=w=>dateOf(w).getFullYear();
   h+=`<div class="ngap"><span>${need<=0?'':have>=need?'<span class="green">Covered today</span>':hit?`Gap closes <b class="${hit.w<=by[1]?'gold':'red'}">${yr(hit.w)}</b>`:'<span class="red">Gap never closes at this rate</span>'}</span><span class="dim">${by[0]?`⚔ ${by[3].replace(/^the /,'')} ${yr(by[1])}`:''}</span></div>`;
   if(o.bott)h+=`<div class="wchain">⛓ ${o.chain.map(id=>`<span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`;
@@ -2673,6 +2746,7 @@ function renderGame(){
    <div class="sect"><span>Mobilization</span><span>${MOB[S.mob].d}</span></div>
    <div class="mob">${MOB.map((m,i)=>`<button class="btn ${S.mob===i?'on':''}" data-a="mob" data-l="${i}" ${i>S.mob&&(S.urg<m.urg||S.pc<15*(i-S.mob))?'disabled':''} title="Lines ×${m.line}, domestic plants ×${m.dom}; upkeep ${m.upkeep} PC/wk; strain +${m.strain}/wk. Needs urgency ≥${m.urg}.">${m.n}<br><span class="sub">urg ≥${m.urg}</span></button>`).join('')}</div>
    ${F().aid&&!S.ceasefire?`<div class="sect"><span>Aid to Ukraine</span><span>${fmtN((F().aid.shells||0)*S.aidLvl)} shells/yr leave your stocks</span></div><div class="mob">${[[1,'Full'],[.5,'Half'],[0,'Stop']].map(([v,l])=>`<button class="btn ${S.aidLvl===v?'on':''}" data-a="aid" data-v="${v}" ${v<S.aidLvl&&S.pc<Math.round(10*(S.aidLvl-v)/.5)?'disabled':''} data-tip="${l} aid: ${fmtN(F().aid.shells*v)} shells and ${fmtN(F().aid.interceptors*v)} interceptors a year to Ukraine.${v<S.aidLvl?` Cutting costs ${Math.round(10*(S.aidLvl-v)/.5)} PC.`:''}">${l}</button>`).join('')}</div>`:''}
+   ${icPanel()}
    <div class="sect"><span>DPA priority diversions (${nPrio.length})</span><span>${nPrio.length?'':'click a node to divert'}</span></div>
    ${nPrio.map(id=>`<div class="prow"><span class="linkn" style="color:#8db4e0" data-a="node" data-n="${id}">${ND[id].n}</span><button class="btn sm" data-a="prio" data-n="${id}">release</button></div>`).join('')}
    <div class="sect"><span>Emergency carve-outs</span><span>fast · temporary · fragile</span></div>`;
@@ -2782,6 +2856,7 @@ function whyOff(b){
     case 'whip':return S.bill?.whips>=3?'Every vote that can be whipped has been.':needPC(10);
     case 'spot':return needM(spotCost(d.n));
     case 'prio':return needPC(5);
+    case 'ic':{const c=ICD[d.c],on=icOn(c.id);if(!on&&c.req&&!icOn(c.req))return `Needs “${ICD[c.req].n}” in force first.`;return needPC(c.pc[on?1:0])}
     case 'repro':return needPC(reproCost());
     case 'ctgo':{const def=PD[S.ct.id];if(slotsUsed()>=S.slots)return busy();return needM(ctCost(def,S.ct))}
     case 'up':case 'lineup':return 'Already first in line.';
@@ -2847,6 +2922,7 @@ document.addEventListener('pointerdown',e=>{
     case 'prio':togglePrio(b.dataset.n);break;
     case 'spot':spotBuy(b.dataset.n);break;
     case 'repro':reprogram();break;
+    case 'ic':toggleIC(b.dataset.c);break;
     case 'fw':framework(b.dataset.l);break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){if(o.pc)S.pc-=o.pc;if(o.$)S.budget-=o.$;o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;break;
