@@ -206,6 +206,16 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .rates{margin:4px 0}.rr{display:grid;grid-template-columns:62px 1fr 74px;gap:6px;align-items:center;font-size:11.5px}
 .rb{height:9px;background:#e2d6b6;border:1px solid #cbbd95;position:relative}.rb i{position:absolute;left:0;top:0;bottom:0}
 .rr b{text-align:right}
+/* contracting, preview, pools */
+.ctgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px;margin:4px 0 6px}
+.ctopt{display:flex;flex-direction:column;gap:4px;text-align:left;padding:7px 9px}.ctopt.on,.ctopt.on:hover{background:#3a3020!important;color:var(--brass2);outline:2px solid #8a7440}
+.fx{display:flex;flex-wrap:wrap;gap:3px}.fx span{font:11px "Segoe UI",system-ui,sans-serif;padding:0 5px;border-radius:2px}.fx .up{background:#cfe3bf;color:#24401c}.fx .dn{background:#efc6bd;color:#6e2219}
+.pvbox{background:#1d1b15;color:#ece4cc;padding:2px 0;font:12px/1.4 "Segoe UI",system-ui,sans-serif}.paper .pvbox{padding:8px 10px;border:1px solid var(--brass)}
+.pvbox .th{font-weight:700;color:var(--brass2)}.pvr{display:grid;grid-template-columns:1fr 78px 108px;gap:6px;padding:1px 0}.pvr>span:nth-child(n+2){text-align:right}
+.pvhd{font-size:9.5px;color:#9a968a;text-transform:uppercase;letter-spacing:.06em}.pvc{font-size:11px;color:#bdb6a0;margin-top:2px}
+.pools{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:6px 10px;border-bottom:1px solid #2e2c22;background:#191b16}
+.pool{display:grid;grid-template-columns:18px 1fr 34px;gap:5px;align-items:center;font-size:11px}.pool b{text-align:right;color:#cfc6ad}.pool.over b{color:#e49a8e}.pool .pic{text-align:center}
+#tip{max-width:370px}
 /* binding constraints */
 .cstrip{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:6px 8px;margin:4px 0 8px;background:#e6dbbd;border:1px solid #cbbd95;font:12.5px "Segoe UI",system-ui,sans-serif}
 .cstrip>span{display:flex;align-items:center;gap:6px}.cstrip .bind{color:#8a1f15;background:#f0b3a8;padding:2px 6px;margin:-2px -6px;border-radius:2px}
@@ -997,6 +1007,8 @@ const OBSTACLES=[
   o:[{l:'Accept the dependence',adv:.45},{l:'Qualify a non-PRC precursor',$:.2,wait:26},{l:'Demand the supplier switch',pc:8,p:.5,fail:{adv:.45}}]},
 ];
 OBSTACLES.push(
+ {id:'reprice',layer:'PRIME',stage:'event',chance:0,n:'Request for Equitable Adjustment',t:"Fixed price, they said. The contractor says the delay changed the scope, and it will not keep building at a loss.",
+  o:[{l:'Pay the adjustment',$:.3},{l:'Hold the line',wait:16,p:.7,fail:{wait:16,cancel:1},tip:'30% chance the contractor walks away.'},{l:'Re-baseline the schedule',wait:30}]},
  {id:'costOverrun',layer:'FISCAL',stage:'event',chance:0,n:'Cost Overrun',t:"The estimate at completion is up 30%. The contractor will keep building — if someone pays.",
   o:[{l:'Pay the overrun',$:.4},{l:'Descope the plant',gain:.8},{l:'Wait for a reprogramming',wait:20}]},
  {id:'reapply',layer:'PERMIT',stage:'event',chance:0,n:'Permit Vacated: Re-Apply',t:"The general permit this project relied on was vacated. It must now re-apply individually, starting with a fresh public notice.",
@@ -1505,16 +1517,17 @@ function snapshot(){const need={};for(const c in LINES)need[c]=needOf(c).n;const
   const sc=t=>S._sc?.[t],g=(t,m)=>sc(t)?.[m]?.score??null,en={};for(const t of ['pac','eu']){const E=S.enemy[t];en[t]={};for(const c in LINES)en[t][c]=estInv(E,c)}
   return {w:S.w,pac:g('pac','est'),eu:g('eu','est'),opt:{pac:g('pac','opt'),eu:g('eu','opt')},pes:{pac:g('pac','pes'),eu:g('eu','pes')},tru:{pac:g('pac','true'),eu:g('eu','true')},inv:{...S.inv},need,ready:{...S.ready},...(S.lastOut?{prod,name}:{}),en}}
 // forward projection at a fixed output, enemy and allies evolving (central estimate + range)
-function project(prodYr,lite){ // lite: skip the Monte Carlo band
+function project(prodYr,lite,alt){ // alt: {w,prod} switches output at week w // lite: skip the Monte Carlo band
   const inv={...S.inv},al={...S.allied},E={};for(const t of ['pac','eu']){const X=S.enemy[t];E[t]={...X,inv:{...X.inv}}}
   const out=[],f=F();
   for(let w=S.w;w<=END_W;w++){
+    const P=alt&&w>=alt.w?alt.prod:prodYr;
     if((w-S.w)%4===0||w===END_W){const row={w,inv:{...inv},need:{},bt:{},opt:{},pes:{},en:{pac:{},eu:{}}};
-      const ev={};for(const t of S.theaters){const ctx={inv,prod:prodYr,E:E[t],w,al};ev[t]=scenEval(t,'est',ctx);row[t]=ev[t].score;if(!lite){const b=band(t,ctx);row.opt[t]=b.opt.score;row.pes[t]=b.pes.score}}
+      const ev={};for(const t of S.theaters){const ctx={inv,prod:P,E:E[t],w,al};ev[t]=scenEval(t,'est',ctx);row[t]=ev[t].score;if(!lite){const b=band(t,ctx);row.opt[t]=b.opt.score;row.pes[t]=b.pes.score}}
       for(const c in LINES){let b=0,bt=null;for(const t of S.theaters){const n=ev[t].needInv[c];if(n>b){b=n;bt=t}}row.need[c]=b;row.bt[c]=bt}
       for(const t of ['pac','eu'])for(const c in LINES)row.en[t][c]=estInv(E[t],c);
       out.push(row)}
-    for(const c in LINES)inv[c]=Math.max(0,inv[c]+prodYr[c]/52-inv[c]*retRate(c)/52-(aidOn()?(f.aid?.[c]||0)*S.aidLvl/52:0));
+    for(const c in LINES)inv[c]=Math.max(0,inv[c]+P[c]/52-inv[c]*retRate(c)/52-(aidOn()?(f.aid?.[c]||0)*S.aidLvl/52:0));
     for(const t of ['pac','eu']){enemyStep(E[t],w);al[t]*=Math.pow(1+f.alliedG[t],1/52)}
   }
   return out;
@@ -1551,7 +1564,7 @@ function endHistory(quiet){ // quiet: the instant run at game start, no handover
 }
 const REPLAY_MS=[0,180,90,45,20],REEL_HOLD=2400;
 // during the replay you can look at anything, but not act
-const REPLAY_LOCK=new Set(['repro','cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
+const REPLAY_LOCK=new Set(['ct','ctgo','repro','cat','launch','opt','ops','intro','whip','carve','mob','aid','prio','spot','fw','up','dn','lineup','spares','evopt']);
 // observed or derived 2025–26 values the replay should land near
 const BACKTEST=[
  {fac:'US',n:'US 155mm output, March 2026',kind:'check',obs:'36,000 rounds a month (DoD IG); 40,000 in mid-2025 (Army)',lo:30000,hi:42000,v:r=>r.mar26.out.shells/12,f:v=>fmtN(v)+'/mo',c:'dodig,army40k'},
@@ -1605,6 +1618,35 @@ function obsChance(o,def){
 function waitMult(o){let m=1;if(o.wm)for(const r in o.wm)if(active(r))m*=o.wm[r];if(o.layer==='QUAL'&&carveOn('cvQual'))m*=.6;return m}
 function optP(o,opt){let p=opt.p??1;if(opt.grant){if(passed('dpaFund'))p+=.3;if(carveOn('cvDPA3'))p+=.4}return Math.min(1,p)}
 function optOk(opt){return (!opt.req||passed(opt.req))&&(opt.pc||0)<=S.pc&&(opt.$||0)<=S.budget+1e-9}
+/* ---------- contracting: who builds it, on what terms ---------- */
+const BUILDERS={prime:{n:'Incumbent prime',ic:'🏛'},entrant:{n:'New entrant',ic:'🚀'}};
+const CONTRACTS={cp:{n:'Cost-plus',ic:'🧾'},fp:{n:'Fixed-price',ic:'🔒'},my:{n:'Multiyear order',ic:'📦'}};
+const needsContract=def=>!def.ally&&(!def.kind||def.kind==='cap');
+const builderFixed=def=>def.tags.includes('entrant')?'entrant':def.tags.includes('prime')?'prime':null;
+const ctDefault=def=>needsContract(def)?{b:builderFixed(def)||'prime',k:'cp'}:null;
+function ctTerms(def,ct){
+  const t={costM:1,durM:[1,1,1,1,1,1],lm:{},y0:0,rampM:1,lev:0};if(!ct)return t;const free=!builderFixed(def);
+  if(free&&ct.b==='prime'){t.costM*=1+Math.max(0,S.lev-50)/200;t.lm.QUAL=.6;t.lm.PRIME=1.5;t.lev=3}
+  if(free&&ct.b==='entrant'){t.costM*=.8;t.durM[3]*=.85;t.durM[4]*=1.3;t.lm.QUAL=1.6;t.lm.PRIME=0;t.lev=-2}
+  if(ct.k==='cp')t.durM[1]*=.7;
+  if(ct.k==='fp'){t.costM*=.88;t.durM[1]*=1.3}
+  if(ct.k==='my'){t.costM*=1.25;t.lm.MARKET=.25;t.y0=.15;t.rampM=1.5}
+  return t}
+const ctCost=(def,ct)=>projCost(def)*ctTerms(def,ct).costM;
+const ctDur=(def,ct)=>{const t=ctTerms(def,ct);return def.dur.map((d,i)=>Math.round(d*t.durM[i]))};
+/* ---------- shared national bottlenecks: projects in the same stage queue for the same scarce things ---------- */
+const POOLS={
+ xfmr:{n:'Large power transformers',ic:'⚡',stage:'build',layer:'GRID',tags:['greenfield','smelter','energetic','power'],cap:{US:4,EU:2}},
+ tools:{n:'Heavy machine tools & presses',ic:'⚙',stage:'build',layer:'EXPERT',tags:['metal','heavy','line','assembly','refine'],cap:{US:8,EU:3}},
+ trades:{n:'Skilled trades',ic:'👷',stage:'build',layer:'LABOR',tags:['labor','shipyard','heavy','energetic','mine'],cap:{US:5,EU:3}},
+ ranges:{n:'Test ranges & qualification slots',ic:'🎯',stage:'qual',layer:'QUAL',tags:null,cap:{US:3,EU:2}},
+};
+function poolCap(k){let c=POOLS[k].cap[S.fac];
+  if(k==='trades'){if(passed('workforce'))c+=2;if(carveOn('cvHire'))c+=1}
+  if(k==='ranges'){c+=Object.values(S.nflags).filter(f=>f.test).length*.5;if(carveOn('cvQual'))c+=1}
+  return c}
+const poolsOf=def=>def.ally?[]:Object.keys(POOLS).filter(k=>!POOLS[k].tags||POOLS[k].tags.some(t=>def.tags.includes(t)));
+function poolState(){const o={};for(const k in POOLS){const P=POOLS[k],n=S.projects.filter(p=>STAGES[p.stage]===P.stage&&!p.obs.length&&poolsOf(PD[p.def]).includes(k)).length,cap=poolCap(k);o[k]={d:n,cap,f:n>cap?cap/n:1}}return o}
 function projCost(def){
   let c=def.cost;
   if(def.tags.includes('prime'))c*=1+(S.lev-50)/100;
@@ -1614,21 +1656,22 @@ function projCost(def){
   return c;
 }
 const slotsUsed=()=>S.projects.filter(p=>!p.inh).length;
-function canStart(def){if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&slotsUsed()<S.slots&&S.budget>=projCost(def)-1e-9}
+function canStart(def,cost=projCost(def)){if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&slotsUsed()<S.slots&&S.budget>=cost-1e-9}
 function projName(p){return p.nm||PD[p.def].n}
 function projGain(def,gm=1){return def.t.node?def.gain*S.nodes[def.t.node].scale*gm:def.gain*gm}
-function startProject(id){
-  const def=PD[id];if(!canStart(def))return;
-  const c=projCost(def);S.budget-=c;S.built[id]=(S.built[id]||0)+1;
-  const p={uid:uidN++,def:id,stage:0,prog:0,dur:[...def.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:c};
+function startProject(id,ct){
+  const def=PD[id],c=ct?ctCost(def,ct):projCost(def);if(!canStart(def,c))return;
+  S.budget-=c;S.built[id]=(S.built[id]||0)+1;
+  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):[...def.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:c};
+  if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
-  log(`Program office stood up: ${def.n} (${money(c)}).`);
+  log(`Program office stood up: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
 }
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length)return complete(p);
   p.prog=0;p.sched=[];const st=STAGES[p.stage],D=p.dur[p.stage],def=PD[p.def];
-  if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(c>0&&rand()<c)p.sched.push({id:o.id,at:Math.floor(rand()*D)})}
+  if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(c>0&&rand()<c)p.sched.push({id:o.id,at:Math.floor(rand()*D)})}
   p.sched.sort((a,b)=>a.at-b.at);
 }
 function notify(html,cls){toast(html,cls);if(S.autoPause&&!S.sim)S.speed=0}
@@ -1636,6 +1679,9 @@ function spawnObs(p,id,front){
   const od=OD[id],inst={id,wait:0};front?p.obs.unshift(inst):p.obs.push(inst);
   S.ledger[od.layer].n++;log(`⛔ ${projName(p)}: ${V(od.n)}`,'bad');
   notify(`⛔ <b>${V(od.n)}</b><br><span class="dim">${projName(p)}</span>`);
+  if(p.ct&&!S.histMode&&od.stage!=='event'){ // the contract decides who eats the delay
+    if(p.ct.k==='cp'){const x=.06*p.price;if(S.budget>=x){S.budget-=x;p.spent+=x;log(`🧾 Cost-plus: ${projName(p)} bills ${money(x)} for the delay.`,'bad')}else if(!p.obs.some(i=>i.id==='costOverrun'))spawnObs(p,'costOverrun')}
+    if(p.ct.k==='fp'&&rand()<.22&&!p.obs.some(i=>i.id==='reprice'))spawnObs(p,'reprice')}
 }
 function complete(p){
   const def=PD[p.def];const plan=(p.dur||[]).reduce((a,b)=>a+b,0);
@@ -1659,8 +1705,8 @@ function complete(p){
     toast(`🤝 <b>${projName(p)}</b> online`,'good');
   } else {
     const kind=def.t.node?'node':'line',target=def.t.node||def.t.line,kn=S.know[target];
-    const y0=Math.min(.4,.05+kn*.003);
-    S.plants.push({uid:p.uid,def:p.def,nm:projName(p),kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w});
+    const tm=ctTerms(def,p.ct),y0=Math.min(.55,.05+kn*.003+tm.y0);
+    S.plants.push({uid:p.uid,def:p.def,nm:projName(p),kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w,rampM:tm.rampM});
     log(`🎗 Ribbon cutting: ${projName(p)}${p.inh?'':' after '+yrs(S.w-p.started)}. Output starts at ${pct(y0)} of nameplate.`,'good');
     toast(`🎗 <b>${projName(p)}</b> built<br><span class="dim">Ramping from ${pct(y0)} of nameplate</span>`,'good');
   }
@@ -1693,6 +1739,7 @@ function chooseOps(uid,k){
   const w=Math.round(eff.wait||0);if(w>0){pl.issue.wait=w;pl.issue.total=w;pl.issue.label=V(opt.l)}else pl.issue=null;
 }
 function projectsTick(){
+  const PS=S.histMode?null:poolState();
   for(const p of [...S.projects]){
     if(p.obs.length){const inst=p.obs[0],od=OD[inst.id];S.ledger[od.layer].wk++;
       if(inst.wait>0&&--inst.wait<=0){if(inst.after==='cancel'){cancelProject(p,'mothballed');continue}p.obs.shift();log(`✔ Cleared: ${V(od.n)} (${projName(p)})`)}continue}
@@ -1700,6 +1747,8 @@ function projectsTick(){
     if(due){spawnObs(p,due.id);continue}
     let rate=1;if(STAGES[p.stage]==='approp'&&S.cr>0){rate=passed('crAnomaly')?.5:0;S.ledger.FISCAL.wk+=1-rate}
     for(const g of S.gmods)if(g.stages.includes(STAGES[p.stage])&&!(g.dom&&PD[p.def].ally)){S.ledger[g.layer].wk+=rate*(1-g.mult);rate*=g.mult}
+    p.qf=1;if(PS){const st=STAGES[p.stage];for(const k of poolsOf(PD[p.def]))if(POOLS[k].stage===st&&PS[k].f<p.qf){p.qf=PS[k].f;p.qk=k}
+      if(p.qf<1){S.ledger[POOLS[p.qk].layer].wk+=rate*(1-p.qf);rate*=p.qf}}
     p.prog+=rate;if(p.prog>=p.dur[p.stage]){p.stage++;enterStage(p)}
   }
 }
@@ -1708,7 +1757,7 @@ function plantsTick(){
   for(const pl of S.plants){
     const k=pl.target,kn=S.know[k];
     if(pl.issue){S.ledger[OPSD[pl.issue.id].layer].wk++;if(pl.issue.wait>0&&--pl.issue.wait<=0){log(`✔ Resolved: ${OPSD[pl.issue.id].n} (${pl.nm})`);pl.issue=null}continue}
-    pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*(.006+kn*.0003));
+    pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*(.006+kn*.0003)*(pl.rampM||1));
     S.know[k]=Math.min(95,kn+(pl.full?.01:.05));
     if(!pl.full&&pl.yield>=.9){pl.full=true;log(`🏭 ${pl.nm} reaches full-rate production after ${yrs(S.w-pl.start)} of ramp-up.`,'good')}
     let ch=.013*(1.3-kn/100)*(pl.full?.35:1);if((S.nflags[k]||{}).know)ch*=.7;if(passed('workforce')||carveOn('cvHire'))ch*=.85;
@@ -1933,6 +1982,53 @@ function constraintStrip(cheapest){const nf=nextFunds(),used=slotsUsed(),broke=i
   return `<div class="cstrip"><span class="${broke?'bind':''}">💰 <b>${money(S.budget)}</b> <span class="mini">next +${money(nf.amt)} on ${fmtDate(nf.w)}</span>
      <button class="pbtn sm" data-a="repro" ${S.pc>=reproCost()?'':'disabled'} data-tip="Move money from other accounts now. Each one this fiscal year costs more Political Capital.">${S.fac==='US'?'Reprogram':'Transfer'} +${money(REPRO)} · ${reproCost()} PC</button></span>
     <span class="${full?'bind':''}">🏗 <b>${used}/${S.slots}</b> offices busy</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
+/* ---------- launch preview: when it arrives, and what it does to each gap ---------- */
+function rampWeeks(kn,y0,rm){let y=y0,k=kn,w=0;while(y<.9&&w<520){y=Math.min(1,y+Math.max(.02,y)*(1-y)*(.006+k*.0003)*rm);k=Math.min(95,k+.05);w++}return w}
+function previewOf(def,ct){
+  const key=def.id+'|'+S.w+'|'+(ct?ct.b+ct.k:'')+'|'+S.plants.length+'|'+S.done.length;if(S._pvc?.k===key)return S._pvc.v;
+  const tm=ctTerms(def,ct),dur=ct?ctDur(def,ct):def.dur,build=dur.reduce((a,b)=>a+b,0)*slipF().f;
+  const tgt=def.t.node||def.t.line,kn=S.know[tgt]??40,isPlant=needsContract(def);
+  const wPlan=S.w+dur.reduce((a,b)=>a+b,0),ramp=isPlant?rampWeeks(kn,Math.min(.55,.05+kn*.003+tm.y0),tm.rampM):0,wOn=S.w+build,wFull=wOn+ramp;
+  // this week's output with the finished project at full rate
+  const R0=S._R||production(false),g=projGain(def);let undo=()=>{};
+  if(isPlant){const pl={kind:def.t.node?'node':'line',target:tgt,gain:g,yield:1,issue:null,full:true,adv:0};S.plants.push(pl);undo=()=>S.plants.splice(S.plants.indexOf(pl),1)}
+  else if(def.ally){const s=S.nodes[tgt];s.ally.amt+=g;undo=()=>{s.ally.amt-=g}}
+  else if(def.kind==='mod'||def.kind==='power'){const s=S.nodes[tgt],b0=s.base;s.base=def.kind==='mod'?(b0>1e-6?b0*1.15:s.scale*.05):b0*1.05;undo=()=>{s.base=b0}}
+  let R1;try{R1=production(false)}finally{undo()}
+  const p0={},p1={};for(const c in LINES){p0[c]=R0.out[c].yr;p1[c]=R1.out[c].yr}
+  const pj0=needsProj(R0),pj1=project(p0,true,{w:Math.round(wOn+ramp/2),prod:p1}),hitOf=(pj,c)=>pj.find(r=>r.need[c]>0&&r.inv[c]>=r.need[c]);
+  const rows=(def.t.line?[def.t.line]:endItemsOf(def.t.node)).map(c=>({c,d:p1[c]-p0[c],h0:hitOf(pj0,c),h1:hitOf(pj1,c),by:reqRate(c,pj0).by,chain:R1.out[c].bott?R1.out[c].chain:null}));
+  const ins=(def.t.node?ND[def.t.node].in:LINES[def.t.line].in).filter(i=>['short','cut'].includes(nodeStatus(R0.P[i])));
+  const v={wOn,wFull,wPlan,isPlant,rows,ins,R0};S._pvc={k:key,v};return v}
+function timelineSVG(v){const W=330,H=34,x0=S.w,X=w=>Math.min(W,Math.max(0,(w-x0)/(END_W-x0)*W)),yr=w=>dateOf(w).getFullYear();
+  const cr=(CRISES[S.fac]||[]).filter(c=>c[1]>S.w);
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:4px 0 2px;max-width:100%"><defs><linearGradient id="rmp"><stop offset="0" stop-color="#8a7440"/><stop offset="1" stop-color="#5f9e4a"/></linearGradient></defs>
+   <rect x="0" y="9" width="${W}" height="9" fill="#2c2b22"/><rect x="0" y="9" width="${X(v.wOn)}" height="9" fill="#6b6455"/>
+   ${v.wOn<END_W?`<rect x="${X(v.wOn)}" y="9" width="${Math.max(0,X(v.wFull)-X(v.wOn))}" height="9" fill="url(#rmp)"/><rect x="${X(v.wFull)}" y="9" width="${Math.max(0,W-X(v.wFull))}" height="9" fill="#5f9e4a"/>`:''}
+   ${v.wPlan<END_W&&v.wPlan<v.wOn-8?`<line x1="${X(v.wPlan)}" x2="${X(v.wPlan)}" y1="9" y2="18" stroke="#ece4cc" stroke-width="2" stroke-dasharray="2 1"><title>On plan: ${yr(v.wPlan)}</title></line>`:''}
+   ${cr.map(c=>`<line x1="${X(c[1])}" x2="${X(c[1])}" y1="5" y2="22" stroke="#e05a48" stroke-width="2"/><text x="${X(c[1])}" y="32" fill="#e8a090" font-size="9" text-anchor="middle">⚔ ${yr(c[1])}</text>`).join('')}
+   ${v.wOn<END_W?`<text x="${Math.min(W-70,X(v.wOn))}" y="7" fill="#dcc78e" font-size="9">${v.isPlant?'output':'online'} ${yr(v.wOn)}</text>`:`<text x="${W}" y="7" fill="#e8a090" font-size="9" text-anchor="end">not before 2037</text>`}
+   ${v.isPlant&&v.wFull<END_W&&X(v.wFull)-X(v.wOn)>60?`<text x="${W}" y="7" fill="#a8d48e" font-size="9" text-anchor="end">full rate ${yr(v.wFull)}</text>`:''}</svg>`}
+function previewHTML(def,ct){
+  const v=previewOf(def,ct),yr=w=>dateOf(w).getFullYear(),gap=(h,by)=>!h?'<span class="red">never</span>':h.w<=S.w?'<span class="green">now</span>':`<span class="${h.w<=by[1]?'gold':'red'}">${yr(h.w)}</span>`;
+  const rows=v.rows.slice().sort((a,b)=>b.d/LINES[b.c].k-a.d/LINES[a.c].k).slice(0,4);
+  let h=`<div class="pvbox"><div class="th">${def.n}</div>${timelineSVG(v)}`;
+  if(rows.length)h+=`<div class="pvr pvhd"><span></span><span>output</span><span>gap closes</span></div>`+rows.map(r=>{const moved=r.d>LINES[r.c].k*.002;
+    return `<div class="pvr"><span>${LINES[r.c].n}</span><span>${moved?`<b class="green">+${fmtN(r.d)}</b>/yr`:'<span class="dim">no change</span>'}</span><span>${gap(r.h0,r.by)} → ${gap(r.h1,r.by)}</span></div>${!moved&&r.chain?`<div class="pvc">⛓ held back by ${r.chain.map(i=>ND[i].n).join(' ← ')}</div>`:''}`}).join('');
+  else if(def.t.node&&def.kind)h+=`<div class="pvc">${leverEffect(def,v.R0.P)}</div>`;
+  if(v.ins.length)h+=`<div class="pvc red">⚠ Inputs short now: ${v.ins.map(i=>`${ND[i].n} ${pct(Math.min(v.R0.P[i].cover,9.99))}`).join(', ')}</div>`;
+  const ps=poolsOf(def),st=poolState();if(ps.length)h+=`<div class="pvc">Queues: ${ps.map(k=>`<span class="${st[k].d>=st[k].cap?'red':''}" title="${POOLS[k].n}">${POOLS[k].ic} ${st[k].d}/${fmt(st[k].cap,0)}</span>`).join(' · ')}</div>`;
+  return h+`</div>`}
+function contractHTML(){
+  const c=S.ct,def=PD[c.id],fixed=builderFixed(def),cost=ctCost(def,c),fx=a=>`<span class="fx">${a.map(([t,good])=>`<span class="${good?'up':'dn'}">${t}</span>`).join('')}</span>`;
+  const opt=(g,k,o,eff)=>`<button class="pbtn ctopt ${c[g]===k?'on':''}" data-a="ct" data-g="${g}" data-v="${k}"><b>${o.ic} ${o.n}</b>${fx(eff)}</button>`;
+  const prem=Math.max(0,S.lev-50)/200;
+  const bOpts=fixed?`<div class="mini">${BUILDERS[fixed].ic} ${BUILDERS[fixed].n} — this program is defined by who builds it.</div>`:`<div class="ctgrid">${opt('b','prime',BUILDERS.prime,[[`price +${pct(prem)}`,0],['qualification risk ×0.6',1],['prime leverage +3',0],['prime rent-seeking ×1.5',0]])}${opt('b','entrant',BUILDERS.entrant,[['price −20%',1],['builds 15% faster',1],['qualification 30% longer',0],['qualification risk ×1.6',0],['prime leverage −2',1]])}</div>`;
+  const kOpts=`<div class="ctgrid">${opt('k','cp',CONTRACTS.cp,[['award 30% faster',1],['every obstacle bills you +6%',0]])}${opt('k','fp',CONTRACTS.fp,[['price −12%',1],['award 30% slower',0],['contractor may demand re-pricing',0]])}${opt('k','my',CONTRACTS.my,[['price +25%',0],['market risk ×0.25',1],['starts 15 pts higher',1],['ramps 1.5× faster',1]])}</div>`;
+  return `<div class="paper wide"><div class="hd"><span class="ic">🖋</span>Award: ${def.n}<span style="margin-left:auto;font-size:13px">${def.t.node?ND[def.t.node].n:LINES[def.t.line].n}</span></div>
+   <div class="bd" style="font-size:13px"><div class="dsec"><h4>Who builds it</h4>${bOpts}</div><div class="dsec"><h4>Terms</h4>${kOpts}</div>
+   <div class="dsec"><h4>What you get</h4>${previewHTML(def,c)}</div></div>
+   <div class="ft"><button class="pbtn" data-a="ctgo" ${S.budget>=cost-1e-9&&slotsUsed()<S.slots?'':'disabled'}><b>Award · ${money(cost)}</b> <span class="mini">budget ${money(S.budget)}</span></button><button class="pbtn" data-a="ctback">Back</button></div></div>`}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
 function leversFor(id){return PROJECTS.filter(d=>facOk(d)&&d.t.node===id)}
@@ -2336,6 +2432,7 @@ function hoverAt(x,y){
     hovSvg=svg;svg.querySelector('.hov').innerHTML=`<line x1="${X(w)}" x2="${X(w)}" y1="${d.pt}" y2="${d.H-d.pb}" stroke="#2b241a" stroke-width=".9" opacity=".7"/>`+dots;
     showTip(`<div class="th">${fmtDate(Math.max(0,Math.round(w)))}${w>S.w+2?' · <i>projected</i>':''}</div>${m?`<div class="cr">⚔ ${m.t}</div>`:''}${rows.map(r=>r[1]).join('')||'<div class="tr dim">no data here</div>'}`,x,y);return}
   if(hovSvg){const g0=hovSvg.querySelector('.hov');if(g0)g0.innerHTML='';hovSvg=null}
+  const lb=S&&el.closest('[data-a=launch]');if(lb&&PD[lb.dataset.p]){const d=PD[lb.dataset.p];showTip((lb.classList.contains('off')?`<div class="cr">${whyOff(lb)}</div>`:'')+previewHTML(d,ctDefault(d)),x,y);return}
   const t=el.closest('[data-tip]');if(t){showTip(t.dataset.tip,x,y);return}
   tipEl.style.display='none';
 }
@@ -2526,16 +2623,17 @@ function renderGame(){
   }
   // ---- projects + plants
   let pr=`<h2>Program Offices <span class="r"><span class="dim">${slotsUsed()}/${S.slots} slots</span> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ Launch Project</button></span></h2>`;
+  const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
   for(const p of [...S.projects].sort((a,b)=>needsYou(a)-needsYou(b))){
     const def=PD[p.def],st=STAGES[p.stage],D=p.dur[p.stage];
     const tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
     const remain=p.dur.slice(p.stage).reduce((a,b)=>a+b,0)-p.prog;
-    pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}"><div class="ph"><b>${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · inherited':' · yr '+fmt((S.w-p.started)/52,1)} · ≥${yrs(remain)} left</span></div>
+    pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}"><div class="ph"><b>${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · inherited':' · yr '+fmt((S.w-p.started)/52,1)}${p.ct?` · ${CONTRACTS[p.ct.k].ic}${BUILDERS[p.ct.b].ic}`:''} · ≥${yrs(remain)} left</span></div>
       <div class="pipe">${STAGES.map((s,i)=>`<div class="${p.dur[i]===0?'skip':i<p.stage?'done':i===p.stage?'cur':''}">${STAGE_N[s]}</div>`).join('')}</div><div class="prog"><i style="width:${Math.min(100,p.prog/D*100)}%"></i></div>`;
     if(p.obs.length){pr+=obsBlock(OD[p.obs[0].id],p.obs[0],'opt',p.uid);if(p.obs.length>1)pr+=`<div class="queued">+${p.obs.length-1} more queued</div>`}
-    else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]} · ${fmt(p.prog,0)}/${D} wk ${crBlock?`<span class="red">— frozen by CR</span>`:''}${slow.map(g=>` <span class="amber">— ${g.mult===0?'halted':'slowed ×'+fmt(g.mult,2)} by ${g.label.toLowerCase()}</span>`).join('')}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
+    else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]} · ${fmt(p.prog,0)}/${D} wk ${crBlock?`<span class="red">— frozen by CR</span>`:''}${slow.map(g=>` <span class="amber">— ${g.mult===0?'halted':'slowed ×'+fmt(g.mult,2)} by ${g.label.toLowerCase()}</span>`).join('')}${p.qf<1?` <span class="amber">— queued for ${POOLS[p.qk].ic} ${POOLS[p.qk].n.toLowerCase()} ×${fmt(p.qf,2)}</span>`:''}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
     pr+=`</div>`;
   }
   const ramping=S.plants.filter(p=>!p.full||p.issue),fullP=S.plants.filter(p=>p.full&&!p.issue);
@@ -2638,6 +2736,8 @@ function renderModal(){
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=V(e.o)||[{l:'OK'}],b=V(e.body);
       html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}</div></div>`}
+  } else if(S.modal==='contract'&&S.ct){
+    html=contractHTML();
   } else if(S.modal==='node'&&S.sel){
     html=dossierHTML(S.sel,P);
   } else if(S.modal==='map'){
@@ -2683,6 +2783,7 @@ function whyOff(b){
     case 'spot':return needM(spotCost(d.n));
     case 'prio':return needPC(5);
     case 'repro':return needPC(reproCost());
+    case 'ctgo':{const def=PD[S.ct.id];if(slotsUsed()>=S.slots)return busy();return needM(ctCost(def,S.ct))}
     case 'up':case 'lineup':return 'Already first in line.';
     case 'dn':return 'Already last in line.';
   }
@@ -2732,7 +2833,10 @@ document.addEventListener('pointerdown',e=>{
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
     case 'close':S.modal=null;S.navBack=[];break;
-    case 'launch':startProject(b.dataset.p);if(slotsUsed()>=S.slots&&S.modal==='cat')S.modal=null;break;
+    case 'launch':{const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id);if(slotsUsed()>=S.slots&&S.modal==='cat')S.modal=null}break}
+    case 'ct':S.ct[b.dataset.g]=b.dataset.v;break;
+    case 'ctgo':startProject(S.ct.id,{b:S.ct.b,k:S.ct.k});S.modal=S.ctBack==='cat'&&slotsUsed()>=S.slots?null:S.ctBack||null;S.ct=null;break;
+    case 'ctback':S.modal=S.ctBack||null;S.ct=null;break;
     case 'opt':chooseOpt(b.dataset.u,+b.dataset.k);break;
     case 'ops':chooseOps(b.dataset.u,+b.dataset.k);break;
     case 'intro':introduce(b.dataset.r);break;
