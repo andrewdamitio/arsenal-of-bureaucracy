@@ -206,6 +206,50 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .rates{margin:4px 0}.rr{display:grid;grid-template-columns:62px 1fr 74px;gap:6px;align-items:center;font-size:11.5px}
 .rb{height:9px;background:#e2d6b6;border:1px solid #cbbd95;position:relative}.rb i{position:absolute;left:0;top:0;bottom:0}
 .rr b{text-align:right}
+/* change flashes: a row that just got worse/better pulses; delay is set negative so re-renders don't restart it */
+.fl-bad{animation:flb 1.6s ease-out both}.fl-good{animation:flg 1.6s ease-out both}
+@keyframes flb{0%{background:#c0392bcc;box-shadow:0 0 0 2px #e05a48}100%{background:transparent;box-shadow:0 0 0 0 transparent}}
+@keyframes flg{0%{background:#4f8a38cc;box-shadow:0 0 0 2px #76b357}100%{background:transparent;box-shadow:0 0 0 0 transparent}}
+/* dependency trace: hover anything, its whole chain lights up across panels */
+.trc{transition:opacity .12s}
+#app.tracing .trc:not(.hot){opacity:.22}
+#app.tracing .trc.hot{box-shadow:inset 3px 0 0 var(--brass2)}
+#app.tracing .cvb>span.trc.hot{box-shadow:none}#app.tracing .cvb>span.trc.hot b{color:#fff}
+.rems{display:flex;flex-wrap:wrap;gap:3px;margin:-3px 0 6px}
+.rem{font-size:10px;padding:0 5px;border:1px solid #5a5236;color:#cfc6ad;background:#1d1b14;cursor:pointer;border-radius:2px;white-space:nowrap}
+.rem:hover{border-color:var(--brass2);color:#fff}.rem.on{border-color:#3f6633;color:#b8d8a4;background:#1b2a17;cursor:default}
+.wchain{font-size:10.5px;margin-top:2px;color:var(--dim)}.wchain .linkn{color:#e8b8a8}.wchain .ar{color:var(--red);margin:0 3px}
+.go-pulse{animation:gop 1.1s ease-in-out infinite}
+@keyframes gop{50%{box-shadow:0 0 0 3px var(--brass2);background:linear-gradient(#8a7440,#5a4a26)}}
+/* 2025–26 replay */
+#reel{position:fixed;left:50%;top:92px;transform:translateX(-50%);z-index:45;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;width:min(760px,92vw)}
+#reel .bar2{pointer-events:auto;display:flex;gap:12px;align-items:center;background:#0f110df0;border:1px solid var(--brass);padding:5px 8px 5px 14px;font:600 12px Georgia;letter-spacing:.14em;color:var(--brass2);box-shadow:0 4px 16px #000}
+#reel .bar2 .d{font-size:15px;letter-spacing:.06em;color:#fff;min-width:118px;text-align:center}
+#reel .rp{width:160px;height:4px;background:#2c2b22}#reel .rp i{display:block;height:100%;background:var(--brass2)}
+#reel .head{background:var(--paper) linear-gradient(#efe6cf,#e2d5b4);color:var(--paperInk);border:3px double #6b5a35;padding:12px 18px;font:600 17px/1.35 Georgia;box-shadow:0 10px 40px #000;text-align:center;animation:hin .35s ease-out both}
+#reel .head small{display:block;font:700 10px "Segoe UI";letter-spacing:.2em;color:#8a1f15;margin-bottom:4px}
+@keyframes hin{from{transform:translateY(-10px) scale(.97);opacity:0}}
+#app.replaying #main,#app.replaying #log{filter:saturate(.85)}
+#handover{position:fixed;inset:0;z-index:44;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#handover div{border:4px solid #a3261c;color:#e8b0a0;background:#0e100dd0;padding:10px 28px;font:700 30px Georgia;letter-spacing:.22em;transform:rotate(-3deg);animation:hov 3.6s ease-in both;text-align:center}
+#handover small{display:block;font-size:13px;letter-spacing:.3em;color:var(--brass2)}
+@keyframes hov{0%{opacity:0;transform:rotate(-3deg) scale(1.6)}10%{opacity:1;transform:rotate(-3deg) scale(1)}75%{opacity:1}100%{opacity:0}}
+/* crisis playback */
+.camp{margin:6px 0 4px;font:12px "Segoe UI",system-ui,sans-serif}
+.camp h5{margin:8px 0 3px;font:700 10.5px "Segoe UI";letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;display:flex;justify-content:space-between}
+.crow{display:grid;grid-template-columns:118px 1fr 92px;gap:8px;align-items:center;margin:2px 0}
+.ctrack{height:13px;background:#d6c9a4;border:1px solid #8a7850;position:relative}
+.ctrack i{position:absolute;left:0;top:0;bottom:0;animation:cgrow linear both;transform-origin:left}
+.ctrack .dry{position:absolute;top:-3px;bottom:-3px;width:3px;background:#a3261c;animation:fadein .2s both}
+.ctrack .goal{position:absolute;top:-3px;bottom:-3px;width:2px;background:#2b241a}
+.crow .v{text-align:right;font-weight:600;animation:fadein .3s both}
+@keyframes cgrow{from{transform:scaleX(0)}}@keyframes fadein{from{opacity:0}}
+.gauge{position:relative;height:22px;margin:24px 0 18px;background:linear-gradient(90deg,#c98a7e 0,#c98a7e 40%,#e3cf8e 40%,#e3cf8e 56.67%,#a9c690 56.67%);border:1px solid #8a7850}
+.gauge .zn{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font:700 9.5px "Segoe UI";letter-spacing:.14em;text-transform:uppercase;color:#2b241a80}
+.gauge .band{position:absolute;top:3px;bottom:3px;background:#2b241a33;border:1px dashed #2b241a}
+.gauge .mk{position:absolute;top:-4px;bottom:-4px;width:3px}.gauge .mk span{position:absolute;top:100%;transform:translateX(-50%);font:600 10.5px "Segoe UI";white-space:nowrap;margin-top:2px}
+.stampin{animation:stin .35s cubic-bezier(.3,1.6,.6,1) both}
+@keyframes stin{from{opacity:0;transform:rotate(-4deg) scale(2.2)}}
 @media(max-width:1180px){#main,#main.vmode{grid-template-columns:1fr;height:auto}.fcards{grid-template-columns:1fr}.intro{columns:1}.map{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -1278,7 +1322,7 @@ function newGame(fac){
     S.projects.push(p);enterStage(p)}
   log(`${X.flag} January 2025. ${X.name}: ${X.motto}.`,'ev');
   scenUpdate();S.hist.push(snapshot());
-  runHistory();
+  beginHistory();
 }
 function applyChinaBan(){
   if(S.fac==='US'){cutAll(['gallium','germanium','antimony'],.35);cutAll(['graphite','li_cells'],.5)} // leakage through third countries and stocks (assumption; 2025's ban did not halt US production)
@@ -1470,21 +1514,25 @@ const HIST=[
 const BTW={jul25:weekOf(2025,6,7),y25:weekOf(2025,11,29),feb26:weekOf(2026,1,23),mar26:weekOf(2026,2,2),may26:weekOf(2026,4,4),oct26:weekOf(2026,9,19),dec26:PLAY0-1};
 function histTick(){
   for(const h of HIST){if(h.fac&&!h.fac.includes(S.fac))continue;const w1=h.w1??h.w0;
-    if(S.w===h.w0){h.fx?.();log(`📜 ${h.t}${h.c?` [c:${h.c}]`:''}`,'ev')}
+    if(S.w===h.w0){h.fx?.();log(`📜 ${h.t}${h.c?` [c:${h.c}]`:''}`,'ev');if(S.replay)S._reel={t:h.t,w:S.w,t0:performance.now()}}
     if(h.use&&S.w>=h.w0&&S.w<=w1){const n=w1-h.w0+1;for(const c in h.use)S.inv[c]=Math.max(0,S.inv[c]-h.use[c]/n)}}
   for(const k in BTW)if(S.w===BTW[k])S.btRec[k]={inv:{...S.inv},out:Object.fromEntries(Object.entries(S.lastOut||{}).map(([c,o])=>[c,o.yr])),en:{pac:{...S.enemy.pac.inv},eu:{...S.enemy.eu.inv}},plants:S.plants.map(p=>({def:p.def,y:p.yield,v:p.gain*p.yield*(p.kind==='line'?LINES[p.target].k*lineMultOf(p.target):1)}))};
 }
-function runHistory(){
-  const X=F();S.histMode=true;S.sim=true;S.btRec={};
-  for(const h of HIST)if(h.w0===0&&(!h.fac||h.fac.includes(S.fac))){h.fx?.();log(`📜 ${h.t}${h.c?` [c:${h.c}]`:''}`,'ev')}
-  while(S.w<PLAY0)tick();
-  S.histMode=false;S.sim=false;S.queue=[];
+// 2025–26 plays out on the live board (S.replay); the player watches, then takes over in January 2027
+function beginHistory(){
+  S.histMode=true;S.sim=true;S.replay=true;S.btRec={};
+  for(const h of HIST)if(h.w0===0&&(!h.fac||h.fac.includes(S.fac))){h.fx?.();log(`📜 ${h.t}${h.c?` [c:${h.c}]`:''}`,'ev');S._reel={t:h.t,w:0,t0:performance.now()}}
+}
+function endHistory(){
+  const X=F();while(S.w<PLAY0)tick();
+  S.histMode=false;S.sim=false;S.replay=false;S._reel=null;S.queue=[];
   Object.assign(S,{pc:X.pc0,budget:X.budget0,urg:X.urg0,strain:0,mob:0,mobLow:0,speed:0,cr:0});
   for(const k in S.ledger)S.ledger[k]={n:0,wk:0};
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
-  log(`${X.flag} January 2027: you take over. 2025–26 was replayed from sourced starting values — see 📚 Sources → Model check.`,'ev');
-  S.queue.unshift({sys:'hist'});
+  log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
+  S._handT0=performance.now();
 }
+const REPLAY_MS=55,REEL_HOLD=2400;
 // observed or derived 2025–26 values the replay should land near
 const BACKTEST=[
  {fac:'US',n:'US 155mm output, March 2026',kind:'check',obs:'36,000 rounds a month (DoD IG); 40,000 in mid-2025 (Army)',lo:30000,hi:42000,v:r=>r.mar26.out.shells/12,f:v=>fmtN(v)+'/mo',c:'dodig,army40k'},
@@ -1681,14 +1729,25 @@ function eventsTick(){
     if(fire){S.fired[e.id]=(S.fired[e.id]||0)+1;e.fx?.();S.queue.push({ev:e.id,fxDone:1});log(`📰 ${V(e.t)}`,'ev')}
   }
 }
-function crisis(t,id){scenUpdate();const sc=S._sc[t],T=sc.true,r=T.score,b=T.bind;S.cres[id]={t,r,est:sc.est.score,opt:sc.opt.score,pes:sc.pes.score,bind:b,cov:b?T.cov[b]:1,wks:b&&MUN.includes(b)?T.wks[b]:null,wk:T.wk,res:r>=CRISIS_WIN?'win':r>=CRISIS_TENSE?'tense':'fail'};S.urg+=20;if(S.cres[id].res!=='win')S.tension=(S.tension||0)+.1}
+function crisis(t,id){scenUpdate();const sc=S._sc[t],T=sc.true,r=T.score,b=T.bind;S.cres[id]={t,r,est:sc.est.score,opt:sc.opt.score,pes:sc.pes.score,bind:b,cov:b?T.cov[b]:1,wks:b&&MUN.includes(b)?T.wks[b]:null,wk:T.wk,allCov:{...T.cov},allWks:{...T.wks},res:r>=CRISIS_WIN?'win':r>=CRISIS_TENSE?'tense':'fail'};S.urg+=20;if(S.cres[id].res!=='win')S.tension=(S.tension||0)+.1}
+// the enemy's war-game, played back: every magazine drains on the same clock, platforms fill toward the threat, then the verdict lands
+const CAMP_MS=3400;
 function crisisText(id,t,place){
   const c=S.cres[id],E=S.enemy[t],a=F().alloc[t],sc=SCEN[t];
-  const oob=`<p style="font-size:13px">Your forces assigned to the theater: ${fmtN(S.inv.surface*a.surface)} surface ships, ${fmtN(S.inv.subs*a.subs)} subs, ${fmtN(S.inv.aircraft*a.aircraft)} aircraft, ${fmtN(S.inv.interceptors*a.interceptors)} interceptors, ${fmtN(S.inv.strike*a.strike)} strike missiles. ${E.n}, as you estimate it: ${fmtN(estInv(E,'surface'))} ships, ${fmtN(estInv(E,'subs'))} subs, ${fmtN(estInv(E,'aircraft'))} aircraft, ${fmtN(estInv(E,'strike'))} strike missiles.</p>`;
-  const est=`<p>${E.n} war-games ${sc.short}. Your planning estimate of your coverage was <b>${fmt(c.est,2)}</b> (80% range ${fmt(c.pes,2)}–${fmt(c.opt,2)}). ${E.n}'s own reckoning: <b>${fmt(c.r,2)}</b>.${c.bind?` The weak link: ${LINES[c.bind].n.toLowerCase()}, at ${pct(c.cov)} of the requirement${c.wks!=null&&c.wks<c.wk?` — exhausted in about ${fmt(c.wks,1)} of the ${Math.round(c.wk)} weeks`:''}.`:''}</p>`;
-  if(c.res==='win')return `<p>${E.n} probes ${place}.</p>${est}${oob}<div class="stamp">DETERRED</div><p>+25 Political Capital.</p>`;
-  if(c.res==='tense')return `<p>Three very long weeks in ${place}.</p>${est}${oob}<div class="stamp">BRINKMANSHIP</div><p>Both sides blink. ${E.n} concludes the gap is closing in its favor. −15 Political Capital; enemy production +5%.</p>`;
-  return `<p>Crisis in ${place}.</p>${est}${oob}<div class="stamp">DETERRENCE FAILED</div><p>${E.n} concludes your magazines would run dry first, and acts accordingly. On the bright side, the EIS for your second explosives plant was finally approved.</p>`;
+  if(!c.t0)c.t0=performance.now();const el=performance.now()-c.t0,dl=ms=>`animation-delay:${Math.round(ms-el)}ms`;
+  const cats=Object.keys(LINES).filter(k=>sc.w[k]&&a[k]>0),G=v=>Math.min(100,Math.max(0,v/1.5*100));
+  const mrow=k=>{const w=c.allWks[k]??99,f=Math.min(1,w/c.wk),dry=f<1,ms=CAMP_MS*f;
+    return `<div class="crow"><span>${LINES[k].n}</span><div class="ctrack"><i style="width:${f*100}%;background:${dry?'#b0453a':'#5f9e4a'};animation-duration:${ms}ms;${dl(0)}"></i>${dry?`<span class="dry" style="left:calc(${f*100}% - 1px);${dl(ms)}"></span>`:''}</div><span class="v ${dry?'redt':'okt'}" style="${dl(ms)}">${dry?`empty · wk ${fmt(w,1)}`:'lasts'}</span></div>`};
+  const prow=k=>{const v=c.allCov[k]??1;
+    return `<div class="crow"><span>${LINES[k].n}</span><div class="ctrack"><i style="width:${G(v)}%;background:${v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a'};animation-duration:${CAMP_MS}ms;${dl(0)}"></i><span class="goal" style="left:${G(1)}%"></span></div><span class="v ${v>=1?'okt':'redt'}" style="${dl(CAMP_MS)}">${pct(v)} of threat</span></div>`};
+  const mun=cats.filter(k=>MUN.includes(k)),plat=cats.filter(k=>!MUN.includes(k));
+  const camp=`<div class="camp">${mun.length?`<h5><span>Magazines</span><span>week 0 → ${Math.round(c.wk)}</span></h5>${mun.map(mrow).join('')}`:''}${plat.length?`<h5><span>Platforms</span><span>vs. the force they meet</span></h5>${plat.map(prow).join('')}`:''}</div>`;
+  const gauge=`<div class="gauge"><span class="zn" style="left:0;width:40%">war</span><span class="zn" style="left:40%;width:16.67%">standoff</span><span class="zn" style="left:56.67%;right:0">deterred</span><span class="band" style="left:${G(c.pes)}%;width:${Math.max(.5,G(c.opt)-G(c.pes))}%"></span><span class="mk" style="left:${G(c.est)}%;background:#2f62a0"><span style="color:#2f62a0">you: ${fmt(c.est,2)}</span></span><span class="mk" style="left:${G(c.r)}%;background:#8a1f15;animation:fadein .3s both;${dl(CAMP_MS)}"><span style="color:#8a1f15;top:auto;bottom:100%;margin:0 0 2px">${E.n}: ${fmt(c.r,2)}</span></span></div>`;
+  const stamp=w=>`<div class="stamp stampin" style="${dl(CAMP_MS+250)}">${w}</div>`,after=h=>`<div style="animation:fadein .4s both;${dl(CAMP_MS+600)}">${h}</div>`;
+  const head=`<p>${E.n} war-games ${sc.short}${sc.short.includes(place.replace(/^the /,''))?'':` over ${place}`}.</p>${camp}${gauge}`;
+  if(c.res==='win')return head+stamp('DETERRED')+after(`<p>${E.n} probes, finds nothing to exploit, and stands down. +25 Political Capital.</p>`);
+  if(c.res==='tense')return head+stamp('BRINKMANSHIP')+after(`<p>Three very long weeks. Both sides blink; ${E.n} concludes the gap is closing in its favor. −15 Political Capital; enemy production +5%.</p>`);
+  return head+stamp('DETERRENCE FAILED')+after(`<p>${E.n} concludes your magazines run dry first, and acts accordingly. On the bright side, the EIS for your second explosives plant was finally approved.</p>`);
 }
 function crisisOpts(id,place){const c=S.cres[id];
   if(c.res==='win')return [{l:'Excellent.',fx:()=>{S.pc+=25}}];
@@ -2259,14 +2318,14 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 const VIEWS=[['cmd','🏛 Command'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
-function viewStrip(){const dp=decisionsPending();return `<div id="views">${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="vhint">${S.view==='cmd'?'Charts update live while the clock runs. Hover any chart for values.':'The clock keeps running here. Hover for values; click legend items to hide series.'}</span></div>`}
+function viewStrip(){const dp=decisionsPending();return `<div id="views">${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}</div>`}
 function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat';
   return `<div class="sktool" style="padding-top:0"><span class="lab">Focus</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All end items</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">Node: ${ND[f].n}</button>`:''}
      <span class="lab">Width</span><button class="pbtn ${m==='det'?'on':''}" data-a="flowm" data-m="det" data-tip="Weight each end item by its deterrence value">Deterrence value</button><button class="pbtn ${m==='out'?'on':''}" data-a="flowm" data-m="out" data-tip="Weight each end item by output relative to the US base rate">Output volume</button>
      <span class="lab">Attribution</span><button class="pbtn ${at==='mat'?'on':''}" data-a="flowa" data-m="mat" data-tip="Trace physical dependence all the way down to raw sources">Material origin</button><button class="pbtn ${at==='va'?'on':''}" data-a="flowa" data-m="va" data-tip="Credit each domestic manufacturing step with half the value of its output">Value added</button></div>
     <div style="padding:8px 0 0">${sankeySVG(S._R||production(false),f,m,at)}</div>
-    <p class="mini">Hover a node to light up everything upstream and downstream of it; hover a band for its share. Click a material to open its page, or an end item to focus on it. Band width = share of ${f.startsWith('L:')||f==='all'?'end-item':'this node\'s'} value carried this week.</p>`;
+`;
 }
 function viewHTML(){
   const T={src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
@@ -2294,29 +2353,52 @@ const app=document.getElementById('app'),ov=document.getElementById('ov');
 function toast(html,cls=''){if(S&&S.sim)return;const d=document.createElement('div');d.className='toast '+cls;d.innerHTML=html;document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),4200)}
 const chip=l=>`<span class="tag" style="background:${LAYERS[l].c}">${LAYERS[l].n}</span>`;
 const res=(v,l,tip)=>`<div class="res" title="${tip||''}"><b>${v}</b><span>${l}</span></div>`;
+/* ---------- linking: what changed flashes; hovering anything lights its chain everywhere ---------- */
+const FL={},FL_MS=1600,ST_RANK={idle:0,ok:0,tight:1,short:2,cut:3};
+function flash(k,cls){FL[k]={t0:performance.now(),cls}}
+function noteChanges(R){
+  if(S._flW===S.w)return;const first=S._flW==null;S._flW=S.w;const pv=S._pv||{},cur={};
+  for(const id of ORDER)cur[id]=ST_RANK[nodeStatus(R.P[id])];
+  for(const c in LINES){cur['L:'+c]=S.inv[c];cur['o:'+c]=R.out[c].bott?1:0}
+  for(const t of S.theaters){const cv=S._sc[t].est.cov;for(const c in cv)cur[`cv:${t}:${c}`]=cv[c]>=1?0:cv[c]>=.75?1:2}
+  if(!first)for(const k in cur){const a=pv[k],b=cur[k];if(a==null||a===b)continue;
+    if(k.startsWith('L:')){if(b<a*.996)flash(k,'bad')}
+    else if(k.startsWith('o:'))flash('L:'+k.slice(2),b>a?'bad':'good');
+    else flash(k,b>a?'bad':'good')}
+  S._pv=cur;
+}
+function applyFlashes(){const now=performance.now();
+  for(const k in FL){const el=now-FL[k].t0;if(el>FL_MS){delete FL[k];continue}
+    for(const e of app.querySelectorAll(`[data-n="${k}"],[data-fk="${k}"]`)){e.classList.add('fl-'+FL[k].cls);e.style.animationDelay=-el+'ms'}}}
+const UPS={},DNS={};
+function upOf(id){if(UPS[id])return UPS[id];const s=new Set(),st=[...(id.startsWith('L:')?LINES[id.slice(2)].in:ND[id].in)];while(st.length){const x=st.pop();if(s.has(x))continue;s.add(x);st.push(...ND[x].in)}return UPS[id]=s}
+function dnOf(id){if(DNS[id])return DNS[id];const s=new Set(),st=[...(CONSUMERS[id]||[])];while(st.length){const x=st.pop();if(s.has(x))continue;s.add(x);if(!x.startsWith('L:'))st.push(...CONSUMERS[x])}return DNS[id]=s}
+let traceId=null;
+function applyTrace(){const on=!!traceId&&!!S&&!S.replay;app.classList.toggle('tracing',on);if(!on)return;
+  const set=new Set([traceId,...upOf(traceId),...dnOf(traceId)]);
+  for(const e of app.querySelectorAll('.trc'))e.classList.toggle('hot',set.has(e.dataset.n||e.dataset.tn))}
+document.addEventListener('mouseover',e=>{if(!S)return;const el=e.target.closest?.('#main .trc');const id=el?(el.dataset.n||el.dataset.tn):null;if(id!==traceId){traceId=id;applyTrace()}});
+// reforms and carve-outs that make this obstacle rarer or shorter, linked to the agenda
+function remedies(od){
+  const ks=[...new Set([...Object.keys(od.mods||{}),...Object.keys(od.wm||{}),...(od.layer==='QUAL'?['cvQual']:[])])];
+  const h=ks.map(k=>{const R=RD[k],C=CD[k],X=R||C;if(!X||!facOk(X))return '';const on=active(k);
+    const eff=[od.mods?.[k]!=null?`odds ×${od.mods[k]}`:'',od.wm?.[k]!=null?`waits ×${od.wm[k]}`:k==='cvQual'?'waits ×0.6':''].filter(Boolean).join(', ');
+    return `<span class="rem ${on?'on':''}" ${on?'':`data-a="remedy" data-r="${k}"`} data-tip="${R?'Reform':'Carve-out'}${on?' in force':''}: ${eff}">${on?'✓':R?'📜':'🖋'} ${R?rname(R):cname(C)}</span>`}).join('');
+  return h?`<div class="rems">${h}</div>`:''}
+// node and line names in the Federal Register become links
+const LINKN=[...NODES.map(n=>[n.n,n.id]),...Object.entries(LINES).map(([k,L])=>[L.n,'L:'+k])].filter(x=>x[0].length>3).sort((a,b)=>b[0].length-a[0].length);
+const LKC=new Map(),isW=ch=>!!ch&&/[\w&]/.test(ch);
+function linkify(m){let r=LKC.get(m);if(r!=null)return r;r=m;const hit=[];
+  for(const [nm,id] of LINKN){const i=r.indexOf(nm);if(i<0||isW(r[i-1])||isW(r[i+nm.length]))continue;r=r.slice(0,i)+`\u0001${hit.length}\u0002`+r.slice(i+nm.length);hit.push([nm,id])}
+  r=r.replace(/\u0001(\d+)\u0002/g,(_,j)=>`<span class="linkn" style="color:inherit" data-a="node" data-n="${hit[j][1]}">${hit[j][0]}</span>`);
+  if(LKC.size>600)LKC.clear();LKC.set(m,r);return r}
 const stTag=s=>({ok:'<span class="tag ok">ok</span>',tight:'<span class="tag tight">tight</span>',short:'<span class="tag short">short</span>',cut:'<span class="tag cut">cut</span>',idle:'<span class="tag t">idle</span>'}[s]);
-const INTRO=`<p><b class="gold">The goal.</b> Be able to fight the war you want to deter. Each theater has a campaign — holding the Taiwan Strait for weeks, or defending the eastern flank for months. Coverage 1.0 means your munitions last the campaign and your platforms match the threat. Crises come in 2029, 2031, 2033 and 2035. The enemy judges on the true numbers: at ${CRISIS_WIN} or better it backs down, below ${CRISIS_TENSE} it attacks and the game ends.</p>
-<p><b class="gold">You plan on estimates.</b> Enemy stocks, burn rates, war length and allied help are ranges, not facts. Each game draws the truth inside them; you see the central estimate and the range.</p>
-<p><b class="gold">History first.</b> The model starts in January 2025 from sourced values and replays 2025–26 — export bans, the Twelve-Day War, the Iran war's missile expenditures — then hands you January 2027. Sources → Model check shows how close the replay came to what was observed.</p>
-<p><b class="gold">In-service forces are the baseline.</b> Production adds; retirement, war use and aid to Ukraine subtract.</p>
-<p><b class="gold">A five-tier supply chain.</b> Raw minerals → processed materials & energetics → components → subsystems → end items. Each node draws on domestic production (which needs its own inputs), allied supply (which may hide PRC content), and PRC/Russian supply (which can be cut). Shortages cascade upward; the Bottlenecks tab traces every short line to its root cause.</p>
-<p><b class="gold">Years, not months — then ramp-up.</b> Mines take a decade; energetics plants 3–4 years; qualification adds 1–3. A finished plant starts at 5–40% of nameplate and ramps on an S-curve set by know-how — two to four years to full rate. (Rheinmetall's Unterlüß opened in August 2025; its first Ukraine-bound batch, in the low five figures, left in July 2026.) Some plants are already under way (TNT early 2029, magnets 2028, antimony 2028).</p>
-<p><b class="gold">Political Capital and the home front.</b> PC income scales with urgency (threats, export bans, crises raise it; calm erodes it). Spend PC on reforms (slow, permanent, can fail), emergency carve-outs (fast, temporary, can be struck down in court), waivers, and mobilization. DPA priority diverts civilian supply to defense — and civilian strain costs PC, triggers backlash, and hurts you at elections.</p>
-<p><b class="gold">Things break after they're built.</b> Operating plants — old and new — face strikes, grid curtailment, enforcement actions, ransomware, storms, supplier bankruptcies, retirement waves, and lot recalls. Construction everywhere can be slowed by transformer backlogs, labor crunches, cost shocks, permit vacaturs, state moratoria, shutdowns, and financing squeezes. Active disruptions are listed atop Operations.</p>
-<p><b class="gold">Flows.</b> The ⇶ Sankey view shows where the value of what you build comes from this week — every end item traced back through all five tiers to domestic, allied, PRC/Russian, spot, diverted, or stockpiled supply. Focus on one end item or one node; hover to trace; click to inspect.</p>
-<p><b class="gold">Dossiers.</b> Click any node or end item for its page: why it matters, where it comes from, how it's made, and every lever to raise supply — capacity, processing, recycling, modernization, firm power, test ranges, workforce, allied deals, spot buys, DPA priority. The sidebar navigates the whole chain.</p>
-<p><b class="gold">Sources.</b> Small numbers after a claim link to the 📚 Sources tab, which lists every citation and, separately, the model's assumptions.</p>
-<p><b class="gold">Views.</b> The tabs under the top bar switch the main screen between Command (supply chain, program offices) and four live views — Flows, Arsenal & needs, Pipeline, Readiness — while the clock keeps running. Tab cycles through them. Hover any chart for exact values on that date; click legend entries to hide or show series; "Zoom: 6 years" narrows the time axis around today. A red badge on Command counts decisions waiting for you.</p>
-<p><b class="gold">Arsenal & needs.</b> The 📈 dashboard charts in-service stocks against the enemy and against the scenario requirement, projects them forward at today's output and at full capacity, and compares production to the rate you'd need.</p>
-<p><b class="gold">Capacity is not output.</b> Framework agreements buy headlines now; three years later an audit compares them to what actually came off the line.</p>
-<p><b class="gold">Numbers.</b> Shares, sole sources, and timelines are drawn from USGS, DoD IG, CRS, GAO, Govini, and company filings (as of Nov 2026). US missile stocks come from CSIS estimates; force counts from the Navy, IISS and the CMPR. The rest are estimates with stated ranges.</p>
-<p><b class="gold">Controls.</b> Space = pause, 1–4 = speed. Click any supply node for detail and actions.</p>`;
 
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
    <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2037 (2025–26 replayed)</div>
    <div class="fcards">${['US','EU'].map(k=>{const f=FACTIONS[k];return `<div class="fcard" data-a="start" data-f="${k}"><h3>${f.flag} ${f.name}</h3><div class="dim" style="font:italic 13px Georgia">${f.motto}</div><ul>${f.blurb.map(b=>`<li>${b}</li>`).join('')}</ul></div>`}).join('')}</div>
-   <div class="intro">${INTRO}</div></div>`;app.innerHTML=cz(app.innerHTML);
+   </div>`;app.innerHTML=cz(app.innerHTML);
 }
 function optCost(od,o){
   const b=[];if(o.req&&!passed(o.req))b.push('🔒 '+rname(RD[o.req]));
@@ -2329,7 +2411,7 @@ function optCost(od,o){
 }
 function failTip(o,od){if(!o.fail)return '';const f=o.fail;return ` If it fails: ${f.spawn?'triggers a new obstacle':f.cancel?'project mothballed':f.adv?'PRC dependence added':f.gain?'output reduced':Math.round((f.wait||0)*waitMult(od))+' wk'}.`}
 function obsBlock(od,inst,action,uid,extra=''){
-  let h=`<div class="obs" style="border-left-color:${LAYERS[od.layer].c}"><div class="ot"><b>${inst.wait>0?'⏳':'⛔'} ${V(od.n)}</b>${chip(od.layer)}${extra}</div><p>${V(od.t)}</p>`;
+  let h=`<div class="obs" style="border-left-color:${LAYERS[od.layer].c}"><div class="ot"><b>${inst.wait>0?'⏳':'⛔'} ${V(od.n)}</b>${chip(od.layer)}${extra}</div><p>${V(od.t)}</p>${remedies(od)}`;
   if(inst.wait>0)h+=`<div class="waiting">${inst.label} — <b>${inst.wait}</b> wk remaining${inst.after==='cancel'?' <span class="red">(project will be mothballed)</span>':''}</div><div class="prog" style="margin:5px 0 0"><i style="width:${(1-inst.wait/inst.total)*100}%;background:${LAYERS[od.layer].c}"></i></div>`;
   else h+=`<div class="opts">${od.o.map((o,k)=>`<button class="btn opt" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'} title="${(o.tip||'')+failTip(o,od)}"><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span></button>`).join('')}</div>`;
   return h+`</div>`;
@@ -2345,12 +2427,12 @@ function nodeRow(id,P){
   const p=P[id],n=ND[id],st=nodeStatus(p),tot=p.ext+p.dom+p.stockRem;
   const base=Math.max(p.need,p.ext+p.dom+p.lost,.0001)*1.05,W=x=>Math.min(100,x/base*100);
   const domUse=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));
-  return `<div class="nrow" data-a="node" data-n="${id}"><div class="top"><span class="nm">${n.ic} ${n.n}</span><span>${n.ss?`<span class="tag ss" title="${n.ss}">SS</span> `:''}${S.prio[id]?'<span class="tag dpa">DPA</span> ':''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?'<span class="tag ban" title="DFARS: PRC-linked supply unusable">DFARS</span> ':''}${stTag(st)} <span class="tag kh">KH ${Math.round(S.know[id])}</span></span></div>
+  return `<div class="nrow trc" data-a="node" data-n="${id}"><div class="top"><span class="nm">${n.ic} ${n.n}</span><span>${n.ss?`<span class="tag ss" title="${n.ss}">SS</span> `:''}${S.prio[id]?'<span class="tag dpa">DPA</span> ':''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?'<span class="tag ban" title="DFARS: PRC-linked supply unusable">DFARS</span> ':''}${stTag(st)} <span class="tag kh">KH ${Math.round(S.know[id])}</span></span></div>
    <div class="bar"><i style="left:0;width:${W(domUse)}%;background:var(--green)"></i><i style="left:${W(domUse)}%;width:${W(p.ally+p.spot+p.div)}%;background:var(--blue)"></i><i style="left:${W(domUse+p.ally+p.spot+p.div)}%;width:${W(p.prc)}%;background:#a03a30"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
    <div class="nums"><span>Cover <b class="${st==='ok'?'green':st==='tight'?'amber':'red'}">${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'}</b></span>${p.need>1e-6?`<span>Dom ${pct(domUse/p.need)}</span><span>Ally ${pct(p.ally/p.need)}</span><span>PRC ${pct(p.prc/p.need)}</span>`:''}${p.starvedBy?`<span class="red">starved by ${ND[p.starvedBy].n}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
 }
 function renderGame(){
-  const R=production(false),P=R.P,f=F();S._R=R;
+  const R=production(false),P=R.P,f=F();S._R=R;noteChanges(R);
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const top=`<div id="top"><div class="logo">ARSENAL <small>of</small> BUREAUCRACY</div><div class="fac">${f.flag} ${f.name}</div>
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}</i>`,'Political Cap.',`Income = ${f.pcRate} × (0.5 + urgency/100) − strain/60 − mobilization upkeep`)}
@@ -2364,8 +2446,8 @@ function renderGame(){
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
     <label class="dim" style="font-size:11px;white-space:nowrap"><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> pause</label>
-    <button class="btn sm" data-a="map" title="Supply chain map">🗺</button><button class="btn sm" data-a="help">?</button>
-    <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
+    <button class="btn sm" data-a="map" title="Supply chain map">🗺</button>
+    <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
   let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button> <button class="btn sm" data-a="map">🗺 Map</button></span></h2>
    <div class="tabs">${[['bott','⚠ Bottlenecks'],[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']].map(([k,l])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}">${l}</button>`).join('')}</div>
@@ -2374,13 +2456,13 @@ function renderGame(){
     const shortL=S.order.filter(l=>R.out[l].bott);
     sup+=`<div class="sect"><span>Short lines → root cause</span><span>output / cap</span></div>`;
     if(!shortL.length)sup+=`<div class="empty" style="padding:10px">Every line is running at capacity.</div>`;
-    for(const l of shortL){const o=R.out[l];sup+=`<div class="chain"><b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
+    for(const l of shortL){const o=R.out[l];sup+=`<div class="chain trc" data-n="L:${l}"><b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
     const bad=ORDER.filter(id=>['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover);
     sup+=`<div class="sect"><span>Nodes below 100% cover (${bad.length})</span><span></span></div>`+bad.map(id=>nodeRow(id,P)).join('');
   } else if(S.tab==5){
     sup+=`<div class="sect"><span>End-item lines · priority order</span><span>per year</span></div>`;
     S.order.forEach((lid,i)=>{const o=R.out[lid],L=LINES[lid],nm=lineName(lid)*L.k,fw=S.fw[lid];
-      sup+=`<div class="lrow"><div class="arrows"><button class="btn" data-a="up" data-i="${i}" ${i===0?'disabled':''}>▲</button><button class="btn" data-a="dn" data-i="${i}" ${i===S.order.length-1?'disabled':''}>▼</button></div>
+      sup+=`<div class="lrow trc" data-n="L:${lid}"><div class="arrows"><button class="btn" data-a="up" data-i="${i}" ${i===0?'disabled':''}>▲</button><button class="btn" data-a="dn" data-i="${i}" ${i===S.order.length-1?'disabled':''}>▼</button></div>
        <div><b class="linkn" style="color:#e6e1d3" data-a="node" data-n="L:${lid}">${L.n}</b> <span class="tag kh">KH ${Math.round(S.know[lid])}</span><div class="sub">${L.in.map(i=>`<span class="linkn" style="color:${['short','cut'].includes(nodeStatus(P[i]))?'#e49a8e':'#9a968a'}" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' · ')}</div>
        ${fw?`<div class="sub gold">📣 Framework: ${fmtN(fw.target*L.k)}/yr by ${fmtDate(fw.due)}</div>`:`<button class="btn sm" data-a="fw" data-l="${lid}" title="+12 PC now. In 3 years, an audit compares output to 2× today's nameplate: +10 PC if ≥70%, −20 PC if not.">📣 Announce framework agreement</button>`}</div>
        <div style="text-align:right"><b class="${o.n<o.cap-1e-6?'red':'green'}">${fmtN(o.yr)}</b><span class="dim"> / ${fmtN(o.capYr)}</span>${nm>o.capYr*1.02?`<div class="sub">${fmtN(nm)} nameplate</div>`:''}
@@ -2391,11 +2473,12 @@ function renderGame(){
   // ---- projects + plants
   let pr=`<h2>Program Offices <span class="r"><span class="dim">${slotsUsed()}/${S.slots} slots</span> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ Launch Project</button></span></h2>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
-  for(const p of S.projects){
+  const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
+  for(const p of [...S.projects].sort((a,b)=>needsYou(a)-needsYou(b))){
     const def=PD[p.def],st=STAGES[p.stage],D=p.dur[p.stage];
     const tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
     const remain=p.dur.slice(p.stage).reduce((a,b)=>a+b,0)-p.prog;
-    pr+=`<div class="pcard ${def.ally?'ally':''} ${p.inh?'inh':''}"><div class="ph"><b>${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · inherited':' · yr '+fmt((S.w-p.started)/52,1)} · ≥${yrs(remain)} left</span></div>
+    pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}"><div class="ph"><b>${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · inherited':' · yr '+fmt((S.w-p.started)/52,1)} · ≥${yrs(remain)} left</span></div>
       <div class="pipe">${STAGES.map((s,i)=>`<div class="${p.dur[i]===0?'skip':i<p.stage?'done':i===p.stage?'cur':''}">${STAGE_N[s]}</div>`).join('')}</div><div class="prog"><i style="width:${Math.min(100,p.prog/D*100)}%"></i></div>`;
     if(p.obs.length){pr+=obsBlock(OD[p.obs[0].id],p.obs[0],'opt',p.uid);if(p.obs.length>1)pr+=`<div class="queued">+${p.obs.length-1} more queued</div>`}
     else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]} · ${fmt(p.prog,0)}/${D} wk ${crBlock?`<span class="red">— frozen by CR</span>`:''}${slow.map(g=>` <span class="amber">— ${g.mult===0?'halted':'slowed ×'+fmt(g.mult,2)} by ${g.label.toLowerCase()}</span>`).join('')}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
@@ -2412,13 +2495,13 @@ function renderGame(){
   for(const pl of ramping){
     const isLine=pl.kind==='line',L=isLine?LINES[pl.target]:null,tgt=isLine?L.n:ND[pl.target].n;
     const outNow=pl.gain*pl.yield*plantMult(pl);
-    pr+=`<div class="pcard plant"><div class="ph"><b>🏭 ${pl.nm}</b><span class="dim">${tgt} · yr ${fmt((S.w-pl.start)/52,1)} of ramp</span></div>
+    pr+=`<div class="pcard plant trc" data-tn="${isLine?'L:':''}${pl.target}"><div class="ph"><b>🏭 ${pl.nm}</b><span class="dim">${tgt} · yr ${fmt((S.w-pl.start)/52,1)} of ramp</span></div>
       <div class="yield"><span>${pct(pl.yield)} of nameplate</span><div class="bar"><i style="left:0;width:${pl.yield*100}%;background:${pl.issue?'#a06030':'var(--green)'}"></i><span class="need" style="left:90%"></span></div>
       <span>${isLine?fmtN(outNow*L.k)+'/yr':pct(outNow/Math.max(P[pl.target]?.need||1,1e-9))+' of need'}</span><span class="tag kh">KH ${Math.round(S.know[pl.target])}</span></div>
       ${pl.adv>0?`<div class="queued red">${pct(pl.adv)} of output depends on a PRC precursor</div>`:'<div style="height:6px"></div>'}
       ${pl.issue?obsBlock(OPSD[pl.issue.id],pl.issue,'ops',pl.uid,`<span class="sub red">output ×${OPSD[pl.issue.id].mult} until resolved</span>`):''}</div>`;
   }
-  if(fullP.length)pr+=fullP.map(pl=>`<div class="prow"><span>✓ ${pl.nm}${pl.adv>0?' <span class="red">⚠ PRC precursor</span>':''}</span><span class="dim">${pl.kind==='line'?fmtN(pl.gain*pl.yield*LINES[pl.target].k)+'/yr':ND[pl.target].n}</span></div>`).join('');
+  if(fullP.length)pr+=fullP.map(pl=>`<div class="prow trc" data-tn="${pl.kind==='line'?'L:':''}${pl.target}"><span>✓ ${pl.nm}${pl.adv>0?' <span class="red">⚠ PRC precursor</span>':''}</span><span class="dim">${pl.kind==='line'?fmtN(pl.gain*pl.yield*LINES[pl.target].k)+'/yr':ND[pl.target].n}</span></div>`).join('');
   const allyDone=S.done.filter(d=>PD[d.def].ally);
   if(allyDone.length)pr+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
   // ---- right
@@ -2427,12 +2510,12 @@ function renderGame(){
     const cats=Object.keys(LINES).filter(c=>SCEN[t].w[c]&&F().alloc[t][c]>0);
     rt+=`<div class="th"><div class="top"><b>${THEATERS[t]}</b><span class="ratio ${r>=1?'green':r>=CRISIS_WIN?'gold':'red'}" data-tip="Coverage of ${SCEN[t].n} on your central estimate. 1.0 = every category covered.">${fmt(r,2)}</span></div>
       <div class="mini" style="color:#a8a48e">${SCEN[t].n} · 80% range ${fmt(sc.pes.score,2)}–${fmt(sc.opt.score,2)}</div>
-      <div class="cvb">${cats.map(c=>{const v=e.cov[c],col=v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a';return `<span data-a="node" data-n="L:${c}" data-tip="<b>${LINES[c].n}</b><br>${pct(v)} of the requirement${MUN.includes(c)?`<br>stock lasts ${e.wks[c]>=99?'the whole campaign':fmt(e.wks[c],1)+' of '+Math.round(e.wk)+' weeks'}`:''}"><span class="bx"><i style="height:${Math.max(2,Math.round(Math.min(1,v)*30))}px;background:${col}"></i></span><b>${LINES[c].u.slice(0,5)}</b></span>`}).join('')}</div>
-      <div class="nums"><span>Weakest: ${e.bind?LINES[e.bind].n:'—'} ${e.bind?pct(e.cov[e.bind]):''}</span><span>vs ${E.flag} ${E.n}</span></div>${spark(t)}</div>`}
+      <div class="cvb">${cats.map(c=>{const v=e.cov[c],col=v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a';return `<span class="trc" data-a="node" data-n="L:${c}" data-fk="cv:${t}:${c}" data-tip="<b>${LINES[c].n}</b><br>${pct(v)} of the requirement${MUN.includes(c)?`<br>stock lasts ${e.wks[c]>=99?'the whole campaign':fmt(e.wks[c],1)+' of '+Math.round(e.wk)+' weeks'}`:''}"><span class="bx"><i style="height:${Math.max(2,Math.round(Math.min(1,v)*30))}px;background:${col}"></i></span><b>${LINES[c].u.slice(0,5)}</b></span>`}).join('')}</div>
+      <div class="nums"><span>Weakest: ${e.bind?LINES[e.bind].n:'—'} ${e.bind?pct(e.cov[e.bind]):''}</span><span>vs ${E.flag} ${E.n}</span></div>${e.bind&&R.out[e.bind].bott?`<div class="wchain">⛓ ${R.out[e.bind].chain.map(id=>`<span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`:''}${spark(t)}</div>`}
   const ens=S.theaters.map(t=>S.enemy[t]);
   rt+=`<div class="sect"><span>Order of battle · in service (enemy: estimates)</span><span class="linkn" data-a="view" data-v="arsenal" style="color:#dcc78e">charts →</span></div><table class="oob"><tr><th></th><th>${f.flag}</th>${ens.map(E=>`<th>${E.flag} ${E.n}</th>`).join('')}</tr>`;
   for(const c in LINES){const prodY=R.out[c].yr,retY=S.inv[c]*retRate(c),net=prodY-retY;
-    rt+=`<tr><td><span class="linkn" style="color:#e6e1d3" data-a="node" data-n="L:${c}">${LINES[c].n}</span></td><td title="Production ${fmtN(prodY)}/yr · retirement & use ${fmtN(retY)}/yr"><b>${fmtN(S.inv[c])}</b><span class="d ${net>=0?'green':'red'}">${net>=0?'+':''}${fmtN(net)}</span></td>`+
+    rt+=`<tr class="trc" data-n="L:${c}"><td><span class="linkn" style="color:#e6e1d3" data-a="node" data-n="L:${c}">${LINES[c].n}</span></td><td title="Production ${fmtN(prodY)}/yr · retirement & use ${fmtN(retY)}/yr"><b>${fmtN(S.inv[c])}</b><span class="d ${net>=0?'green':'red'}">${net>=0?'+':''}${fmtN(net)}</span></td>`+
       ens.map(E=>{const t=E===S.enemy.pac?'pac':'eu',pY=estProd(E,c,S.w),rY=estInv(E,c)*E.ret[c]+(E.war?(E.use[c]||0)*E.biasP[c]:0),n=pY-rY,v=estInv(E,c),rg=E.rng[c];return `<td data-tip="<b>${E.n} ${LINES[c].n}</b><br>Estimate ${fmtN(v)} (range ${fmtN(v*rg[0])}–${fmtN(v*rg[1])})<br>Output ~${fmtN(pY)}/yr · retirement & war use ~${fmtN(rY)}/yr${ENEMY_SRC[t]?.[c]?'<br>'+ENEMY_SRC[t][c].replace(/\[c:[\w,]+\]/g,''):''}"><b>~${fmtN(v)}</b><span class="d ${n>0?'red':'dim'}">${n>=0?'+':''}${fmtN(n)}</span></td>`}).join('')+`</tr>`}
   rt+=`</table>${S.ceasefire?'<div class="sub red" style="padding:4px 10px">Ukraine ceasefire: Russian output now fills depots.</div>':''}`;
   // home front
@@ -2447,24 +2530,32 @@ function renderGame(){
    ${nPrio.map(id=>`<div class="prow"><span class="linkn" style="color:#8db4e0" data-a="node" data-n="${id}">${ND[id].n}</span><button class="btn sm" data-a="prio" data-n="${id}">release</button></div>`).join('')}
    <div class="sect"><span>Emergency carve-outs</span><span>fast · temporary · fragile</span></div>`;
   for(const C of CARVES.filter(facOk)){const on=carveOn(C.id),c=carveCost(C),k=S.carve[C.id];
-    rt+=`<div class="ref ${on?'act':''}"><span class="nm">${on?'🖋 ':''}${cname(C)}</span>${on?`<span class="sub green">${k.left} wk left</span>`:`<button class="btn sm" data-a="carve" data-c="${C.id}" ${carveAvail(C)&&S.pc>=c?'':'disabled'}>${c} PC · ${C.wk}w${S.urg<C.urg?` · urg ≥${C.urg}`:''}${k?' · renew':''}</button>`}<span class="d">${C.d}${C.court?` <span class="red">Court risk.</span>`:''}</span></div>`}
+    rt+=`<div class="ref ${on?'act':''}" id="ag-${C.id}" data-fk="ag:${C.id}"><span class="nm">${on?'🖋 ':''}${cname(C)}</span>${on?`<span class="sub green">${k.left} wk left</span>`:`<button class="btn sm" data-a="carve" data-c="${C.id}" ${carveAvail(C)&&S.pc>=c?'':'disabled'}>${c} PC · ${C.wk}w${S.urg<C.urg?` · urg ≥${C.urg}`:''}${k?' · renew':''}</button>`}<span class="d">${C.d}${C.court?` <span class="red">Court risk.</span>`:''}</span></div>`}
   rt+=`<h2>${S.fac==='US'?'Congressional':'Council'} Agenda <span class="r dim">reforms: slow · permanent</span></h2>`;
   if(S.bill){const Rf=RD[S.bill.id],p=clamp(Rf.p+S.bill.boost+(S.urg-50)/250,.05,.98);
-    rt+=`<div class="bill"><b>📜 ${rname(Rf)}</b><div class="sub">${S.bill.left} wk to vote · pass chance <b class="gold">${Math.round(p*100)}%</b> (urgency helps)</div><div class="prog" style="margin:5px 0"><i style="width:${(1-S.bill.left/S.bill.total)*100}%"></i></div><button class="btn sm" data-a="whip" ${S.pc<10||S.bill.whips>=3?'disabled':''}>Whip votes (10 PC, +10%)</button></div>`}
+    rt+=`<div class="bill" data-fk="ag:${Rf.id}"><b>📜 ${rname(Rf)}</b><div class="sub">${S.bill.left} wk to vote · pass chance <b class="gold">${Math.round(p*100)}%</b> (urgency helps)</div><div class="prog" style="margin:5px 0"><i style="width:${(1-S.bill.left/S.bill.total)*100}%"></i></div><button class="btn sm" data-a="whip" ${S.pc<10||S.bill.whips>=3?'disabled':''}>Whip votes (10 PC, +10%)</button></div>`}
   else rt+=`<div class="sub" style="padding:6px 10px">One bill at a time.</div>`;
   for(const Rf of REFORMS.filter(R=>facOk(R)&&!passed(R.id))){const ok=reformAvail(Rf),c=reformCost(Rf),fail=S.reforms[Rf.id]==='failed';
-    rt+=`<div class="ref ${fail?'fail':''}"><span class="nm">${rname(Rf)}${fail?' <span class="sub red">(failed — retry 40% off)</span>':''}</span><button class="btn sm" data-a="intro" data-r="${Rf.id}" ${!S.bill&&ok&&S.pc>=c&&(Rf.$||0)<=S.budget?'':'disabled'}>${c} PC${Rf.$?' + '+money(Rf.$):''} · ${Rf.wk}w · ${Math.round(Rf.p*100)}%</button><span class="d">${Rf.req&&!passed(Rf.req)?`<span class="red">Requires ${rname(RD[Rf.req])}.</span> `:''}${Rf.d}</span></div>`}
-  const pas=REFORMS.filter(R=>passed(R.id));if(pas.length)rt+=`<div class="sect"><span>Enacted</span><span></span></div>`+pas.map(R=>`<div class="ref pass"><span class="nm">✓ ${rname(R)}</span></div>`).join('');
+    rt+=`<div class="ref ${fail?'fail':''}" id="ag-${Rf.id}" data-fk="ag:${Rf.id}"><span class="nm">${rname(Rf)}${fail?' <span class="sub red">(failed — retry 40% off)</span>':''}</span><button class="btn sm" data-a="intro" data-r="${Rf.id}" ${!S.bill&&ok&&S.pc>=c&&(Rf.$||0)<=S.budget?'':'disabled'}>${c} PC${Rf.$?' + '+money(Rf.$):''} · ${Rf.wk}w · ${Math.round(Rf.p*100)}%</button><span class="d">${Rf.req&&!passed(Rf.req)?`<span class="red">Requires ${rname(RD[Rf.req])}.</span> `:''}${Rf.d}</span></div>`}
+  const pas=REFORMS.filter(R=>passed(R.id));if(pas.length)rt+=`<div class="sect"><span>Enacted</span><span></span></div>`+pas.map(R=>`<div class="ref pass" id="ag-${R.id}" data-fk="ag:${R.id}"><span class="nm">✓ ${rname(R)}</span></div>`).join('');
   const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),mx=Math.max(1,...L.map(x=>x[1].wk));
   rt+=`<h2>Barrier Ledger <span class="r dim">weeks lost</span></h2><div style="padding:6px 0">`+L.map(([k,v])=>`<div class="lg"><span class="sw" style="background:${LAYERS[k].c}"></span><span>${LAYERS[k].n}</span><b style="text-align:right">${fmt(v.wk,0)}</b><span class="dim" style="text-align:right">×${v.n}</span><div class="lgbar"><i style="width:${v.wk/mx*100}%;background:${LAYERS[k].c}"></i></div></div>`).join('')+`</div>`;
-  const lg=`<div id="log"><h2>The Federal Register</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${l.m}</div>`).join('')}</div>`;
+  const lg=`<div id="log"><h2>The Federal Register</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','projects','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null,lgS=document.getElementById('log')?.scrollTop;
-  app.innerHTML=cz(top+viewStrip()+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="projects">${pr}</div><div class="panel" id="right">${rt}</div></div>`))+cz(lg);
+  app.classList.toggle('replaying',!!S.replay);
+  app.innerHTML=cz(top+viewStrip()+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="projects">${pr}</div><div class="panel" id="right">${rt}</div></div>`))+cz(lg)+reelHTML();
   ['supply','projects','right'].forEach((id,i)=>{const el=document.getElementById(id);if(el&&sc[i]!=null)el.scrollTop=sc[i]});
   const lgEl=document.getElementById('log');if(lgEl&&lgS!=null)lgEl.scrollTop=lgS;
   if(S.view&&S.view!=='cmd'){mountView(vs)}else viewKey='';
+  applyFlashes();applyTrace();
+  if(S._jump){const el=document.getElementById('ag-'+S._jump);if(el)el.scrollIntoView({block:'center'});S._jump=null}
 }
+const waitingToStart=()=>S.w===PLAY0&&!S.speed&&!S.replay&&!S.modal&&!S.queue.length;
+function reelHTML(){const now=performance.now();
+  if(S.replay)return `<div id="reel"><div class="bar2">REPLAY <span class="d">${fmtDate(S.w)}</span><span class="rp"><i style="width:${S.w/PLAY0*100}%"></i></span><button class="btn sm" data-a="skip">Skip ▸▸</button></div>${S._reel?`<div class="head"><small>${fmtDate(S._reel.w)}</small>${S._reel.t}</div>`:''}</div>`;
+  if(S._handT0&&now-S._handT0<3600)return `<div id="handover"><div style="animation-delay:${Math.round(S._handT0-now)}ms"><small>${fmtDate(S.w)}</small>YOUR WATCH</div></div>`;
+  return ''}
 function likely(def){const ls=new Set();for(const o of OBSTACLES){const si=STAGES.indexOf(o.stage);if(def.dur[si]===0)continue;if(obsChance(o,def)>=.4)ls.add(o.layer)}return [...ls]}
 const pill=(id,P)=>{const st=nodeStatus(P[id]);return `<span class="npill np-${st==='idle'?'ok':st}" data-a="node" data-n="${id}">${ND[id].n}</span>`};
 function projRow(d,P){
@@ -2489,8 +2580,7 @@ function renderModal(){
       </div><div class="ft"><button class="pbtn" data-a="restart">Play again</button></div></div>`;
   } else if(S.queue.length){
     const q=S.queue[0];
-    if(q.sys==='hist'){const rows=btRows(),ok=rows.filter(r=>r.ok).length;html=`<div class="paper"><div class="hd"><span class="ic">📜</span>January 2027 — You Take Over</div><div class="bd"><p>The model started in January 2025 from sourced starting values and replayed 2025–26: the programs already under way, China's export controls and their suspension, the Twelve-Day War, and Operation Epic Fury.</p><p>Where it landed against what was observed: <b>${ok} of ${rows.length}</b> inside the observed band (${rows.filter(r=>r.kind==='check'&&r.ok).length} of ${rows.filter(r=>r.kind==='check').length} independent checks; the rest were used to set the model).</p>${rows.map(r=>`<div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;border-bottom:1px dotted #a89770"><span>${r.ok?'✓':'✗'} ${r.n}</span><span>model <b>${r.val==null?'—':(r.f||fmtN)(r.val)}</b> · observed ${(r.f||fmtN)(r.lo)}–${(r.f||fmtN)(r.hi)}</span></div>`).join('')}<p style="font-size:13px;margin-top:8px">Your theater coverage now: ${S.theaters.map(t=>`${THEATERS[t]} <b>${fmt(ratio(t),2)}</b> (80% range ${fmt(S._sc[t].pes.score,2)}–${fmt(S._sc[t].opt.score,2)})`).join(' · ')}. You plan on estimates; the enemy acts on the truth.</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Begin</button></div></div>`}
-    else if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${L.n.toLowerCase()}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
+    if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${L.n.toLowerCase()}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in Conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=V(e.o)||[{l:'OK'}],b=V(e.body);
@@ -2509,8 +2599,6 @@ function renderModal(){
      <div class="ptab">${tabs.map(([k,l])=>`<button class="pbtn ${S.ptab==k?'on':''}" data-a="ptab" data-t="${k}">${l}</button>`).join('')}</div>
      <div style="padding:8px 14px"><table class="ctable"><tr><th>Project · likely barriers</th><th>Target</th><th>Gain</th><th>Cost</th><th>Base time</th><th></th></tr>${list.map(d=>projRow(d,P)).join('')}</table></div>
      <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
-  } else if(S.modal==='help'){
-    html=`<div class="paper wide"><div class="hd"><span class="ic">?</span>How It Works</div><div class="bd" style="font-size:13.5px"><div class="intro">${INTRO}</div></div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
   }
   const mkey=S.modal+'|'+(S.sel||'')+'|'+(S.ptab||''),SCS=['.paper','.dmain','.dsb','.bd'],saved={};
   if(html&&ov.dataset.k)for(const q of SCS){const el=ov.querySelector(q);if(el)saved[q]=el.scrollTop}
@@ -2529,7 +2617,9 @@ document.addEventListener('pointerdown',e=>{
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   const a=b.dataset.a;
   if(a==='start'){newGame(b.dataset.f);render();return}
-  if(!S)return;S._vdirty=true;
+  if(!S)return;
+  if(S.replay){if(a==='skip'){endHistory();render()}return}
+  S._vdirty=true;
   switch(a){
     case 'speed':S.speed=+b.dataset.s;if(S.speed)S.lastSpeed=S.speed;break;
     case 'ap':S.autoPause=!S.autoPause;break;
@@ -2546,7 +2636,7 @@ document.addEventListener('pointerdown',e=>{
     case 'range':S.range=b.dataset.r;break;
     case 'flowm':S.flowMode=b.dataset.m;break;
     case 'flowa':S.flowAttr=b.dataset.m;break;
-    case 'help':S.modal='help';S.speed=0;break;
+    case 'remedy':S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
     case 'arsenal':S.view=({stock:'arsenal',pipe:'pipe',ready:'ready'})[b.dataset.t]||'arsenal';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
@@ -2571,6 +2661,7 @@ document.addEventListener('pointerdown',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(!S||S.over)return;
+  if(S.replay){if(['Space','Enter','Escape'].includes(e.code)){e.preventDefault();endHistory();render()}return}
   if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed)S.modal=S.modal==='end'?S.modal:null;render()}
   else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VIEWS.findIndex(v=>v[0]===(S.view||'cmd'));S.view=VIEWS[(i+(e.shiftKey?VIEWS.length-1:1))%VIEWS.length][0];render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
@@ -2579,6 +2670,12 @@ document.addEventListener('keydown',e=>{
 const MS=[0,700,300,100,30];let acc=0,last=performance.now();
 function loop(now){
   const dt=now-last;last=now;
+  if(S&&S.replay){
+    if(S._reel&&now-S._reel.t0<REEL_HOLD)acc=0; // hold on the headline
+    else{acc+=Math.min(dt,200);let ticked=false;
+      while(acc>=REPLAY_MS&&S.replay&&!(S._reel&&now-S._reel.t0<REEL_HOLD)){acc-=REPLAY_MS;S._reel=null;tick();S.queue=[];ticked=true;if(S.w>=PLAY0)endHistory()}
+      if(ticked)render()}
+    requestAnimationFrame(loop);return}
   if(S&&!S.over&&S.speed>0&&!S.queue.length&&!S.modal){acc+=Math.min(dt,500);let ticked=false;
     while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over){acc-=MS[S.speed];tick();ticked=true}
     if(ticked)render()}else acc=0;
