@@ -255,6 +255,10 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .rstep .odds{font:700 13px Georgia;color:#3f6b33}.rstep.warm .odds{color:#9a6b10}.rstep.hot{border-color:#a3261c}.rstep.hot .odds{color:#a3261c}
 .rbt{margin-top:8px}.rbt tr.rlon td{background:#e7eedd}.rbt td{vertical-align:middle!important}.rbt .tog{border-color:#8a7850}.lock{font-size:15px;cursor:help}
 .rbic{margin-top:8px;background:var(--panel);border:1px solid var(--line);color:var(--ink);font:12px "Segoe UI",system-ui,sans-serif}
+/* permit docket */
+.pdg{font:700 10.5px "Segoe UI";letter-spacing:.07em;text-transform:uppercase;color:#6b5a35;margin:8px 0 2px;padding-bottom:2px;border-bottom:1px solid #cbbd95}
+.pdrow{display:grid;grid-template-columns:24px 1fr auto 82px;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px dotted #cbbd95;font-size:12.5px}
+.pdn{color:#8a7850;text-align:right;font-weight:600}.pdw{text-align:right;font-weight:600;white-space:nowrap}.pdrow>span:nth-child(3){white-space:nowrap;font-weight:600;font-size:12px}
 /* program page */
 .paper .obs{color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif}
 .pstat{font:700 15px Georgia;padding:6px 10px;margin:4px 0 8px;background:#e6dbbd;border-left:5px solid currentColor}.pstat .mini{font-weight:400}
@@ -1255,6 +1259,9 @@ const OPS=[
  {id:'remote',layer:'GRID',icOff:'icGrid',tags:['greenfield','brownfield','line','assembly'],mult:.2,n:'Inverter Firmware Shutdown',
   t:"The plant's foreign-made solar inverters and battery controllers took an overnight update. They are now off, and the vendor's support line is in Shenzhen.",
   o:[{l:'Rip and replace the inverters',$:.08,wait:8},{l:'Run on grid power alone',yieldMul:.85},{l:'Wait for the vendor',wait:20}]},
+ {id:'permitRenew',manual:1,layer:'PERMIT',mult:.6,n:'Operating Permit Renewal Contested',
+  t:"The agency wants new monitoring, a tighter limit, or another public hearing before it renews. Until then the plant runs under restrictions.",
+  o:[{l:'Accept the new conditions and retrofit',$:.05,wait:10},{l:'Negotiate a consent order',pc:6,wait:4},{l:'Run reduced until the hearing',wait:20}]},
  {id:'latemat',layer:'EXPERT',tags:['shipyard','subs','surface','heavy'],mult:.4,n:'Late Material & Design Rework',
   t:"Castings arrive late and modules built last year don't fit modules designed this year. Deliveries slip 24–36 months, like recent Virginias.",
   o:[{l:'Rework in place',wait:26,know:5},{l:'Outsource modules to other yards',$:.3,wait:12,know:6},{l:"Bring in an allied shipbuilder's planners",$:.2,wait:10,know:12}]},
@@ -1951,7 +1958,7 @@ function complete(p){
   } else {
     const kind=def.t.node?'node':'line',target=def.t.node||def.t.line,kn=S.know[target];
     const tm=ctTerms(def,p.ct),y0=Math.min(.55,.05+kn*.003+tm.y0);
-    S.plants.push({uid:p.uid,def:p.def,nm:projName(p),kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w,rampM:tm.rampM});
+    S.plants.push({uid:p.uid,def:p.def,nm:projName(p),kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w,rampM:tm.rampM,ops:permitsFor(def,'o').map((x,i)=>({id:x.id,next:S.w+Math.round(x.yrs*52*(.5+((p.uid*7+i*13)%10)/20)),last:null}))});
     log(`🎗 Ribbon cutting: ${projName(p)}${p.inh?'':' after '+yrs(S.w-p.started)}. Output starts at ${pct(y0)} of nameplate.`,'good');
     toast(`🎗 <b>${projName(p)}</b> built<br><span class="dim">Ramping from ${pct(y0)} of nameplate</span>`,'good',{a:'prog',u:p.uid});
   }
@@ -1997,10 +2004,12 @@ function projectsTick(){
     p.prog+=rate;if(p.prog>=p.dur[p.stage]){p.stage++;enterStage(p)}
   }
 }
-function opsMatch(o,pl){const def=PD[pl.def];if(o.icOff&&icOn(o.icOff))return false;if(o.kind&&o.kind!==pl.kind)return false;return !o.tags||o.tags.some(t=>def.tags.includes(t)||t===pl.target)}
+function opsMatch(o,pl){const def=PD[pl.def];if(o.manual)return false;if(o.icOff&&icOn(o.icOff))return false;if(o.kind&&o.kind!==pl.kind)return false;return !o.tags||o.tags.some(t=>def.tags.includes(t)||t===pl.target)}
 function plantsTick(){
   for(const pl of S.plants){
     const k=pl.target,kn=S.know[k];
+    for(const o of pl.ops||[])if(S.w>=o.next){const x=PMD[o.id];o.next=S.w+x.yrs*52;o.last=S.w;
+      if(!pl.issue&&!S.histMode&&rand()<renewRisk(x,kn)){pl.issue={id:'permitRenew',wait:0,permit:x.id};S.ledger.PERMIT.n++;log(`⚠ ${pl.nm}: ${x.n} renewal contested`,'bad');notify(`⚠ <b>${x.n} renewal contested</b><br><span class="dim">${pl.nm}</span>`,'',{a:'prog',u:pl.uid})}}
     if(pl.issue){S.ledger[OPSD[pl.issue.id].layer].wk++;if(pl.issue.wait>0&&--pl.issue.wait<=0){log(`✔ Resolved: ${OPSD[pl.issue.id].n} (${pl.nm})`);pl.issue=null}continue}
     pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*(.006+kn*.0003)*(pl.rampM||1));
     S.know[k]=Math.min(95,kn+(pl.full?.01:.05));
@@ -2271,6 +2280,8 @@ function previewHTML(def,ct,wOn0){
     return `<div class="pvr"><span>${LINES[r.c].n}</span><span>${moved?`<b class="green">+${fmtN(r.d)}</b>/yr`:'<span class="dim">No change</span>'}</span><span>${gap(r.h0,r.by)} → ${gap(r.h1,r.by)}</span></div>${!moved&&r.chain?`<div class="pvc">⛓ Held back by ${r.chain.map(i=>ND[i].n).join(' ← ')}</div>`:''}`}).join('');
   else if(def.t.node&&def.kind)h+=`<div class="pvc">${leverEffect(def,v.R0.P)}</div>`;
   if(v.ins.length)h+=`<div class="pvc red">⚠ Inputs short now: ${v.ins.map(i=>`${ND[i].n} ${pct(Math.min(v.R0.P[i].cover,9.99))}`).join(', ')}</div>`;
+  {const pb=permitsFor(def,'b'),po=permitsFor(def,'o'),lm=ctTerms(def,ct).lm,hard=pb.map(x=>[x,permitOdds(x,def,lm)]).sort((a,b)=>b[1]-a[1])[0];
+   if(pb.length||po.length)h+=`<div class="pvc">Permits: ${pb.length} to build${hard&&hard[1]>0?` (hardest: ${hard[0].n}, ${pct(hard[1])} odds of trouble)`:''}${po.length?`, ${po.length} to keep operating`:''}</div>`}
   const ps=poolsOf(def),st=poolState();if(ps.length)h+=`<div class="pvc">Queues: ${ps.map(k=>`<span class="${st[k].d>=st[k].cap?'red':''}" title="${POOLS[k].n}">${POOLS[k].ic} ${st[k].d}/${fmt(st[k].cap,0)}</span>`).join(' · ')}</div>`;
   return h+`</div>`}
 function contractHTML(){
@@ -2322,7 +2333,8 @@ function progHTML(uid){
   const back=S.navH?.length?`<button class="pbtn sm" data-a="goback" data-tip="Back (Alt+←)">← Back</button>`:'';
   let h=`<div class="dhead"><span class="dic">${def.ally?'🤝':p.inh?'📜':'🏗'}</span><div><h3>${nm}</h3><div class="sub2">${tgt} · ${def.ally?'allied deal':p.inh?'inherited program':'launched '+fmtDate(p.started)}${p.ct?` · ${BUILDERS[p.ct.b].ic} ${BUILDERS[p.ct.b].n} · ${CONTRACTS[p.ct.k].ic} ${CONTRACTS[p.ct.k].n}`:''}</div></div><span class="dsp"></span>${back}</div>
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}</div>
-   <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>`;
+   <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
+   <div class="dsec"><h4>Permits</h4>${permitDocket(p,live,pl)}</div>`;
   if(live&&p.obs.length){const o=p.obs[0];h+=`<div class="dsec"><h4>Why it's stuck</h4>${obsBlock(OD[o.id],o,'opt',p.uid)}${p.obs.length>1?`<p class="mini">${p.obs.length-1} more waiting behind it: ${p.obs.slice(1).map(x=>V(OD[x.id].n)).join(', ')}</p>`:''}</div>`}
   else if(live&&p.qf<1){const st=poolState()[p.qk];h+=`<div class="dsec"><h4>Why it's slow</h4><p>${POOLS[p.qk].ic} <b>${POOLS[p.qk].n}</b>: ${st.d} projects in ${STAGE_L[POOLS[p.qk].stage].toLowerCase()} want room for ${fmt(st.cap,1)}. Everyone in the queue moves at ×${fmt(st.f,2)}.</p></div>`}
   if(live){const ahead=[...new Set(OBSTACLES.filter(o=>STAGES.indexOf(o.stage)>p.stage&&p.dur[STAGES.indexOf(o.stage)]&&obsChance(o,def)*(p.lm?.[o.layer]??1)>=.3).map(o=>o.layer))];
@@ -2451,6 +2463,55 @@ function raisePanel(id,P){
     ${under.length?`<div class="mini" style="margin:2px 0 4px">Under way: ${under.map(q=>{const [t,c]=progStatus(q,true);return `<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t.replace(/^\S+\s/,'')}</span>`}).join(' · ')}</div>`:''}
     ${opts.length?`<div class="rcards">${opts.map(card).join('')}</div>`:'<p class="mini">Every build option is already under way or done.</p>'}
     <div class="rquick"><span class="mini">Now:</span>${quick}<span class="dsp"></span><span class="linkn mini" data-a="ovjump" data-s="#allopts">All options ↓</span></div></div>`}
+/* ---------- permits: the docket a program has to clear, and the ones a plant has to keep ---------- */
+// ph 'b' = before construction (the Siting & Permitting stage); 'o' = to operate, renewed for the life of the plant
+const PERMITS=[
+ {id:'nepa',ph:'b',n:'NEPA environmental review',ag:'Lead federal agency',law:'NEPA',w:52,all:1,ob:['ea','eis','lawsuit']},
+ {id:'psd',ph:'b',n:'Clean Air Act preconstruction permit',ag:'State air agency / EPA',law:'CAA (NSR/PSD)',w:40,tags:['energetic','smelter','refine','metal'],ob:['caa']},
+ {id:'s404',ph:'b',n:'Clean Water Act §404 permit',ag:'Army Corps of Engineers',law:'CWA §404',w:30,tags:['greenfield','mine'],ob:['cwa']},
+ {id:'npdes',ph:'b',n:'Wastewater discharge permit',ag:'State water agency / EPA',law:'CWA §402 (NPDES)',w:26,tags:['energetic','refine','smelter','mine','electronics','metal'],ob:[]},
+ {id:'esa',ph:'b',n:'Endangered Species Act consultation',ag:'Fish & Wildlife Service',law:'ESA §7 (135 days)',w:19,tags:['greenfield','mine'],ob:['esa']},
+ {id:'nhpa',ph:'b',n:'Historic preservation review',ag:'State historic preservation office',law:'NHPA §106',w:12,tags:['greenfield','mine','shipyard'],ob:['nhpa']},
+ {id:'mine',ph:'b',n:'Mine plan of operations',ag:'BLM / Forest Service',law:'Mining Law, FLPMA',w:78,tags:['mine'],ob:['mineplan']},
+ {id:'rcra',ph:'b',n:'Hazardous-waste permit (open burn / open detonation)',ag:'EPA / state',law:'RCRA',w:52,tags:['energetic'],ob:['obod']},
+ {id:'esp',ph:'b',n:'Explosives safety site plan',ag:'DoD Explosives Safety Board',law:'DoDM 6055.09',w:26,tags:['energetic'],ob:['qd']},
+ {id:'grid',ph:'b',n:'Grid interconnection agreement',ag:'Utility / grid operator',law:'FERC tariffs',w:40,tags:['power','smelter'],ob:['queue']},
+ {id:'local',ph:'b',n:'Zoning & building permits',ag:'County / city',law:'Local codes',w:12,all:1,ob:['local']},
+ {id:'titlev',ph:'o',n:'Title V operating permit',ag:'State air agency',law:'CAA Title V',yrs:5,risk:.12,tags:['energetic','smelter','refine','metal']},
+ {id:'npdesR',ph:'o',n:'Wastewater permit renewal',ag:'State water agency',law:'CWA §402',yrs:5,risk:.08,tags:['energetic','refine','smelter','mine','electronics','metal']},
+ {id:'rcraR',ph:'o',n:'Hazardous-waste permit renewal',ag:'EPA / state',law:'RCRA',yrs:10,risk:.15,tags:['energetic']},
+ {id:'atf',ph:'o',n:'Explosives manufacturer license',ag:'ATF',law:'27 CFR 555',yrs:3,risk:.05,tags:['energetic','srm']},
+ {id:'psm',ph:'o',n:'Process-safety & risk-management audit',ag:'OSHA / EPA',law:'PSM / RMP',yrs:3,risk:.08,tags:['energetic','refine','smelter']},
+ {id:'msha',ph:'o',n:'Mine safety inspections',ag:'MSHA',law:'Mine Act',yrs:1,risk:.04,tags:['mine']},
+ {id:'itarReg',ph:'o',n:'ITAR registration',ag:'State Department (DDTC)',law:'ITAR',yrs:1,risk:.01,tags:['line','assembly','electronics']},
+ {id:'fcl',ph:'o',n:'Facility security clearance',ag:'DCSA',law:'NISPOM',yrs:3,risk:.04,tags:['line','assembly','electronics','srm']},
+];
+const PMD=Object.fromEntries(PERMITS.map(x=>[x.id,x]));
+function permitsFor(def,ph){if(def.ally||def.kind==='maint'||(def.kind&&!['cap','mod'].includes(def.kind)))return [];
+  const brown=def.tags.includes('brownfield')||def.kind==='mod';
+  return PERMITS.filter(x=>x.ph===ph&&(x.all||x.tags.some(t=>def.tags.includes(t)))&&!(ph==='b'&&brown&&['s404','esa','nhpa','mine'].includes(x.id)))}
+const permitOdds=(x,def,lm)=>Math.max(0,...x.ob.map(o=>OD[o]&&facOk(OD[o])?obsChance(OD[o],def)*(lm?.[OD[o].layer]??1):0));
+const renewRisk=(x,kn)=>x.risk*(1.3-(kn??40)/100);
+function permitDocket(p,live,pl){
+  const def=PD[p.def],B=permitsFor(def,'b'),O=permitsFor(def,'o');
+  if(def.ally)return '<p class="mini">Built abroad: the host country issues its permits.</p>';
+  if(!B.length&&!O.length)return '<p class="mini">Work inside an existing permitted site: no new permits.</p>';
+  const h=p.h||[],SI=2,D=p.dur[SI]||0,start=h.find(e=>e.st===SI)?.w,end=h.find(e=>(e.st!=null&&e.st>SI)||e.done)?.w,maxW=Math.max(1,...B.map(x=>x.w));
+  const obs=[];for(const e of h)if(e.ob){const c=h.find(x=>x.clr===e.ob&&x.w>=e.w);obs.push({id:e.ob,w0:e.w,w1:c?c.w:(live?S.w:end??S.w),open:!c&&live})}
+  const row=(n,name,sub,st,cls,wk,extra)=>`<div class="pdrow"><span class="pdn">${n}</span><div><b>${name}</b><div class="mini">${sub}</div></div><span class="${cls}">${st}</span><span class="pdw ${extra?'redt':''}">${wk}</span></div>`;
+  const bRows=B.map((x,i)=>{const d=Math.max(1,Math.round(x.w/maxW*D)),mine=obs.filter(o=>x.ob.includes(o.id)),extra=Math.round(mine.reduce((a,o)=>a+(o.w1-o.w0),0)),odds=permitOdds(x,def,p.lm),open=mine.find(o=>o.open);
+    let st,cls,dates='';
+    if(!D){st='Covered by existing permits';cls='okt'}
+    else if(start==null){st='Not started';cls='mini'}
+    else if(open){st=`Stalled: ${V(OD[open.id].n)}`;cls='redt';dates=` · since ${fmtDate(start)}`}
+    else if(end!=null||(live&&p.stage===SI&&p.prog>=d)){const iss=Math.min(start+d+extra,end??Infinity);st=`Issued ${fmtDate(Math.round(iss))}`;cls='okt';dates=` · ${fmtDate(start)} to ${fmtDate(Math.round(iss))}`}
+    else{st=`In review · ${Math.max(1,Math.round(d-(p.stage===SI?p.prog:0)))} wk left`;cls='st-t-tight';dates=` · since ${fmtDate(start)}`}
+    return row(i+1,x.n,`${x.ag} · ${x.law}${dates}${odds>0&&end==null?` · ${pct(odds)} odds of trouble`:''}`,st,cls,D?`${d+extra} wk${extra?` <span class="mini">(+${extra})</span>`:''}`:'—',extra>0)}).join('');
+  const kn=S.know[def.t.node||def.t.line];
+  const oRows=O.map((x,i)=>{const r=pl?.ops?.find(o=>o.id===x.id);
+    const [st,cls]=!pl?['Needed before operating','mini']:pl.issue?.permit===x.id?['Renewal contested','redt']:r?[`Valid · renews ${MON[dateOf(r.next).getMonth()]} ${dateOf(r.next).getFullYear()}`,'okt']:['Valid','okt'];
+    return row(B.length+i+1,x.n,`${x.ag} · ${x.law} · renewed every ${x.yrs===1?'year':x.yrs+' years'}${r?.last?` · last renewed ${fmtDate(r.last)}`:''} · ${pct(renewRisk(x,kn))} odds a renewal is contested`,st,cls,`${x.yrs} yr`,false)}).join('');
+  return `${B.length?`<div class="pdg">Before construction · ${B.length} permit${B.length>1?'s':''}${D?` · ${D} wk planned`:''}</div>${bRows}`:''}${O.length?`<div class="pdg">To operate · ${O.length} permit${O.length>1?'s':''}, renewed for the life of the plant</div>${oRows}`:''}`}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
 function leversFor(id){return PROJECTS.filter(d=>facOk(d)&&d.t.node===id)}
@@ -2825,6 +2886,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Permits','Statutory terms are from the statutes: Title V and NPDES permits run five years, RCRA permits up to ten, ATF explosives licenses three, ITAR registration one; ESA formal consultation is 135 days; NEPA assessments and impact statements have one- and two-year deadlines (2023). Which permits each project type needs, their review times relative to each other, and the odds that a renewal is contested are game estimates.'],
  ['US rulebook','Each rule’s status, date and scope is sourced. How much it changes obstacle odds, waits and costs (the ×multipliers shown on each rule), and the Political Capital needed to adopt, finalize or reverse executive actions, are game assumptions.'],
  ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
  ['Starting inventories','Sourced where marked: US interceptor and strike stocks derived from CSIS 2026 estimates; ship counts from the Navy; aircraft from IISS; PLAN and PLARF counts from the CMPR; Russian missiles from Ukrainian intelligence. US and European shell stocks, European missile and air-defence stocks, Chinese interceptors and shells, and all drone stocks are estimates. Enemy ranges are listed above.'],
