@@ -13,8 +13,8 @@ button{font:inherit}
 .btn{background:linear-gradient(#4b4531,#2c281c);border:1px solid var(--brass);color:var(--ink);padding:3px 9px;cursor:pointer;font-size:12px;border-radius:2px}
 .btn:hover:not(:disabled):not(.off){background:linear-gradient(#5d5539,#383222);color:#fff}
 .btn:disabled{opacity:.38;cursor:not-allowed}.btn.sm{padding:1px 6px;font-size:11px}.btn.on{background:linear-gradient(#8a7440,#5a4a26);color:#fff}
-#top{display:flex;align-items:center;gap:5px;padding:6px 10px;height:56px;background:linear-gradient(#2e3129,#1a1c17);border-bottom:2px solid var(--brass);overflow:hidden}
-.logo{font:700 14px Georgia;letter-spacing:.11em;color:var(--brass2);margin-right:4px;white-space:nowrap}.logo small{font-size:10px;color:var(--dim);font-style:italic}
+#top{position:relative;z-index:55;display:flex;align-items:center;gap:5px;padding:6px 10px;height:56px;background:linear-gradient(#2e3129,#1a1c17);border-bottom:2px solid var(--brass);overflow:hidden}
+.logo{background:none;border:0;padding:0;cursor:pointer;font:700 14px Georgia;letter-spacing:.11em;color:var(--brass2);margin-right:4px;white-space:nowrap}.logo small{font-size:10px;color:var(--dim);font-style:italic}
 .fac{font:600 12px Georgia;padding:2px 8px;border:1px solid var(--line);background:#151711;white-space:nowrap}
 .res{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding:2px 7px;border:1px solid #3a382c;background:#141611;color:inherit;font:inherit;cursor:pointer;height:44px}.res:hover{border-color:var(--brass);background:#1d2018}.res.rwarn{border-color:#9a6b20}.res.rwarn b{color:#f0c060}.res.ralert{border-color:var(--red);background:#2a1512}.res.ralert b{color:#ff9a8a}.res.rquiet b{color:var(--dim)}
 .res b{font-size:14px;color:var(--brass2);font-family:Georgia;white-space:nowrap}.res span{font-size:8.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
@@ -2379,7 +2379,7 @@ function bnBody(){
        ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
   return h}
 /* ---------- getting around: one back stack for every jump, and a finder for everything ---------- */
-const NAV_ACTS=new Set(['view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
+const NAV_ACTS=new Set(['home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
 const navSnap=()=>({view:S.view,modal:S.modal,sel:S.sel,selP:S.selP,rtab:S.rtab});
 function navPush(){const s=navSnap(),t=S.navH?.at(-1);if(t&&JSON.stringify(t)===JSON.stringify(s))return;(S.navH=S.navH||[]).push(s);if(S.navH.length>40)S.navH.shift()}
 function navBackG(){const s=S.navH?.pop();if(!s)return;if(S.queue.length||S.modal==='end')return;Object.assign(S,s);S._vdirty=true}
@@ -3053,7 +3053,7 @@ function renderGame(){
   const R=production(false),P=R.P,f=F();S._R=R;noteChanges(R);
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
-  const top=`<div id="top"><div class="logo">ARSENAL <small>of</small> BUREAUCRACY</div>
+  const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${res(`${slotsUsed()}/${S.slots}`,'Offices busy','<b>Program offices</b><br>One program each. Full offices block new launches.','rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
@@ -3313,6 +3313,7 @@ document.addEventListener('pointerdown',e=>{
     case 'prog':if(S.modal&&S.modal!=='prog')S.progBack={m:S.modal,sel:S.sel};else if(!S.modal)S.progBack=null;S.modal='prog';S.selP=b.dataset.u;S.speed=0;break;
     case 'progback':S.modal=S.progBack?.m||null;S.sel=S.progBack?.sel||S.sel;S.progBack=null;break;
     case 'goback':navBackG();break;
+    case 'home':if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}S.view='cmd';break;
     case 'ovjump':S._ovScroll=b.dataset.s;break;
     case 'qj':setTimeout(qjOpen,0);break;
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
