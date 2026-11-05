@@ -216,6 +216,14 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .pools{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:6px 10px;border-bottom:1px solid #2e2c22;background:#191b16}
 .pool{display:grid;grid-template-columns:18px 1fr 34px;gap:5px;align-items:center;font-size:11px}.pool b{text-align:right;color:#cfc6ad}.pool.over b{color:#e49a8e}.pool .pic{text-align:center}
 #tip{max-width:370px}
+/* bottlenecks */
+.bnlines{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:6px 14px;margin-bottom:6px}.bnl b{font:700 13px Georgia}
+.bncard{margin:8px 0;padding:8px 10px;background:#f3ebd6;border:1px solid #cbbd95;border-left:4px solid #8a1f15}
+.bnhd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #cbbd95;padding-bottom:5px;margin-bottom:5px}
+.bnrank{font:700 18px Georgia;color:#8a1f15;min-width:24px;text-align:center}
+.bngain{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}.bngain span{background:#d6e8c8;border:1px solid #9fbf8a;padding:1px 6px;border-radius:2px;font-size:11.5px}
+.bngrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 16px}.bngrid h5{margin:2px 0 3px;font:700 10.5px "Segoe UI";letter-spacing:.08em;text-transform:uppercase;color:#6b5a35}
+.bnc{font-size:12px;margin:2px 0}.bnc .sw{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px}
 /* rulebook */
 .rbdom{margin:8px 0 14px;padding:8px 10px;background:#f3ebd6;border:1px solid #cbbd95}
 .rbh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:2px solid #8a7850;padding-bottom:4px;margin-bottom:4px}.rbh b{font:700 17px Georgia}.rbh .ic{font-size:18px}
@@ -911,7 +919,7 @@ const DOMAINS=[
   steps:[['NEPA review',['ea','eis'],'Assessment ≤1 yr · impact statement ≤2 yr (2023 law)'],['Clean Air Act permit',['caa'],'Months to years'],['Clean Water Act §404',['cwa'],'If wetlands or streams'],['ESA §7 consultation',['esa'],'135 days by statute'],['NHPA §106 review',['nhpa'],'Historic properties'],['State & local',['local'],'Zoning, state permits'],['Grid hookup',['queue'],'Interconnection queue'],['Lawsuit',['lawsuit'],'6 yr to sue; 2 yr under FAST-41']]},
  {id:'acq',n:'Acquisition',ic:'📑',layers:['PROCURE','PRIME','QUAL'],ref:d=>d.id==='l_int_prime',
   steps:[['Requirements',['reqcreep'],'The spec moves'],['Source selection',['far'],'RFP to award'],['Bid protest',['protest'],'100 days at GAO'],['Cost accounting',['cas'],'CAS coverage'],['Cyber certification',['cmmc'],'CMMC'],['Prime pushback',['primelobby'],'Incumbents lobby'],['Demand signal',['demand'],'Orders a year at a time'],['First-article test',['fat'],'Qualification']]},
- {id:'source',n:'Domestic sourcing & import controls',ic:'🏭',layers:['PROTECT','ALLIED','MARKET'],ref:d=>!d.ally&&d.tags.includes('greenfield')&&d.tags.includes('metal')||d.id==='l_surf',
+ {id:'source',n:'Domestic sourcing & import controls',ic:'🏭',layers:['PROTECT','MARKET'],ref:d=>!d.ally&&d.tags.includes('greenfield')&&d.tags.includes('metal')||d.id==='l_surf',
   steps:[['Buy American & Berry',['buyam'],'Domestic content, specialty metals'],['Jones Act',['jones'],'US-built, US-crewed'],['Security clearances',['clearance'],'Cleared workforce'],['Hidden PRC content',['hidden'],'Found in audits'],['Chinese price collapse',['dump'],'After you build']]},
  {id:'export',n:'Export & investment controls',ic:'🛂',layers:['ALLIED'],ref:d=>d.ally,
   steps:[['Export license (TAA)',['itar'],'State Department approval for allied work'],['Offsets & workshare',['offsets'],'Partners want a share'],['Allies’ own needs',['allyneeds'],'Allies keep output home'],['Hidden PRC content',['hidden'],'Found in audits'],['Beijing’s controls',[],'Minerals, rare earths, the 0.1% rule']]},
@@ -1003,7 +1011,7 @@ function rulesBody(){
       return `<tr class="${on?'rlon':''}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td><span class="fx">${r.dyn?r.dyn().map((t,i)=>`<span class="${S.truce&&i===0?'up':'dn'}">${t}</span>`).join(''):(r.up||[]).map(t=>`<span class="up">${t}</span>`).join('')+(r.dn||[]).map(t=>`<span class="dn">${t}</span>`).join('')}</span></td></tr>`}).join('');
     const links=(RLINKS[D.id]||[]).filter(([id])=>(RD[id]&&facOk(RD[id]))||(CD[id]&&facOk(CD[id]))).map(([id,why])=>{const R=RD[id],C=CD[id],on=R?passed(id):carveOn(id);
       return `<tr class="${on?'rlon':''}"><td>${on?'✓':R?'📜':'🖋'}</td><td><b>${R?rname(R):cname(C)}</b><div class="mini">${R?(on?'Enacted':`Pending bill · ${rk}`):(on?'Emergency carve-out in force':'Emergency carve-out · fast, temporary, can be struck down')}</div></td><td><span class="mini">${why}</span> ${on?'':`<span class="linkn" data-a="remedy" data-r="${id}">${R?'On the agenda →':'Use it →'}</span>`}</td></tr>`}).join('');
-    return `<div class="rbdom"><div class="rbh"><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span><span class="mini">${fmt(lost,0)} weeks lost this game</span>${stalled.length?` · <span class="redt mini">stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</span>`:''}</div>
+    return `<div class="rbdom" id="rb-${D.id}"><div class="rbh"><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span><span class="mini">${fmt(lost,0)} weeks lost this game</span>${stalled.length?` · <span class="redt mini">stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</span>`:''}</div>
      <div class="mini" style="margin:2px 0 4px">The process today. Each step shows the highest odds it stops a program you could launch now.</div><div class="steps">${steps}</div>
      <table class="ctable lev rbt"><colgroup><col style="width:42px"><col style="width:46%"><col></colgroup>${rows}${links}</table>${D.id==='source'?`<div class="rbic">${icPanel()}</div>`:''}</div>`}).join('');
 }
@@ -2296,6 +2304,46 @@ function progHTML(uid){
   const lg=S.log.filter(l=>l.m.includes(nm)).slice(0,24);
   if(lg.length)h+=`<div class="dsec"><h4>Record</h4>${lg.map(l=>`<div class="mini" style="padding:2px 0;border-bottom:1px dotted #cbbd95"><b>${fmtDate(l.w)}</b> · ${l.m}</div>`).join('')}</div>`;
   return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${h}</div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`}
+/* ---------- bottlenecks: where output is lost, why, what's being done, what's in the way ---------- */
+const CAUSES=[['cut','Cut off or barred','#8a1f15'],['starved','Waiting on an input','#d07a3a'],['issue','Plant problems','#a06030'],['ramp','Plants still ramping','#c9a227'],['cap','Not enough capacity','#5a4e38']];
+// split a node's shortfall into causes, in the order a planner would check them
+function shortCauses(id,P){const p=P[id];let short=Math.max(0,p.need-p.avail0);const o={};
+  const domUsable=Math.max(0,p.avail0-p.ext-(S.stock[id]||0)),starved=p.starvedBy?Math.max(0,p.dom-domUsable):0;
+  const issue=plantsFor('node',id).filter(pl=>pl.issue).reduce((a,pl)=>a+pl.gain*pl.yield*(1-plantMult(pl)),0);
+  for(const [k,v] of [['cut',p.lost],['starved',starved],['issue',issue],['ramp',p.ramp]]){const x=Math.min(short,Math.max(0,v||0));o[k]=x;short-=x}
+  o.cap=short;return o}
+// what fixing one node would give back, by end item: re-run the chain with that node fully supplied
+function bnScan(){if(S._bnc?.w===S.w&&S._bnc.n===S.projects.length+S.plants.length)return S._bnc.v;
+  const R0=production(false),P=R0.P,ids=ORDER.filter(id=>P[id].need>1e-6&&P[id].cover<.999),v=[];
+  for(const id of ids){const x={id,amt:P[id].need*1.3+1e-6,left:1};S.spot.push(x);let R1;try{R1=production(false)}finally{S.spot.splice(S.spot.indexOf(x),1)}
+    const gain={};let score=0;for(const c in LINES){const d=R1.out[c].n-R0.out[c].n;if(d>1e-9){gain[c]=d*LINES[c].k;score+=d/Math.max(R0.out[c].cap,1e-9)}}
+    v.push({id,gain,score,causes:shortCauses(id,P),short:P[id].need-P[id].avail0})}
+  v.sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));S._bnc={w:S.w,n:S.projects.length+S.plants.length,v:{rows:v,R0}};return S._bnc.v}
+const LAYER_DOM=l=>DOMAINS.find(D=>D.layers.includes(l));
+function bnBody(){
+  const {rows,R0}=bnScan(),P=R0.P,sl=slipF().f,yr=w=>dateOf(w).getFullYear();
+  const lines=S.order.filter(c=>R0.out[c].bott);
+  let h=`<div class="bnlines">${lines.length?lines.map(c=>{const o=R0.out[c],f=o.n/Math.max(o.cap,1e-9);return `<div class="bnl"><b class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</b><div class="bigbar" style="margin:3px 0"><i style="left:0;width:${f*100}%;background:#2f62a0"></i></div><span class="mini">${fmtN(o.yr)} of ${fmtN(o.capYr)}/yr capacity · ⛓ ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join(' ← ')}</span></div>`}).join(''):'<p class="mini">Every end-item line is running at capacity.</p>'}</div>`;
+  if(!rows.length)return h+'<p>No material or component is short right now.</p>';
+  h+=`<div class="sleg" style="margin:8px 0 4px">${CAUSES.map(([k,n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')}</div>`;
+  h+=rows.map((r,ix)=>{const id=r.id,n=ND[id],p=P[id],st=nodeStatus(p),tot=Object.values(r.causes).reduce((a,b)=>a+b,0)||1;
+    const gains=Object.entries(r.gain).sort((a,b)=>b[1]/LINES[b[0]].k-a[1]/LINES[a[0]].k);
+    const projs=S.projects.filter(q=>PD[q.def].t.node===id),ramping=S.plants.filter(pl=>pl.target===id&&!pl.full);
+    const lost={};for(const q of projs){for(const [l,w] of Object.entries(q.lost||{}))lost[l]=(lost[l]||0)+w;if(q.obs[0])lost[OD[q.obs[0].id].layer]=(lost[OD[q.obs[0].id].layer]||0)+.01}
+    const way=Object.entries(lost).filter(x=>x[1]>.005).sort((a,b)=>b[1]-a[1]);
+    const levs=leversFor(id).filter(d=>!S.projects.some(q=>q.def===d.id)&&!leverDone(d)).sort((a,b)=>projGain(b)-projGain(a)).slice(0,3);
+    const cutDom=r.causes.cut>1e-9?(S.fac==='US'?(icBars(id)||(S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars'))?'source':'export'):null):null;
+    return `<div class="bncard" id="bn-${id}"><div class="bnhd"><span class="bnrank">${ix+1}</span><span class="dic" style="font-size:20px">${n.ic}</span><div><b class="linkn" data-a="node" data-n="${id}" style="font:700 16px Georgia;color:inherit">${n.n}</b><div class="mini">Tier ${n.t} · <b class="st-t-${st}">${st.toUpperCase()}</b> · ${pct(Math.min(p.cover,9.99))} of need${n.ss?' · sole source':''}</div></div><span class="dsp"></span>
+      <div class="bngain">${gains.length?gains.map(([c,g])=>`<span data-tip="Fully supplying ${n.n} would add this much ${LINES[c].u} output a year."><b>+${fmtN(g)}</b>/yr ${LINES[c].n}</span>`).join(''):'<span class="mini">Another input binds first</span>'}</div></div>
+     <div class="bngrid"><div><h5>Why it's short</h5><div class="bigbar" style="display:flex">${CAUSES.filter(([k])=>r.causes[k]>1e-9).map(([k,nm,c])=>`<i style="position:static;flex:${r.causes[k]};background:${c}" title="${nm}: ${pct(r.causes[k]/Math.max(p.need,1e-9))} of need"></i>`).join('')}</div>
+       <div class="bnc mini">Supply now: domestic ${pct(Math.min(p.dom,p.need)/Math.max(p.need,1e-9))} · allied ${pct(p.ally/Math.max(p.need,1e-9))} · PRC ${pct(p.prc/Math.max(p.need,1e-9))} · know-how ${Math.round(S.know[id])}</div>
+       ${CAUSES.filter(([k])=>r.causes[k]>1e-9).map(([k,nm,c])=>`<div class="bnc"><span class="sw" style="background:${c}"></span>${nm} <b>${pct(r.causes[k]/Math.max(p.need,1e-9))}</b>${k==='starved'&&p.starvedBy?` — <span class="linkn" data-a="bngo" data-n="${p.starvedBy}">${ND[p.starvedBy].n}</span>`:''}${k==='cut'&&cutDom?` — <span class="linkn" data-a="rbgo" data-d="${cutDom}">⚖ ${DOMAINS.find(D=>D.id===cutDom).n}</span>`:''}</div>`).join('')}</div>
+      <div><h5>Fixes under way</h5>${projs.length||ramping.length?projs.map(q=>{const [t,c]=progStatus(q,true);return `<div class="bnc"><span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t}</span> <span class="mini">· ~${yr(Math.round(S.w+remW(q)*sl))}</span></div>`}).join('')+ramping.map(pl=>`<div class="bnc"><span class="linkn" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</span> <span class="mini">ramping, ${pct(pl.yield)} of nameplate</span></div>`).join(''):'<p class="mini redt">Nothing under way.</p>'}
+       ${way.length?`<h5 style="margin-top:6px">What's in the way</h5>${way.map(([l,w])=>{const D=LAYER_DOM(l);return `<div class="bnc"><span class="sw" style="background:${LAYERS[l].c}"></span>${LAYERS[l].n} <b>${w>=1?fmt(w,0)+' wk':'now'}</b>${D?` — <span class="linkn" data-a="rbgo" data-d="${D.id}">⚖ ${D.n}</span>`:''}</div>`}).join('')}`:''}</div>
+      <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(d.dur.reduce((a,b)=>a+b,0))}</span></div>`).join('')}
+       <div class="bnc"><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>💸 Spot purchase</button> <span class="mini">${money(spotCost(id))} · 26 wk</span></div>
+       ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
+  return h}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
 function leversFor(id){return PROJECTS.filter(d=>facOk(d)&&d.t.node===id)}
@@ -2745,7 +2793,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views">${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}</div>`}
@@ -2758,9 +2806,9 @@ function flowBody(){
 `;
 }
 function viewHTML(){
-  const T={rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
-  const body=S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='pipe'?pipeBody():readyBody();
-  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  const T={bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const body=S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='pipe'?pipeBody():readyBody();
+  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -2774,6 +2822,7 @@ function mountView(st0){
   slot.replaceWith(viewEl);if(viewEl.dataset.fresh){viewEl.scrollTop=0;delete viewEl.dataset.fresh}else viewEl.scrollTop=st;
   if(S._citeScroll){const el=viewEl.querySelector('#cite-'+S.citeHi);if(el)el.scrollIntoView({block:'center'});S._citeScroll=false}
   const sk=viewEl.querySelector('.skwrap');if(sk&&S._skScroll!=null)sk.scrollLeft=S._skScroll;
+  for(const [k,pre] of [['_bnScroll','#bn-'],['_rbScroll','#rb-']])if(S[k]){const el=viewEl.querySelector(pre+S[k]);if(el){el.scrollIntoView({block:'start'});el.classList.remove('fl-good');void el.offsetWidth;el.classList.add('fl-good')}S[k]=null}
 }
 
 /* =====================================================================
@@ -2909,7 +2958,7 @@ function renderGame(){
    <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
   if(S.tab==='bott'){
     const shortL=S.order.filter(l=>R.out[l].bott);
-    sup+=`<div class="sect"><span>Short lines → root cause</span><span>output / cap</span></div>`;
+    sup+=`<div class="sect"><span>Short lines → root cause</span><span class="linkn" data-a="view" data-v="bn" style="color:#dcc78e">Full analysis →</span></div>`;
     if(!shortL.length)sup+=`<div class="empty" style="padding:10px">Every line is running at capacity.</div>`;
     for(const l of shortL){const o=R.out[l];sup+=`<div class="chain trc" data-n="L:${l}"><b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
     const bad=ORDER.filter(id=>['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover);
@@ -3136,6 +3185,8 @@ document.addEventListener('pointerdown',e=>{
     case 'watch':newGame(S.fac,true);break;
     case 'prog':if(S.modal&&S.modal!=='prog')S.progBack={m:S.modal,sel:S.sel};else if(!S.modal)S.progBack=null;S.modal='prog';S.selP=b.dataset.u;S.speed=0;break;
     case 'progback':S.modal=S.progBack?.m||null;S.sel=S.progBack?.sel||S.sel;S.progBack=null;break;
+    case 'bngo':S.view='bn';S._bnScroll=b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'rbgo':S.view='rules';S._rbScroll=b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rtab':S.rtab=b.dataset.t;S._rtTop=true;break;
     case 'remedy':if(S.modal==='prog')S.modal=null;S.rtab=CD[b.dataset.r]?'home':'agenda';S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
