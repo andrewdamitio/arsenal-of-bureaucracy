@@ -2962,11 +2962,12 @@ function applyFlashes(){const now=performance.now();
 const UPS={},DNS={};
 function upOf(id){if(UPS[id])return UPS[id];const s=new Set(),st=[...(id.startsWith('L:')?LINES[id.slice(2)].in:ND[id].in)];while(st.length){const x=st.pop();if(s.has(x))continue;s.add(x);st.push(...ND[x].in)}return UPS[id]=s}
 function dnOf(id){if(DNS[id])return DNS[id];const s=new Set(),st=[...(CONSUMERS[id]||[])];while(st.length){const x=st.pop();if(s.has(x))continue;s.add(x);if(!x.startsWith('L:'))st.push(...CONSUMERS[x])}return DNS[id]=s}
-let traceId=null;
+let traceId=null,tracePU=null; // tracePU: the program card being hovered, if any
 function applyTrace(){const on=!!traceId&&!!S&&!S.replay;app.classList.toggle('tracing',on);if(!on)return;
-  const set=new Set([traceId,...upOf(traceId),...dnOf(traceId)]);
-  for(const e of app.querySelectorAll('.trc'))e.classList.toggle('hot',set.has(e.dataset.n||e.dataset.tn))}
-document.addEventListener('mouseover',e=>{if(!S)return;const el=e.target.closest?.('#main .trc');const id=el?(el.dataset.n||el.dataset.tn):null;if(id!==traceId){traceId=id;applyTrace()}});
+  const up=upOf(traceId),set=new Set([traceId,...up,...dnOf(traceId)]);
+  // programs light up only for the program hovered, or when they fix the hovered item or something it depends on
+  for(const e of app.querySelectorAll('.trc'))e.classList.toggle('hot',e.dataset.pu?(tracePU?e.dataset.pu===tracePU:e.dataset.tn===traceId||up.has(e.dataset.tn)):set.has(e.dataset.n||e.dataset.tn))}
+document.addEventListener('mouseover',e=>{if(!S)return;const el=e.target.closest?.('#main .trc');const id=el?(el.dataset.n||el.dataset.tn):null,pu=el?.dataset.pu||null;if(id!==traceId||pu!==tracePU){traceId=id;tracePU=pu;applyTrace()}});
 // reforms and carve-outs that make this obstacle rarer or shorter, linked to the agenda
 function remedies(od){
   const ks=[...new Set([...Object.keys(od.mods||{}),...Object.keys(od.wm||{}),...(od.layer==='QUAL'?['cvQual']:[])])];
@@ -3099,7 +3100,7 @@ function renderGame(){
     const def=PD[p.def],st=STAGES[p.stage],D=p.dur[p.stage];
     const tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
     const remain=p.dur.slice(p.stage).reduce((a,b)=>a+b,0)-p.prog;
-    pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · inherited':' · yr '+fmt((S.w-p.started)/52,1)}${p.ct?` · ${CONTRACTS[p.ct.k].ic}${BUILDERS[p.ct.b].ic}`:''} · ≥${yrs(remain)} left</span></div>
+    pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}" data-pu="${p.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · inherited':' · yr '+fmt((S.w-p.started)/52,1)}${p.ct?` · ${CONTRACTS[p.ct.k].ic}${BUILDERS[p.ct.b].ic}`:''} · ≥${yrs(remain)} left</span></div>
       <div class="pipe">${STAGES.map((s,i)=>`<div class="${p.dur[i]===0?'skip':i<p.stage?'done':i===p.stage?'cur':''}">${STAGE_N[s]}</div>`).join('')}</div><div class="prog"><i style="width:${Math.min(100,p.prog/D*100)}%"></i></div>`;
     if(p.obs.length){pr+=obsBlock(OD[p.obs[0].id],p.obs[0],'opt',p.uid);if(p.obs.length>1)pr+=`<div class="queued">+${p.obs.length-1} more queued</div>`}
     else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]} · ${fmt(p.prog,0)}/${D} wk ${crBlock?`<span class="red">— frozen by CR</span>`:''}${slow.map(g=>` <span class="amber">— ${g.mult===0?'halted':'slowed ×'+fmt(g.mult,2)} by ${g.label.toLowerCase()}</span>`).join('')}${p.qf<1?` <span class="amber">— queued for ${POOLS[p.qk].ic} ${POOLS[p.qk].n.toLowerCase()} ×${fmt(p.qf,2)}</span>`:''}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
@@ -3116,13 +3117,13 @@ function renderGame(){
   for(const pl of ramping){
     const isLine=pl.kind==='line',L=isLine?LINES[pl.target]:null,tgt=isLine?L.n:ND[pl.target].n;
     const outNow=pl.gain*pl.yield*plantMult(pl);
-    pr+=`<div class="pcard plant trc" data-tn="${isLine?'L:':''}${pl.target}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</b><span class="dim">${tgt} · yr ${fmt((S.w-pl.start)/52,1)} of ramp</span></div>
+    pr+=`<div class="pcard plant trc" data-tn="${isLine?'L:':''}${pl.target}" data-pu="${pl.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</b><span class="dim">${tgt} · yr ${fmt((S.w-pl.start)/52,1)} of ramp</span></div>
       <div class="yield"><span>${pct(pl.yield)} of nameplate</span><div class="bar"><i style="left:0;width:${pl.yield*100}%;background:${pl.issue?'#a06030':'var(--green)'}"></i><span class="need" style="left:90%"></span></div>
       <span>${isLine?fmtN(outNow*L.k)+'/yr':pct(outNow/Math.max(P[pl.target]?.need||1,1e-9))+' of need'}</span><span class="tag kh">KH ${Math.round(S.know[pl.target])}</span></div>
       ${pl.adv>0?`<div class="queued red">${pct(pl.adv)} of output depends on a PRC precursor</div>`:'<div style="height:6px"></div>'}
       ${pl.issue?obsBlock(OPSD[pl.issue.id],pl.issue,'ops',pl.uid,`<span class="sub red">Output ×${OPSD[pl.issue.id].mult} until resolved</span>`):''}</div>`;
   }
-  if(fullP.length)pr+=fullP.map(pl=>`<div class="prow trc" data-tn="${pl.kind==='line'?'L:':''}${pl.target}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">✓ ${pl.nm}</span>${pl.adv>0?' <span class="red">⚠ PRC precursor</span>':''}</span><span class="dim">${pl.kind==='line'?fmtN(pl.gain*pl.yield*LINES[pl.target].k)+'/yr':ND[pl.target].n}</span></div>`).join('');
+  if(fullP.length)pr+=fullP.map(pl=>`<div class="prow trc" data-tn="${pl.kind==='line'?'L:':''}${pl.target}" data-pu="${pl.uid}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">✓ ${pl.nm}</span>${pl.adv>0?' <span class="red">⚠ PRC precursor</span>':''}</span><span class="dim">${pl.kind==='line'?fmtN(pl.gain*pl.yield*LINES[pl.target].k)+'/yr':ND[pl.target].n}</span></div>`).join('');
   const allyDone=S.done.filter(d=>PD[d.def].ally);
   if(allyDone.length)pr+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
   // ---- right
