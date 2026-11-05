@@ -89,6 +89,7 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .bill{margin:8px 10px;padding:8px;border:1px solid var(--brass);background:#2b2719}
 .lg{display:grid;grid-template-columns:10px 1fr 46px 34px;gap:6px;align-items:center;padding:3px 10px;font-size:11.5px}
 .lg .sw{width:10px;height:10px}.lgbar{grid-column:2/5;height:4px;background:#0d0e0b;margin-top:-2px}.lgbar i{display:block;height:100%}
+#log,#view,.paper .bd,.dmain,.rbdom,.bncard,.ncard,.obs p,#tip{user-select:text}
 #log{margin:0 8px 8px;height:120px;overflow:auto;background:#0f110d;border:1px solid var(--line);font-size:11.5px}
 #log h2{position:sticky;top:0;margin:0;padding:4px 10px;font:600 11px Georgia;letter-spacing:.16em;text-transform:uppercase;color:var(--brass2);background:#24221a;border-bottom:1px solid var(--brass)}
 #log div{padding:2px 10px;border-bottom:1px solid #1d1d17}#log .d{color:var(--brass);margin-right:8px;font-family:Georgia}
@@ -314,7 +315,7 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 </style>
 </head>
 <body>
-<div id="app"></div><div id="ov"></div><div id="toasts"></div>
+<div id="app"></div><div id="logbox"></div><div id="ov"></div><div id="toasts"></div>
 <script>
 const FLAGS={
  us:"<svg class='flg' viewBox='0 0 19 10'><rect width='19' height='10' fill='#b22234'/><path d='M0 1.15h19M0 2.7h19M0 4.23h19M0 5.77h19M0 7.3h19M0 8.85h19' stroke='#fff' stroke-width='.77'/><rect width='7.6' height='5.4' fill='#3c3b6e'/></svg>",
@@ -2930,7 +2931,7 @@ function remedies(od){
     const eff=[od.mods?.[k]!=null?`odds ×${od.mods[k]}`:'',od.wm?.[k]!=null?`waits ×${od.wm[k]}`:k==='cvQual'?'waits ×0.6':''].filter(Boolean).join(', ');
     return `<span class="rem ${on?'on':''}" ${on?'':`data-a="remedy" data-r="${k}"`} data-tip="${R?'Reform':'Carve-out'}${on?' in force':''}: ${eff}">${on?'✓':R?'📜':'🖋'} ${R?rname(R):cname(C)}</span>`}).join('');
   return h?`<div class="rems">${h}</div>`:''}
-// node and line names in the Federal Register become links
+// node and line names in the timeline become links
 const LINKN=[...NODES.map(n=>[n.n,n.id]),...Object.entries(LINES).map(([k,L])=>[L.n,'L:'+k])].filter(x=>x[0].length>3).sort((a,b)=>b[0].length-a[0].length);
 const LKC=new Map(),isW=ch=>!!ch&&/[\w&]/.test(ch);
 function linkify(m){const pn=S.projects.length+S.done.length+S.gone.length;if(LKC._pn!==pn){LKC.clear();LKC._pn=pn}
@@ -3116,19 +3117,25 @@ function renderGame(){
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['home','🏛 Home front'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:pr);
   const nd=`<h2>Defense Needs <span class="r"><button class="btn sm" data-a="view" data-v="arsenal">📈 Charts</button></span></h2><div class="throw">${det}</div>${needsHTML(R)}`;
-  const lg=`<div id="log"><h2>The Federal Register${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
+  const lg=`<div id="log"><h2>Timeline${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
-  const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null,lgS=document.getElementById('log')?.scrollTop;
+  const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
   document.body.classList.toggle('replaying',!!S.replay);
-  app.innerHTML=cz(top+viewStrip()+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+cz(lg)+reelHTML();
+  app.innerHTML=cz(top+viewStrip()+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+reelHTML();
+  mountLog(lg);
   ['supply','needs','right'].forEach((id,i)=>{const el=document.getElementById(id);if(el&&sc[i]!=null)el.scrollTop=sc[i]});
   if(S._rtTop){const el=document.getElementById('right');if(el)el.scrollTop=0;S._rtTop=false}
-  const lgEl=document.getElementById('log');if(lgEl&&lgS!=null)lgEl.scrollTop=lgS;
   if(S.view&&S.view!=='cmd'){mountView(vs)}else viewKey='';
   applyFlashes();applyTrace();markOff(app);
   if(S._jump){const el=document.getElementById('ag-'+S._jump);if(el)el.scrollIntoView({block:'center'});S._jump=null}
 }
 const waitingToStart=()=>(S.replay?S.w===0:S.w===PLAY0)&&!S.speed&&!S.modal&&!S.queue.length;
+// the timeline lives outside #app so redraws don't wipe a selection; it only changes when there's something new
+let logKey='';
+function mountLog(html){const box=document.getElementById('logbox'),sel=window.getSelection();
+  if(sel&&!sel.isCollapsed&&box.contains(sel.anchorNode))return;
+  const k=S.log.length+'|'+(S.log[0]?.w)+(S.log[0]?.m)+'|'+(S.projects.length+S.done.length+S.gone.length)+'|'+html.includes('data-a="watch"');
+  if(k===logKey&&box.firstChild)return;const lg=box.querySelector('#log'),st=lg?lg.scrollTop:0;box.innerHTML=cz(html);logKey=k;const n=box.querySelector('#log');if(n)n.scrollTop=st}
 function reelHTML(){const now=performance.now();
   if(S.replay)return `<div id="reel"><div class="bar2">${S.speed?'REPLAY':'PAUSED'} <span class="d">${fmtDate(S.w)}</span><span class="rp"><i style="width:${S.w/PLAY0*100}%"></i></span><button class="btn sm" data-a="skip">Skip ▸▸</button></div>${S._reel?`<div class="head"><small>${fmtDate(S._reel.w)}</small>${S._reel.t}</div>`:''}</div>`;
   if(S._handT0&&now-S._handT0<3600)return `<div id="handover"><div style="animation-delay:${Math.round(S._handT0-now)}ms"><small>${fmtDate(S.w)}</small>YOUR WATCH</div></div>`;
