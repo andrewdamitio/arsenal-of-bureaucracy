@@ -304,7 +304,7 @@ body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
 .dbk{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.dbk .dtb{flex:none;width:44px;height:5px;display:block}.dbk b{font-size:11px;color:#c9a227}
 .dbc.hot{border-color:#e0604c;background:#45231c}.dbc.hot .dbk b{color:#e0604c}.dbc.hot .dtb i{background:#e0604c}.dbc.fresh{animation:dbnew 1.2s ease-out 2}
 @keyframes dbnew{0%{box-shadow:0 0 0 0 #e0c56acc}100%{box-shadow:0 0 0 8px #e0c56a00}}
-.rc-loss{color:#ffb4a6;background:#7a2a20;padding:0 5px;border-radius:2px}
+.rc-rlim .rc-cut{color:#ffcf8a;font-weight:600}.rc-loss{color:#ffb4a6;background:#7a2a20;padding:0 5px;border-radius:2px}
 /* decision timer */
 .dtw{flex-basis:100%;margin:4px 0 5px}.dtimer{display:flex;align-items:center;gap:6px;font-size:11.5px}.dtd{font-size:11px;opacity:.8;margin:2px 0 0 19px}.dtd i{font-style:normal;font-weight:600}.dti{font-size:13px}.dtb{flex:0 0 90px;height:8px;background:#0003;border:1px solid #c9a22780;position:relative}.dtb i{position:absolute;left:0;top:0;bottom:0;background:#c9a227;transition:width .3s}
 .dtimer b{color:#c9a227;white-space:nowrap}.dtt{opacity:.85}.dtt i{font-style:normal;font-weight:600}.dtimer.hot b{color:#e0604c}.dtimer.hot .dtb i{background:#e0604c}.dtimer.hot .dtb{border-color:#e0604c}.dtimer.hot .dti{animation:dthot 1s ease-in-out infinite}
@@ -350,7 +350,7 @@ body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
 .nb .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;z-index:1}.nb .mk.req{background:var(--brass2)}
 .ngap{font-size:10.5px;margin-top:4px;display:flex;justify-content:space-between;gap:6px}
 .rtabs{display:flex;gap:3px;padding:5px 6px 0;height:31px;background:#171914;border-bottom:1px solid var(--brass);position:sticky;top:0;z-index:3}
-.rtabs .vbtn{font-size:11.5px;padding:3px 9px}#right h2{top:31px}
+.rtabs .vbtn{font-size:11.5px;padding:3px 8px;white-space:nowrap}#right h2{top:31px}
 /* change flashes: a row that just got worse/better pulses; delay is set negative so re-renders don't restart it */
 .fl-bad{animation:flb 1.6s ease-out both}.fl-good{animation:flg 1.6s ease-out both}
 @keyframes flb{0%{background:#c0392bcc;box-shadow:0 0 0 2px #e05a48}100%{background:transparent;box-shadow:0 0 0 0 transparent}}
@@ -1402,7 +1402,7 @@ const EVENTS=[
      {l:'Issue non-availability determinations (start the 52-week DFARS carve-out)',fx:()=>{S.dfars=true;startCarve('cvDfars',true)}}]},
  {id:'truce27',fac:['US'],fixedW:PLAY0+1,ic:FLAGS.cn,t:'The Truce Runs Out (10 Jan 2027)',
   body:"Washington announced in September that the truce would run to 10 January. Beijing never published matching text. Extending keeps its gallium, germanium, antimony and graphite bans and its October 2025 rare-earth rules suspended, and keeps your own Affiliates Rule on ice, so firms 50%-owned by blacklisted Chinese companies stay outside US export controls. Reinstating the rule closes that loophole. Beijing will switch everything back on.",
-  o:[{l:'Extend the truce (−8 PC: hawks call it a giveaway)',pc:8,fx:()=>{S.truce=true;S.pc+=2;log(`${FLAGS.cn} Truce extended; the Affiliates Rule stays suspended.`,'ev')}},
+  o:[{dflt:1,l:'Extend the truce (−8 PC: hawks call it a giveaway)',pc:8,fx:()=>{S.truce=true;S.pc+=2;log(`${FLAGS.cn} Truce extended; the Affiliates Rule stays suspended.`,'ev')}},
      {l:'Reinstate the Affiliates Rule (+10 PC; Beijing retaliates)',fx:()=>{S.pc+=10;affilOn()}}]},
  {id:'truce0',fac:['EU'],fixedW:PLAY0+2,ic:FLAGS.cn,t:'Beijing Decides on Its Suspended Controls',
   fx:()=>{S._tr=rand()<.55;if(S._tr){S.truce=true}else{applyChinaBan()}},
@@ -3384,6 +3384,8 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
     const fx=S.projects.filter(q=>isL?PD[q.def].t.line===c:PD[q.def].t.node===lim),rp=S.plants.filter(pl=>!pl.full&&(isL?pl.kind==='line'&&pl.target===c:pl.target===lim));
     const gap=o.yr<1e-9?'<span class="red">You build none</span>':r>=1.1?`<span class="red">${RV().n} builds <b>${r>=10?Math.round(r):fmt(r,1)}×</b> as many</span>`:r<=.9?`<span class="green">You out-build ${RV().n} <b>${fmt(1/r,1)}×</b></span>`:'<span class="gold">At parity</span>';
     const g=cn/Math.max(cnOut(c,S.w-52),1e-9)-1;
+    const Pl=isL?null:R.P[lim],cutF=Pl&&Pl.need>1e-6?Math.min(1,Pl.lost/Pl.need):0,cutWhy=isL?null:S.fac==='US'&&icBars(lim)?['US import controls','source']:S.fac==='US'&&S.dfars&&DFARS_NODES.includes(lim)&&!carveOn('cvDfars')?['the DFARS ban on Chinese and Russian content','source']:["China's export controls",'export'],
+      cutT=cutF>.1?` <span class="linkn rc-cut" data-a="rbgo" data-d="${cutWhy[1]}" data-tip="How this rule works, and who can change it">✂ ${pct(cutF)} of its supply cut off by ${cutWhy[0]}</span>`:'';
     const held=isL?`⚙ Limited by <span class="linkn" data-a="node" data-n="L:${c}">line capacity</span>`:`⛓ Short of ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join('<span class="ar">←</span>')}`;
     const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].join(' · ')}`:`<span class="red">No fix under way.</span>`;
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
@@ -3393,7 +3395,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
        <div class="rc-rb"><span>${F().flag} You</span><div class="nb"><i style="width:${B(o.capYr)}%;background:#34404c"></i><i style="width:${B(o.yr)}%;background:#5f8fc4"></i></div><span class="v"><b>${fmtN(o.yr)}</b>/yr${o.capYr>o.yr*1.02?` <span class="dim">of ${fmtN(o.capYr)}</span>`:''}</span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
        ${raceSpark(c)}</div>
-      <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${held}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
+      <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${held}${cutT}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
       <div class="rc-rwork">${work}${past.length?` <span class="rc-rclr">${past.map(x=>`✓ ${limName(x.id)} ${yr(x.w1)}`).join(' · ')}</span>`:''}</div></div>`}).join('');
   return h}
 function renderGame(){
@@ -3500,7 +3502,7 @@ function renderGame(){
   const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),mx=Math.max(1,...L.map(x=>x[1].wk));
   pr+=`<h2>Barrier Ledger <span class="r dim">Weeks lost</span></h2><div style="padding:6px 0">`+L.map(([k,v])=>`<div class="lg"><span class="sw" style="background:${LAYERS[k].c}"></span><span>${LAYERS[k].n}</span><b style="text-align:right">${fmt(v.wk,0)}</b><span class="dim" style="text-align:right">×${v.n}</span><div class="lgbar"><i style="width:${v.wk/mx*100}%;background:${LAYERS[k].c}"></i></div></div>`).join('')+`</div>`;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
-  const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['fac','🏭 Factories'],['home','🏛 Home front'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:rtab==='fac'?fc:pr);
+  const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['fac','🏭 Factories'],['home','🏛 Home'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:rtab==='fac'?fc:pr);
   const nd=`<h2>The Race with <span class="rc-pick">${Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2>Timeline${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
