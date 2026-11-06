@@ -497,7 +497,7 @@ body{background:
 .sc-card{margin:6px;padding:7px 10px 8px;background:linear-gradient(#2a2717,#1d1b12);border:1px solid #8a6a1f;box-shadow:inset 4px 0 0 #c9a227}
 .sc-ch{display:flex;align-items:center;gap:9px;margin-bottom:5px}.sc-ch b{font:400 16px var(--sten);color:#e8d08a;letter-spacing:.05em}
 .sc-clock{margin-left:auto;font:700 15px var(--disp);letter-spacing:.06em;color:#d9a441;text-transform:uppercase}.sc-clock.hot{color:#e0604c}.sc-v{margin-left:auto;font:700 15px var(--disp);letter-spacing:.08em;color:#e8d08a;border:2px solid #c9a227;padding:0 8px}
-.sc-card .sc-m{display:grid;grid-template-columns:minmax(0,1fr) 34% 150px;gap:8px;align-items:center;margin:3px 0;font-size:12px;color:var(--ink)}.sc-card .sc-m .nb{height:11px;margin:0}.sc-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-n .linkn{color:#e6e1d3}
+.sc-card .sc-m{display:grid;grid-template-columns:minmax(0,1fr) 34% 150px;gap:8px;align-items:center;margin:3px 0;font-size:12px;color:var(--ink)}.sc-card .sc-m .nb{height:11px;margin:0}.sc-card .sc-m .nb .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:#e6e1d3}.sc-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-n .linkn{color:#e6e1d3}
 .sc-val{text-align:right;font-family:var(--disp);font-size:13px;color:#b8ad8a}.sc-val b{color:var(--ink);font-size:15px}
 .sc-test{font-size:11.5px;color:#b8ad8a;margin-top:4px}
 .sc-rec{margin-bottom:10px}
@@ -1259,6 +1259,7 @@ PROJECTS.push(
  {id:'l_a2a_jatm',n:'JATM Production Line',d:'The next long-range air-to-air missile, built alongside AMRAAM.',t:{line:'a2a'},gain:.4,cost:1.5,dur:[16,26,8,104,60,0],tags:['line','prime']},
  {id:'l_fires',n:'GMLRS to 19,000/yr',d:'The Army plans for 19,002 rockets a year from FY2028: more load lines and motor-case capacity.',t:{line:'fires'},gain:.36,cost:1.2,dur:[12,20,8,78,26,0],tags:['line','prime','energetic']},
  {id:'l_fires_new',n:'Second-Source Rocket Artillery (New Entrant)',d:'A second GMLRS-class rocket from a new entrant with its own motor supplier.',t:{line:'fires'},gain:.3,cost:1,dur:[8,20,8,78,52,0],tags:['line','entrant','energetic']},
+ {id:'l_drone_mass',n:'Hyperscale Drone Plant (Arsenal-1 class)',d:'A $1B, 5-million-square-foot autonomous-systems factory like Anduril’s Arsenal-1 in Ohio: +80,000 small drones a year once ramped. Its appetite for cells, boards and motors is mostly Chinese.',t:{line:'drones'},gain:4,cost:1,dur:[8,16,26,78,20,0],tags:['line','entrant','greenfield']},
  {id:'l_int_new',n:'Interceptor Second Source (New Entrant)',d:'A cheaper interceptor from a new entrant.',t:{line:'interceptors'},gain:.4,cost:1.2,dur:[8,20,8,78,60,0],tags:['line','entrant']},
  {id:'l_str_prime',n:'Strike Missile Line (Incumbent)',d:'Tomahawk/JASSM-class rate increase. Each needs a small turbofan.',t:{line:'strike'},gain:.5,cost:2,dur:[16,26,8,104,52,0],tags:['line','prime']},
  {id:'l_str_new',n:'Low-Cost Cruise Missile (New Entrant)',d:'Mass-producible cruise missiles with commercial-grade parts.',t:{line:'strike'},gain:.6,cost:1,dur:[8,20,8,60,40,0],tags:['line','entrant']},
@@ -3268,7 +3269,8 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
- ['Mandates','Each scenario’s targets come from public goals (cited on the mandate card); the deadline of January 2030 reflects the threat windows cited. The US shares (1,800 interceptors and 1,800 strike missiles a year, 16,000 rockets of the planned 19,002, 330,000 drones a year from the Army’s million-in-three-years plan) are game estimates. The tests reuse the campaign model on the true hidden values (pass at 85% coverage), or remove all Chinese supply at once (pass if you keep 80% of output). The verdict names are design choices.'],
+ ['Hyperscale drone plant','Modeled on Anduril’s Arsenal-1 (about $1B and 4,000 jobs);[c:arsenal1] its output of 80,000 small drones a year once ramped is a game estimate.'],
+ ['Mandates','Each mandate has a floor halfway from the January 2027 level to the real target (for the magnet target, 60% of it; content cut by a quarter; output held at 90%). Each scenario’s targets come from public goals (cited on the mandate card); the deadline of January 2030 reflects the threat windows cited. The US shares (1,800 interceptors and 1,800 strike missiles a year, 16,000 rockets of the planned 19,002, 330,000 drones a year from the Army’s million-in-three-years plan) are game estimates. The tests reuse the campaign model on the true hidden values (pass at 85% coverage), or remove all Chinese supply at once (pass if you keep 80% of output). The verdict names are design choices.'],
  ['The Record','Spending, laws, decisions and paperwork are counted from January 2027. Industrial jobs are estimated at 1,500 direct manufacturing jobs per $1B of plant investment at full output, scaled by each plant’s yield. Anduril’s Arsenal-1 (about 4,000 direct jobs for $1B) is the labor-heavy end;[c:arsenal1] mines, chemical plants and refineries employ far fewer people per dollar. Construction and indirect jobs are not counted.'],
  ['Decisions','Obstacles, plant problems and news that need a choice wait 12 weeks. If you do not choose, the status-quo option is taken: one marked as the default (extending the 2027 truce, staying out of a Middle East war, declining Ukraine’s request), otherwise the free option that resolves fastest, otherwise the cheapest you can afford. A stalled program makes no progress while its decision waits. Game design, not sourced.'],
  ['Allied sourcing limits','The bars themselves are statutory: Navy ships only from US yards (10 U.S.C. 8679)[c:yard8679] and bearings only from the US or Canada (DFARS 225.7009).[c:dfarsbr] Their game effect is a simplification: no allied supply or emergency buys for shipyards, submarine yards or bearings until a bill, waiver or presidential exception lifts them. The capacity the Ensuring Naval Readiness Act adds (+0.5 of base shipyard capacity, +3 surface ships a year)[c:s406] is an estimate. Specialty metals are limited to about 28 qualifying countries; that bar is not modeled item by item.'],
@@ -3626,8 +3628,11 @@ const SCENS=[
   test:{cut:1,n:'full Chinese cutoff'},
   lesson:'Independence costs output before it pays: every magnet, cell and wafer not bought from China has to be mined, refined and qualified somewhere else first.'}];
 const SCD=Object.fromEntries(SCENS.map(x=>[x.id,x]));
-// each mandate's current value and whether it is met
-function mandVal(m){const r0=S.rec0||{};
+// each mandate's current value, whether the real target is met, and the halfway floor
+function mandFloor(m){const r0=S.rec0||{};if(m.c){const a=r0.out?.[m.c]??0;return a+(m.tgt-a)/2}if(m.kind==='magnets')return m.tgt*.6;if(m.kind==='expo')return .75;if(m.kind==='hold')return .9;return m.tgt}
+function mandVal(m){const r0=S.rec0||{},x=mandValRaw(m),fl=mandFloor(m);
+  const half=m.kind==='expo'?S.exposure<=(r0.expo||S.exposure)*fl:x.v>=fl*.999;return {...x,fl,half:x.ok||half}}
+function mandValRaw(m){const r0=S.rec0||{};
   if(m.c)return {v:outOf(m.c),ok:outOf(m.c)>=m.tgt*.999,show:v=>m.dec?fmt(v,1):fmtN(v)};
   if(m.kind==='magnets'){const P=(S._R||production(false)).P.magnets,x=srcSplit('magnets',(S._R||production(false)).P),v=P.need>1e-6?Math.min(1,(x.dom+x.ally+x.spot)/P.need):1;return {v,ok:v>=m.tgt,show:pct}}
   if(m.kind==='expo'){const t=(r0.expo||S.exposure)*m.tgt;return {v:S.exposure,ok:S.exposure<=t,t,show:pct}}
@@ -3641,8 +3646,8 @@ function scenTest(sc){const T=sc.test;
   return {v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
 function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;S.rival=sc.rival;S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
-  const verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':met>=2?'ENOUGH, BARELY':'TARGETS MISSED';
-  S.scenRes={w:S.w,verdict,met,ms:ms.map(x=>({n:x.n,v:x.v,ok:x.ok,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
+  const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
+  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
   log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0}
 const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
 // the picker before play starts, then the mandate card
@@ -3651,12 +3656,13 @@ function scenCard(){
     return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">or close this and play the open race to 2037</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
   const sc=SCD[S.scen],left=sc.dl-S.w,res=S.scenRes;
   return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span>`}</div>
-    ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));return `<div class="sc-m"><span class="sc-n">${x.ok?'✓':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.n}</span><div class="nb"><i style="width:${f*100}%;background:${x.ok?'#76b357':f>.66?'#d9a441':'#d0503f'}"></i></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
-    <div class="sc-test">${res?`Test: ${res.test.txt}`:`At the deadline: ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}.`}</div></div>`}
+    ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
+      return `<div class="sc-m"><span class="sc-n" data-tip="${tipQ(m.src||'')}">${x.ok?'✓':x.half?'◐':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the floor (halfway from January 2027). End: the real target."><i style="width:${f*100}%;background:${x.ok?'#76b357':x.half?'#d9a441':'#d0503f'}"></i><span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
+    <div class="sc-test">${res?`Test: ${res.test.txt}`:`◐ floor met · ✓ real target met. At the deadline: ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}. Mandate met: every target. Enough, barely: every floor.`}</div></div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
   return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: the deadline</div><div class="bd">
     <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>
-    <table class="ctable"><tr><th>Mandate</th><th>Target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':'redt'}">${x.ok?'✓ met':'✗ missed'}</td></tr>`).join('')}</table>
+    <table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>`).join('')}</table>
     <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
     <p><i>${sc.lesson}</i></p></div>
     <div class="ft"><button class="pbtn primary" data-a="scenon">Keep building to 2037</button><button class="pbtn" data-a="scenstop">End here and see the record</button></div></div>`}
