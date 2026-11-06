@@ -290,6 +290,15 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .fbig{display:grid;grid-template-columns:86px 1fr auto auto;gap:8px;align-items:center;margin:2px 0 4px}.fbig>span:first-child{font:700 10.5px "Segoe UI";letter-spacing:.06em;text-transform:uppercase;color:#6b5a35}.fbig .nb{height:12px;margin:0;background:#e6dbbd;border-color:#cbbd95}.fbig b{font:700 15px Georgia}
 .fln{margin-top:3px}
 @media(max-width:1180px){.fctiles{grid-template-columns:repeat(3,1fr)}}
+/* decision timer */
+.dtw{flex-basis:100%;margin:4px 0 5px}.dtimer{display:flex;align-items:center;gap:6px;font-size:11.5px}.dtd{font-size:11px;opacity:.8;margin:2px 0 0 19px}.dtd i{font-style:normal;font-weight:600}.dti{font-size:13px}.dtb{flex:0 0 90px;height:8px;background:#0003;border:1px solid #c9a22780;position:relative}.dtb i{position:absolute;left:0;top:0;bottom:0;background:#c9a227;transition:width .3s}
+.dtimer b{color:#c9a227;white-space:nowrap}.dtt{opacity:.85}.dtt i{font-style:normal;font-weight:600}.dtimer.hot b{color:#e0604c}.dtimer.hot .dtb i{background:#e0604c}.dtimer.hot .dtb{border-color:#e0604c}.dtimer.hot .dti{animation:dthot 1s ease-in-out infinite}
+@keyframes dthot{50%{opacity:.35}}.paper .dtb{background:#e6dbbd}.paper .dtimer b{color:#8a6a1f}.paper .dtimer.hot b{color:#a3261c}
+/* decisions inbox */
+.inbox{margin:4px 0 8px;border:1px solid #8a6a1f;background:#2a2618}.ibx{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px;padding:5px 8px;border-top:1px solid #3a3424;font-size:12px}.ibx .sub{color:#c9b98f}
+/* pop-ups keep their buttons in view */
+.paper:has(>.bd){display:flex;flex-direction:column;overflow:hidden}.paper>.bd{overflow:auto;min-height:0;flex:1 1 auto}.paper>.hd,.paper>.ft{flex:none}
+.opt.dflt{box-shadow:inset 0 0 0 2px #c9a227}.opt.dflt .c::after{content:' · default';color:#c9a227}.autoc{font-size:11px;margin:4px 0 2px;opacity:.85}
 /* program page */
 .paper .obs{color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif}
 .pstat{font:700 15px Georgia;padding:6px 10px;margin:4px 0 8px;background:#e6dbbd;border-left:5px solid currentColor}.pstat .mini{font-weight:400}
@@ -1427,7 +1436,7 @@ const EVENTS=[
   fx:()=>{maybeMoratorium();S.pc+=8},o:[{l:'Full investigation (NC −40% for 26 weeks)',fx:()=>tmod('cap','nc',.6,26,'Plant explosion')},{l:'Emergency restart (−12 PC; 10 weeks)',pc:12,fx:()=>{tmod('cap','nc',.6,10,'Partial restart');S.waivers++}}]},
  {id:'contingency',p:.003,once:false,ic:'🔥',t:'Middle East Contingency',
   body:"A regional war draws down your munitions. In 2026 the first 96 hours of the Iran campaign consumed more than 5,000 munitions, including ~1,100 JASSMs. Interceptor and strike stocks fall.",
-  o:[{l:'Fight it (interceptors −10%, strike −8%; +17 PC)',fx:()=>{S.inv.interceptors*=.9;S.inv.strike*=.92;S.pc+=17}},{l:'Stay out (−10 PC; allies irritated)',pc:10,fx:()=>{S.allied.pac*=.97}}]},
+  o:[{l:'Fight it (interceptors −10%, strike −8%; +17 PC)',fx:()=>{S.inv.interceptors*=.9;S.inv.strike*=.92;S.pc+=17}},{dflt:1,l:'Stay out (−10 PC; allies irritated)',pc:10,fx:()=>{S.allied.pac*=.97}}]},
  {id:'prcPlants',p:.004,once:false,ic:FLAGS.cn,t:'PRC Missile Plants Expand',
   body:"Satellite imagery shows more Chinese missile and rocket-force plants expanding — on top of the 21M+ sq ft added between 2020 and 2025 (CNN analysis)[c:cnn]. PRC interceptor and strike production +8%.",
   fx:()=>{S.enemy.pac.prod.strike*=1.08;S.enemy.pac.prod.interceptors*=1.08;S.pc+=5},o:[{l:'Alarming.'}]},
@@ -1462,7 +1471,7 @@ const EVENTS=[
   body:{US:"GAO finds the munitions base fragile and single-sourced. A DoD review found 98% of second- and third-tier munitions suppliers were single or sole source.[c:dn2018] Little has changed.",EU:"The Court of Auditors finds joint procurement 'below potential' and SAFE disbursement slow."},
   o:[{l:'Wave it at the legislature (+14 PC)',fx:()=>{S.pc+=14}}]},
  {id:'ukraine',p:.004,once:false,cond:()=>!S.ceasefire,ic:'🇺🇦',t:'Ukraine Requests Emergency Transfers',body:"Kyiv asks for an emergency drawdown from your stocks. Every round fired there is one Russia can't fire later — and one not in your own magazines.",
-  o:[{l:'Send them (−200k shells, −300 interceptors; Russia −12% shells; +5 PC)',fx:()=>{S.inv.shells=Math.max(0,S.inv.shells-2e5);S.inv.interceptors=Math.max(0,S.inv.interceptors-300);S.enemy.eu.inv.shells*=.88;S.pc+=5}},{l:'Decline (−6 PC)',pc:6}]},
+  o:[{l:'Send them (−200k shells, −300 interceptors; Russia −12% shells; +5 PC)',fx:()=>{S.inv.shells=Math.max(0,S.inv.shells-2e5);S.inv.interceptors=Math.max(0,S.inv.interceptors-300);S.enemy.eu.inv.shells*=.88;S.pc+=5}},{dflt:1,l:'Decline (−6 PC)',pc:6}]},
  // home front
  {id:'diversion',manual:true,once:false,ic:'🏭',t:'Civilian Shortages from DPA Priority',
   body:()=>`${CIV[ND[S._div]?.cv||'general']} (Diverted: ${ND[S._div]?.n}.)`,
@@ -1592,7 +1601,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
      projects:[],plants:[],built:{},done:[],reforms:{},bill:null,cr:0,dfars:false,truce:false,tension:0,
      ledger:Object.fromEntries(Object.keys(LAYERS).map(k=>[k,{n:0,wk:0}])),
      pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},ic:{},icOnshore:0,icSince:{},gone:[],rules:{},rulesSince:{},shifts:{},ne:null,
-     over:false,overWhy:'',modal:null,autoPause:true,exposure:0,tab:'bott',ptab:1,sel:null};
+     over:false,overWhy:'',modal:null,autoPause:false,exposure:0,tab:'bott',ptab:1,sel:null};
   // size each node from starting demand
   const lineCap0=l=>S.lines[l].base;
   const need={},pot={};for(const id of ORDER){need[id]=0;pot[id]=0}
@@ -2013,12 +2022,26 @@ function applyOpt(od,opt){
   S.pages+=eff.pages||0;if(eff.lev)S.lev=clamp(S.lev+eff.lev,0,100);
   return {ok,prob,eff};
 }
+const DECIDE_WK=6;
+// the option taken if you don't decide: one marked as the status quo, else the free one that resolves fastest, else the cheapest you can afford
+function defOpt(od){const ok=od.o.map((o,k)=>[o,k]).filter(([o])=>optOk(o));if(!ok.length)return -1;const mk=ok.find(([o])=>o.dflt);if(mk)return mk[1];const free=ok.filter(([o])=>!o.pc&&!o.$);
+  if(free.length)return free.sort((a,b)=>(a[0].wait??0)-(b[0].wait??0))[0][1];return ok.sort((a,b)=>((a[0].pc||0)+(a[0].$||0)*40)-((b[0].pc||0)+(b[0].$||0)*40))[0][1]}
+function evApply(o){if(o.pc)S.pc-=o.pc;if(o.$)S.budget-=o.$;o.fx?.();S.pc=Math.max(0,S.pc)}
+const dLeft=due=>Math.max(0,(due??S.w+DECIDE_WK)-S.w);
+function dTimer(due,dflt){const l=dLeft(due);return `<div class="dtw"><div class="dtimer ${l<=2?'hot':''}"><span class="dti">⏱</span><div class="dtb"><i style="width:${l/DECIDE_WK*100}%"></i></div><b>${l} wk</b><span class="dtt">left to decide</span></div>${dflt?`<div class="dtd">If time runs out: <i>${dflt}</i></div>`:''}</div>`}
+function nextDue(){const ds=[...(S.inbox||[]).map(x=>x.due),...S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).map(p=>p.obs[0].due),...S.plants.filter(pl=>pl.issue&&!pl.issue.wait).map(pl=>pl.issue.due)];return ds.length?Math.min(...ds.map(dLeft)):null}
+function autoDecide(){
+  S.inbox=(S.inbox||[]).filter(x=>{if(S.w<x.due)return true;const e=ED[x.ev],os=V(e.o)||[],k=defOpt({o:os});if(k>=0){evApply(os[k]);log(`⏱ No decision in time. ${V(e.t)} → ${V(os[k].l)}`,'ev')}return false});
+  for(const p of [...S.projects]){const o=p.obs[0];if(!o||o.wait>0)continue;if(o.due==null){o.due=S.w+DECIDE_WK;continue}
+    if(S.w<o.due)continue;const k=defOpt(OD[o.id]);if(k<0){o.due=S.w+DECIDE_WK;continue}S._auto=1;chooseOpt(p.uid,k);S._auto=0}
+  for(const pl of S.plants){const o=pl.issue;if(!o||o.wait>0)continue;if(o.due==null){o.due=S.w+DECIDE_WK;continue}
+    if(S.w<o.due)continue;const k=defOpt(OPSD[o.id]);if(k<0){o.due=S.w+DECIDE_WK;continue}S._auto=1;chooseOps(pl.uid,k);S._auto=0}}
 function chooseOpt(uid,k){
   const p=S.projects.find(x=>x.uid==uid);if(!p)return;const inst=p.obs[0];if(!inst||inst.wait>0)return;
   const od=OD[inst.id],opt=od.o[k];if(!opt||!optOk(opt))return;
   const {ok,prob,eff}=applyOpt(od,opt);
   if(eff.gain)p.gm*=eff.gain;if(eff.adv)p.adv=Math.min(1,p.adv+eff.adv);
-  log(`${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');
+  log(`${S._auto?'⏱ No decision in time. ':''}${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');
   if(eff.spawn){p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)});spawnObs(p,V(eff.spawn),true);return}
   const w=Math.round((eff.wait||0)*waitMult(od,PD[p.def]));
   if(w>0){inst.wait=w;inst.total=w;inst.label=V(opt.l)+(prob<1&&!ok?' (failed — fallback)':'');inst.after=eff.cancel?'cancel':null}
@@ -2030,7 +2053,7 @@ function chooseOps(uid,k){
   const {ok,prob,eff}=applyOpt(od,opt);
   if(eff.know)S.know[pl.target]=Math.min(95,S.know[pl.target]+eff.know);
   if(eff.yieldMul)pl.yield*=eff.yieldMul;if(eff.adv)pl.adv=Math.min(1,pl.adv+eff.adv);
-  log(`${pl.nm}: ${od.n} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');
+  log(`${S._auto?'⏱ No decision in time. ':''}${pl.nm}: ${od.n} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');
   const w=Math.round(eff.wait||0);if(w>0){pl.issue.wait=w;pl.issue.total=w;pl.issue.label=V(opt.l)}else pl.issue=null;
 }
 function projectsTick(){
@@ -2096,6 +2119,13 @@ function carvesTick(){
     else if(CD[id].court&&!S.queue.some(q=>q.ev==='enjoin')&&rand()<CD[id].court){S._enj=id;queueEvent('enjoin')}}}
 }
 function queueEvent(id){S.queue.push({ev:id})}
+function infoOnly(q){if(q.read)return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
+function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(S.autoPause||q.read||!q.ev)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
+    const e=ED[q.ev];S.inbox.push({ev:q.ev,due:S.w+DECIDE_WK,w:S.w});toast(`${e.ic||'📰'} <b>${V(e.t)}</b><br><span class="dim">Decision needed · default in ${DECIDE_WK} wk</span>`,'',{a:'evdo',e:q.ev});return false}
+  if(q.ev){const e=ED[q.ev];(V(e.o)||[])[0]?.fx?.();toast(`${e.ic||'📰'} <b>${V(e.t)}</b><br><span class="dim">Click to read</span>`,'',{a:'evread',e:q.ev})}
+  else if(q.sys==='fw')toast(`${q.r>=.7?'📈 Framework target met':'📉 Framework audit: far below goal'}<br><span class="dim">${LINES[q.lid].n} · ${q.r>=.7?'+10':'−20'} PC</span>`,'',{a:'node',n:'L:'+q.lid});
+  else toast(`${q.sys==='pass'?'✅ Enacted':'❌ Stripped in conference'}<br><span class="dim">${rname(RD[q.id])}</span>`,'',{a:'rtab',t:'agenda'});
+  return false})}
 function eventsTick(){
   for(const e of EVENTS){
     if(!facOk(e)||e.manual)continue;if(e.once!==false&&S.fired[e.id])continue;
@@ -2162,8 +2192,8 @@ function tick(){
   for(const c in S.ready)S.ready[c]+=(readyTarget(c,R).t-S.ready[c])/26;
   for(const t of ['pac','eu']){enemyStep(S.enemy[t],S.w);S.allied[t]*=Math.pow(1+F().alliedG[t],1/52)}
   S.lev=clamp(S.lev,0,100);
-  projectsTick();plantsTick();reformsTick();carvesTick();scenUpdate();homeTick(R.out);
-  if(!S.histMode)eventsTick();
+  projectsTick();plantsTick();if(!S.histMode)autoDecide();reformsTick();carvesTick();scenUpdate();homeTick(R.out);
+  if(!S.histMode){eventsTick();drainInfo()}
   if(S.w%2===0)S.hist.push(snapshot());
   {const R0=S._R||production(false);(S.resH=S.resH||[]).push({race:raceIdx(R0.out)*100,budget:S.budget,short:S.order.filter(c=>R0.out[c].bott).length,expo:(S.exposure||0)*100,lev:S.lev,strain:S.strain});if(S.resH.length>4)S.resH.shift()}
   if(S.queue.length&&!S.sim)S.speed=0;
@@ -2379,7 +2409,7 @@ function progHTML(uid){
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}</div>
    <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
    <div class="dsec"><h4>Permits <span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
-  if(live&&p.obs.length){const o=p.obs[0];h+=`<div class="dsec"><h4>Why it's stuck</h4>${obsBlock(OD[o.id],o,'opt',p.uid)}${p.obs.length>1?`<p class="mini">${p.obs.length-1} more waiting behind it: ${p.obs.slice(1).map(x=>V(OD[x.id].n)).join(', ')}</p>`:''}</div>`}
+  if(live&&p.obs.length){const o=p.obs[0];h=h.replace('<div class="dsec"><h4>Plan vs. actual</h4>',`<div class="dsec"><h4>Why it's stuck</h4>${obsBlock(OD[o.id],o,'opt',p.uid)}${p.obs.length>1?`<p class="mini">${p.obs.length-1} more waiting behind it: ${p.obs.slice(1).map(x=>V(OD[x.id].n)).join(', ')}</p>`:''}</div>`+'<div class="dsec"><h4>Plan vs. actual</h4>')}
   else if(live&&p.qf<1){const st=poolState()[p.qk];h+=`<div class="dsec"><h4>Why it's slow</h4><p>${POOLS[p.qk].ic} <b>${POOLS[p.qk].n}</b>: ${st.d} projects in ${STAGE_L[POOLS[p.qk].stage].toLowerCase()} want room for ${fmt(st.cap,1)}. Everyone in the queue moves at ×${fmt(st.f,2)}.</p></div>`}
   if(live){const ahead=[...new Set(OBSTACLES.filter(o=>STAGES.indexOf(o.stage)>p.stage&&p.dur[STAGES.indexOf(o.stage)]&&obsChance(o,def)*(p.lm?.[o.layer]??1)>=.3).map(o=>o.layer))];
     if(ahead.length)h+=`<div class="dsec"><h4>Likely ahead</h4><div class="chipsP">${ahead.map(l=>chip(l)).join(' ')}</div></div>`}
@@ -3149,7 +3179,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
    ===================================================================== */
 const VIEWS=[['cmd','🏛 Command'],['fac','🏭 Factories'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['pipe','🏗 Pipeline'],['arsenal','📈 Stocks & needs'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
-function decisionsPending(){return S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
+function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
 function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat';
@@ -3251,10 +3281,13 @@ function optCost(od,o){
 }
 function failTip(o,od){if(!o.fail)return '';const f=o.fail;return ` If it fails: ${f.spawn?'triggers a new obstacle':f.cancel?'project mothballed':f.adv?'PRC dependence added':f.gain?'output reduced':Math.round((f.wait||0)*waitMult(od))+' wk'}.`}
 function obsBlock(od,inst,action,uid,extra=''){
-  let h=`<div class="obs" style="border-left-color:${LAYERS[od.layer].c}"><div class="ot"><b>${inst.wait>0?'⏳':'⛔'} ${V(od.n)}</b>${chip(od.layer)}${extra}</div><p>${V(od.t)}</p>${remedies(od)}${(()=>{const D=LAYER_DOM(od.layer);return D&&S.fac==='US'?`<div style="margin:-2px 0 6px;font-size:11px"><span class="linkn" data-a="rbgo" data-d="${D.id}" style="color:inherit">⚖ How ${D.n.toLowerCase()} works →</span></div>`:''})()}`;
+  const more=`${remedies(od)}${(()=>{const D=LAYER_DOM(od.layer);return D&&S.fac==='US'?`<div style="margin:4px 0 0;font-size:11px"><span class="linkn" data-a="rbgo" data-d="${D.id}" style="color:inherit">⚖ How ${D.n.toLowerCase()} works →</span></div>`:''})()}`;
+  let h=`<div class="obs" style="border-left-color:${LAYERS[od.layer].c}"><div class="ot"><b>${inst.wait>0?'⏳':'⛔'} ${V(od.n)}</b>${chip(od.layer)}${extra}</div><p>${V(od.t)}</p>`;
   if(inst.wait>0)h+=`<div class="waiting">${inst.label} — <b>${inst.wait}</b> wk remaining${inst.after==='cancel'?' <span class="red">(project will be mothballed)</span>':''}</div><div class="prog" style="margin:5px 0 0"><i style="width:${(1-inst.wait/inst.total)*100}%;background:${LAYERS[od.layer].c}"></i></div>`;
-  else h+=`<div class="opts">${od.o.map((o,k)=>`<button class="btn opt" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'} title="${(o.tip||'')+failTip(o,od)}"><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span></button>`).join('')}</div>`;
-  return h+`</div>`;
+  else{const dk=defOpt(od);
+    if(dk>=0)h+=dTimer(inst.due,V(od.o[dk].l));
+    h+=`<div class="opts">${od.o.map((o,k)=>`<button class="btn opt ${k===dk?'dflt':''}" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'} title="${(o.tip||'')+failTip(o,od)}"><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span></button>`).join('')}</div>`;}
+  return h+more+`</div>`;
 }
 function spark(t){
   const h=S.hist,W=300,H=26;if(h.length<2)return '';
@@ -3354,13 +3387,13 @@ function renderGame(){
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${res(`${slotsUsed()}/${S.slots}`,'Offices busy','<b>Program offices</b><br>One program each. Full offices block new launches.','rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
-    ${res(dpn,dpn===1?'Decision waiting':'Decisions waiting',dpn?'<b>Programs stalled on you</b><br>Opens the first one.':'Nothing is waiting on you.',firstStuck?'prog':'rtab',firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
+    ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>Each takes its default after ${DECIDE_WK} weeks. Opens the first one.`:'Nothing is waiting on you.',S.inbox?.length?'evdo':firstStuck?'prog':'rtab',S.inbox?.length?`data-e="${S.inbox[0].ev}"`:firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short','<b>End-item lines below capacity</b><br>Opens the bottleneck analysis.','view','data-v="bn"',shortL?'rwarn':'')}
     ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'PRC exposure','<b>PRC and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Opens the flows.','view','data-v="flow"')}
     <div class="spacer"></div>
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
-    <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause automatically when something needs a decision"><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Auto-pause</label>
+    <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
     <button class="btn sm" data-a="map" title="Supply chain map">🗺</button>
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
@@ -3388,6 +3421,7 @@ function renderGame(){
   // ---- projects + plants
   let pr=`<h2>Program Offices <span class="r"><span class="dim">${slotsUsed()}/${S.slots} slots</span> <button class="btn sm" data-a="view" data-v="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ Launch Project</button></span></h2>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
+  if(S.inbox?.length)pr+=`<div class="inbox"><div class="sect"><span>📬 Decisions (${S.inbox.length})</span><span>default taken when time runs out</span></div>${S.inbox.map(x=>{const e=ED[x.ev],os=V(e.o)||[],k=defOpt({o:os});return `<div class="ibx"><div><b>${e.ic||'📰'} ${V(e.t)}</b></div><button class="btn sm" data-a="evdo" data-e="${x.ev}">Decide</button>${dTimer(x.due,k>=0?V(os[k].l):'')}</div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
   for(const p of [...S.projects].sort((a,b)=>needsYou(a)-needsYou(b))){
@@ -3498,8 +3532,8 @@ function renderModal(){
     if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${L.n.toLowerCase()}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in Conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
-      const opts=V(e.o)||[{l:'OK'}],b=V(e.body);
-      html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}</div></div>`}
+      const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
+      html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}${q.due!=null&&!q.read?`<button class="pbtn" data-a="evlater">Later · ⏱ ${dLeft(q.due)} wk left</button>`:''}</div></div>`}
   } else if(S.modal==='prog'&&S.selP){
     html=progHTML(S.selP);
   } else if(S.modal==='contract'&&S.ct){
@@ -3635,7 +3669,10 @@ document.addEventListener('pointerdown',e=>{
     case 'ic':toggleIC(b.dataset.c);break;
     case 'rule':toggleRule(b.dataset.r);break;
     case 'fw':framework(b.dataset.l);break;
-    case 'evopt':{const q=S.queue[0];if(q&&q.ev){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){if(o.pc)S.pc-=o.pc;if(o.$)S.budget-=o.$;o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
+    case 'evdo':{const it=(S.inbox||[]).find(x=>x.ev===b.dataset.e);S.inbox=(S.inbox||[]).filter(x=>x.ev!==b.dataset.e);S.queue.unshift({ev:b.dataset.e,fxDone:1,due:it?.due});S.speed=0;break}
+    case 'evlater':{const q=S.queue.shift();if(q?.ev)(S.inbox=S.inbox||[]).push({ev:q.ev,due:q.due??S.w+DECIDE_WK,w:S.w});break}
+    case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
+    case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){if(o.pc)S.pc-=o.pc;if(o.$)S.budget-=o.$;o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;break;
   }
   render();
