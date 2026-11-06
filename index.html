@@ -290,6 +290,16 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .fbig{display:grid;grid-template-columns:86px 1fr auto auto;gap:8px;align-items:center;margin:2px 0 4px}.fbig>span:first-child{font:700 10.5px "Segoe UI";letter-spacing:.06em;text-transform:uppercase;color:#6b5a35}.fbig .nb{height:12px;margin:0;background:#e6dbbd;border-color:#cbbd95}.fbig b{font:700 15px Georgia}
 .fln{margin-top:3px}
 @media(max-width:1180px){.fctiles{grid-template-columns:repeat(3,1fr)}}
+/* decisions bar */
+#decbar{display:flex;align-items:center;gap:8px;height:40px;margin:4px 8px 0;padding:0 6px;background:#2a2416;border:1px solid #8a6a1f;box-shadow:0 0 0 1px #0006 inset}
+body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
+.dbl{white-space:nowrap;color:#e0c56a;font-size:12px}.dbl b{font:700 15px Georgia}.dbs{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:thin}
+.dbc{display:flex;align-items:center;gap:6px;flex:0 0 auto;max-width:300px;height:32px;padding:0 8px;background:#3a3220;border:1px solid #8a6a1f;color:var(--ink);cursor:pointer;font:12px "Segoe UI",system-ui,sans-serif;text-align:left}
+.dbc:hover{background:#4a4028}.dbi{font-size:15px}.dbt{display:flex;flex-direction:column;min-width:0;line-height:1.15}.dbt b,.dbt span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dbt span{font-size:10.5px;color:#b8ad8a}
+.dbk{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.dbk .dtb{flex:none;width:44px;height:5px;display:block}.dbk b{font-size:11px;color:#c9a227}
+.dbc.hot{border-color:#e0604c;background:#45231c}.dbc.hot .dbk b{color:#e0604c}.dbc.hot .dtb i{background:#e0604c}.dbc.fresh{animation:dbnew 1.2s ease-out 2}
+@keyframes dbnew{0%{box-shadow:0 0 0 0 #e0c56acc}100%{box-shadow:0 0 0 8px #e0c56a00}}
+.rc-loss{color:#ffb4a6;background:#7a2a20;padding:0 5px;border-radius:2px}
 /* decision timer */
 .dtw{flex-basis:100%;margin:4px 0 5px}.dtimer{display:flex;align-items:center;gap:6px;font-size:11.5px}.dtd{font-size:11px;opacity:.8;margin:2px 0 0 19px}.dtd i{font-style:normal;font-weight:600}.dti{font-size:13px}.dtb{flex:0 0 90px;height:8px;background:#0003;border:1px solid #c9a22780;position:relative}.dtb i{position:absolute;left:0;top:0;bottom:0;background:#c9a227;transition:width .3s}
 .dtimer b{color:#c9a227;white-space:nowrap}.dtt{opacity:.85}.dtt i{font-style:normal;font-weight:600}.dtimer.hot b{color:#e0604c}.dtimer.hot .dtb i{background:#e0604c}.dtimer.hot .dtb{border-color:#e0604c}.dtimer.hot .dti{animation:dthot 1s ease-in-out infinite}
@@ -1978,7 +1988,7 @@ function enterStage(p){
   if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(c>0&&rand()<c)p.sched.push({id:o.id,at:Math.floor(rand()*D)})}
   p.sched.sort((a,b)=>a.at-b.at);
 }
-function notify(html,cls,act){toast(html,cls,act);if(S.autoPause&&!S.sim)S.speed=0}
+function notify(html,cls,act){if(S.autoPause&&!S.sim)S.speed=0} // decisions show in the decisions bar, not as toasts
 function spawnObs(p,id,front){
   const od=OD[id],inst={id,wait:0};front?p.obs.unshift(inst):p.obs.push(inst);pmark(p,{ob:id});
   S.ledger[od.layer].n++;log(`⛔ ${projName(p)}: ${V(od.n)}`,'bad');
@@ -2030,6 +2040,13 @@ function evApply(o){if(o.pc)S.pc-=o.pc;if(o.$)S.budget-=o.$;o.fx?.();S.pc=Math.m
 const dLeft=due=>Math.max(0,(due??S.w+DECIDE_WK)-S.w);
 function dTimer(due,dflt){const l=dLeft(due);return `<div class="dtw"><div class="dtimer ${l<=2?'hot':''}"><span class="dti">⏱</span><div class="dtb"><i style="width:${l/DECIDE_WK*100}%"></i></div><b>${l} wk</b><span class="dtt">left to decide</span></div>${dflt?`<div class="dtd">If time runs out: <i>${dflt}</i></div>`:''}</div>`}
 function nextDue(){const ds=[...(S.inbox||[]).map(x=>x.due),...S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).map(p=>p.obs[0].due),...S.plants.filter(pl=>pl.issue&&!pl.issue.wait).map(pl=>pl.issue.due)];return ds.length?Math.min(...ds.map(dLeft)):null}
+function decList(){const L=[];
+  for(const x of S.inbox||[]){const e=ED[x.ev];L.push({a:'evdo',d:`data-e="${x.ev}"`,ic:e.ic||'📰',t:V(e.t),sub:'News',due:x.due})}
+  for(const p of S.projects){const o=p.obs[0];if(o&&!o.wait)L.push({a:'prog',d:`data-u="${p.uid}"`,ic:'⛔',t:V(OD[o.id].n),sub:projName(p),due:o.due})}
+  for(const pl of S.plants){const o=pl.issue;if(o&&!o.wait)L.push({a:'prog',d:`data-u="${pl.uid}"`,ic:'⚠',t:OPSD[o.id].n,sub:pl.nm,due:o.due})}
+  return L.sort((a,b)=>dLeft(a.due)-dLeft(b.due))}
+function decBar(){const L=decList();if(!L.length)return '';
+  return `<div id="decbar"><span class="dbl">📬 <b>${L.length}</b> decision${L.length>1?'s':''}</span><div class="dbs">${L.map(x=>{const l=dLeft(x.due);return `<button class="dbc ${l<=2?'hot':''} ${l>=DECIDE_WK-1?'fresh':''}" data-a="${x.a}" ${x.d} data-tip="<b>${tipQ(x.t)}</b><br>${tipQ(x.sub)}<br>${l} wk left; then the default is taken"><span class="dbi">${x.ic}</span><span class="dbt"><b>${x.t}</b><span>${x.sub}</span></span><span class="dbk"><span class="dtb"><i style="width:${l/DECIDE_WK*100}%"></i></span><b>${l} wk</b></span></button>`}).join('')}</div></div>`}
 function autoDecide(){
   S.inbox=(S.inbox||[]).filter(x=>{if(S.w<x.due)return true;const e=ED[x.ev],os=V(e.o)||[],k=defOpt({o:os});if(k>=0){evApply(os[k]);log(`⏱ No decision in time. ${V(e.t)} → ${V(os[k].l)}`,'ev')}return false});
   for(const p of [...S.projects]){const o=p.obs[0];if(!o||o.wait>0)continue;if(o.due==null){o.due=S.w+DECIDE_WK;continue}
@@ -2121,7 +2138,7 @@ function carvesTick(){
 function queueEvent(id){S.queue.push({ev:id})}
 function infoOnly(q){if(q.read)return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
 function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(S.autoPause||q.read||!q.ev)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
-    const e=ED[q.ev];S.inbox.push({ev:q.ev,due:S.w+DECIDE_WK,w:S.w});toast(`${e.ic||'📰'} <b>${V(e.t)}</b><br><span class="dim">Decision needed · default in ${DECIDE_WK} wk</span>`,'',{a:'evdo',e:q.ev});return false}
+    const e=ED[q.ev];S.inbox.push({ev:q.ev,due:S.w+DECIDE_WK,w:S.w});return false}
   if(q.ev){const e=ED[q.ev];(V(e.o)||[])[0]?.fx?.();toast(`${e.ic||'📰'} <b>${V(e.t)}</b><br><span class="dim">Click to read</span>`,'',{a:'evread',e:q.ev})}
   else if(q.sys==='fw')toast(`${q.r>=.7?'📈 Framework target met':'📉 Framework audit: far below goal'}<br><span class="dim">${LINES[q.lid].n} · ${q.r>=.7?'+10':'−20'} PC</span>`,'',{a:'node',n:'L:'+q.lid});
   else toast(`${q.sys==='pass'?'✅ Enacted':'❌ Stripped in conference'}<br><span class="dim">${rname(RD[q.id])}</span>`,'',{a:'rtab',t:'agenda'});
@@ -3370,12 +3387,13 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
     const held=isL?`⚙ Limited by <span class="linkn" data-a="node" data-n="L:${c}">line capacity</span>`:`⛓ Short of ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join('<span class="ar">←</span>')}`;
     const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].join(' · ')}`:`<span class="red">No fix under way.</span>`;
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
-    return `<div class="rc-rrow trc" data-n="L:${c}"><div class="rc-rh"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${gap}</div>
+    const loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.05+.75*loss).toFixed(2)}),rgba(176,69,58,${(.02+.35*loss).toFixed(2)}));border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
+    return `<div class="rc-rrow trc" data-n="L:${c}"${tint}><div class="rc-rh"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${gap}</div>
       <div class="rc-rgrid"><div>
        <div class="rc-rb"><span>${F().flag} You</span><div class="nb"><i style="width:${B(o.capYr)}%;background:#34404c"></i><i style="width:${B(o.yr)}%;background:#5f8fc4"></i></div><span class="v"><b>${fmtN(o.yr)}</b>/yr${o.capYr>o.yr*1.02?` <span class="dim">of ${fmtN(o.capYr)}</span>`:''}</span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
        ${raceSpark(c)}</div>
-      <div class="rc-rlim">${held}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
+      <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${held}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
       <div class="rc-rwork">${work}${past.length?` <span class="rc-rclr">${past.map(x=>`✓ ${limName(x.id)} ${yr(x.w1)}`).join(' · ')}</span>`:''}</div></div>`}).join('');
   return h}
 function renderGame(){
@@ -3404,7 +3422,7 @@ function renderGame(){
     const shortL=S.order.filter(l=>R.out[l].bott);
     sup+=`<div class="sect"><span>Short lines → root cause</span><span class="linkn" data-a="view" data-v="bn" style="color:#dcc78e">Full analysis →</span></div>`;
     if(!shortL.length)sup+=`<div class="empty" style="padding:10px">Every line is running at capacity.</div>`;
-    for(const l of shortL){const o=R.out[l];sup+=`<div class="chain trc" data-n="L:${l}"><b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
+    for(const l of shortL){const o=R.out[l],ls=Math.max(0,1-o.n/Math.max(o.cap,1e-9));sup+=`<div class="chain trc" data-n="L:${l}" style="background:rgba(176,69,58,${(.04+.7*ls).toFixed(2)});box-shadow:inset 3px 0 0 rgba(208,80,63,${(.5+.5*ls).toFixed(2)})"><b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
     const bad=ORDER.filter(id=>['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover);
     sup+=`<div class="sect"><span>Nodes below 100% cover (${bad.length})</span><span></span></div>`+bad.map(id=>nodeRow(id,P)).join('');
   } else if(S.tab==5){
@@ -3421,7 +3439,6 @@ function renderGame(){
   // ---- projects + plants
   let pr=`<h2>Program Offices <span class="r"><span class="dim">${slotsUsed()}/${S.slots} slots</span> <button class="btn sm" data-a="view" data-v="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ Launch Project</button></span></h2>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
-  if(S.inbox?.length)pr+=`<div class="inbox"><div class="sect"><span>📬 Decisions (${S.inbox.length})</span><span>default taken when time runs out</span></div>${S.inbox.map(x=>{const e=ED[x.ev],os=V(e.o)||[],k=defOpt({o:os});return `<div class="ibx"><div><b>${e.ic||'📰'} ${V(e.t)}</b></div><button class="btn sm" data-a="evdo" data-e="${x.ev}">Decide</button>${dTimer(x.due,k>=0?V(os[k].l):'')}</div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
   for(const p of [...S.projects].sort((a,b)=>needsYou(a)-needsYou(b))){
@@ -3485,7 +3502,7 @@ function renderGame(){
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
   document.body.classList.toggle('replaying',!!S.replay);
-  app.innerHTML=cz(top+viewStrip()+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+reelHTML();
+  const db=decBar();document.body.classList.toggle('hasdec',!!db);app.innerHTML=cz(top+viewStrip()+db+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+reelHTML();
   mountLog(lg);
   ['supply','needs','right'].forEach((id,i)=>{const el=document.getElementById(id);if(el&&sc[i]!=null)el.scrollTop=sc[i]});
   if(S._rtTop){const el=document.getElementById('right');if(el)el.scrollTop=0;S._rtTop=false}
