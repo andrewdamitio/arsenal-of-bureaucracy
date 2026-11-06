@@ -822,6 +822,8 @@ const LINEINFO={
  surface:'US battle force ~296 ships (Sep 2024); PLAN >370, projected 395 in 2025 and 435 by 2030 (DoD).[c:cmpr]',
  subs:'Virginia-class ~1.1–1.2 boats/yr since 2022 against 2.0 (then 2.33 with AUKUS).[c:crsva] Billions in submarine-industrial-base funding since FY2018.',
  drones:'Cheap to assemble; dependent on cells, magnets, boards, fiber, and IR sensors — mostly Chinese-dominated inputs.',
+ a2a:'AMRAAM ran at about 1,160–1,200 a year in recent lots; a February 2026 framework targets at least 1,900 a year, and a multiyear award of up to $20.7B followed in September 2026.[c:amraam] JATM, the next missile, is entering production. Same motors, seekers and thermal batteries as the interceptors.',
+ fires:'GMLRS rockets and PrSM missiles fired from HIMARS and MLRS. GMLRS capacity reached about 14,000 a year in 2025 (all buyers), and the Army is planning for 19,002 a year from FY2028.[c:gmlrs,gmlrs19k] PrSM Increment 1 is ramping toward 400 a year.[c:gmlrs] Every round needs a solid rocket motor.',
 };
 /* ---------- LEVERS: ways to raise a node's supply beyond the main capacity project ----------
    k: cap (new plant capacity) · mod (modernize existing: +15% domestic, +know-how)
@@ -869,8 +871,10 @@ const LINES={
  surface:     {n:'Surface Combatants',u:'surface ships',k:6,in:['shipyard','hy_steel','propulsion','aesa','pcb']},
  subs:        {n:'Submarines',u:'submarines',k:1.45,in:['sub_yard','hy_steel','sub_parts','propulsion','micro']},
  drones:      {n:'Drones',u:'drones',k:20000,in:['li_cells','actuators','pcb','fiber','fpa']},
+ a2a:         {n:'Air-to-Air Missiles',u:'air-to-air missiles',k:1200,in:['srm','rf_seeker','imu','warhead','actuators','thermal_bat']},
+ fires:       {n:'Army Precision Fires',u:'rockets & missiles',k:12000,in:['srm','imu','warhead','actuators','composites','fuzes']},
 };
-const VAL={shells:{pac:.0003,eu:.002},interceptors:{pac:1.2,eu:1},strike:{pac:1.5,eu:1},aircraft:{pac:10,eu:10},surface:{pac:80,eu:20},subs:{pac:250,eu:80},drones:{pac:.002,eu:.012}};
+const VAL={a2a:{pac:.4,eu:.3},fires:{pac:.04,eu:.08},shells:{pac:.0003,eu:.002},interceptors:{pac:1.2,eu:1},strike:{pac:1.5,eu:1},aircraft:{pac:10,eu:10},surface:{pac:80,eu:20},subs:{pac:250,eu:80},drones:{pac:.002,eu:.012}};
 const THEATERS={pac:'Indo-Pacific',eu:'European Theater'};
 const STAGES=['approp','contract','permit','build','qual','ramp'];
 const STAGE_N={approp:'FUND',contract:'CONTRACT',permit:'PERMIT',build:'BUILD',qual:'QUALIFY',ramp:'MARKET'};
@@ -880,13 +884,13 @@ const STAGE_L={approp:'Appropriation',contract:'Contracting',permit:'Siting & Pe
 const FACTIONS={
  US:{name:'United States',flag:FLAGS.us,cur:'$',motto:'The Arsenal of Democracy (Pending Review)',
   pc0:40,pcRate:1.6,budget0:8,fyBudget:9,lev0:70,slots:8,
-  lines:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:1,drones:1},
-  lineKn:{shells:40,interceptors:50,strike:50,aircraft:60,surface:30,subs:35,drones:30},
-  order:['interceptors','strike','subs','aircraft','surface','drones','shells'],
-  inv:{shells:1.5e6,interceptors:4700,strike:7800,aircraft:2700,surface:229,subs:67,drones:10000},
-  ret:{shells:.05,interceptors:.03,strike:.02,aircraft:.04,surface:.03,subs:.035,drones:.3},
-  alloc:{pac:{shells:.3,interceptors:.5,strike:.6,aircraft:.55,surface:.6,subs:.6,drones:.4},eu:{shells:.6,interceptors:.3,strike:.3,aircraft:.3,surface:.2,subs:.2,drones:.5}},
-  q:{shells:1,interceptors:1,strike:1,aircraft:1.4,surface:1.5,subs:1.6,drones:1},
+  lines:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:1,drones:1,a2a:1,fires:1},
+  lineKn:{shells:40,interceptors:50,strike:50,aircraft:60,surface:30,subs:35,drones:30,a2a:55,fires:55},
+  order:['interceptors','strike','subs','aircraft','surface','drones','shells','a2a','fires'],
+  inv:{shells:1.5e6,interceptors:4700,strike:7800,aircraft:2700,surface:229,subs:67,drones:10000,a2a:12000,fires:25000},
+  ret:{shells:.05,interceptors:.03,strike:.02,aircraft:.04,surface:.03,subs:.035,drones:.3,a2a:.03,fires:.04},
+  alloc:{pac:{shells:.3,interceptors:.5,strike:.6,aircraft:.55,surface:.6,subs:.6,drones:.4,a2a:.55,fires:.3},eu:{shells:.6,interceptors:.3,strike:.3,aircraft:.3,surface:.2,subs:.2,drones:.5,a2a:.3,fires:.6}},
+  q:{shells:1,interceptors:1,strike:1,aircraft:1.4,surface:1.5,subs:1.6,drones:1,a2a:1,fires:1},
   allied:{pac:1,eu:1},alliedG:{pac:.015,eu:.04},alliedN:{pac:'Japan, Korea, Australia, Taiwan',eu:'European NATO'},
   theaters:['pac','eu'],primes:'the primes',
   inherited:[
@@ -905,14 +909,14 @@ const FACTIONS={
   blurb:['The Iran war used >1,000 Tomahawks and roughly half the Patriot and THAAD stocks; rebuilding takes 1–4 years.[c:csislast,twzstock]','~291 battle force ships vs. a PLAN headed for 435.[c:navy291,cmpr]','One ammonium perchlorate plant. One RDX plant. No TNT until 2029.[c:bdsrm,tntky]','~99% of primary gallium comes from China.[c:usgs26]','155mm output at ~36% of goal; a $469M plant made zero usable parts.[c:dodig]','Virginia-class subs at ~1.1–1.2/yr vs. a 2/yr goal.[c:crsva]','Annual budgets — usually late.']},
  EU:{name:'European Union',flag:FLAGS.eu,cur:'€',motto:'The Strategic Autonomy Working Group',
   pc0:35,pcRate:1.5,budget0:7,fyBudget:8,lev0:60,slots:8,
-  lines:{shells:2.5,interceptors:1.33,strike:.375,aircraft:.55,surface:.83,subs:1.7,drones:2},
-  lineKn:{shells:55,interceptors:50,strike:45,aircraft:55,surface:50,subs:50,drones:35},
-  order:['shells','interceptors','drones','strike','aircraft','subs','surface'],
-  inv:{shells:6e5,interceptors:1500,strike:2000,aircraft:1800,surface:120,subs:40,drones:20000},
-  ret:{shells:.05,interceptors:.03,strike:.02,aircraft:.04,surface:.03,subs:.035,drones:.3},
+  lines:{shells:2.5,interceptors:1.33,strike:.375,aircraft:.55,surface:.83,subs:1.7,drones:2,a2a:.4,fires:.2},
+  lineKn:{shells:55,interceptors:50,strike:45,aircraft:55,surface:50,subs:50,drones:35,a2a:50,fires:45},
+  order:['shells','interceptors','drones','strike','aircraft','subs','surface','a2a','fires'],
+  inv:{shells:6e5,interceptors:1500,strike:2000,aircraft:1800,surface:120,subs:40,drones:20000,a2a:4000,fires:2000},
+  ret:{shells:.05,interceptors:.03,strike:.02,aircraft:.04,surface:.03,subs:.035,drones:.3,a2a:.03,fires:.04},
   aid:{shells:1e6,interceptors:150}, // to Ukraine while the war lasts (estimate)
-  alloc:{pac:{shells:0,interceptors:0,strike:0,aircraft:0,surface:0,subs:0,drones:0},eu:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:1,drones:1}},
-  q:{shells:1,interceptors:.8,strike:.8,aircraft:.7,surface:.9,subs:.9,drones:1},
+  alloc:{pac:{shells:0,interceptors:0,strike:0,aircraft:0,surface:0,subs:0,drones:0,a2a:0,fires:0},eu:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:1,drones:1,a2a:1,fires:1}},
+  q:{shells:1,interceptors:.8,strike:.8,aircraft:.7,surface:.9,subs:.9,drones:1,a2a:.9,fires:.9},
   allied:{pac:1,eu:1},alliedG:{pac:0,eu:0},alliedN:{pac:'',eu:'US forces in Europe'},
   theaters:['eu'],primes:'the national champions',
   inherited:[
@@ -942,26 +946,26 @@ const MXP=[
 ];
 const ENEMIES={
  pac:{n:'PRC',flag:FLAGS.cn,
-  inv:{shells:5e6,interceptors:15000,strike:6000,aircraft:2250,surface:325,subs:62,drones:1e5},
-  prod:{shells:1.5e6,interceptors:2000,strike:1000,aircraft:200,surface:20,subs:3.5,drones:6e4},
+  inv:{shells:5e6,interceptors:15000,strike:6000,aircraft:2250,surface:325,subs:62,drones:1e5,a2a:10000,fires:20000},
+  prod:{shells:1.5e6,interceptors:2000,strike:1000,aircraft:200,surface:20,subs:3.5,drones:6e4,a2a:2000,fires:6000},
   sched:{aircraft:[0,200,weekOf(2028,0,3),350]},
-  gc:{shells:.02,interceptors:.04,strike:.05,aircraft:.03,surface:.03,subs:.03,drones:.1},
-  ret:{shells:.05,interceptors:.02,strike:.02,aircraft:.05,surface:.03,subs:.03,drones:.2},q:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:.7,drones:1}},
+  gc:{shells:.02,interceptors:.04,strike:.05,aircraft:.03,surface:.03,subs:.03,drones:.1,a2a:.06,fires:.05},
+  ret:{shells:.05,interceptors:.02,strike:.02,aircraft:.05,surface:.03,subs:.03,drones:.2,a2a:.03,fires:.03},q:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:.7,drones:1,a2a:1,fires:1}},
  eu:{n:'Russia',flag:FLAGS.ru,
-  inv:{shells:3e6,interceptors:4000,strike:1900,aircraft:1200,surface:30,subs:45,drones:4e5},
-  prod:{shells:4.9e6,interceptors:1500,strike:2400,aircraft:30,surface:2,subs:1.5,drones:2e6},
+  inv:{shells:3e6,interceptors:4000,strike:1900,aircraft:1200,surface:30,subs:45,drones:4e5,a2a:3000,fires:3000},
+  prod:{shells:4.9e6,interceptors:1500,strike:2400,aircraft:30,surface:2,subs:1.5,drones:2e6,a2a:400,fires:2000},
   gc:{interceptors:.05},
-  use:{shells:3.6e6,interceptors:900,strike:2000,aircraft:15,drones:1.95e6},
-  ret:{shells:.03,interceptors:.03,strike:.02,aircraft:.025,surface:.03,subs:.03,drones:.3},q:{shells:.8,interceptors:1,strike:1,aircraft:.8,surface:.8,subs:.8,drones:1}},
+  use:{shells:3.6e6,interceptors:900,strike:2000,aircraft:15,drones:1.95e6,a2a:150,fires:1500},
+  ret:{shells:.03,interceptors:.03,strike:.02,aircraft:.025,surface:.03,subs:.03,drones:.3,a2a:.03,fires:.03},q:{shells:.8,interceptors:1,strike:1,aircraft:.8,surface:.8,subs:.8,drones:1,a2a:.9,fires:.9}},
 };
 // [low, high] of the open-source range around each central estimate. Each game draws the true value inside it.
 const ENEMY_RNG={
- pac:{inv:{shells:[2e6,1e7],interceptors:[8e3,2.5e4],strike:[3100,1e4],aircraft:[2118,2500],surface:[310,340],subs:[60,66],drones:[3e4,3e5]},
-      prod:{shells:[8e5,3e6],interceptors:[1e3,4e3],strike:[600,2000],aircraft:[150,250],surface:[15,25],subs:[2.5,5],drones:[2e4,2e5]}},
- eu:{inv:{shells:[1.5e6,8e6],interceptors:[2e3,8e3],strike:[1500,2500],aircraft:[1100,1300],surface:[25,40],subs:[40,55],drones:[1e5,8e5]},
-      prod:{shells:[4.4e6,5.7e6],interceptors:[800,3000],strike:[2100,2700],aircraft:[20,40],surface:[1,3],subs:[1,2],drones:[1.2e6,4e6]}},
+ pac:{inv:{shells:[2e6,1e7],interceptors:[8e3,2.5e4],strike:[3100,1e4],aircraft:[2118,2500],surface:[310,340],subs:[60,66],drones:[3e4,3e5],a2a:[6e3,1.5e4],fires:[1e4,4e4]},
+      prod:{shells:[8e5,3e6],interceptors:[1e3,4e3],strike:[600,2000],aircraft:[150,250],surface:[15,25],subs:[2.5,5],drones:[2e4,2e5],a2a:[1e3,3e3],fires:[3e3,1.5e4]}},
+ eu:{inv:{shells:[1.5e6,8e6],interceptors:[2e3,8e3],strike:[1500,2500],aircraft:[1100,1300],surface:[25,40],subs:[40,55],drones:[1e5,8e5],a2a:[2e3,5e3],fires:[1500,6e3]},
+      prod:{shells:[4.4e6,5.7e6],interceptors:[800,3000],strike:[2100,2700],aircraft:[20,40],surface:[1,3],subs:[1,2],drones:[1.2e6,4e6],a2a:[200,800],fires:[1e3,4e3]}},
 };
-const ENEMY_SRC={pac:{strike:'Low end: the CMPR count of PLARF theater missiles (900 SRBM, 1,300 MRBM, 500 IRBM, 400 GLCM).[c:plarf] Higher values add ship- and air-launched missiles (estimate).',aircraft:'IISS counts ~2,118 combat aircraft (early 2026), which may undercount.[c:iiss26] Output: J-20 ~100–120 in 2025, with 300–400 advanced fighters a year possible from 2027.[c:j20]',surface:'CMPR: over 370 battle-force ships and submarines (2024), 395 projected for 2025.[c:cmpr] At least 21 major combatants launched and commissioned in 2025.[c:plan25]',subs:'CMPR: about 60–66 submarines.[c:cmpr]'},
+const ENEMY_SRC={pac:{a2a:'No public figure. Open-source speculation puts PL-15 output at roughly 1,000–3,000 a year;[c:pl15] the game uses 2,000 with that range.',fires:'No public figure for PHL-16 / PCH-191 guided rockets; game estimate with a wide range.',strike:'Low end: the CMPR count of PLARF theater missiles (900 SRBM, 1,300 MRBM, 500 IRBM, 400 GLCM).[c:plarf] Higher values add ship- and air-launched missiles (estimate).',aircraft:'IISS counts ~2,118 combat aircraft (early 2026), which may undercount.[c:iiss26] Output: J-20 ~100–120 in 2025, with 300–400 advanced fighters a year possible from 2027.[c:j20]',surface:'CMPR: over 370 battle-force ships and submarines (2024), 395 projected for 2025.[c:cmpr] At least 21 major combatants launched and commissioned in 2025.[c:plan25]',subs:'CMPR: about 60–66 submarines.[c:cmpr]'},
  eu:{strike:'Ukrainian intelligence: ~1,950 missiles (June 2025), output ~195/month;[c:hur25] more than 200 a month by mid-2026.[c:hur26]',interceptors:'S-400 missiles alone: ~50 a month in 2026.[c:hur26] Other types estimated.',shells:'Output: 3.4M howitzer rounds in 2025 plus imports from North Korea and Iran (5–7M since 2023).[c:estonia] Stock is an estimate.',aircraft:'IISS: ~1,200 combat aircraft (early 2026).[c:iiss26]',drones:'Plan of 2M FPV and 30,000 long-range drones in 2025.[c:rufpv]'}};
 
 /* ---------- PROJECTS (generated per node + explicit line projects) ---------- */
@@ -1146,6 +1150,10 @@ for(const m of MXP)PROJECTS.push({id:m.id,kind:'maint',fac:m.fac,n:m.n,d:m.d,t:{
 PROJECTS.push(
  {id:'l_shell_lap',n:'Shell Load/Assemble/Pack Expansion',d:'More fill lines (+50% of the US base rate). Useless without shell bodies, TNT, propellant and fuzes.',t:{line:'shells'},gain:.5,cost:1,dur:[8,16,12,78,26,0],tags:['line','prime','energetic']},
  {id:'l_int_prime',n:'Interceptor Line (Incumbent)',d:'Expand PAC-3/SM-class final assembly. The 2026 frameworks target PAC-3 MSE 600→2,000/yr by 2030 — if motors and seekers exist.',t:{line:'interceptors'},gain:.5,cost:2,dur:[16,26,8,104,52,0],tags:['line','prime']},
+ {id:'l_a2a',n:'AMRAAM Framework (1,200 → 1,900/yr)',d:'The February 2026 framework: at least 1,900 AMRAAMs a year. Needs the motors and seekers the interceptors also want.',t:{line:'a2a'},gain:.58,cost:1.8,dur:[12,20,8,78,40,0],tags:['line','prime']},
+ {id:'l_a2a_jatm',n:'JATM Production Line',d:'The next long-range air-to-air missile, built alongside AMRAAM.',t:{line:'a2a'},gain:.4,cost:1.5,dur:[16,26,8,104,60,0],tags:['line','prime']},
+ {id:'l_fires',n:'GMLRS to 19,000/yr',d:'The Army plans for 19,002 rockets a year from FY2028: more load lines and motor-case capacity.',t:{line:'fires'},gain:.36,cost:1.2,dur:[12,20,8,78,26,0],tags:['line','prime','energetic']},
+ {id:'l_fires_new',n:'Second-Source Rocket Artillery (New Entrant)',d:'A second GMLRS-class rocket from a new entrant with its own motor supplier.',t:{line:'fires'},gain:.3,cost:1,dur:[8,20,8,78,52,0],tags:['line','entrant','energetic']},
  {id:'l_int_new',n:'Interceptor Second Source (New Entrant)',d:'A cheaper interceptor from a new entrant.',t:{line:'interceptors'},gain:.4,cost:1.2,dur:[8,20,8,78,60,0],tags:['line','entrant']},
  {id:'l_str_prime',n:'Strike Missile Line (Incumbent)',d:'Tomahawk/JASSM-class rate increase. Each needs a small turbofan.',t:{line:'strike'},gain:.5,cost:2,dur:[16,26,8,104,52,0],tags:['line','prime']},
  {id:'l_str_new',n:'Low-Cost Cruise Missile (New Entrant)',d:'Mass-producible cruise missiles with commercial-grade parts.',t:{line:'strike'},gain:.6,cost:1,dur:[8,20,8,60,40,0],tags:['line','entrant']},
@@ -1688,7 +1696,7 @@ function nodeSupply(id){
   const ext=ally+prc+spot+div;
   return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,prc,spot,div,ext,prcExtFrac:ext>0?(prc+allyPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(prcRaw-prc),prcRaw,allyRaw};
 }
-function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors','strike'].includes(lid))?1.1:1)*(S.shifts?.[lid]?SHIFT_M:1)}
+function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors','strike','a2a','fires'].includes(lid))?1.1:1)*(S.shifts?.[lid]?SHIFT_M:1)}
 function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)*ruleLine(lid)}
 function lineName(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain;return c*lineMultOf(lid)}
 
@@ -1743,11 +1751,11 @@ function nodeStatus(p){if(p.need<1e-6)return 'idle';if(p.lost>.05*(p.ext+p.lost+
    Every parameter is a triple [optimistic for you, central, pessimistic].
    You plan on the central estimate; each game draws hidden true values.
    ===================================================================== */
-const MUN=['shells','interceptors','strike','drones'],PLAT=['aircraft','surface','subs'];
+const MUN=['shells','interceptors','strike','drones','a2a','fires'],PLAT=['aircraft','surface','subs'];
 const SCEN={
  pac:{n:'Taiwan Strait denial campaign',short:'a Taiwan Strait campaign',
   wk:[3,4,8],                 // weeks of high-intensity combat you must sustain
-  w:{interceptors:1,strike:1.2,aircraft:1,surface:.8,subs:1,shells:.1,drones:.2},
+  w:{interceptors:1,strike:1.2,aircraft:1,surface:.8,subs:1,shells:.1,drones:.2,a2a:0,fires:0},
   fire:[.08,.12,.2],          // share of PRC theater strike missiles launched per week
   shots:[1.5,2,2.5],          // interceptors per threat engaged
   share:[.5,.7,.9],           // share of salvos aimed at targets the coalition must defend
@@ -1757,7 +1765,7 @@ const SCEN={
   req:[.85,1,1.3]},
  eu:{n:'Baltic / eastern-flank defence campaign',short:'a war on the eastern flank',
   wk:[8,12,26],
-  w:{shells:1,interceptors:.8,strike:.6,aircraft:1,surface:.3,subs:.3,drones:.3},
+  w:{shells:1,interceptors:.8,strike:.6,aircraft:1,surface:.3,subs:.3,drones:.3,a2a:0,fires:0},
   fire:[.05,.08,.15],shots:[1.5,2,2.5],share:[.5,.7,.9],
   anch:{shells:[35000,70000,140000],drones:[5000,15000,50000],strike:[150,300,500]},
   ally:{US:{shells:.75,interceptors:.5,strike:.5,drones:.8},EU:{shells:.1,interceptors:.3,strike:.35,drones:.05}},pshare:{US:.65,EU:.25},
@@ -3062,6 +3070,10 @@ const CITES=[
  {id:'ampac',g:'Missiles, motors & engines',t:'American Pacific Corporation finalizes $100 million capacity expansion',pub:'Utah Business',d:'Jun 2025',url:'https://www.utahbusiness.com/press-releases/2025/06/23/american-pacific-corporation-finalizes-100-million-capacity-expansion',use:'New AP line in Cedar City, >50% more capacity, completion expected 2026.'},
  {id:'htpb',g:'Missiles, motors & engines',t:'Establishing a Second Domestic Manufacturing Source for HTPB (SBIR award)',pub:'SBIR.gov / DLA',d:'2024',url:'https://www.sbir.gov/awards/211102',use:'Military-grade HTPB rated “critically at-risk” due to sole-source supply.'},
  {id:'alpowder',g:'Missiles, motors & engines',t:'Toyal America — spherical aluminum powders for solid rocket motors',pub:'Palmer Holland (distributor profile)',d:'n.d.',url:'https://palmerholland.com/principals/Toyal-America-Inc',use:'Toyal America described as the leading supplier of spherical aluminum powder to the SRM industry; Valimet and AMPAL also produce.'},
+ {id:'amraam',g:'Missiles, motors & engines',t:'Pentagon awards Raytheon up to $20.7 billion to nearly double AMRAAM production',pub:'Defense News',d:'Sep 2026',url:'https://www.defensenews.com/pentagon/2026/09/29/pentagon-awards-raytheon-up-to-207-billion-to-nearly-double-amraam-production/',use:'February 2026 framework for at least 1,900 AMRAAMs a year; multiyear award of up to $20.7B (Sep 2026).'},
+ {id:'gmlrs',g:'Missiles, motors & engines',t:'Building at Scale to Meet Global Defense Demands',pub:'Lockheed Martin',d:'Oct 2025',url:'https://lockheedmartin.com/en-us/news/features/2025/building-at-scale-to-meet-global-defense-demands.html',use:'GMLRS ramp to 14,000 a year completing; PrSM Increment 1 ramping to 400 a year.'},
+ {id:'gmlrs19k',g:'Missiles, motors & engines',t:'U.S. Army lays groundwork for 133,014 GMLRS rockets to expand HIMARS firepower through 2034',pub:'Army Recognition',d:'Aug 2026',url:'https://www.armyrecognition.com/news/army-news/2026/u-s-army-lays-groundwork-for-133-014-gmlrs-rockets-to-expand-himars-firepower-through-2034',use:'Current GMLRS capacity ~14,004 a year; planning for up to 19,002 a year in FY2028–34.'},
+ {id:'pl15',g:'Adversary production',t:'PL-15',pub:'Wikipedia',d:'current',url:'https://en.wikipedia.org/wiki/PL-15',use:'PL-15 in PLA service since 2015–17; no public production figures (open-source speculation 1,000–3,000 a year).'},
  {id:'lmpac3',g:'Missiles, motors & engines',t:'Lockheed Martin and Department of War advance landmark acquisition transformation to accelerate PAC-3 MSE production',pub:'Lockheed Martin',d:'6 Jan 2026',url:'https://investors.lockheedmartin.com/node/52301/pdf',use:'620 PAC-3 MSE delivered in 2025; seven-year framework toward ~2,000/yr.'},
  {id:'rtxfw',g:'Missiles, motors & engines',t:'RTX’s Raytheon partners with Department of War on five landmark agreements',pub:'RTX (PR Newswire)',d:'4 Feb 2026',url:'https://www.barchart.com/story/news/15929/rtx-s-raytheon-partners-with-department-of-war-on-five-landmark-agreements-to-expand-critical-munition-production',use:'Tomahawk >1,000/yr, AMRAAM ≥1,900/yr, SM-6 >500/yr.'},
  {id:'thaad',g:'Missiles, motors & engines',t:'New Raytheon and Lockheed Martin agreements expand missile defense production',pub:'Mobility Engineering Technology',d:'2026',url:'https://www.mobilityengineeringtech.com/component/content/article/54644-new-raytheon-and-lockheed-martin-agreements-expand-missile-defense-production',use:'THAAD capacity 96 → 400 per year.'},
@@ -3142,8 +3154,9 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Air-to-air and Army fires','US output: AMRAAM ~1,200 a year in 2025 (recent lots 1,160–1,200), GMLRS and PrSM ~12,000 a year retained by the US out of ~14,000 capacity (sourced capacity; the US share is an estimate). US stocks (12,000 air-to-air missiles, 25,000 rockets) are estimates: neither is public. Chinese and Russian output and stocks are game estimates with wide ranges; for the PL-15 the only public figures are open-source speculation (1,000–3,000 a year). Neither line is scored in the campaign scenarios yet.'],
  ['Emergency purchases','A spot purchase is offered only for raw materials, materials and components that also sell to civilian customers. Defense-only items that allied plants make can be bought from those producers at half again the price, as Poland and South Korea have sold TNT and shells. Items built to order by a few US defense suppliers (submarine and surface shipyards, solid rocket motors, seekers, warheads, thermal batteries, AESA radars, fighter engines) have no emergency purchase: only new capacity helps. Which items fall in each group, and the premiums, are game estimates.'],
- ['The race','Your share of China’s output is the average, over the seven end-item lines, of your output divided by China’s estimated output, each capped at 100%. China’s output grows each year at game-estimated rates: shells 2%, interceptors 4%, strike missiles 5%, aircraft and surface combatants 3% (aircraft after the J-20 ramp to 2028), submarines 3%, drones 10%. A new plant’s yield follows a learning curve: about two years to half its nameplate at low know-how, under a year at high know-how (game estimate). Against Russia, output is held at the 2025 estimates except interceptors (+5% a year), and moves with events such as a ceasefire. A bottleneck counts as cleared when a line’s limit changes for at least six weeks and its output rises at least 3%.'],
+ ['The race','Your share of China’s output is the average, over the end-item lines, of your output divided by China’s estimated output, each capped at 100%. China’s output grows each year at game-estimated rates: shells 2%, interceptors 4%, strike missiles 5%, aircraft and surface combatants 3% (aircraft after the J-20 ramp to 2028), submarines 3%, drones 10%. A new plant’s yield follows a learning curve: about two years to half its nameplate at low know-how, under a year at high know-how (game estimate). Against Russia, output is held at the 2025 estimates except interceptors (+5% a year), and moves with events such as a ceasefire. A bottleneck counts as cleared when a line’s limit changes for at least six weeks and its output rises at least 3%.'],
  ['Permits','Statutory terms are from the statutes: Title V and NPDES permits run five years, RCRA permits up to ten, ATF explosives licenses three, ITAR registration one; ESA formal consultation is 135 days; NEPA assessments and impact statements have one- and two-year deadlines (2023). Which permits each project type needs, their review times relative to each other, and the odds that a renewal is contested are game estimates.'],
  ['US rulebook','Each rule’s status, date and scope is sourced. How much it changes obstacle odds, waits and costs (the ×multipliers shown on each rule), and the Political Capital needed to adopt, finalize or reverse executive actions, are game assumptions.'],
  ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
@@ -3177,7 +3190,7 @@ function modelCheckHTML(){
   const th=t=>{const s=SCEN[t],A=v=>Array.isArray(v)?`${v[0]} / <b>${v[1]}</b> / ${v[2]}`:v;return `<tr><td colspan="2"><b>${THEATERS[t]}: ${s.n}</b></td></tr><tr><td>Weeks to sustain</td><td>${A(s.wk)}</td></tr><tr><td>Enemy missiles launched per week (share of stock)</td><td>${A(s.fire)}</td></tr><tr><td>Interceptors per threat</td><td>${A(s.shots)}</td></tr><tr><td>Share of salvos at defended targets</td><td>${A(s.share)}</td></tr>${s.spk?`<tr><td>Long-range missiles per PLAN ship (3 weeks)</td><td>${A(s.spk)}</td></tr>`:''}${Object.entries(s.anch).map(([c,v])=>`<tr><td>${LINES[c].n} burn per week (2025 enemy)</td><td>${A(v.map(x=>fmtN(x)))}</td></tr>`).join('')}<tr><td>Allies' share (${S.fac})</td><td>${Object.entries(s.ally[S.fac]||{}).map(([c,v])=>`${LINES[c].u} ${pct(v)}`).join(' · ')||'—'}</td></tr><tr><td>Platform requirement multiplier</td><td>${A(s.req)}</td></tr>`};
   const sc=`<div class="acard"><div class="ah"><b>Scenario: optimistic / <b>central</b> / pessimistic</b></div><table class="mtab">${S.theaters.map(th).join('')}</table></div>`;
   const ir=`<div class="acard"><div class="ah"><b>Intelligence ranges: what you plan on vs the open-source range</b></div><table class="mtab"><tr><th></th><th>In service, Jan 2025 (central · range)</th><th>Output per year (central · range)</th><th>Basis</th></tr>${['pac','eu'].map(t=>Object.keys(LINES).map(c=>`<tr><td>${ENEMIES[t].flag} ${LINES[c].n}</td><td>${fmtN(ENEMIES[t].inv[c])} · ${fmtN(ENEMY_RNG[t].inv[c][0])}–${fmtN(ENEMY_RNG[t].inv[c][1])}</td><td>${fmtN(ENEMIES[t].prod[c])} · ${fmtN(ENEMY_RNG[t].prod[c][0])}–${fmtN(ENEMY_RNG[t].prod[c][1])}</td><td>${ENEMY_SRC[t][c]||'Estimate'}</td></tr>`).join('')).join('')}</table></div>`;
-  const OWN={US:{shells:'Estimate (stock not public).',interceptors:'Derived: CSIS prewar estimates (Feb 2026) less 2025 output, plus 2025 use.[c:twzstock,csisday12]',strike:'Derived the same way.[c:twzstock,csisday12]',aircraft:'IISS: 2,444 combat aircraft in the active services, ~3,000 with the Guard.[c:iiss26]',surface:'296 battle force ships (Dec 2024) less submarines.[c:cmpr,navyfy26]',subs:'Navy FY2026: 63 submarines in the deployable force.[c:navyfy26]',drones:'Estimate.'},
+  const OWN={US:{shells:'Estimate (stock not public).',interceptors:'Derived: CSIS prewar estimates (Feb 2026) less 2025 output, plus 2025 use.[c:twzstock,csisday12]',strike:'Derived the same way.[c:twzstock,csisday12]',aircraft:'IISS: 2,444 combat aircraft in the active services, ~3,000 with the Guard.[c:iiss26]',surface:'296 battle force ships (Dec 2024) less submarines.[c:cmpr,navyfy26]',subs:'Navy FY2026: 63 submarines in the deployable force.[c:navyfy26]',drones:'Estimate.',a2a:'Estimate (AMRAAM inventory is not public).',fires:'Estimate: GMLRS stock after Ukraine transfers (not public).'},
    EU:{shells:'Estimate; most new rounds have gone to Ukraine.[c:kallas]',interceptors:'Estimate.',strike:'Estimate.',aircraft:'Estimate.',surface:'IISS (2021): 116 large surface combatants in European navies, including the UK.[c:wotrnav]',subs:'IISS (2021): 66 submarines, including the UK, Norway and Turkey; EU members only is an estimate.[c:wotrnav]',drones:'Estimate.'}}[S.fac];
   const own=`<div class="acard"><div class="ah"><b>Your starting forces, January 2025</b></div><table class="mtab">${Object.keys(LINES).map(c=>`<tr><td>${LINES[c].n}</td><td><b>${fmtN(F().inv[c])}</b></td><td>${OWN[c]}</td></tr>`).join('')}</table></div>`;
   return `<div class="srcgrid">${bt}${tl}${sc}${ir}${own}</div>`;
@@ -3393,7 +3406,7 @@ function needsHTML(R){const pj=needsProj(R);return `<div class="ngrid">${Object.
 // the rival you race: China (the Indo-Pacific model) or Russia (the European one)
 const RIVALS={pac:{n:'China',f:FLAGS.cn},eu:{n:'Russia',f:FLAGS.ru}},RV=()=>RIVALS[S.rival||'pac'];
 const cnOut=(c,w=S.w)=>estProd(S.enemy[S.rival||'pac'],c,w);
-// the average over the seven lines of your output ÷ ${RV().n}'s, each capped at 100%
+// the average over the end-item lines of your output ÷ ${RV().n}'s, each capped at 100%
 function raceIdx(out,w=S.w,get=c=>out[c].yr){const cs=Object.keys(LINES);return cs.reduce((a,c)=>a+Math.min(1,get(c)/Math.max(cnOut(c,w),1e-9)),0)/cs.length}
 const limOf=(o,c)=>o.bott?o.chain.at(-1):'L:'+c;
 const limName=id=>id.startsWith('L:')?'line capacity':ND[id].n;
@@ -3418,10 +3431,10 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
   const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the seven lines. ${RV().n}'s figures are intelligence estimates."><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across seven lines</span></div>
+  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the end-item lines. ${RV().n}'s figures are intelligence estimates."><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across seven lines</span></div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
    <div><b>${matched}/${cs.length}</b><span>lines matching ${RV().n}</span></div>
-   <div data-tip="Average growth in ${RV().n}'s output over the last year, across the seven lines."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth this year</span></div>
+   <div data-tip="Average growth in ${RV().n}'s output over the last year, across the end-item lines."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth this year</span></div>
    <div data-tip="Each time a line's limit stopped binding, output rose, and the next limit took over."><b>${cleared}</b><span>bottlenecks cleared</span></div></div>`;
   h+=S.order.map(c=>{const o=out[c],L=LINES[c],cn=cnOut(c),r=cn/Math.max(o.yr,1e-9),mx=Math.max(o.capYr,o.yr,cn,1e-9),B=v=>Math.min(100,v/mx*100);
     const lim=limOf(o,c),isL=lim.startsWith('L:'),cur=S.lim?.[c];
@@ -3587,7 +3600,7 @@ function renderModal(){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
     html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
       <div class="stamp" style="font-size:24px">${S.verdict}</div>${S.overWhy?`<p>${S.overWhy}</p>`:''}
-      <p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of ${RV().n}'s output across the seven lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
+      <p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of ${RV().n}'s output across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
       <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}'s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
       <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Pages: <b>${S.pages.toLocaleString()}</b>. Exceptions: <b>${S.waivers}</b>.</p>
