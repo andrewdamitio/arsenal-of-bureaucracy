@@ -295,6 +295,8 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 @keyframes spentup{0%{opacity:0;transform:translate(-50%,6px)}12%{opacity:1;transform:translate(-50%,0)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px)}}
 /* factories tab */
 .fcrow{align-items:flex-start}.fcbar{height:4px;width:160px;background:#0006;margin:3px 0 1px;position:relative}.fcbar i{position:absolute;left:0;top:0;bottom:0;background:#d9a441}
+/* flows */
+.sk .skcut{font-size:9.5px;fill:#a3261c;font-weight:600}
 /* decisions bar */
 #decbar{display:flex;align-items:center;gap:8px;height:40px;margin:4px 8px 0;padding:0 6px;background:#2a2416;border:1px solid #8a6a1f;box-shadow:0 0 0 1px #0006 inset}
 body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
@@ -2274,6 +2276,7 @@ function sankeySVG(R,focus,mode,attr){
   const colOf=id=>id.startsWith('S:')?0:id.startsWith('L:')?5:ND[id].t;
   const val=id=>Math.max(vin[id]||0,vout[id]||0);
   const ghost={};for(const id of ids)if(id.startsWith('L:')){const l=id.slice(2),o=R.out[l];const per=o.n>1e-9?val(id)/o.n:lineUnitWeight(l,mode);ghost[id]=Math.max(0,(o.cap-o.n))*per*(focus==='all'||focus===id?1:0)}
+  const ghostFull={...ghost};for(const id in ghost)ghost[id]=Math.min(ghost[id],.6*Math.max(val(id),1e-12));
   const cols=[[],[],[],[],[],[]];for(const id of ids)cols[colOf(id)].push(id);
   const srcOrder=Object.keys(SRC);cols[0].sort((a,b)=>srcOrder.indexOf(a)-srcOrder.indexOf(b));
   cols[5].sort((a,b)=>S.order.indexOf(a.slice(2))-S.order.indexOf(b.slice(2)));
@@ -2307,9 +2310,11 @@ function sankeySVG(R,focus,mode,attr){
   for(const id of ids){const p=pos[id],isL=id.startsWith('L:');
     const act=id.startsWith('S:')?'':isL?`data-a="flow" data-f="${id}"`:`data-a="node" data-n="${id}"`;
     let tip=nameOf(id)+` — ${pct(val(id)/total)} of this view`;
-    if(isL){const o=R.out[id.slice(2)];tip+=` · output ${pct(o.n/Math.max(o.cap,1e-9))} of capacity`}else if(!id.startsWith('S:'))tip+=` · cover ${pct(Math.min(P[id].cover,9.99))} · PRC exposure ${pct(P[id].expo)}`;
+    if(isL){const o=R.out[id.slice(2)];tip+=` · output ${pct(o.n/Math.max(o.cap,1e-9))} of capacity${o.cap>o.n*1.001?`<br><span style="color:#e8a090">Hatched: ${pct(1-o.n/Math.max(o.cap,1e-9))} of capacity idle${o.bott?`, short of ${ND[o.bott].n}`:''}</span>`:''}`}else if(!id.startsWith('S:'))tip+=` · cover ${pct(Math.min(P[id].cover,9.99))} · PRC exposure ${pct(P[id].expo)}`;
     svg+=`<g class="nd" data-id="${id}" ${act} data-tip="${tip.replace(' — ','<br>')}"><rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${p.h}" fill="${nodeCol(id)}" stroke="#2b241a" stroke-width=".5"/>`;
-    if(p.g>0.5)svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"><title></title></rect>`;
+    if(p.g>0.5){const o=R.out[id.slice(2)],cut=ghostFull[id]>ghost[id]*1.001,yb=p.y+p.h+p.g;
+      svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"></rect>`;
+      if(cut)svg+=`<path d="M${p.x-1},${yb-2} l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4 l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4" stroke="#efe6cf" stroke-width="3" fill="none"><title>Idle capacity, shortened to fit</title></path>`}
     const ty=labY[id],cyy=p.y+(p.h+p.g)/2;
     if(Math.abs(ty-3.5-cyy)>5)svg+=`<path d="M${p.x+nodeW},${cyy}L${p.x+nodeW+3},${ty-3.5}" stroke="#8a7850" stroke-width=".6" fill="none"/>`;
     svg+=`<rect x="${p.x+nodeW+2}" y="${ty-10}" width="${Math.min(isL?250:160,nameOf(id).length*5.6+8)}" height="12" fill="transparent"/>`;
