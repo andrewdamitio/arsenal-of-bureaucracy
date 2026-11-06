@@ -272,6 +272,9 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .pmagn{display:block;font-weight:600;font-size:12.5px}.pmag .nb{height:8px;margin:3px 0;background:#e6dbbd;border-color:#cbbd95}
 .pmt tr.pmr{cursor:pointer}.pmt tr.pmr:hover td{background:#fbf6e8}.pmt td{font-size:12.5px}
 @media(max-width:1180px){.pmtiles{grid-template-columns:repeat(2,1fr)}.pmcols{grid-template-columns:1fr}}
+/* in service */
+.isg{display:grid;grid-template-columns:1fr 1fr;gap:6px 28px}.isgt{font:700 10.5px "Segoe UI";letter-spacing:.07em;text-transform:uppercase;color:#6b5a35;margin-bottom:3px}.isgr{font-size:12px;margin:2px 0 0 86px}
+@media(max-width:900px){.isg{grid-template-columns:1fr}}
 /* supply web */
 .swhd{display:flex;justify-content:flex-end;font-size:12px;margin:-2px 0 2px}.sweb{display:block;max-width:1000px;overflow:visible}
 .sweb text{font-family:"Segoe UI",system-ui,sans-serif}.swn{font-size:12.5px;font-weight:600;fill:#3a3020}.swb{fill:#a3261c}.swp{font-size:12px;font-weight:700}.swm{font-size:12px;fill:#6b5a35}
@@ -2639,6 +2642,20 @@ function supplyWeb(id,P){
   return `<div class="swhd"><span class="linkn" data-a="flow" data-f="${id}">⇶ Open in Flows</span></div>
     <svg class="sweb" viewBox="0 0 ${W} ${H}" width="100%"><defs><pattern id="swh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#e6dbbd"/><line x1="0" y1="0" x2="0" y2="5" stroke="#b0453a" stroke-width="2.5"/></pattern></defs>${g}</svg>
     <div class="sleg swleg">${leg}<span class="mini">Band width: how well each input is covered. Hover for sources.</span></div>`}
+/* ---------- in service: your stock and output next to China's and Russia's, then and projected ---------- */
+const RIV_C={pac:'#b0453a',eu:'#7a5a8c'};
+function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],st={pac:estInv(S.enemy.pac,l),eu:estInv(S.enemy.eu,l)},pr={pac:estProd(S.enemy.pac,l,S.w),eu:estProd(S.enemy.eu,l,S.w)};
+  const grp=(title,mine,th,unit)=>{const mx=Math.max(mine,th.pac,th.eu,1e-9),B=v=>Math.min(100,v/mx*100),big=th.pac>=th.eu?'pac':'eu',r=th[big]/Math.max(mine,1e-9);
+    const row=(fl,nm,v,c,lab)=>`<div class="pvsr"><span>${fl} ${nm}</span><div class="nb"><i style="width:${B(v)}%;background:${c}"></i></div><span class="v">${lab}</span></div>`;
+    return `<div><div class="isgt">${title}</div>${row(F().flag,'You',mine,'#2f62a0',`<b>${fmtN(mine)}</b>${unit}`)}${row(FLAGS.cn,'China',th.pac,RIV_C.pac,`~${fmtN(th.pac)}${unit}`)}${row(FLAGS.ru,'Russia',th.eu,RIV_C.eu,`~${fmtN(th.eu)}${unit}`)}
+      <div class="isgr">${r>=1.1?`<span class="redt">${RIVALS[big].n} has <b>${r>=10?Math.round(r):fmt(r,1)}×</b> yours</span>`:r<=.9?`<span class="okt">You lead both</span>`:'<span>Roughly level</span>'}</div></div>`};
+  const hs=S.hist.filter(h=>h.en),pts=k=>hs.map(h=>[h.w,k==='us'?h.inv[l]:h.en[k][l]]),fut=k=>[[S.w,k==='us'?us:st[k]],...pj.map(r=>[r.w,k==='us'?r.inv[l]:r.en[k][l]])];
+  const all=[...pts('us'),...pts('pac'),...pts('eu'),...fut('us'),...fut('pac'),...fut('eu')].map(p=>p[1]),yMax=Math.max(...all,1e-9)*1.05;
+  const ser=[];for(const [k,c,n] of [['pac',RIV_C.pac,'China'],['eu',RIV_C.eu,'Russia'],['us','#2f62a0','You']]){ser.push({pts:pts(k),c,wd:2.2,n});ser.push({pts:fut(k),c,wd:1.4,dash:'4 3',n:n+' (projected)'})}
+  return `<div class="isg">${grp('In service',us,st,'')}${grp('Built per year',o.yr,pr,'/yr')}</div>
+    <div class="isgt" style="margin-top:8px">In service since 2025, and where today's output leads by 2037</div>
+    ${lineChart({W:900,H:170,yMax,yFmt:fmtN,vf:fmtN,series:ser})}
+    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span><span><i style="background:${RIV_C.pac}"></i>China</span><span><i style="background:${RIV_C.eu}"></i>Russia</span><span class="mini">Solid: history · dashed: today's output held constant, rivals keep growing. Retiring ~${fmtN(us*retRate(l))} ${L.u}/yr. Rival figures are intelligence estimates.</span></div>`}
 function dossierHTML(id,P){
   const sb=`<div class="dsb">${[1,2,3,4].map(t=>`<div class="dsbt">T${t} · ${TIERS[t]}</div>`+NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<div class="dsbi ${n.id===id?'on':''}" data-a="node" data-n="${n.id}"><i class="dot st-${st}"></i>${n.n}</div>`}).join('')).join('')}
     <div class="dsbt">T5 · ${TIERS[5]}</div>${S.order.map(l=>{const o=S._R.out[l],r=o.n/Math.max(o.cap,1e-9);return `<div class="dsbi ${id==='L:'+l?'on':''}" data-a="node" data-n="L:${l}"><i class="dot st-${r>=.999?'ok':r>=.8?'tight':'short'}"></i>${LINES[l].n}</div>`}).join('')}</div>`;
@@ -2649,7 +2666,7 @@ function dossierHTML(id,P){
     main=`<div class="dhead"><span class="dic">🏭</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span>${back}<button class="pbtn sm" data-a="flow" data-f="L:${l}">⇶ Flows</button><button class="pbtn sm" data-a="arsenal">📈 Arsenal</button></div>
      ${raisePanel(id,P)}<div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
      <div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
-     <div class="dsec"><h4>In service</h4><div class="kv"><b>${f.flag} You</b><span>${fmtN(S.inv[l])} · producing ${fmtN(o.yr)}/yr, retiring ${fmtN(S.inv[l]*retRate(l))}/yr</span>${S.theaters.map(t=>{const E=S.enemy[t];return `<b>${E.flag} ${E.n}</b><span>${fmtN(E.inv[l])} · producing ${fmtN(E.prod[l]*E.pm)}/yr</span>`}).join('')}</div></div>
+     <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
      <div class="dsec" id="allopts"><h4>All ways to raise output</h4>${constraintStrip(Math.min(...projs.filter(d=>!d.req||passed(d.req)).map(projCost)))}<table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`).join('')}
       ${S.ready[l]!=null?`<tr><td><b>🔧 Spare-parts priority</b><div class="mini">See Readiness below.</div></td><td>−15% new output, + readiness</td><td>—</td><td>now</td><td>${S.spares[l]?'on':'off'}</td></tr>`:''}
       <tr><td><b>⏩ Fund extra shifts</b><div class="mini">Overtime and another shift at existing lines. Only helps when the line itself, not its inputs, is the limit.</div></td><td>+${Math.round((SHIFT_M-1)*100)}% line capacity${o.bott?` · <span class="redt">${ND[o.bott].n} binds now</span>`:''}</td><td>${money(SHIFT_C)}/yr</td><td>now</td><td><button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'Stop':'Fund'}</button></td></tr>
