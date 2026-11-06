@@ -488,6 +488,19 @@ body{background:
 .rec-bar{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;font-size:12px;margin:3px 0}.rec-bar .nb{height:10px;margin:0;background:#e6dbbd;border-color:#cbbd95}.rec-bar b{text-align:right;font-family:var(--disp);font-size:14px}
 .rec-law{font-size:12px;padding:3px 0;border-bottom:1px dotted #cbbd95}
 @media(max-width:1300px){.rec-tiles{grid-template-columns:repeat(2,1fr)}.rec-charts,.rec-cols{grid-template-columns:1fr}}
+/* scenarios */
+.sc-pick{margin:6px;padding:8px 10px;background:linear-gradient(#2e2a1a,#211d12);border:1px solid #8a6a1f;box-shadow:inset 4px 0 0 #c9a227}
+.sc-ph{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}.sc-ph b{font:400 16px var(--sten);color:#e8d08a;letter-spacing:.05em}.sc-ph .btn{margin-left:auto}
+.sc-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sc-opt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:8px 10px;background:#1b1d16;border:1px solid #4a4532;color:var(--ink);cursor:pointer;font:12px "Segoe UI",system-ui,sans-serif}
+.sc-opt:hover{border-color:#c9a227;background:#26281e}.sc-opt b{font:700 17px var(--disp);letter-spacing:.04em;text-transform:uppercase}.sc-ic{font-size:20px;line-height:1}.sc-dl{font:600 11px var(--disp);letter-spacing:.08em;text-transform:uppercase;color:#d9a441}.sc-m{color:#b8ad8a;font-size:11.5px;line-height:1.4}
+.sc-card{margin:6px;padding:7px 10px 8px;background:linear-gradient(#2a2717,#1d1b12);border:1px solid #8a6a1f;box-shadow:inset 4px 0 0 #c9a227}
+.sc-ch{display:flex;align-items:center;gap:9px;margin-bottom:5px}.sc-ch b{font:400 16px var(--sten);color:#e8d08a;letter-spacing:.05em}
+.sc-clock{margin-left:auto;font:700 15px var(--disp);letter-spacing:.06em;color:#d9a441;text-transform:uppercase}.sc-clock.hot{color:#e0604c}.sc-v{margin-left:auto;font:700 15px var(--disp);letter-spacing:.08em;color:#e8d08a;border:2px solid #c9a227;padding:0 8px}
+.sc-card .sc-m{display:grid;grid-template-columns:minmax(0,1fr) 34% 150px;gap:8px;align-items:center;margin:3px 0;font-size:12px;color:var(--ink)}.sc-card .sc-m .nb{height:11px;margin:0}.sc-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-n .linkn{color:#e6e1d3}
+.sc-val{text-align:right;font-family:var(--disp);font-size:13px;color:#b8ad8a}.sc-val b{color:var(--ink);font-size:15px}
+.sc-test{font-size:11.5px;color:#b8ad8a;margin-top:4px}
+.sc-rec{margin-bottom:10px}
 /* the timeline reads like a teletype */
 #log{background:#0a0b09;font:12px Consolas,"Cascadia Mono","Courier New",monospace;color:#cfc8b2}
 #log h2{font:400 14px var(--sten);letter-spacing:.1em;color:#e2cb85}
@@ -1774,7 +1787,7 @@ function cutOf(id){let c=S.cut[id];if(S.fac==='US'&&S.dfars&&DFARS_NODES.include
 function plantMult(pl){return pl.issue?OPSD[pl.issue.id].mult:1}
 function plantsFor(kind,id){return S.plants.filter(p=>p.kind===kind&&p.target===id)}
 function nodeSupply(id){
-  const s=S.nodes[id],c=cutOf(id),mob=MOB[S.mob];
+  const s=S.nodes[id],c=NO_PRC?0:cutOf(id),mob=MOB[S.mob];
   const nm=tm('node',id);
   const onsh=S.fac==='US'&&DRONE_PARTS.includes(id)?1+.2*(S.icOnshore||0):1; // onshored drone supply chain: more US motors, cells, boards
   let dom=s.base*tm('cap',id)*nm*mob.dom*onsh,domPrc=0,name=s.base,ramp=0;
@@ -2343,6 +2356,7 @@ function tick(){
   if(S.w%2===0)S.hist.push(snapshot());
   {const R0=S._R||production(false);(S.resH=S.resH||[]).push({race:raceIdx(R0.out)*100,budget:S.budget,short:S.order.filter(c=>R0.out[c].bott).length,expo:(S.exposure||0)*100,lev:S.lev,strain:S.strain});if(S.resH.length>4)S.resH.shift()}
   if(S.queue.length&&!S.sim)S.speed=0;
+  if(S.scen&&!S.scenRes&&S.w>=SCD[S.scen].dl)scenJudge();
   if(S.w>=END_W)gameOver(null);
 }
 function gameOver(why){
@@ -3124,6 +3138,10 @@ const CITES=[
  {id:'bam',g:'US rulebook',t:'Final Rule Amends FAR Part 25 Domestic Content Threshold Under the Buy American Act',pub:'Thompson Hine',d:'2022',url:'https://www.thompsonhine.com/insights/final-rule-amends-far-part-25-domestic-content-threshold-under-buy-american-act/',use:'Domestic content threshold 60% → 65% (2024) → 75% (2029).'},
  {id:'dfars7018',g:'US rulebook',t:'DFARS 225.7018-2, Restriction (certain magnets, tantalum, and tungsten)',pub:'Acquisition.gov',d:'current',url:'https://login.acquisition.gov/dfars/225.7018-2-restriction.',use:'From 1 January 2027, under 10 U.S.C. 4872, DoD may not acquire samarium-cobalt or NdFeB magnets, tungsten metal powder or heavy alloy, or tantalum that was mined, refined, separated, melted or produced in China, Russia, North Korea or Iran.'},
  {id:'arsenal1',g:'Missiles, motors & engines',t:'Anduril’s Arsenal-1 to create over 4,000 jobs in Ohio’s largest single job creation project',pub:'Assembly Magazine',d:'2025',url:'https://assemblymag.com/articles/99002-andurils-arsenal-1-to-create-over-4-000-jobs-in-ohios-largest-single-job-creation-project',use:'About $1B of investment for 4,000+ direct jobs (with ~8,500 more indirect, by the state’s estimate): a labor-heavy anchor for jobs per dollar.'},
+ {id:'bund29',g:'Adversary production',t:'Ready for war in 2029? Is a Russian attack on NATO a real possibility?',pub:'Euronews',d:'Dec 2025',url:'https://euronews.com/2025/12/03/ready-for-war-in-2029-is-a-russian-attack-on-nato-a-real-possibility',use:'Germany’s Chief of Defence points to 2029 as a possible date for a Russian attack on NATO (the date traces to a 2023 NATO threat assessment).'},
+ {id:'bnd30',g:'Adversary production',t:'Russia could attack NATO by 2030, German intelligence chief says',pub:'Kyiv Independent',d:'Oct 2024',url:'https://kyivindependent.com/russia-could-attack-nato-by-2030-german-intelligence-chief-says/',use:'BND president Bruno Kahl: Russia will likely be able to attack NATO by the end of the decade.'},
+ {id:'army1m',g:'Munitions & energetics',t:'Army sets out to buy a million drones by 2028',pub:'The War Zone',d:'Nov 2025',url:'https://www.twz.com/air/army-sets-out-to-buy-a-million-drones-by-2028',use:'The Army plans to buy about a million drones over two to three years, up from about 50,000 a year; Ukraine and Russia each build about 4 million a year.'},
+ {id:'mp10x',g:'Critical minerals',t:'MP Materials lands multi-billion Pentagon deal',pub:'Mining.com',d:'Jul 2025',url:'https://www.mining.com/mp-materials-lands-multi-billion-pentagon-deal/',use:'Pentagon stake, an NdPr price floor of $110/kg, and a 10-year offtake for MP’s 10X magnet plant, due to start commissioning in 2028 at ~10,000 t a year.'},
  {id:'yard8679',g:'US rulebook',t:'10 U.S.C. 8679: Construction of combatant and escort vessels and assignment of vessel projects',pub:'U.S. Code (govinfo)',d:'2024 ed.',url:'https://www.govinfo.gov/content/pkg/USCODE-2024-title10/pdf/USCODE-2024-title10-subtitleC-partIV-chap863-sec8679.pdf',use:'No Navy vessel, or major component of its hull or superstructure, may be built in a foreign shipyard; the President may authorize exceptions.'},
  {id:'s406',g:'US rulebook',t:'S. 406, Ensuring Naval Readiness Act (119th Congress)',pub:'Congress.gov',d:'Feb 2025',url:'https://www.congress.gov/119/bills/s406/BILLS-119s406is.htm',use:'Would allow Navy ships and major hull components to be built in NATO and Indo-Pacific treaty-ally shipyards when cheaper than a US yard.'},
  {id:'sasc27',g:'US rulebook',t:'Congress seeks to limit US Navy vessels built in foreign shipyards',pub:'Defense News',d:'Jun 2026',url:'https://www.defensenews.com/news/pentagon-congress/2026/06/17/congress-seeks-to-limit-us-navy-vessels-built-in-foreign-shipyards/',use:'The Senate Armed Services FY2027 NDAA markup would strip the presidential waiver in 10 U.S.C. 8679 and cap foreign construction at two vessels per class.'},
@@ -3250,6 +3268,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Mandates','Each scenario’s targets come from public goals (cited on the mandate card); the deadline of January 2030 reflects the threat windows cited. The US shares (1,800 interceptors and 1,800 strike missiles a year, 16,000 rockets of the planned 19,002, 330,000 drones a year from the Army’s million-in-three-years plan) are game estimates. The tests reuse the campaign model on the true hidden values (pass at 85% coverage), or remove all Chinese supply at once (pass if you keep 80% of output). The verdict names are design choices.'],
  ['The Record','Spending, laws, decisions and paperwork are counted from January 2027. Industrial jobs are estimated at 1,500 direct manufacturing jobs per $1B of plant investment at full output, scaled by each plant’s yield. Anduril’s Arsenal-1 (about 4,000 direct jobs for $1B) is the labor-heavy end;[c:arsenal1] mines, chemical plants and refineries employ far fewer people per dollar. Construction and indirect jobs are not counted.'],
  ['Decisions','Obstacles, plant problems and news that need a choice wait 12 weeks. If you do not choose, the status-quo option is taken: one marked as the default (extending the 2027 truce, staying out of a Middle East war, declining Ukraine’s request), otherwise the free option that resolves fastest, otherwise the cheapest you can afford. A stalled program makes no progress while its decision waits. Game design, not sourced.'],
  ['Allied sourcing limits','The bars themselves are statutory: Navy ships only from US yards (10 U.S.C. 8679)[c:yard8679] and bearings only from the US or Canada (DFARS 225.7009).[c:dfarsbr] Their game effect is a simplification: no allied supply or emergency buys for shipyards, submarine yards or bearings until a bill, waiver or presidential exception lifts them. The capacity the Ensuring Naval Readiness Act adds (+0.5 of base shipyard capacity, +3 surface ships a year)[c:s406] is an estimate. Specialty metals are limited to about 28 qualifying countries; that bar is not modeled item by item.'],
@@ -3554,7 +3573,7 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   const laws=S.lawLog||[],dec=S.decN||{you:0,auto:0},plants=S.plants.filter(p=>p.start>=PLAY0),cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
   const d=(a,b,f,good=1)=>{const x=b-a;return Math.abs(x)<1e-9?'<span class="dim">no change</span>':`<span class="${(x>0)===(good>0)?'okt':'redt'}">${x>0?'▲':'▼'} ${f(Math.abs(x))}</span>`};
   const tile=(ic,v,l,sub)=>`<div class="rec-t"><span class="rec-ic">${ic}</span><b>${v}</b><span class="rec-l">${l}</span><span class="rec-s">${sub}</span></div>`;
-  let h=`<div class="rec-tiles">
+  let h=(S.scen?`<div class="sc-rec">${scenCard()}</div>`:'')+`<div class="rec-tiles">
     ${tile('🎯',pct(idx),`of ${RV().n}'s output`,`from ${pct(idx0)} in Jan 2027 · ${d(idx0*100,idx*100,v=>fmt(v,0)+' pt')}`)}
     ${tile('💵',money(spent),'spent since Jan 2027',`of ${money(inc+r0.budget)} available · ${money(S.budget)} unspent`)}
     ${tile('👷',`~${fmtN(Math.round(J.j/100)*100)}`,'industrial jobs at new plants',`~${fmtN(Math.round(J.more/100)*100)} more as plants ramp and finish (estimate)`)}
@@ -3580,6 +3599,67 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
     <div><div class="pdg">Where the time went <span class="mini" style="text-transform:none;letter-spacing:0">· program and plant weeks lost</span></div>${bars(led,v=>fmt(v,0)+' wk',k=>lc[k]||'#8a6a1f')}</div>
     <div><div class="pdg">Laws, rules and waivers changed</div>${laws.length?laws.slice().reverse().map(x=>`<div class="rec-law"><span class="mini">${fmtDate(x.w)}</span> <b>${x.kind}</b> ${x.n}</div>`).join(''):'<p class="mini">None yet. The ⚖ Rulebook and the Congress tab show what you could change.</p>'}</div></div>`;
   return h}
+/* ---------- threat scenarios: dated mandates from real targets, and a test at the deadline ---------- */
+let NO_PRC=false; // set while testing what survives if China switches everything off
+const outOf=c=>(S._R||production(false)).out[c].yr;
+const SCENS=[
+ {id:'taiwan',n:'The Taiwan Window',rival:'pac',ic:FLAGS.cn,dl:weekOf(2030,0,7),
+  threat:'The PLA was ordered to be ready to take Taiwan by 2027, and US commanders warn the window stays open through the decade.[c:cmpr] You have until January 2030 to build the munitions and boats a fight in the Strait would burn through.',
+  mand:[{n:'Air & missile defense interceptors',c:'interceptors',tgt:1800,src:'PAC-3 MSE to 2,000 a year (about half for the US), THAAD to 400, SM-6 past 500.[c:lmpac3,thaad,rtxfw]'},
+        {n:'Long-range strike missiles',c:'strike',tgt:1800,src:'JASSM/LRASM toward 1,100 a year plus a Tomahawk framework past 1,000.[c:jassm,tlam26]'},
+        {n:'Submarines',c:'subs',tgt:2,dec:1,src:'The Navy needs two Virginia-class boats a year (2.33 with AUKUS); it has built about 1.2.[c:crsva]'}],
+  test:{t:'pac',n:'Taiwan Strait campaign'},
+  lesson:'Interceptors, strike missiles and air-to-air missiles all wait on the same solid rocket motors and seekers, and submarines on yards that take a decade to grow.'},
+ {id:'flank',n:'The Eastern Flank',rival:'eu',ic:FLAGS.ru,dl:weekOf(2030,0,7),
+  threat:'Germany’s military chief points to 2029 and its intelligence service to 2030 as the year Russia could be ready to test NATO.[c:bund29,bnd30] You have until January 2030 to build the volume a long war on the flank would eat.',
+  mand:[{n:'155mm artillery shells',c:'shells',tgt:1.2e6,src:'The Army’s goal: 100,000 shells a month.[c:dodig]'},
+        {n:'Army precision fires (GMLRS, PrSM)',c:'fires',tgt:16000,src:'The US share of the Army’s planned 19,002 rockets a year.[c:gmlrs19k]'},
+        {n:'Drones',c:'drones',tgt:330000,src:'The Army plans to buy a million drones over two to three years; Ukraine and Russia each build about 4 million a year.[c:army1m]'}],
+  test:{t:'eu',n:'eastern-flank campaign'},
+  lesson:'A long war is won by volume: energetics, shell bodies, rocket motors and cheap drones, most of whose parts come from China.'},
+ {id:'cutoff',n:'The Rare-Earth Cutoff',rival:'pac',ic:'🧲',dl:weekOf(2030,0,7),
+  threat:'January 2027: the trade truce collapses. Beijing reimposes its export bans and tightens rare-earth licensing, the way it did in 2023 and 2025.[c:truce] You have until January 2030 to build a base that keeps running without China.',
+  setup:()=>{S.truce=false;S.fired.truce27=1;S.inbox=(S.inbox||[]).filter(x=>x.ev!=='truce27');applyChinaBan();cutAll(['ndpr','hree','magnets'],.4);log(`${FLAGS.cn} The truce collapses: export bans are back, and rare-earth licenses stop coming.`,'bad')},
+  mand:[{n:'Magnet demand met without China',kind:'magnets',tgt:.9,pct:1,src:'MP Materials’ 10X plant (2028) and the 2027 DFARS ban on Chinese magnets.[c:mp10x,dfars7018]'},
+        {n:'PRC and Russian content cut in half',kind:'expo',tgt:.5,low:1,pct:1,src:'Measured against January 2027.'},
+        {n:'Drone and aircraft output held',kind:'hold',lines:['drones','aircraft'],tgt:1,pct:1,src:'Both at least at their January 2027 level.'}],
+  test:{cut:1,n:'full Chinese cutoff'},
+  lesson:'Independence costs output before it pays: every magnet, cell and wafer not bought from China has to be mined, refined and qualified somewhere else first.'}];
+const SCD=Object.fromEntries(SCENS.map(x=>[x.id,x]));
+// each mandate's current value and whether it is met
+function mandVal(m){const r0=S.rec0||{};
+  if(m.c)return {v:outOf(m.c),ok:outOf(m.c)>=m.tgt*.999,show:v=>m.dec?fmt(v,1):fmtN(v)};
+  if(m.kind==='magnets'){const P=(S._R||production(false)).P.magnets,x=srcSplit('magnets',(S._R||production(false)).P),v=P.need>1e-6?Math.min(1,(x.dom+x.ally+x.spot)/P.need):1;return {v,ok:v>=m.tgt,show:pct}}
+  if(m.kind==='expo'){const t=(r0.expo||S.exposure)*m.tgt;return {v:S.exposure,ok:S.exposure<=t,t,show:pct}}
+  if(m.kind==='hold'){const v=Math.min(...m.lines.map(c=>outOf(c)/Math.max(r0.out?.[c]||1e-9,1e-9)));return {v,ok:v>=.999,show:pct}}}
+// the test: would it have been enough?
+function scenTest(sc){const T=sc.test;
+  if(T.cut){const r0=S.rec0?.out||{},now=Object.fromEntries(Object.keys(LINES).map(c=>[c,{yr:Math.max(r0[c]??0,1e-9)}]));NO_PRC=true;const cut=production(false).out;NO_PRC=false;
+    const cs=Object.keys(LINES),kept=cs.reduce((a,c)=>a+(now[c].yr>1e-9?Math.min(1,cut[c].yr/now[c].yr):1),0)/cs.length;
+    return {v:kept,ok:kept>=.8,txt:`If China switched everything off, you would build ${pct(kept)} of your January 2027 output (pass: 80%).`,worst:cs.filter(c=>now[c].yr>1e-9).sort((a,b)=>cut[a].yr/now[a].yr-cut[b].yr/now[b].yr).slice(0,2).map(c=>`${LINES[c].n} ${pct(cut[c].yr/now[c].yr)}`).join(', ')}}
+  scenUpdate();const tr=trueScore(T.t),es=ratio(T.t);
+  return {v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
+function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;S.rival=sc.rival;S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
+function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
+  const verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':met>=2?'ENOUGH, BARELY':'TARGETS MISSED';
+  S.scenRes={w:S.w,verdict,met,ms:ms.map(x=>({n:x.n,v:x.v,ok:x.ok,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
+  log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0}
+const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
+// the picker before play starts, then the mandate card
+function scenCard(){
+  if(!S.scen){if(S.w!==PLAY0||S.scenSkip)return '';
+    return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">or close this and play the open race to 2037</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
+  const sc=SCD[S.scen],left=sc.dl-S.w,res=S.scenRes;
+  return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span>`}</div>
+    ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));return `<div class="sc-m"><span class="sc-n">${x.ok?'✓':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.n}</span><div class="nb"><i style="width:${f*100}%;background:${x.ok?'#76b357':f>.66?'#d9a441':'#d0503f'}"></i></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
+    <div class="sc-test">${res?`Test: ${res.test.txt}`:`At the deadline: ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}.`}</div></div>`}
+function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
+  return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: the deadline</div><div class="bd">
+    <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>
+    <table class="ctable"><tr><th>Mandate</th><th>Target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':'redt'}">${x.ok?'✓ met':'✗ missed'}</td></tr>`).join('')}</table>
+    <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
+    <p><i>${sc.lesson}</i></p></div>
+    <div class="ft"><button class="pbtn primary" data-a="scenon">Keep building to 2037</button><button class="pbtn" data-a="scenstop">End here and see the record</button></div></div>`}
 function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c],cnOut(c,h.w)]);pts.push([S.w,S._R?.out[c].yr??0,cnOut(c)]);
   if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
   const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
@@ -3589,7 +3669,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
   const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the end-item lines. ${RV().n}'s figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across ${Object.keys(LINES).length} lines</span></div></div>
+  let h=scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the end-item lines. ${RV().n}'s figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across ${Object.keys(LINES).length} lines</span></div></div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
    <div><b>${matched}/${cs.length}</b><span>lines matching ${RV().n}</span></div>
    <div data-tip="Average growth in ${RV().n}'s output over the last year, across the end-item lines."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth this year</span></div>
@@ -3758,7 +3838,7 @@ function renderModal(){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
     html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
       <div class="stamp" style="font-size:24px">${S.verdict}</div>${S.overWhy?`<p>${S.overWhy}</p>`:''}
-      <p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of ${RV().n}'s output across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
+      ${S.scenRes?`<p><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} at the deadline (${S.scenRes.met} of ${S.scenRes.ms.length} mandates; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}<p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of ${RV().n}'s output across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
       <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}'s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
       <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Pages: <b>${S.pages.toLocaleString()}</b>. Exceptions: <b>${S.waivers}</b>.</p>
@@ -3772,6 +3852,8 @@ function renderModal(){
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
       html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}${q.due!=null&&!q.read?`<button class="pbtn" data-a="evlater">Later · ⏱ ${dLeft(q.due)} wk left</button>`:''}</div></div>`}
+  } else if(S.modal==='scenEnd'&&S.scenRes){
+    html=scenEndHTML();
   } else if(S.modal==='prog'&&S.selP){
     html=progHTML(S.selP);
   } else if(S.modal==='contract'&&S.ct){
@@ -3912,6 +3994,10 @@ document.addEventListener('pointerdown',e=>{
     case 'evdo':{const it=(S.inbox||[]).find(x=>x.ev===b.dataset.e);S.inbox=(S.inbox||[]).filter(x=>x.ev!==b.dataset.e);S.queue.unshift({ev:b.dataset.e,fxDone:1,due:it?.due});S.speed=0;break}
     case 'evlater':{const q=S.queue.shift();if(q?.ev)(S.inbox=S.inbox||[]).push({ev:q.ev,due:q.due??S.w+DECIDE_WK,w:S.w});break}
     case 'recgo':S.view='rec';S.modal=null;S._vdirty=true;break;
+    case 'scen':chooseScen(b.dataset.s);break;
+    case 'scenskip':S.scenSkip=true;break;
+    case 'scenon':S.modal=null;break;
+    case 'scenstop':S.over=true;S.speed=0;S.verdict=S.scenRes.verdict;S.overWhy='';S.modal=null;S.view='rec';S._vdirty=true;break;
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;break;
