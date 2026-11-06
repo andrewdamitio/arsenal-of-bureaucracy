@@ -470,6 +470,14 @@ body{background:
 .pipe>div{font-family:var(--disp);font-size:11px;letter-spacing:.08em}
 .tag{font-family:var(--disp);letter-spacing:.06em}
 .paper .hd{font-family:var(--sten);font-weight:400;letter-spacing:.04em}.paper .hd .ic{filter:drop-shadow(0 1px 0 #0006)}
+/* obstacle cards on paper pages: a document insert, not a dark panel */
+.paper .obs{background:#f7f0dd;border:1px solid #c8b48a;border-left-width:5px;box-shadow:0 1px 3px #0002;color:var(--paperInk)}
+.paper .obs .ot b{color:#7a1f15}.paper .obs p{color:#3a3020}.paper .obs .linkn{color:#5a4a26}
+.paper .obs .opt{background:linear-gradient(#efe5c9,#e2d5b2);border:1px solid #a89770;color:#2b241a}.paper .obs .opt:hover:not(:disabled):not(.off){background:linear-gradient(#fbf5e4,#efe4c6);color:#000}
+.paper .obs .opt .c{color:#6b5a35}.paper .obs .opt.dflt{box-shadow:inset 0 0 0 2px #b8860b}.paper .obs .opt.dflt .c::after{color:#8a6a1f}
+.paper .obs .waiting{color:#7a4a10}.paper .obs .prog{background:#e6dbbd}
+.paper .obs .dtt,.paper .obs .dtd{color:#3a3020;opacity:1}.paper .obs .dti{color:#6b5a35}
+.paper .rem{background:#efe6cf;border-color:#b8a57a;color:#4a3d22}.paper .rem:hover{border-color:#6b5a35;color:#000}.paper .rem.on{background:#dfe9d2;border-color:#7a9a62;color:#2f4a22}
 /* the timeline reads like a teletype */
 #log{background:#0a0b09;font:12px Consolas,"Cascadia Mono","Courier New",monospace;color:#cfc8b2}
 #log h2{font:400 14px var(--sten);letter-spacing:.1em;color:#e2cb85}
