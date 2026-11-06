@@ -286,6 +286,7 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .cstrip{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:6px 8px;margin:4px 0 8px;background:#e6dbbd;border:1px solid #cbbd95;font:12.5px "Segoe UI",system-ui,sans-serif}
 .cstrip>span{display:flex;align-items:center;gap:6px}.cstrip .bind{color:#8a1f15;background:#f0b3a8;padding:2px 6px;margin:-2px -6px;border-radius:2px}
 /* the race */
+.rc-pick{display:inline-flex;gap:3px;margin-left:4px;vertical-align:1px}.rc-pick .btn{font:600 11px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none}
 .rc-rhead{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--brass)}
 .rc-rhead>div{background:var(--panel2);padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px}.rc-rhead b{font:700 18px Georgia;color:var(--ink)}.rc-rhead span{font-size:10.5px;color:var(--dim)}
 .rc-rhead .rc-rbig b{font-size:30px;line-height:1}
@@ -2954,7 +2955,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
- ['The race','Your share of China’s output is the average, over the seven end-item lines, of your output divided by China’s estimated output, each capped at 100%. China’s output grows each year at game-estimated rates: shells 2%, interceptors 4%, strike missiles 5%, aircraft and surface combatants 3% (aircraft after the J-20 ramp to 2028), submarines 3%, drones 10%. A new plant’s yield follows a learning curve: about two years to half its nameplate at low know-how, under a year at high know-how (game estimate). A bottleneck counts as cleared when a line’s limit changes for at least six weeks and its output rises at least 3%.'],
+ ['The race','Your share of China’s output is the average, over the seven end-item lines, of your output divided by China’s estimated output, each capped at 100%. China’s output grows each year at game-estimated rates: shells 2%, interceptors 4%, strike missiles 5%, aircraft and surface combatants 3% (aircraft after the J-20 ramp to 2028), submarines 3%, drones 10%. A new plant’s yield follows a learning curve: about two years to half its nameplate at low know-how, under a year at high know-how (game estimate). Against Russia, output is held at the 2025 estimates except interceptors (+5% a year), and moves with events such as a ceasefire. A bottleneck counts as cleared when a line’s limit changes for at least six weeks and its output rises at least 3%.'],
  ['Permits','Statutory terms are from the statutes: Title V and NPDES permits run five years, RCRA permits up to ten, ATF explosives licenses three, ITAR registration one; ESA formal consultation is 135 days; NEPA assessments and impact statements have one- and two-year deadlines (2023). Which permits each project type needs, their review times relative to each other, and the odds that a renewal is contested are game estimates.'],
  ['US rulebook','Each rule’s status, date and scope is sourced. How much it changes obstacle odds, waits and costs (the ×multipliers shown on each rule), and the Political Capital needed to adopt, finalize or reverse executive actions, are game assumptions.'],
  ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
@@ -3181,8 +3182,10 @@ function needCard(c,R,pj){
 }
 function needsHTML(R){const pj=needsProj(R);return `<div class="ngrid">${Object.keys(LINES).map(c=>needCard(c,R,pj)).join('')}</div>`}
 /* ---------- the race: your output against China's, line by line, and what holds each line back ---------- */
-const cnOut=(c,w=S.w)=>estProd(S.enemy.pac,c,w);
-// the average over the seven lines of your output ÷ China's, each capped at 100%
+// the rival you race: China (the Indo-Pacific model) or Russia (the European one)
+const RIVALS={pac:{n:'China',f:FLAGS.cn},eu:{n:'Russia',f:FLAGS.ru}},RV=()=>RIVALS[S.rival||'pac'];
+const cnOut=(c,w=S.w)=>estProd(S.enemy[S.rival||'pac'],c,w);
+// the average over the seven lines of your output ÷ ${RV().n}'s, each capped at 100%
 function raceIdx(out,w=S.w,get=c=>out[c].yr){const cs=Object.keys(LINES);return cs.reduce((a,c)=>a+Math.min(1,get(c)/Math.max(cnOut(c,w),1e-9)),0)/cs.length}
 const limOf=(o,c)=>o.bott?o.chain.at(-1):'L:'+c;
 const limName=id=>id.startsWith('L:')?'line capacity':ND[id].n;
@@ -3201,21 +3204,21 @@ function limTick(out){S.lim=S.lim||{};S.limH=S.limH||{};S.limC=S.limC||{};
 function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c],cnOut(c,h.w)]);pts.push([S.w,S._R?.out[c].yr??0,cnOut(c)]);
   if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
   const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
-  return `<svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Output per year since 2025: you (blue) and China (red)</title><polyline points="${pl(2)}" fill="none" stroke="#b0453a" stroke-width="1.5"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg>`}
+  return `<svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Output per year since 2025: you (blue) and ${RV().n} (red)</title><polyline points="${pl(2)}" fill="none" stroke="#b0453a" stroke-width="1.5"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg>`}
 function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
   const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of China's</b><br>Line by line, each capped at 100%, averaged across the seven lines. China's figures are intelligence estimates."><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of China's output, across seven lines</span></div>
+  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the seven lines. ${RV().n}'s figures are intelligence estimates."><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across seven lines</span></div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
-   <div><b>${matched}/${cs.length}</b><span>lines matching China</span></div>
-   <div data-tip="Average growth in China's output over the last year, across the seven lines."><b class="red">+${pct(cg)}</b><span>China's growth this year</span></div>
+   <div><b>${matched}/${cs.length}</b><span>lines matching ${RV().n}</span></div>
+   <div data-tip="Average growth in ${RV().n}'s output over the last year, across the seven lines."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth this year</span></div>
    <div data-tip="Each time a line's limit stopped binding, output rose, and the next limit took over."><b>${cleared}</b><span>bottlenecks cleared</span></div></div>`;
   h+=S.order.map(c=>{const o=out[c],L=LINES[c],cn=cnOut(c),r=cn/Math.max(o.yr,1e-9),mx=Math.max(o.capYr,o.yr,cn,1e-9),B=v=>Math.min(100,v/mx*100);
     const lim=limOf(o,c),isL=lim.startsWith('L:'),cur=S.lim?.[c];
     const fx=S.projects.filter(q=>isL?PD[q.def].t.line===c:PD[q.def].t.node===lim),rp=S.plants.filter(pl=>!pl.full&&(isL?pl.kind==='line'&&pl.target===c:pl.target===lim));
-    const gap=o.yr<1e-9?'<span class="red">You build none</span>':r>=1.1?`<span class="red">China builds <b>${r>=10?Math.round(r):fmt(r,1)}×</b> as many</span>`:r<=.9?`<span class="green">You out-build China <b>${fmt(1/r,1)}×</b></span>`:'<span class="gold">At parity</span>';
+    const gap=o.yr<1e-9?'<span class="red">You build none</span>':r>=1.1?`<span class="red">${RV().n} builds <b>${r>=10?Math.round(r):fmt(r,1)}×</b> as many</span>`:r<=.9?`<span class="green">You out-build ${RV().n} <b>${fmt(1/r,1)}×</b></span>`:'<span class="gold">At parity</span>';
     const g=cn/Math.max(cnOut(c,S.w-52),1e-9)-1;
     const held=isL?`⚙ Limited by <span class="linkn" data-a="node" data-n="L:${c}">line capacity</span>`:`⛓ Short of ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join('<span class="ar">←</span>')}`;
     const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].join(' · ')}`:`<span class="red">No fix under way.</span>`;
@@ -3223,7 +3226,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
     return `<div class="rc-rrow trc" data-n="L:${c}"><div class="rc-rh"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${gap}</div>
       <div class="rc-rgrid"><div>
        <div class="rc-rb"><span>${F().flag} You</span><div class="nb"><i style="width:${B(o.capYr)}%;background:#34404c"></i><i style="width:${B(o.yr)}%;background:#5f8fc4"></i></div><span class="v"><b>${fmtN(o.yr)}</b>/yr${o.capYr>o.yr*1.02?` <span class="dim">of ${fmtN(o.capYr)}</span>`:''}</span></div>
-       <div class="rc-rb"><span>${FLAGS.cn} China</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
+       <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
        ${raceSpark(c)}</div>
       <div class="rc-rlim">${held}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
       <div class="rc-rwork">${work}${past.length?` <span class="rc-rclr">${past.map(x=>`✓ ${limName(x.id)} ${yr(x.w1)}`).join(' · ')}</span>`:''}</div></div>`}).join('');
@@ -3233,7 +3236,7 @@ function renderGame(){
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
-    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'vs. China',`<b>Your output as a share of China's</b><br>Across the seven end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
+    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'vs. '+RV().n,`<b>Your output as a share of ${RV().n}'s</b><br>Across the seven end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${res(`${slotsUsed()}/${S.slots}`,'Offices busy','<b>Program offices</b><br>One program each. Full offices block new launches.','rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
@@ -3329,7 +3332,7 @@ function renderGame(){
   pr+=`<h2>Barrier Ledger <span class="r dim">Weeks lost</span></h2><div style="padding:6px 0">`+L.map(([k,v])=>`<div class="lg"><span class="sw" style="background:${LAYERS[k].c}"></span><span>${LAYERS[k].n}</span><b style="text-align:right">${fmt(v.wk,0)}</b><span class="dim" style="text-align:right">×${v.n}</span><div class="lgbar"><i style="width:${v.wk/mx*100}%;background:${LAYERS[k].c}"></i></div></div>`).join('')+`</div>`;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['home','🏛 Home front'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:pr);
-  const nd=`<h2>The Race with China <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
+  const nd=`<h2>The Race with <span class="rc-pick">${Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2>Timeline${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
@@ -3369,8 +3372,8 @@ function renderModal(){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
     html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
       <div class="stamp" style="font-size:24px">${S.verdict}</div>${S.overWhy?`<p>${S.overWhy}</p>`:''}
-      <p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of China's output across the seven lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
-      <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. China's ~${fmtN(cnOut(c))}`).join(' · ')}</p>
+      <p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of ${RV().n}'s output across the seven lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
+      <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}'s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
       <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Pages: <b>${S.pages.toLocaleString()}</b>. Exceptions: <b>${S.waivers}</b>.</p>
       <p><b>Where the time went</b> (${fmt(tot,0)} project/plant-weeks):</p>
@@ -3491,6 +3494,7 @@ document.addEventListener('pointerdown',e=>{
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rbgo':S.view='rules';S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rtab':S.rtab=b.dataset.t;S._rtTop=true;break;
+    case 'rival':if(S.rival!==b.dataset.t){S.rival=b.dataset.t;S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
     case 'remedy':if(S.modal==='prog')S.modal=null;S.rtab=CD[b.dataset.r]?'home':'agenda';S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
