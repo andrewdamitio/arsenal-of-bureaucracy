@@ -15,10 +15,10 @@ Play as the United States and try to out-build China. China's output grows every
 - **The US rulebook.** The ⚖ Rulebook tab lays out permitting, acquisition, domestic sourcing and import controls, and money as they stand in late 2026: which rules are statutes or court rulings (locked), which the executive can switch, which are proposed, and which bills are pending. Each step of each process shows its live odds of stopping a program.
 - **History first.** The model starts in January 2025 and replays 2025–26: export bans, the Twelve-Day War and the Iran war. Then it hands you January 2027.
 - **Sources.** The 📚 Sources tab has:
-  - 94 citations;
+  - 131 citations;
   - a model check comparing the 2025–26 replay with observed data;
   - real-project timelines;
-  - every scenario assumption.
+  - every assumption the game makes where sources run out.
 
 ## Controls
 
