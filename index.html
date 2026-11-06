@@ -3250,11 +3250,11 @@ function renderGame(){
   for(const t of S.theaters){const sc=S._sc[t],e=sc.est,r=e.score,E=S.enemy[t];
     const cats=Object.keys(LINES).filter(c=>SCEN[t].w[c]&&F().alloc[t][c]>0).sort((x,y)=>e.cov[x]-e.cov[y]),short=cats.filter(c=>e.cov[c]<.995),ok=cats.filter(c=>e.cov[c]>=.995);
     const col=v=>v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a',G=v=>Math.min(100,v/1.2*100);
-    const why=c=>{const bits=[];if(MUN.includes(c)&&e.wks[c]<e.wk)bits.push(`runs dry in week ${fmt(e.wks[c],1)} of ${Math.round(e.wk)}`);if(R.out[c].bott)bits.push(`<span class="linkn" data-a="bngo" data-n="${R.out[c].chain.at(-1)}">${ND[R.out[c].chain.at(-1)].n}</span> short`);return bits.join(' · ')};
-    det+=`<div class="th"><div class="top"><b>${THEATERS[t]} <span class="mini" style="font-weight:400">vs ${E.flag} ${E.n}</span></b><span class="ratio ${r>=1?'green':r>=CRISIS_WIN?'gold':'red'}">${pct(Math.min(r,1.5))}</span></div>
-      <div class="mini" style="color:#a8a48e">of what ${SCEN[t].short} needs · estimates range ${pct(sc.pes.score)}–${pct(sc.opt.score)}</div>
+    const why=c=>{const bits=[];if(MUN.includes(c)&&e.wks[c]<e.wk)bits.push(`Runs dry in week ${fmt(e.wks[c],1)} of ${Math.round(e.wk)}.`);if(R.out[c].bott)bits.push(`Short: <span class="linkn" data-a="bngo" data-n="${R.out[c].chain.at(-1)}">${ND[R.out[c].chain.at(-1)].n}</span>.`);return bits.join(' ')};
+    det+=`<div class="th"><div class="top"><b>${THEATERS[t]} <span class="mini" style="font-weight:400">vs. ${E.flag} ${E.n}</span></b><span class="ratio ${r>=1?'green':r>=CRISIS_WIN?'gold':'red'}">${pct(Math.min(r,1.5))}</span></div>
+      <div class="mini" style="color:#a8a48e">Share of what ${SCEN[t].short} needs. Estimates range ${Math.round(sc.pes.score*100)}–${pct(sc.opt.score)}.</div>
       ${short.map(c=>{const v=e.cov[c];return `<div class="cvr trc" data-n="L:${c}" data-fk="cv:${t}:${c}"><span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span><div class="nb"><i style="width:${G(v)}%;background:${col(v)}"></i><span class="mk" style="left:${G(1)}%"></span></div><b style="color:${col(v)}">${pct(v)}</b>${why(c)?`<div class="cvw">${why(c)}</div>`:''}</div>`}).join('')}
-      ${ok.length?`<div class="mini" style="margin-top:4px">✓ Covered: ${ok.map(c=>`<span class="linkn trc" data-a="node" data-n="L:${c}">${LINES[c].n}</span>`).join(', ')}</div>`:''}</div>`}
+      ${ok.length?`<div class="mini" style="margin-top:4px">✓ Covered: ${ok.map(c=>`<span class="linkn trc" data-a="node" data-n="L:${c}">${LINES[c].n}</span>`).join(', ')}.</div>`:''}</div>`}
   if(S.ceasefire)det+=`<div class="sub red" style="padding:4px 10px">Ukraine ceasefire: Russian output now fills depots.</div>`;
   // home front
   const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
