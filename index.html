@@ -500,7 +500,7 @@ body{background:
 .sc-card .sc-m{display:grid;grid-template-columns:minmax(0,1fr) 34% 150px;gap:8px;align-items:center;margin:3px 0;font-size:12px;color:var(--ink)}.sc-card .sc-m .nb{height:11px;margin:0}.sc-card .sc-m .nb .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:#e6e1d3}.sc-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-n .linkn{color:#e6e1d3}
 .sc-val{text-align:right;font-family:var(--disp);font-size:13px;color:#b8ad8a}.sc-val b{color:var(--ink);font-size:15px}
 .sc-test{font-size:11.5px;color:#b8ad8a;margin-top:4px}
-.sc-rec{margin-bottom:10px}
+.sc-rec{margin-bottom:10px}.sc-why td{font-size:11.5px;color:#7a4a10;padding-top:0;border-top:0}.sc-ph .mini{max-width:62%}
 /* the timeline reads like a teletype */
 #log{background:#0a0b09;font:12px Consolas,"Cascadia Mono","Courier New",monospace;color:#cfc8b2}
 #log h2{font:400 14px var(--sten);letter-spacing:.1em;color:#e2cb85}
@@ -3645,15 +3645,21 @@ function scenTest(sc){const T=sc.test;
   scenUpdate();const tr=trueScore(T.t),es=ratio(T.t);
   return {v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
 function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;S.rival=sc.rival;S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
+function mandWhy(m){const R=S._R||production(false);
+  if(m.c){const o=R.out[m.c],lim=limOf(o,m.c);return lim.startsWith('L:')?'Line capacity: more lines needed':'Short of '+o.chain.map(i=>ND[i].n).join(' ← ')}
+  if(m.kind==='magnets'){const P=R.P.magnets;return P.starvedBy?'Short of '+chainOf(R.P,'magnets').slice(1).map(i=>ND[i].n).join(' ← '):'Not enough non-Chinese magnet capacity yet'}
+  if(m.kind==='hold'){const c=m.lines.reduce((a,c)=>outOf(c)/Math.max(S.rec0?.out?.[c]||1e-9,1e-9)<outOf(a)/Math.max(S.rec0?.out?.[a]||1e-9,1e-9)?c:a);const o=R.out[c];return LINES[c].n+': '+(o.bott?'short of '+ND[o.chain.at(-1)].n:'line capacity')}
+  if(m.kind==='expo'){const P=R.P,top=ORDER.filter(id=>P[id].need>1e-6).sort((a,b)=>P[b].prc*(1-P[b].expo*0)-P[a].prc).slice(0,2);return 'Still buying from China: '+top.map(id=>ND[id].n).join(', ')}
+  return ''}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
   const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
-  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
+  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
   log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0}
 const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
 // the picker before play starts, then the mandate card
 function scenCard(){
   if(!S.scen){if(S.w!==PLAY0||S.scenSkip)return '';
-    return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">or close this and play the open race to 2037</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
+    return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">Real targets on real timelines: the US is not on track for most of them. The floors show how close you can get. Or close this and play the open race to 2037.</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
   const sc=SCD[S.scen],left=sc.dl-S.w,res=S.scenRes;
   return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span>`}</div>
     ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
@@ -3662,7 +3668,7 @@ function scenCard(){
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
   return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: the deadline</div><div class="bd">
     <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>
-    <table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>`).join('')}</table>
+    <table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
     <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
     <p><i>${sc.lesson}</i></p></div>
     <div class="ft"><button class="pbtn primary" data-a="scenon">Keep building to 2037</button><button class="pbtn" data-a="scenstop">End here and see the record</button></div></div>`}
