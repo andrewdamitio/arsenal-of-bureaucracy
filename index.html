@@ -70,6 +70,7 @@ button{font:inherit}
 .prow{display:grid;grid-template-columns:1fr auto;padding:3px 10px;font-size:11.5px;border-bottom:1px solid #24231b}
 .th{padding:8px 10px;border-bottom:1px solid #2b2a20}
 .th .top{display:flex;justify-content:space-between;align-items:baseline}
+.cvr{display:grid;grid-template-columns:minmax(0,1fr) 34% 40px;gap:6px;align-items:center;font-size:11.5px;margin:3px 0}.cvr .linkn{color:#e6e1d3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cvr .nb{margin:0;height:9px}.cvr b{text-align:right}.cvw{grid-column:1/4;font-size:10.5px;color:#a8a48e;margin:-2px 0 2px}.cvw .linkn{color:#e8b8a8}.th .mini .linkn{color:#cfc6ad}
 .vs{display:flex;height:14px;border:1px solid #3a382b;margin:5px 0 3px}.vs i{display:block;height:100%}
 .cvb{display:flex;gap:3px;margin:6px 0 2px;align-items:flex-end}.cvb span{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;cursor:pointer}.cvb .bx{height:30px;display:flex;align-items:flex-end;border-top:1px dashed #4d6b3a;border-bottom:1px solid #3a382b}.cvb i{display:block;width:100%}.cvb b{font:600 8.5px system-ui;color:#a8a48e;text-align:center;margin-top:2px;white-space:nowrap;overflow:hidden}
 .ratio{font:700 16px Georgia}
@@ -3245,12 +3246,15 @@ function renderGame(){
   if(allyDone.length)pr+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
   // ---- right
   let det='';
+  // each theater: what share of the campaign's need you could meet, item by item, worst first
   for(const t of S.theaters){const sc=S._sc[t],e=sc.est,r=e.score,E=S.enemy[t];
-    const cats=Object.keys(LINES).filter(c=>SCEN[t].w[c]&&F().alloc[t][c]>0);
-    det+=`<div class="th"><div class="top"><b>${THEATERS[t]}</b><span class="ratio ${r>=1?'green':r>=CRISIS_WIN?'gold':'red'}" data-tip="Coverage of ${SCEN[t].n} on your central estimate. 1.0 = every category covered.">${fmt(r,2)}</span></div>
-      <div class="mini" style="color:#a8a48e">${SCEN[t].n} · 80% range ${fmt(sc.pes.score,2)}–${fmt(sc.opt.score,2)}</div>
-      <div class="cvb">${cats.map(c=>{const v=e.cov[c],col=v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a';return `<span class="trc" data-a="node" data-n="L:${c}" data-fk="cv:${t}:${c}" data-tip="<b>${LINES[c].n}</b><br>${pct(v)} of the requirement${MUN.includes(c)?`<br>stock lasts ${e.wks[c]>=99?'the whole campaign':fmt(e.wks[c],1)+' of '+Math.round(e.wk)+' weeks'}`:''}"><span class="bx"><i style="height:${Math.max(2,Math.round(Math.min(1,v)*30))}px;background:${col}"></i></span><b>${LINES[c].u.slice(0,5)}</b></span>`}).join('')}</div>
-      <div class="nums"><span>Weakest: ${e.bind?LINES[e.bind].n:'—'} ${e.bind?pct(e.cov[e.bind]):''}</span><span>vs ${E.flag} ${E.n}</span></div>${e.bind&&R.out[e.bind].bott?`<div class="wchain">⛓ ${R.out[e.bind].chain.map(id=>`<span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`:''}${spark(t)}</div>`}
+    const cats=Object.keys(LINES).filter(c=>SCEN[t].w[c]&&F().alloc[t][c]>0).sort((x,y)=>e.cov[x]-e.cov[y]),short=cats.filter(c=>e.cov[c]<.995),ok=cats.filter(c=>e.cov[c]>=.995);
+    const col=v=>v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a',G=v=>Math.min(100,v/1.2*100);
+    const why=c=>{const bits=[];if(MUN.includes(c)&&e.wks[c]<e.wk)bits.push(`runs dry in week ${fmt(e.wks[c],1)} of ${Math.round(e.wk)}`);if(R.out[c].bott)bits.push(`<span class="linkn" data-a="bngo" data-n="${R.out[c].chain.at(-1)}">${ND[R.out[c].chain.at(-1)].n}</span> short`);return bits.join(' · ')};
+    det+=`<div class="th"><div class="top"><b>${THEATERS[t]} <span class="mini" style="font-weight:400">vs ${E.flag} ${E.n}</span></b><span class="ratio ${r>=1?'green':r>=CRISIS_WIN?'gold':'red'}">${pct(Math.min(r,1.5))}</span></div>
+      <div class="mini" style="color:#a8a48e">of what ${SCEN[t].short} needs · estimates range ${pct(sc.pes.score)}–${pct(sc.opt.score)}</div>
+      ${short.map(c=>{const v=e.cov[c];return `<div class="cvr trc" data-n="L:${c}" data-fk="cv:${t}:${c}"><span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span><div class="nb"><i style="width:${G(v)}%;background:${col(v)}"></i><span class="mk" style="left:${G(1)}%"></span></div><b style="color:${col(v)}">${pct(v)}</b>${why(c)?`<div class="cvw">${why(c)}</div>`:''}</div>`}).join('')}
+      ${ok.length?`<div class="mini" style="margin-top:4px">✓ Covered: ${ok.map(c=>`<span class="linkn trc" data-a="node" data-n="L:${c}">${LINES[c].n}</span>`).join(', ')}</div>`:''}</div>`}
   if(S.ceasefire)det+=`<div class="sub red" style="padding:4px 10px">Ukraine ceasefire: Russian output now fills depots.</div>`;
   // home front
   const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
