@@ -500,7 +500,22 @@ body{background:
 .sc-card .sc-m{display:grid;grid-template-columns:minmax(0,1fr) 34% 150px;gap:8px;align-items:center;margin:3px 0;font-size:12px;color:var(--ink)}.sc-card .sc-m .nb{height:11px;margin:0}.sc-card .sc-m .nb .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:#e6e1d3}.sc-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-n .linkn{color:#e6e1d3}
 .sc-val{text-align:right;font-family:var(--disp);font-size:13px;color:#b8ad8a}.sc-val b{color:var(--ink);font-size:15px}
 .sc-test{font-size:11.5px;color:#b8ad8a;margin-top:4px}
-.sc-rec{margin-bottom:10px}.sc-why td{font-size:11.5px;color:#7a4a10;padding-top:0;border-top:0}.sc-ph .mini{max-width:62%}
+.sc-rec{margin-bottom:10px}
+.sc-reopen{display:flex;align-items:center;gap:10px;margin:6px;padding:5px 8px;background:#1d1b12;border:1px dashed #8a6a1f}
+.sc-modal{width:min(1100px,100%)}.sc-modal .sc-opts{grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.paper .sc-opt{background:#f3ebd6;border:1px solid #b8a57a;color:#2b241a;padding:12px 14px;gap:5px;box-shadow:inset 0 3px 0 #8a6a1f}.paper .sc-opt:hover{background:#fbf6e8;border-color:#6b5a35}
+.paper .sc-opt b{font:400 19px var(--sten);letter-spacing:.03em;text-transform:none;color:#2b241a}.paper .sc-ic{font-size:26px}.paper .sc-dl{color:#8a6a1f}.paper .sc-th{font-size:12px;color:#4a3d22;line-height:1.4}.paper .sc-m{color:#3a3020;font-size:12.5px;border-top:1px dotted #b8a57a;padding-top:5px;width:100%}
+@media(max-width:1000px){.sc-modal .sc-opts{grid-template-columns:1fr}}.sc-why td{font-size:11.5px;color:#7a4a10;padding-top:0;border-top:0}.sc-ph .mini{max-width:62%}
+/* scrollbars */
+*{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
+::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
+::-webkit-scrollbar-track{background:#10120e;box-shadow:inset 1px 0 0 #2b2a20}::-webkit-scrollbar-corner{background:#10120e}
+::-webkit-scrollbar-thumb{background:linear-gradient(90deg,#5e5232,#8a7440 60%,#6b5d38);border:2px solid #10120e;border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(90deg,#8a7440,#c9a227)}
+.vpaper,.vpaper *,.paper,.paper *{scrollbar-color:#9a8458 #e2d5b4}
+.vpaper::-webkit-scrollbar-track,.vpaper ::-webkit-scrollbar-track,.paper::-webkit-scrollbar-track,.paper ::-webkit-scrollbar-track,.vpaper::-webkit-scrollbar-corner,.paper ::-webkit-scrollbar-corner{background:#e2d5b4;box-shadow:inset 1px 0 0 #cbbd95}
+.vpaper::-webkit-scrollbar-thumb,.vpaper ::-webkit-scrollbar-thumb,.paper::-webkit-scrollbar-thumb,.paper ::-webkit-scrollbar-thumb{background:linear-gradient(90deg,#a89770,#8a7850);border-color:#e2d5b4}
+.vpaper::-webkit-scrollbar-thumb:hover,.vpaper ::-webkit-scrollbar-thumb:hover,.paper::-webkit-scrollbar-thumb:hover,.paper ::-webkit-scrollbar-thumb:hover{background:#6b5a35}
 /* the timeline reads like a teletype */
 #log{background:#0a0b09;font:12px Consolas,"Cascadia Mono","Courier New",monospace;color:#cfc8b2}
 #log h2{font:400 14px var(--sten);letter-spacing:.1em;color:#e2cb85}
@@ -2001,6 +2016,7 @@ function endHistory(quiet){ // quiet: the instant run at game start, no handover
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
   log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
   S.spendBy={};S.incBy={};S.lawLog=[];S.decN={you:0,auto:0};{const o=production(false).out;S.rec0={budget:S.budget,expo:S.exposure,out:Object.fromEntries(Object.keys(LINES).map(c=>[c,o[c].yr])),inv:{...S.inv}}}
+  if(!S.scen&&S.fac==='US')S.modal='scenPick';
   S.resH=[];S._handT0=quiet?0:performance.now();S._flW=null;for(const k in FL)delete FL[k]; // handover starts from a clean slate, no flashes
 }
 const REPLAY_MS=[0,180,90,45,20],REEL_HOLD=2400;
@@ -3644,7 +3660,7 @@ function scenTest(sc){const T=sc.test;
     return {v:kept,ok:kept>=.8,txt:`If China switched everything off, you would build ${pct(kept)} of your January 2027 output (pass: 80%).`,worst:cs.filter(c=>now[c].yr>1e-9).sort((a,b)=>cut[a].yr/now[a].yr-cut[b].yr/now[b].yr).slice(0,2).map(c=>`${LINES[c].n} ${pct(cut[c].yr/now[c].yr)}`).join(', ')}}
   scenUpdate();const tr=trueScore(T.t),es=ratio(T.t);
   return {v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
-function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;S.rival=sc.rival;S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
+function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;if(S.modal==='scenPick')S.modal=null;S.rival=sc.rival;S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
 function mandWhy(m){const R=S._R||production(false);
   if(m.c){const o=R.out[m.c],lim=limOf(o,m.c);return lim.startsWith('L:')?'Line capacity: more lines needed':'Short of '+o.chain.map(i=>ND[i].n).join(' ← ')}
   if(m.kind==='magnets'){const P=R.P.magnets;return P.starvedBy?'Short of '+chainOf(R.P,'magnets').slice(1).map(i=>ND[i].n).join(' ← '):'Not enough non-Chinese magnet capacity yet'}
@@ -3658,13 +3674,18 @@ function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m
 const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
 // the picker before play starts, then the mandate card
 function scenCard(){
-  if(!S.scen){if(S.w!==PLAY0||S.scenSkip)return '';
+  if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2037. You can still pick a scenario until the clock starts.</span></div>`:'';
+  if(false){
     return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">Real targets on real timelines: the US is not on track for most of them. The floors show how close you can get. Or close this and play the open race to 2037.</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
   const sc=SCD[S.scen],left=sc.dl-S.w,res=S.scenRes;
   return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span>`}</div>
     ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
       return `<div class="sc-m"><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}">${x.ok?'✓':x.half?'◐':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the floor (halfway from January 2027). End: the real target."><i style="width:${f*100}%;background:${x.ok?'#76b357':x.half?'#d9a441':'#d0503f'}"></i><span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
     <div class="sc-test">${res?`Test: ${res.test.txt}`:`◐ floor met · ✓ real target met. At the deadline: ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}. Mandate met: every target. Enough, barely: every floor.`}</div></div>`}
+function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"><span class="ic">🎯</span>January 2027: choose your mandate</div><div class="bd">
+  <p>Each scenario hands you three dated targets drawn from real public goals, and a test at the deadline. They are real targets on real timelines: the US is not on track for most of them. The floors show how close you can get.</p>
+  <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
+  <div class="ft"><button class="pbtn" data-a="scenskip">No mandate: play the open race to 2037</button></div></div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
   return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: the deadline</div><div class="bd">
     <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>
@@ -3864,6 +3885,8 @@ function renderModal(){
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
       html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}${q.due!=null&&!q.read?`<button class="pbtn" data-a="evlater">Later · ⏱ ${dLeft(q.due)} wk left</button>`:''}</div></div>`}
+  } else if(S.modal==='scenPick'){
+    html=scenPickHTML();
   } else if(S.modal==='scenEnd'&&S.scenRes){
     html=scenEndHTML();
   } else if(S.modal==='prog'&&S.selP){
@@ -3984,7 +4007,7 @@ document.addEventListener('pointerdown',e=>{
     case 'arsenal':S.view=({stock:'arsenal',pipe:'pipe',ready:'ready'})[b.dataset.t]||'arsenal';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
-    case 'close':S.modal=null;S.navBack=[];S.progBack=null;break;
+    case 'close':if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;break;
     case 'launch':{const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id);if(slotsUsed()>=S.slots&&S.modal==='cat')S.modal=null}break}
     case 'ct':S.ct[b.dataset.g]=b.dataset.v;break;
     case 'ctgo':startProject(S.ct.id,{b:S.ct.b,k:S.ct.k});S.modal=S.ctBack==='cat'&&slotsUsed()>=S.slots?null:S.ctBack||null;S.ct=null;break;
@@ -4007,7 +4030,8 @@ document.addEventListener('pointerdown',e=>{
     case 'evlater':{const q=S.queue.shift();if(q?.ev)(S.inbox=S.inbox||[]).push({ev:q.ev,due:q.due??S.w+DECIDE_WK,w:S.w});break}
     case 'recgo':S.view='rec';S.modal=null;S._vdirty=true;break;
     case 'scen':chooseScen(b.dataset.s);break;
-    case 'scenskip':S.scenSkip=true;break;
+    case 'scenskip':S.scenSkip=true;if(S.modal==='scenPick')S.modal=null;break;
+    case 'scenpick':if(!S.scen&&S.w===PLAY0){S.modal='scenPick';S.speed=0}break;
     case 'scenon':S.modal=null;break;
     case 'scenstop':S.over=true;S.speed=0;S.verdict=S.scenRes.verdict;S.overWhy='';S.modal=null;S.view='rec';S._vdirty=true;break;
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
