@@ -2037,7 +2037,7 @@ function applyOpt(od,opt){
   S.pages+=eff.pages||0;if(eff.lev)S.lev=clamp(S.lev+eff.lev,0,100);
   return {ok,prob,eff};
 }
-const DECIDE_WK=6;
+const DECIDE_WK=12; // a quarter to decide before the default is taken
 // the option taken if you don't decide: one marked as the status quo, else the free one that resolves fastest, else the cheapest you can afford
 function defOpt(od){const ok=od.o.map((o,k)=>[o,k]).filter(([o])=>optOk(o));if(!ok.length)return -1;const mk=ok.find(([o])=>o.dflt);if(mk)return mk[1];const free=ok.filter(([o])=>!o.pc&&!o.$);
   if(free.length)return free.sort((a,b)=>(a[0].wait??0)-(b[0].wait??0))[0][1];return ok.sort((a,b)=>((a[0].pc||0)+(a[0].$||0)*40)-((b[0].pc||0)+(b[0].$||0)*40))[0][1]}
@@ -3709,7 +3709,7 @@ document.addEventListener('keydown',e=>{
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
   else if(e.key==='Escape'&&closable()){S.modal=null;S.navBack=[];render()}
 });
-const MS=[0,700,300,100,30],RENDER_MS=[0,0,0,120,150];let acc=0,last=performance.now(),lastR=0,dirtyR=false;
+const MS=[0,1000,500,190,60],RENDER_MS=[0,0,0,120,150];let acc=0,last=performance.now(),lastR=0,dirtyR=false;
 function loop(now){
   const dt=now-last;last=now;
   if(S&&S.replay){
