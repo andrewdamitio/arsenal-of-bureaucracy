@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Arsenal of Bureaucracy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Saira+Stencil+One&display=swap" rel="stylesheet">
 <style>
 :root{--panel:#1d201b;--panel2:#262a23;--line:#4a4532;--brass:#a8925a;--brass2:#dcc78e;--ink:#e6e1d3;--dim:#9a968a;--red:#d0503f;--green:#76b357;--blue:#5f8fc4;--amber:#d9a441;--paper:#e9dfc4;--paperInk:#2b241a}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
@@ -406,6 +408,74 @@ body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
 .stampin{animation:stin .35s cubic-bezier(.3,1.6,.6,1) both}
 @keyframes stin{from{opacity:0;transform:rotate(-4deg) scale(2.2)}}
 @media(max-width:1180px){#main,#main.vmode{grid-template-columns:1fr;height:auto}.fcards{grid-template-columns:1fr}.intro{columns:1}.map{grid-template-columns:1fr 1fr}}
+/* ===================== theme: the ops room ===================== */
+:root{--disp:"Barlow Condensed","Arial Narrow","Segoe UI",system-ui,sans-serif;--sten:"Saira Stencil One","Barlow Condensed",Georgia,serif;--haz:repeating-linear-gradient(135deg,#c9a227 0 6px,#16160f 6px 12px)}
+/* a faint blueprint grid under everything */
+body{background:
+  linear-gradient(rgba(168,146,90,.05) 1px,transparent 1px) 0 0/26px 26px,
+  linear-gradient(90deg,rgba(168,146,90,.05) 1px,transparent 1px) 0 0/26px 26px,
+  radial-gradient(ellipse at 50% -15%,#2b3125 0,#121510 55%,#080907 100%) fixed;background-color:#0b0c0a}
+/* top bar: stencil logo, condensed readouts, a hazard stripe underneath */
+#top{border-bottom:0;background:linear-gradient(#2d3228,#151712);box-shadow:0 3px 10px #000a}
+#top::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--haz);opacity:.9}
+.logo{font:400 22px var(--sten);letter-spacing:.05em;color:#e8d08a;text-shadow:0 1px 0 #000,0 0 14px rgba(220,199,142,.2)}
+.logo small{font:italic 400 12px Georgia;color:#8f8a78;letter-spacing:0}
+.res{background:linear-gradient(#1c1f18,#0f110d);border-color:#3f3b2b;border-radius:2px;box-shadow:inset 0 1px 0 #ffffff0a}
+.res b{font:700 20px var(--disp);letter-spacing:.02em;line-height:1}
+.res span{font:600 10.5px var(--disp);letter-spacing:.12em}
+.res i{font:600 12px var(--disp)}
+.date{font:700 20px var(--disp);letter-spacing:.08em;box-shadow:inset 0 0 0 1px #000,0 0 10px rgba(201,162,39,.12)}
+.btn{font-family:var(--disp);font-weight:600;font-size:13.5px;letter-spacing:.03em}.btn.sm{font-size:12.5px}
+/* tabs read like file folders with stenciled labels */
+#views .vbtn{font:600 14.5px var(--disp);letter-spacing:.07em;text-transform:uppercase;padding:3px 14px}
+#views .vbtn.on{box-shadow:inset 0 3px 0 #c9a227}
+.rtabs .vbtn{font:600 13.5px var(--disp);letter-spacing:.05em;text-transform:uppercase}
+/* panels: reticle corners, stenciled headers with a hazard tab */
+.panel{background:
+  linear-gradient(var(--brass),var(--brass)) left bottom/16px 2px no-repeat,linear-gradient(var(--brass),var(--brass)) left bottom/2px 16px no-repeat,
+  linear-gradient(var(--brass),var(--brass)) right bottom/16px 2px no-repeat,linear-gradient(var(--brass),var(--brass)) right bottom/2px 16px no-repeat,
+  linear-gradient(180deg,#20241d,#161914);border-color:#3e3b2c}
+.panel h2{font:400 15px var(--sten);letter-spacing:.09em;color:#e2cb85;background:linear-gradient(#34372a,#22241b);border-bottom:1px solid #6b5d38;box-shadow:0 2px 6px #0006}
+.panel h2::before{content:'';flex:none;width:9px;height:15px;background:var(--haz);background-size:auto;margin-right:1px;opacity:.9}
+.panel h2 .r{font-family:var(--disp);font-size:13px}
+.sect{font-family:var(--disp);font-size:12px;letter-spacing:.1em}
+/* the race */
+.rc-rhead>div{background:linear-gradient(#262a22,#1b1e18)}
+.rc-rbig{flex-direction:row!important;align-items:center;gap:10px}
+.rc-gauge{flex:none;filter:drop-shadow(0 2px 4px #000a)}
+.rc-gnum{display:flex;flex-direction:column;gap:2px}
+.rc-rhead b{font-family:var(--disp)!important;font-size:26px;letter-spacing:.02em}
+.rc-rhead .rc-rbig b{font-size:46px!important;line-height:.9}
+.rc-rhead span{font:600 11.5px var(--disp);letter-spacing:.07em;text-transform:uppercase}
+.rc-rrow{background:linear-gradient(180deg,#252922,#1d201a);border-color:#3b392b;box-shadow:inset 0 1px 0 #ffffff08}
+.rc-ttl{display:flex;align-items:center;gap:9px;min-width:0}
+.rc-ttl .lic{flex:none;color:#e2cb85;filter:drop-shadow(0 1px 0 #000)}
+.rc-ttl b{font:700 18px var(--disp)!important;letter-spacing:.05em;text-transform:uppercase;color:var(--ink)}
+.rc-rh>span{font:600 13px var(--disp);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}.rc-rh>span b{font-size:21px;vertical-align:-1px}
+.rc-rb .nb{height:13px;background:#0b0c09}
+.rc-rb .nb::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 11px,rgba(0,0,0,.5) 11px 12px);pointer-events:none}
+.rc-rb>span:first-child{font:600 12.5px var(--disp);letter-spacing:.07em;text-transform:uppercase}
+.rc-rb .v{font-family:var(--disp);font-size:13px}.rc-rb .v b{font:700 16px var(--disp)}
+.rc-loss{font-family:var(--disp);letter-spacing:.05em;text-transform:uppercase;font-size:12.5px}
+.rc-rlim .btn{text-transform:uppercase}
+/* icons elsewhere */
+.lic.sm{vertical-align:-3px;margin-right:5px;color:#e2cb85}
+.dic .lic.big{color:#5a4a26}
+/* decisions bar */
+.dbl{font-family:var(--disp);letter-spacing:.05em;text-transform:uppercase}.dbl b{font-size:20px}
+.dbt b{font-family:var(--disp);font-size:14px;letter-spacing:.02em}
+#decbar{background:linear-gradient(#2c2616,#1f1b10);box-shadow:inset 4px 0 0 #c9a227}
+.pcard{background:linear-gradient(180deg,#252922,#1c1f19);box-shadow:inset 0 1px 0 #ffffff08}.pcard .ph b{font:700 16px var(--disp);letter-spacing:.03em}.pcard .ph .linkn{text-decoration-thickness:1px;text-underline-offset:3px}
+.nrow .nm{font:600 15px var(--disp);letter-spacing:.02em}.chain b.linkn,.chain>.linkn{font-family:var(--disp);font-size:14px;letter-spacing:.02em}
+.pipe>div{font-family:var(--disp);font-size:11px;letter-spacing:.08em}
+.tag{font-family:var(--disp);letter-spacing:.06em}
+.paper .hd{font-family:var(--sten);font-weight:400;letter-spacing:.04em}.paper .hd .ic{filter:drop-shadow(0 1px 0 #0006)}
+/* the timeline reads like a teletype */
+#log{background:#0a0b09;font:12px Consolas,"Cascadia Mono","Courier New",monospace;color:#cfc8b2}
+#log h2{font:400 14px var(--sten);letter-spacing:.1em;color:#e2cb85}
+#log div{border-bottom:1px dashed #1e2119}#log .d{font-family:inherit;color:#c9a227}
+/* paper pages keep their documents, with stenciled titles */
+.vhead>b,.dhead h3{font-family:var(--sten);font-weight:400;letter-spacing:.03em}
 </style>
 </head>
 <body>
@@ -2752,7 +2822,7 @@ function dossierHTML(id,P){
   let main='';
   if(id.startsWith('L:')){const l=id.slice(2),L=LINES[l],o=S._R.out[l],f=F();
     const projs=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint');const lp=linePipe(l),pj0=project(Object.fromEntries(Object.keys(LINES).map(c=>[c,S._R.out[c].yr]))),rq=reqRate(l,pj0);
-    main=`<div class="dhead"><span class="dic">🏭</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span>${back}<button class="pbtn sm" data-a="flow" data-f="L:${l}">⇶ Flows</button><button class="pbtn sm" data-a="arsenal">📈 Arsenal</button></div>
+    main=`<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span>${back}<button class="pbtn sm" data-a="flow" data-f="L:${l}">⇶ Flows</button><button class="pbtn sm" data-a="arsenal">📈 Arsenal</button></div>
      ${raisePanel(id,P)}<div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
      <div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
      <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
@@ -3429,6 +3499,25 @@ function limTick(out){S.lim=S.lim||{};S.limH=S.limH||{};S.limC=S.limC||{};
     if(!S.histMode&&(up||dn)){const msg=up?`${LINES[c].n}: ${limName(cur.id)} no longer limits output. Next: ${limName(id)}.`:`${LINES[c].n}: now limited by ${limName(id)}.`;
       log(`⛓ ${msg}`,up?'good':'bad');flash('L:'+c,up?'good':'bad');
       toast(`⛓ <b>${LINES[c].n}</b><br><span class="dim">${up?`${limName(cur.id)} cleared. Next: `:'Now short of '}${limName(id)}</span>`,'',{a:'node',n:id})}}}
+/* ---------- line silhouettes and the headline gauge ---------- */
+const LINE_SVG={
+ shells:'<path d="M9.5 22h5v-2.2h-5z"/><path d="M9.5 19V9.5C9.5 6 10.6 3.4 12 1.8 13.4 3.4 14.5 6 14.5 9.5V19z"/><path d="M9.5 15h5v1.4h-5z" fill-opacity=".45"/>',
+ interceptors:'<path d="M12 1l1.6 3.2V15l3 3.2V20h-3l-1.6 3-1.6-3h-3v-1.8l3-3.2V4.2z"/><path d="M10.6 21.5l1.4 2.5 1.4-2.5z" fill="#e0a040"/>',
+ strike:'<path d="M1.5 11h14.8l5.2 1-5.2 1H1.5z"/><path d="M8 13l-3.2 4h2.1l3.4-4zM8 11L4.8 7h2.1l3.4 4z"/><path d="M2.3 11L.6 8.6h1.3L3.6 11zM2.3 13L.6 15.4h1.3L3.6 13z"/>',
+ aircraft:'<path d="M12 1.2l1.4 6.2 8.4 5.1v2l-8.4-2.4-.5 6.4 3.1 2v1.6L12 20.6l-4 1.5v-1.6l3.1-2-.5-6.4-8.4 2.4v-2l8.4-5.1z"/>',
+ surface:'<path d="M.8 15.2h22.4l-3.2 4.6H4z"/><path d="M5.5 15.2v-2.6h3V9.4h2.2v3.2h1.8V6.5h1.6v6.1h2.6v2.6z"/><path d="M13 6.5V3.4h.9v3.1z"/>',
+ subs:'<path d="M1.5 14.2c0-2.1 3.2-3.3 7.6-3.3h7.3c4.2 0 6.2 1.6 6.2 3.3s-2 3.3-6.2 3.3H9.1c-4.4 0-7.6-1.2-7.6-3.3z"/><path d="M10.6 11V7.4h3.2l.6 3.6z"/><path d="M.4 12.3l1.6 1.9-1.6 1.9z"/>',
+ drones:'<rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M10 10L6 6M14 10l4-4M10 14l-4 4M14 14l4 4" stroke="currentColor" stroke-width="1.6"/><g fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="5" cy="5" r="3.2"/><circle cx="19" cy="5" r="3.2"/><circle cx="5" cy="19" r="3.2"/><circle cx="19" cy="19" r="3.2"/></g>',
+ a2a:'<path d="M2 11.2h16.6l3.6.8-3.6.8H2z"/><path d="M4.4 11.2L2.6 7.6h1.6l2.4 3.6zM4.4 12.8l-1.8 3.6h1.6l2.4-3.6z"/><path d="M13.6 11.2l1-2.4h1.1l-.6 2.4zM13.6 12.8l1 2.4h1.1l-.6-2.4z"/>',
+ fires:'<path d="M1.5 15.4h13.6v2.8H1.5z"/><path d="M15.1 13.6h4.3l2.6 2.4v2.2h-6.9z"/><path d="M5.4 14.8L17.6 6.6l1.7 2.4L7.1 17.2z"/><g fill="#1a1c17" stroke="currentColor" stroke-width="1.3"><circle cx="5" cy="19.6" r="1.8"/><circle cx="11" cy="19.6" r="1.8"/><circle cx="18.6" cy="19.6" r="1.8"/></g>'};
+const lineIcon=(c,sz=22,cls='lic')=>`<svg class="${cls}" viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="currentColor" aria-hidden="true">${LINE_SVG[c]||''}</svg>`;
+// a half-dial: 0 to 100% of the rival's output, with red / amber / green bands and a needle
+function raceGauge(v){const W=128,H=72,cx=64,cy=64,r=52,a=f=>Math.PI*(1-Math.min(1,Math.max(0,f))),P=f=>[cx+r*Math.cos(a(f)),cy-r*Math.sin(a(f))];
+  const arc=(f0,f1,c,w=9)=>{const [x0,y0]=P(f0),[x1,y1]=P(f1);return `<path d="M${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)}" stroke="${c}" stroke-width="${w}" fill="none"/>`};
+  const ticks=[0,.25,.5,.75,1].map(f=>{const an=a(f),c=Math.cos(an),s=Math.sin(an);return `<line x1="${(cx+(r+6)*c).toFixed(1)}" y1="${(cy-(r+6)*s).toFixed(1)}" x2="${(cx+(r-6)*c).toFixed(1)}" y2="${(cy-(r-6)*s).toFixed(1)}" stroke="#e6e1d3" stroke-opacity=".55" stroke-width="1.2"/>`}).join('');
+  const an=a(v),nx=cx+(r-12)*Math.cos(an),ny=cy-(r-12)*Math.sin(an);
+  return `<svg class="rc-gauge" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${arc(0,1,'#0d0e0b',13)}${arc(0,.6,'#7a2a20')}${arc(.6,.995,'#8a6a1f')}${arc(.995,1,'#3f6b33')}${arc(0,Math.min(1,v),v>=1?'#76b357':v>=.6?'#d9a441':'#d0503f',5)}${ticks}
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#f3ead2" stroke-width="2.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4.5" fill="#dcc78e" stroke="#0d0e0b"/></svg>`}
 function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c],cnOut(c,h.w)]);pts.push([S.w,S._R?.out[c].yr??0,cnOut(c)]);
   if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
   const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
@@ -3438,7 +3527,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
   const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the end-item lines. ${RV().n}'s figures are intelligence estimates."><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across seven lines</span></div>
+  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the end-item lines. ${RV().n}'s figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across ${Object.keys(LINES).length} lines</span></div></div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
    <div><b>${matched}/${cs.length}</b><span>lines matching ${RV().n}</span></div>
    <div data-tip="Average growth in ${RV().n}'s output over the last year, across the end-item lines."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth this year</span></div>
@@ -3454,7 +3543,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
     const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].join(' · ')}`:`<span class="red">No fix under way.</span>`;
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
     const loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.05+.75*loss).toFixed(2)}),rgba(176,69,58,${(.02+.35*loss).toFixed(2)}));border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
-    return `<div class="rc-rrow trc" data-n="L:${c}"${tint}><div class="rc-rh"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${gap}</div>
+    return `<div class="rc-rrow trc" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b></span>${gap}</div>
       <div class="rc-rgrid"><div>
        <div class="rc-rb"><span>${F().flag} You</span><div class="nb"><i style="width:${B(o.capYr)}%;background:#34404c"></i><i style="width:${B(o.yr)}%;background:#5f8fc4"></i></div><span class="v"><b>${fmtN(o.yr)}</b>/yr${o.capYr>o.yr*1.02?` <span class="dim">of ${fmtN(o.capYr)}</span>`:''}</span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
@@ -3488,7 +3577,7 @@ function renderGame(){
     const shortL=S.order.filter(l=>R.out[l].bott);
     sup+=`<div class="sect"><span>Short lines → root cause</span><span class="linkn" data-a="view" data-v="bn" style="color:#dcc78e">Full analysis →</span></div>`;
     if(!shortL.length)sup+=`<div class="empty" style="padding:10px">Every line is running at capacity.</div>`;
-    for(const l of shortL){const o=R.out[l],ls=Math.max(0,1-o.n/Math.max(o.cap,1e-9));sup+=`<div class="chain trc" data-n="L:${l}" style="background:rgba(176,69,58,${(.04+.7*ls).toFixed(2)});box-shadow:inset 3px 0 0 rgba(208,80,63,${(.5+.5*ls).toFixed(2)})"><b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
+    for(const l of shortL){const o=R.out[l],ls=Math.max(0,1-o.n/Math.max(o.cap,1e-9));sup+=`<div class="chain trc" data-n="L:${l}" style="background:rgba(176,69,58,${(.04+.7*ls).toFixed(2)});box-shadow:inset 3px 0 0 rgba(208,80,63,${(.5+.5*ls).toFixed(2)})">${lineIcon(l,16,'lic sm')}<b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
     const bad=ORDER.filter(id=>['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover);
     sup+=`<div class="sect"><span>Nodes below 100% cover (${bad.length})</span><span></span></div>`+bad.map(id=>nodeRow(id,P)).join('');
   } else if(S.tab==5){
