@@ -300,6 +300,10 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 /* where it's made */
 .mdt td{font-size:12.5px;padding:3px 6px;vertical-align:middle}.mdt .mdv{text-align:right;white-space:nowrap;font-weight:600}.mdt .mdn{font-size:11.5px;color:#6b5a35}
 .mdbar{position:relative;height:12px;background:#e6dbbd;border:1px solid #cbbd95}.mdbar i{position:absolute;top:0;bottom:0}.mdbar .mdcut{background:repeating-linear-gradient(45deg,#b0453a 0 2px,#e6dbbd 2px 5px)}.mdbar .mdneed{position:absolute;top:-3px;bottom:-3px;width:2px;background:#2b241a}
+/* stock vs flow captions */
+svg.lc .lcu{font:600 10px "Segoe UI",system-ui,sans-serif;fill:#6b5a35;stroke:#f3ebd6;stroke-width:3px;paint-order:stroke;letter-spacing:.02em}
+.lcu2{font:600 10px "Segoe UI";color:#6b5a35;letter-spacing:.04em;margin:4px 0 2px}
+.rc-spw{display:flex;flex-direction:column;align-items:flex-end;gap:1px}.rc-spw span{font-size:9.5px;color:var(--dim);white-space:nowrap}
 /* decisions bar */
 #decbar{display:flex;align-items:center;gap:8px;height:40px;margin:4px 8px 0;padding:0 6px;background:#2a2416;border:1px solid #8a6a1f;box-shadow:0 0 0 1px #0006 inset}
 body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
@@ -2739,7 +2743,7 @@ function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],st={pac:estInv(S.ene
   const ser=[];for(const [k,c,n] of [['pac',RIV_C.pac,'China'],['eu',RIV_C.eu,'Russia'],['us','#2f62a0','You']]){ser.push({pts:pts(k),c,wd:2.2,n});ser.push({pts:fut(k),c,wd:1.4,dash:'4 3',n:n+' (projected)'})}
   return `<div class="isg">${grp('In service',us,st,'')}${grp('Built per year',o.yr,pr,'/yr')}</div>
     <div class="isgt" style="margin-top:8px">In service since 2025, and where today's output leads by 2037</div>
-    ${lineChart({W:900,H:170,yMax,yFmt:fmtN,vf:fmtN,series:ser})}
+    ${lineChart({W:900,H:170,yMax,yFmt:fmtN,vf:fmtN,series:ser,unit:'📦 In service (stock)'})}
     <div class="sleg"><span><i style="background:#2f62a0"></i>You</span><span><i style="background:${RIV_C.pac}"></i>China</span><span><i style="background:${RIV_C.eu}"></i>Russia</span><span class="mini">Solid: history · dashed: today's output held constant, rivals keep growing. Retiring ~${fmtN(us*retRate(l))} ${L.u}/yr. Rival figures are intelligence estimates.</span></div>`}
 function dossierHTML(id,P){
   const sb=`<div class="dsb">${[1,2,3,4].map(t=>`<div class="dsbt">T${t} · ${TIERS[t]}</div>`+NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<div class="dsbi ${n.id===id?'on':''}" data-a="node" data-n="${n.id}"><i class="dot st-${st}"></i>${n.n}</div>`}).join('')).join('')}
@@ -2798,7 +2802,7 @@ function dossierHTML(id,P){
    ===================================================================== */
 let CH={},CHn=0,CHctx='v';
 function chartRange(){if(S.range==='near'){const b=Math.min(END_W,Math.max(S.w+156,312));return [Math.max(0,b-312),b]}return [0,END_W]}
-function lineChart({W=440,H=150,series,yMax,yFmt=fmtN,hl=[],marks=[],vf}){
+function lineChart({W=440,H=150,series,yMax,yFmt=fmtN,hl=[],marks=[],vf,unit}){
   const [x0,x1]=chartRange(),pl=38,pr=8,pt=8,pb=18,X=w=>pl+((w-x0)/(x1-x0))*(W-pl-pr),Y=v=>pt+(1-Math.min(v,yMax*1.05)/yMax)*(H-pt-pb);
   const hid=k=>k&&S.hide&&S.hide[k];
   const vis=series.filter(s=>!hid(s.k)).map(s=>({...s,pts:s.pts.filter(([w])=>w>=x0-6&&w<=x1+6)}));
@@ -2813,7 +2817,9 @@ function lineChart({W=440,H=150,series,yMax,yFmt=fmtN,hl=[],marks=[],vf}){
   for(const m of mk)g+=`<line x1="${X(m.w)}" x2="${X(m.w)}" y1="${pt}" y2="${H-pb}" stroke="#a03a30" stroke-width="1" opacity=".55"/>`;
   for(const h of hv)g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(h.v)}" y2="${Y(h.v)}" stroke="${h.c}" stroke-dasharray="4 3" stroke-width="1"/>`;
   if(S.w>=x0&&S.w<=x1)g+=`<line x1="${X(S.w)}" x2="${X(S.w)}" y1="${pt}" y2="${H-pb}" stroke="#2b241a" stroke-width="1" stroke-dasharray="2 2"/><text x="${X(S.w)+3}" y="${pt+8}" style="fill:#2b241a">now</text>`;
+  if(unit)g+=`<text class="lcu" x="${W-pr-3}" y="${pt+10}" text-anchor="end">${unit}</text>`;
   for(const s of vis){if(!s.pts.length)continue;g+=`<polyline points="${s.pts.map(([w,v])=>`${X(w).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="${s.c}" stroke-width="${s.wd||1.8}" ${s.dash?`stroke-dasharray="${s.dash}"`:''} stroke-linejoin="round"/>`}
+  if(unit){const m=g.match(/<text class="lcu"[^]*?<\/text>/);if(m)g=g.replace(m[0],'')+m[0]}
   return g+`<rect class="hit" x="${pl}" y="${pt}" width="${W-pl-pr}" height="${H-pt-pb}" fill="transparent"/><g class="hov"></g></svg>`;
 }
 /* legend items that toggle series on and off */
@@ -2831,7 +2837,7 @@ function stockBody(){
     const nxt=cr.find(c=>c[2]===t&&c[1]>S.w);const at=(arr,w)=>arr.reduce((b,x)=>Math.abs(x.w-w)<Math.abs(b.w-w)?x:b,arr[0]);
     const yMax=Math.max(1.3,...H.map(h=>h.opt?.[t]??h[t]??0),...pc.map(h=>h.opt?.[t]??h[t]))*1.05;
     html+=`<div class="acard wide2"><div class="ah"><b>${THEATERS[t]} — can you sustain ${SCEN[t].short}? vs ${E.flag} ${E.n}</b><span class="mini">${nxt?`Next test: ${nxt[3]} (${fmtDate(nxt[1])}) — projected <b>${fmt(at(pj,nxt[1])[t],2)}</b> at current output (80% range ${fmt(at(pj,nxt[1]).pes[t],2)}–${fmt(at(pj,nxt[1]).opt[t],2)}), <b>${fmt(at(pc,nxt[1])[t],2)}</b> at capacity`:''}</span></div>
-     ${lineChart({W:S.theaters.length>1?560:1000,H:S.theaters.length>1?150:140,yMax,yFmt:v=>fmt(v,1),vf:v=>fmt(v,2),hl:[{v:1,c:'#5f9e4a',n:'Fully covered'},{v:CRISIS_WIN,c:'#b8860b',n:'Deters (true score)'},{v:CRISIS_TENSE,c:'#d0503f',n:'Below: deterrence fails'}],marks:cr.filter(c=>c[2]===t).map(c=>({w:c[1],t:'Crisis: '+c[3]})),
+     ${lineChart({unit:'Coverage of the campaign (1 = fully covered)',W:S.theaters.length>1?560:1000,H:S.theaters.length>1?150:140,yMax,yFmt:v=>fmt(v,1),vf:v=>fmt(v,2),hl:[{v:1,c:'#5f9e4a',n:'Fully covered'},{v:CRISIS_WIN,c:'#b8860b',n:'Deters (true score)'},{v:CRISIS_TENSE,c:'#d0503f',n:'Below: deterrence fails'}],marks:cr.filter(c=>c[2]===t).map(c=>({w:c[1],t:'Crisis: '+c[3]})),
        series:[{pts:H.filter(h=>h.opt).map(h=>[h.w,h.opt[t]]),c:'#9a9a9a',wd:1,dash:'1 3',n:'90th percentile',k:'band'},{pts:H.filter(h=>h.pes).map(h=>[h.w,h.pes[t]]),c:'#9a9a9a',wd:1,dash:'1 3',n:'10th percentile',k:'band'},{pts:pj.map(h=>[h.w,h.opt[t]]),c:'#b5b5b5',wd:1,dash:'1 3',n:'90th percentile',k:'band'},{pts:pj.map(h=>[h.w,h.pes[t]]),c:'#b5b5b5',wd:1,dash:'1 3',n:'10th percentile',k:'band'},{pts:H.map(h=>[h.w,h[t]]),c:'#2f62a0',wd:2.2,n:'Your coverage (estimate)',k:'you'},{pts:pj.map(h=>[h.w,h[t]]),c:'#2f62a0',dash:'6 4',n:'Your coverage (estimate)',k:'proj'},{pts:pc.map(h=>[h.w,h[t]]),c:'#7fa3cc',dash:'2 3',n:'At full capacity',k:'cap'}]})}
      <div class="mini">2037 at current output: <b>${fmt(end,2)}</b> · if every line ran at capacity: <b>${fmt(endC,2)}</b>. Weakest link now: <b>${S._sc[t].est.bind?LINES[S._sc[t].est.bind].n:'—'}</b>. The grey dotted lines are the 10th and 90th percentiles over 40 draws from the scenario and intelligence ranges.</div></div>`}
   html+=`</div><div class="agrid">`;
@@ -2849,11 +2855,11 @@ function stockBody(){
     const bmax=Math.max(o.yr,prodCap[c],req)*1.1||1,B=v=>Math.min(100,v/bmax*100);
     const wk=MUN.includes(c)?ev.wks[c]:null;
     html+=`<div class="acard"><div class="ah"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b><span class="tag ${status[1]}">${status[0]}</span></div>
-     ${lineChart({W:440,H:150,yMax:showEn?Math.max(yMax,...enPj.map(x=>x[1]))*1.02:yMax,marks:cr.filter(x=>x[2]===bt).map(x=>({w:x[1],t:'Crisis: '+x[3]})),
+     ${lineChart({unit:'📦 In service (stock)',W:440,H:150,yMax:showEn?Math.max(yMax,...enPj.map(x=>x[1]))*1.02:yMax,marks:cr.filter(x=>x[2]===bt).map(x=>({w:x[1],t:'Crisis: '+x[3]})),
        series:[...(showEn?[{pts:enHist,c:'#b0453a',wd:1.2,n:E.n+' in service',k:'enemy'},{pts:enPj,c:'#b0453a',wd:1.2,dash:'5 4',n:E.n+' in service',k:'enemy'}]:[]),
         {pts:H.filter(h=>h.need).map(h=>[h.w,h.need[c]]),c:'#b8860b',wd:1.6,n:'Need (scenario)',k:'need'},{pts:pj.map(h=>[h.w,h.need[c]]),c:'#b8860b',wd:1.6,dash:'5 4',n:'Need (scenario)',k:'need'},
         {pts:H.filter(h=>h.inv).map(h=>[h.w,h.inv[c]]),c:'#2f62a0',wd:2.2,n:'You, in service',k:'you'},{pts:pj.map(h=>[h.w,h.inv[c]]),c:'#2f62a0',dash:'6 4',n:'You, in service',k:'proj'},{pts:pc.map(h=>[h.w,h.inv[c]]),c:'#7fa3cc',dash:'2 3',n:'At full capacity',k:'cap'}]})}
-     ${enNote}<div class="rates"><div class="rr"><span>Producing</span><div class="rb"><i style="width:${B(o.yr)}%;background:#2f62a0"></i></div><b>${fmtN(o.yr)}/yr</b></div>
+     ${enNote}<div class="rates"><div class="lcu2">⟳ Per year (flow)</div><div class="rr"><span>Producing</span><div class="rb"><i style="width:${B(o.yr)}%;background:#2f62a0"></i></div><b>${fmtN(o.yr)}/yr</b></div>
       <div class="rr"><span>Capacity</span><div class="rb"><i style="width:${B(prodCap[c])}%;background:#7fa3cc"></i></div><b>${fmtN(prodCap[c])}/yr</b></div>
       <div class="rr"><span>Needed</span><div class="rb"><i style="width:${B(req)}%;background:#b8860b"></i></div><b>${req>0?fmtN(req)+'/yr':'met'}</b></div></div>
      <div class="mini">Share of need now <b>${pct(shr)}</b> → ${pct(shrT)} at current output, ${pct(shrC)} at capacity by ${nxt[3]==='2037'?'2037':dateOf(nxt[1]).getFullYear()} · In service <b>${fmtN(S.inv[c])}</b>${S.ready[c]!=null?` (${pct(S.ready[c])} available)`:''} · need now <b>${fmtN(nw.n)}</b> for ${SCEN[bt].short} (${E.flag} ${E.n}: ~${fmtN(estInv(E,c))} in service, est.) · retiring ${pct(r)}/yr${wk!=null?` · stock lasts <b>${wk>=99?'the whole campaign':fmt(wk,1)+' weeks'}</b> of the ${Math.round(ev.wk)} required`:''}${o.bott?` · <span class="redt">short: ${o.chain.map(i=>ND[i].n).join(' ← ')}</span>`:''}</div></div>`;
@@ -2914,7 +2920,7 @@ function pipeChart(c,lp,req,W=440,H=140){
   const H2=S.hist.filter(h=>h.prod),fc=forecastSeries(c,lp);
   const dm=Math.max(...fc.a.map(x=>x[1]),...H2.map(h=>Math.max(h.prod[c],h.name?.[c]||0)),1e-9),off=req>dm*3;
   const yMax=(off?dm*1.25:Math.max(req||0,dm))*1.08,now=S._R.out[c].yr;
-  return (off?`<div class="mini redt" style="margin:2px 0">Rate needed for parity (${fmtN(req)}/yr) is off the chart — ${now>0?fmt(req/now,0)+'× today\'s output':'and output is zero'}.</div>`:'')+lineChart({W,H,yMax,vf:v=>fmtN(v)+'/yr',hl:req&&!off?[{v:req,c:'#b8860b',n:'Needed for parity',k:'req'}]:[],series:[{pts:H2.map(h=>[h.w,h.name[c]]),c:'#7fa3cc',wd:1.4,n:'Nameplate built',k:'name'},{pts:H2.map(h=>[h.w,h.prod[c]]),c:'#2f62a0',wd:2.2,n:'Actual output',k:'actual'},{pts:fc.a,c:'#5f9e4a',dash:'6 4',n:'Nameplate, on schedule',k:'sched'},{pts:fc.b,c:'#b0453a',dash:'2 3',n:'Nameplate, at your record',k:'record'}]});
+  return (off?`<div class="mini redt" style="margin:2px 0">Rate needed for parity (${fmtN(req)}/yr) is off the chart — ${now>0?fmt(req/now,0)+'× today\'s output':'and output is zero'}.</div>`:'')+lineChart({unit:'⟳ Output per year (flow)',W,H,yMax,vf:v=>fmtN(v)+'/yr',hl:req&&!off?[{v:req,c:'#b8860b',n:'Needed for parity',k:'req'}]:[],series:[{pts:H2.map(h=>[h.w,h.name[c]]),c:'#7fa3cc',wd:1.4,n:'Nameplate built',k:'name'},{pts:H2.map(h=>[h.w,h.prod[c]]),c:'#2f62a0',wd:2.2,n:'Actual output',k:'actual'},{pts:fc.a,c:'#5f9e4a',dash:'6 4',n:'Nameplate, on schedule',k:'sched'},{pts:fc.b,c:'#b0453a',dash:'2 3',n:'Nameplate, at your record',k:'record'}]});
 }
 const pipeLeg=()=>`<div class="aleg">${legI('actual','Actual output','<i style="background:#2f62a0"></i>')}${legI('name','Nameplate built','<i style="background:#7fa3cc"></i>')}${legI('sched','Nameplate if the pipeline finishes on schedule','<i class="dsh" style="border-color:#5f9e4a"></i>')}${legI('record','…at your track record','<i class="dot2" style="border-color:#b0453a"></i>')}${legI('req','Rate needed for parity','<i class="dsh" style="border-color:#b8860b"></i>')}</div>`;
 function projLine(p){const def=PD[p.def],w1=S.w+remW(p),sl=slipF().f;return `<tr><td>${def.ally?'🤝 ':''}<b class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</b>${p.inh?' <span class="mini">(inherited)</span>':''}</td><td>${STAGE_L[STAGES[Math.min(p.stage,5)]]}${p.obs.length?` · <span class="redt">blocked: ${V(OD[p.obs[0].id].n)}${p.obs[0].wait?` (${p.obs[0].wait} wk)`:''}</span>`:''}</td><td>${money(p.spent||0)} · billed ${pct(billedFrac(p))}</td><td>${fmtDate(Math.min(w1,END_W+520))}${sl>1.05?` <span class="mini">(~${dateOf(Math.round(S.w+remW(p)*sl)).getFullYear()} at your record)</span>`:''}</td></tr>`}
@@ -2997,7 +3003,7 @@ function readyCard(c,full,wide){
    <div class="sleg"><span><i style="background:#2f62a0"></i>Available <b>${fmtN(inv*r)}</b></span><span><i style="background:#d9a441"></i>Scheduled maintenance <b>${fmtN(inv*sched)}</b></span><span><i style="background:#b0453a"></i>Delayed / awaiting a yard or parts <b>${fmtN(inv*late)}</b></span></div>
    <div class="kv"><b>Enemy available</b><span>${S.theaters.map(th=>{const E=S.enemy[th];return `${E.flag} ${fmtN(E.inv[c]*E.ready[c])} of ${fmtN(E.inv[c])} (${pct(E.ready[c])}, assumed)`}).join(' · ')}</span>
     <b>Heading to</b><span><b>${pct(t)}</b> = baseline ${pct(S.ready0[c])}${S.mxAdd[c]?` + maintenance capacity ${pct(S.mxAdd[c])}`:''}${S.spares[c]?' + spares priority 5%':''}${sh>.005?` <span class="redt">− parts shortage ${pct(sh)}</span>`:''} · moves about 4% of the gap per month</span></div>
-   ${full&&H2.length>1?lineChart({W:wide?900:440,H:wide?130:110,yMax:1,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1-pl,c:'#5f9e4a',n:'Goal: only planned maintenance'}],series:[{pts:H2.map(h=>[h.w,h.ready[c]]),c:'#2f62a0',wd:2.2,n:'Available'},{pts:[[S.w,r],...[26,52,104,208,416].map(dw=>[S.w+dw,t+(r-t)*Math.exp(-dw/26)]).filter(p=>p[0]<=END_W)],c:'#2f62a0',dash:'4 4',wd:1,n:'Available'}]}):''}
+   ${full&&H2.length>1?lineChart({unit:'Share available for operations',W:wide?900:440,H:wide?130:110,yMax:1,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1-pl,c:'#5f9e4a',n:'Goal: only planned maintenance'}],series:[{pts:H2.map(h=>[h.w,h.ready[c]]),c:'#2f62a0',wd:2.2,n:'Available'},{pts:[[S.w,r],...[26,52,104,208,416].map(dw=>[S.w+dw,t+(r-t)*Math.exp(-dw/26)]).filter(p=>p[0]<=END_W)],c:'#2f62a0',dash:'4 4',wd:1,n:'Available'}]}):''}
    <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>+${Math.round(d.eff*100)} pts${d.also?' (subs & surface)':''}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${S.mxDone[d.id]?'<span class="okt">✓ done</span>':S.projects.some(q=>q.def===d.id)?'<span class="mini">Under way</span>':`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`).join('')}
     <tr><td><b>Spare-parts priority</b><div class="mini">Send 15% of new production to the spares pool instead of new units.</div></td><td>+5 pts; no parts-shortage penalty</td><td>−15% output</td><td>now</td><td><button class="pbtn sm" data-a="spares" data-l="${c}">${S.spares[c]?'Stop':'Divert'}</button></td></tr></table>
    ${full?`<p class="mini">${READY_NOTE[S.fac][c]}</p>`:''}</div>`;
@@ -3425,7 +3431,7 @@ function limTick(out){S.lim=S.lim||{};S.limH=S.limH||{};S.limC=S.limC||{};
 function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c],cnOut(c,h.w)]);pts.push([S.w,S._R?.out[c].yr??0,cnOut(c)]);
   if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
   const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
-  return `<svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Output per year since 2025: you (blue) and ${RV().n} (red)</title><polyline points="${pl(2)}" fill="none" stroke="#b0453a" stroke-width="1.5"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg>`}
+  return `<div class="rc-spw"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Output per year since 2025: you (blue) and ${RV().n} (red)</title><polyline points="${pl(2)}" fill="none" stroke="#b0453a" stroke-width="1.5"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span>⟳ output per year since 2025</span></div>`}
 function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
   const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
