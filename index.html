@@ -234,6 +234,9 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .qji{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:6px 14px;cursor:pointer;color:#2b241a;font:13px "Segoe UI",system-ui,sans-serif}
 .qji.on,.qji:hover{background:#3a3020;color:var(--brass2)}.qji .mini{color:inherit;opacity:.75}.qic{text-align:center}
 /* bottlenecks */
+.bnl{background:#f3ebd6;border:1px solid #cbbd95;padding:7px 9px}.bnlh{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px}
+.pvsr{display:grid;grid-template-columns:78px 1fr 118px;gap:8px;align-items:center;font-size:12px;margin:3px 0}.pvsr .nb{height:11px;background:#e6dbbd;border-color:#cbbd95}.pvsr .v{text-align:right;white-space:nowrap}
+.bnsum{font-size:12px;margin-top:4px;padding-top:4px;border-top:1px dotted #cbbd95}
 .bnlines{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:6px 14px;margin-bottom:6px}.bnl b{font:700 13px Georgia}
 .bncard{margin:8px 0;padding:8px 10px;background:#f3ebd6;border:1px solid #cbbd95;border-left:4px solid #8a1f15}
 .bnhd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #cbbd95;padding-bottom:5px;margin-bottom:5px}
@@ -2377,8 +2380,19 @@ function bnScan(){const key=bnKey();if(S._bnc?.key===key)return S._bnc.v;
 const LAYER_DOM=l=>DOMAINS.find(D=>D.layers.includes(l));
 function bnBody(){
   const {rows,R0}=bnScan(),P=R0.P,sl=slipF().f,yr=w=>dateOf(w).getFullYear();
-  const lines=S.order.filter(c=>R0.out[c].bott);
-  let h=`<div class="bnlines">${lines.length?lines.map(c=>{const o=R0.out[c],f=o.n/Math.max(o.cap,1e-9);return `<div class="bnl"><b class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</b><div class="bigbar" style="margin:3px 0"><i style="left:0;width:${f*100}%;background:#2f62a0"></i></div><span class="mini">${fmtN(o.yr)} of ${fmtN(o.capYr)}/yr capacity · ⛓ ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join(' ← ')}</span></div>`}).join(''):'<p class="mini">Every end-item line is running at capacity.</p>'}</div>`;
+  // every end item: your output against China's and Russia's, with what allies cover and what binds you
+  const enP=(t,c)=>S.theaters.includes(t)||t==='pac'||t==='eu'?estProd(S.enemy[t],c,S.w):0;
+  const allyTxt=c=>{const parts=S.theaters.map(t=>{const sc=SCEN[t],v=MUN.includes(c)?(sc.ally[S.fac]?.[c]??0)*S.allied[t]:(sc.pshare[S.fac]??0);return v>.005?`${pct(Math.min(.9,v))} ${t==='pac'?'in the Indo-Pacific':'in Europe'}`:null}).filter(Boolean);return parts.length?`Allies cover ${parts.join(', ')} ${MUN.includes(c)?'of the campaign need':'of the required force'}`:'No allied contribution modeled'};
+  const card=c=>{const o=R0.out[c],L=LINES[c],cn=enP('pac',c),ru=enP('eu',c),mx=Math.max(o.capYr,cn,ru,1e-9),B=v=>Math.min(100,v/mx*100);
+    const rival=cn>=ru?['China',cn]:['Russia',ru],ratio=rival[1]/Math.max(o.yr,1e-9);
+    const row=(flag,nm,v,col,extra='',txt)=>`<div class="pvsr"><span>${flag} ${nm}</span><div class="nb">${extra}<i style="width:${B(v)}%;background:${col}"></i></div><span class="v">${txt}</span></div>`;
+    return `<div class="bnl trc" data-n="L:${c}"><div class="bnlh"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${o.bott?'<span class="tag short">short</span>':'<span class="tag ok">at capacity</span>'}</div>
+      ${row(F().flag,'You',o.yr,'#2f62a0',`<i style="width:${B(o.capYr)}%;background:#9cb5d1"></i>`,`<b>${fmtN(o.yr)}</b>/yr <span class="mini">of ${fmtN(o.capYr)}</span>`)}
+      ${row(FLAGS.cn,'China',cn,'#b0453a','',`~${fmtN(cn)}/yr`)}
+      ${row(FLAGS.ru,'Russia',ru,'#8a5a50','',`~${fmtN(ru)}/yr`)}
+      <div class="mini">🤝 ${allyTxt(c)}</div>
+      <div class="bnsum">${ratio>=1.1?`<span class="redt">${rival[0]} builds <b>${ratio>=10?Math.round(ratio):fmt(ratio,1)}×</b> your output</span>`:ratio<=.9?`<span class="okt">You out-build ${rival[0]} <b>${fmt(1/Math.max(ratio,1e-3),1)}×</b></span>`:'<span>Roughly at parity</span>'}${o.bott?` · ⛓ ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join(' ← ')}`:''}</div></div>`};
+  let h=`<div class="pdg" style="margin-top:0">Production: you vs. China and Russia <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· adversary figures are intelligence estimates</span></div><div class="bnlines">${S.order.map(card).join('')}</div>`;
   if(!rows.length)return h+'<p>No material or component is short right now.</p>';
   h+=`<div class="sleg" style="margin:8px 0 4px">${CAUSES.map(([k,n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')}</div>`;
   h+=rows.map((r,ix)=>{const id=r.id,n=ND[id],p=P[id],st=nodeStatus(p),tot=Object.values(r.causes).reduce((a,b)=>a+b,0)||1;
