@@ -123,7 +123,7 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .map .col{display:flex;flex-direction:column;gap:3px}
 .map .npill{border-radius:3px;padding:3px 6px;display:flex;justify-content:space-between;gap:4px}
 .stamp{display:inline-block;border:3px solid #a3261c;color:#a3261c;padding:2px 10px;font:700 20px Georgia;letter-spacing:.2em;transform:rotate(-4deg);margin:8px 0 18px}
-#toasts{position:fixed;right:14px;bottom:150px;display:flex;flex-direction:column;gap:6px;z-index:40;pointer-events:none}
+#toasts{position:fixed;right:14px;bottom:150px;display:flex;flex-direction:column;gap:6px;z-index:60;pointer-events:none}
 .toast{background:#2a1a17;border:1px solid var(--red);border-left:5px solid var(--red);padding:7px 12px;max-width:340px;box-shadow:0 4px 14px #000;font-size:12px;animation:tin .25s}
 .toast.good{border-color:var(--green);background:#1b2a17}
 @keyframes tin{from{transform:translateX(30px);opacity:0}}
@@ -290,6 +290,9 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .fbig{display:grid;grid-template-columns:86px 1fr auto auto;gap:8px;align-items:center;margin:2px 0 4px}.fbig>span:first-child{font:700 10.5px "Segoe UI";letter-spacing:.06em;text-transform:uppercase;color:#6b5a35}.fbig .nb{height:12px;margin:0;background:#e6dbbd;border-color:#cbbd95}.fbig b{font:700 15px Georgia}
 .fln{margin-top:3px}
 @media(max-width:1180px){.fctiles{grid-template-columns:repeat(3,1fr)}}
+/* spending feedback */
+.res{position:relative}.spentf{position:absolute;left:50%;top:-1px;font-size:12px!important;transform:translateX(-50%);font:700 13px Georgia;font-style:normal;color:#ff9a86;text-shadow:0 1px 3px #000;pointer-events:none;white-space:nowrap;animation:spentup 2.6s ease-out forwards}.spentf.gain{color:#9fe08a}
+@keyframes spentup{0%{opacity:0;transform:translate(-50%,6px)}12%{opacity:1;transform:translate(-50%,0)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px)}}
 /* decisions bar */
 #decbar{display:flex;align-items:center;gap:8px;height:40px;margin:4px 8px 0;padding:0 6px;background:#2a2416;border:1px solid #8a6a1f;box-shadow:0 0 0 1px #0006 inset}
 body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
@@ -1384,8 +1387,8 @@ const CD=Object.fromEntries(CARVES.map(x=>[x.id,x]));
 const MOB=[{n:'Normal operations',d:'',line:1,dom:1,upkeep:0,strain:0,urg:0}]; // baseline only; surge is bought line by line (SHIFT)
 // funded extra shifts: overtime and a second or third shift at an existing line, paid from the budget
 const SHIFT_M=1.15,SHIFT_C=.15;
-function toggleShift(lid){if(S.shifts[lid]){S.shifts[lid]=false;log(`⏩ Extra shifts end at the ${LINES[lid].n.toLowerCase()} lines.`);return}
-  if(S.budget<SHIFT_C/4)return;S.shifts[lid]=true;log(`⏩ Extra shifts funded at the ${LINES[lid].n.toLowerCase()} lines (${money(SHIFT_C)}/yr).`,'ev')}
+function toggleShift(lid){if(S.shifts[lid]){S.shifts[lid]=false;log(`⏩ Extra shifts end at the ${LINES[lid].n.toLowerCase()} lines.`);toast(`⏩ <b>Extra shifts ended</b><br><span class="dim">${LINES[lid].n}</span>`);return}
+  if(S.budget<SHIFT_C/4)return;S.shifts[lid]=true;log(`⏩ Extra shifts funded at the ${LINES[lid].n.toLowerCase()} lines (${money(SHIFT_C)}/yr).`,'ev');toast(`⏩ <b>Extra shifts funded: ${LINES[lid].n}</b><br><span class="dim">${money(SHIFT_C)}/yr from the budget · +${Math.round((SHIFT_M-1)*100)}% line capacity</span>`,'good')}
 const DFARS_NODES=['ndpr','hree','magnets','tungsten','wha','tantalum','tantcap','bearings'];
 
 /* ---------- EVENTS ---------- */
@@ -2176,8 +2179,14 @@ function crisisOpts(id,place){const c=S.cres[id];
   return [{l:'Read the after-action report.',fx:()=>gameOver(`Deterrence failed in ${place}.`)}]}
 /* ---------- home-front actions ---------- */
 function spotCost(id){const u=nodeSupply(id);const cutFrac=(u.prcRaw+u.allyRaw)>0?u.lost/(u.prcRaw+u.allyRaw):0;return .12*(1+4*cutFrac)}
-function spotBuy(id){const c=spotCost(id);if(S.budget<c)return;S.budget-=c;S.spot.push({id,amt:S.nodes[id].scale*.25,left:26});log(`💸 Emergency spot purchase: ${ND[id].n} (${money(c)}).`)}
-function togglePrio(id){if(S.prio[id]){S.prio[id]=false;log(`DPA priority released: ${ND[id].n}.`);return}if(S.pc<5)return;S.pc-=5;S.prio[id]=true;S.waivers++;log(`🏭 DPA priority rating: ${ND[id].n} diverted from civilian customers.`,'ev')}
+// what you just spent floats off its counter in the top bar for a moment
+function spent(k,v){(S._sp=S._sp||{})[k]={v,t0:performance.now()}}
+function spentTag(k){const x=S._sp?.[k];if(!x)return '';const el=performance.now()-x.t0;if(el>2600)return '';return `<i class="spentf ${v0(x.v)}" style="animation-delay:${-Math.round(el)}ms">${x.v<0?'+':'−'}${k==='$'?money(Math.abs(x.v)):Math.abs(x.v)+' PC'}</i>`}
+const v0=v=>v<0?'gain':'';
+const spotAct=id=>S.spot.filter(x=>x.id===id),spotLine=id=>{const a=spotAct(id);return a.length?`<div class="okt mini">✓ ${a.length>1?a.length+' purchases':'Purchase'} arriving · ${Math.max(...a.map(x=>x.left))} wk left</div>`:''};
+function spotBuy(id){const c=spotCost(id);if(S.budget<c)return;S.budget-=c;S.spot.push({id,amt:S.nodes[id].scale*.25,left:26});log(`💸 Emergency spot purchase: ${ND[id].n} (${money(c)}).`);spent('$',c);
+  toast(`💸 <b>Bought: ${ND[id].n}</b><br><span class="dim">−${money(c)} · +25% of normal supply for 26 weeks</span>`,'good')}
+function togglePrio(id){if(S.prio[id]){S.prio[id]=false;log(`DPA priority released: ${ND[id].n}.`);toast(`<b>DPA priority released</b><br><span class="dim">${ND[id].n}</span>`);return}if(S.pc<5)return;S.pc-=5;S.prio[id]=true;S.waivers++;log(`🏭 DPA priority rating: ${ND[id].n} diverted from civilian customers.`,'ev');spent('pc',5);toast(`🏭 <b>DPA priority: ${ND[id].n}</b><br><span class="dim">−5 PC · civilian supply diverted to defense</span>`,'good')}
 function setAid(v){if(v===S.aidLvl)return;if(v<S.aidLvl){const c=Math.round(10*(S.aidLvl-v)/.5);if(S.pc<c)return;S.pc-=c}S.aidLvl=v;log(`🇺🇦 Aid to Ukraine set to ${v===1?'full':v===.5?'half':'stopped'}.`,'ev')}
 function framework(lid){if(S.fw[lid])return;const tgt=lineName(lid)*2;S.fw[lid]={target:tgt,due:S.w+156,start:S.w};S.pc+=12;log(`📣 Framework agreement announced: ${LINES[lid].n} to ${fmtN(tgt*LINES[lid].k)}/yr within three years.`,'ev')}
 function homeTick(lastOut){
@@ -2328,7 +2337,7 @@ function nextFunds(){const d=dateOf(S.w),y=d.getFullYear(),US=S.fac==='US';
   let t=US?new Date(y,9,1):new Date(y+1,0,1);if(US&&d>=t)t=new Date(y+1,9,1);
   const w=Math.ceil((t-START)/(7*DAY));return {w,amt:US?F().fyBudget:F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0)}}
 const REPRO=.5,reproCost=()=>Math.round(10*Math.pow(1.6,S.repro||0));
-function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;S.budget+=REPRO;S.repro=(S.repro||0)+1;S.pages+=40;
+function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;S.budget+=REPRO;spent('pc',c);spent('$',-REPRO);toast(`💵 <b>Reprogrammed +${money(REPRO)}</b><br><span class="dim">−${c} PC</span>`,'good');S.repro=(S.repro||0)+1;S.pages+=40;
   log(`${S.fac==='US'?'Reprogramming approved by the four defense committees':'Budget transfer approved'}: +${money(REPRO)} moved from other accounts (${c} PC).`,'ev')}
 // the strip that sits on top of every list of things to launch: the binding constraint is red
 function constraintStrip(cheapest){const nf=nextFunds(),used=slotsUsed(),broke=isFinite(cheapest)&&S.budget<cheapest,full=used>=S.slots;
@@ -2459,20 +2468,9 @@ function bnScan(){const key=bnKey();if(S._bnc?.key===key)return S._bnc.v;
 const LAYER_DOM=l=>DOMAINS.find(D=>D.layers.includes(l));
 function bnBody(){
   const {rows,R0}=bnScan(),P=R0.P,sl=slipF().f,yr=w=>dateOf(w).getFullYear();
-  // every end item: your output against China's and Russia's, with what allies cover and what binds you
-  const enP=(t,c)=>S.theaters.includes(t)||t==='pac'||t==='eu'?estProd(S.enemy[t],c,S.w):0;
-  const allyTxt=c=>{const parts=S.theaters.map(t=>{const sc=SCEN[t],v=MUN.includes(c)?(sc.ally[S.fac]?.[c]??0)*S.allied[t]:(sc.pshare[S.fac]??0);return v>.005?`${pct(Math.min(.9,v))} ${t==='pac'?'in the Indo-Pacific':'in Europe'}`:null}).filter(Boolean);return parts.length?`Allies cover ${parts.join(', ')} ${MUN.includes(c)?'of the campaign need':'of the required force'}`:'No allied contribution modeled'};
-  const card=c=>{const o=R0.out[c],L=LINES[c],cn=enP('pac',c),ru=enP('eu',c),mx=Math.max(o.capYr,cn,ru,1e-9),B=v=>Math.min(100,v/mx*100);
-    const rival=cn>=ru?['China',cn]:['Russia',ru],ratio=rival[1]/Math.max(o.yr,1e-9);
-    const row=(flag,nm,v,col,extra='',txt)=>`<div class="pvsr"><span>${flag} ${nm}</span><div class="nb">${extra}<i style="width:${B(v)}%;background:${col}"></i></div><span class="v">${txt}</span></div>`;
-    return `<div class="bnl trc" data-n="L:${c}"><div class="bnlh"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${o.bott?'<span class="tag short">short</span>':'<span class="tag ok">at capacity</span>'}</div>
-      ${row(F().flag,'You',o.yr,'#2f62a0',`<i style="width:${B(o.capYr)}%;background:#9cb5d1"></i>`,`<b>${fmtN(o.yr)}</b>/yr <span class="mini">of ${fmtN(o.capYr)}</span>`)}
-      ${row(FLAGS.cn,'China',cn,'#b0453a','',`~${fmtN(cn)}/yr`)}
-      ${row(FLAGS.ru,'Russia',ru,'#8a5a50','',`~${fmtN(ru)}/yr`)}
-      <div class="mini">🤝 ${allyTxt(c)}</div>
-      <div class="bnsum">${ratio>=1.1?`<span class="redt">${rival[0]} builds <b>${ratio>=10?Math.round(ratio):fmt(ratio,1)}×</b> your output</span>`:ratio<=.9?`<span class="okt">You out-build ${rival[0]} <b>${fmt(1/Math.max(ratio,1e-3),1)}×</b></span>`:'<span>Roughly at parity</span>'}${o.bott?` · ⛓ ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join(' ← ')}`:''}</div></div>`};
-  let h=`<div class="pdg" style="margin-top:0">Production: you vs. China and Russia <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· adversary figures are intelligence estimates</span></div><div class="bnlines">${S.order.map(card).join('')}</div>`;
-  if(!rows.length)return h+'<p>No material or component is short right now.</p>';
+  // the gaps against China and Russia live on Command (The Race); this page is the bottlenecks, ranked
+  let h=`<p class="mini" style="margin:0 0 6px">Ranked by the output each one costs you. Line-by-line gaps against ${RV().n}: <span class="linkn" data-a="home">🏛 The Race on Command →</span></p>`;
+  if(!rows.length)return h+'<p>No material or component is short right now. Every line is limited by its own capacity: see <span class="linkn" data-a="home">The Race</span>.</p>';
   h+=`<div class="sleg" style="margin:8px 0 4px">${CAUSES.map(([k,n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')}</div>`;
   h+=rows.map((r,ix)=>{const id=r.id,n=ND[id],p=P[id],st=nodeStatus(p),tot=Object.values(r.causes).reduce((a,b)=>a+b,0)||1;
     const gains=Object.entries(r.gain).sort((a,b)=>b[1]/LINES[b[0]].k-a[1]/LINES[a[0]].k);
@@ -2489,7 +2487,7 @@ function bnBody(){
       <div><h5>Fixes under way</h5>${projs.length||ramping.length?projs.map(q=>{const [t,c]=progStatus(q,true);return `<div class="bnc"><span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t}</span> <span class="mini">· ~${yr(Math.round(S.w+remW(q)*sl))}</span></div>`}).join('')+ramping.map(pl=>`<div class="bnc"><span class="linkn" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</span> <span class="mini">ramping, ${pct(pl.yield)} of nameplate</span></div>`).join(''):'<p class="mini redt">Nothing under way.</p>'}
        ${way.length?`<h5 style="margin-top:6px">What's in the way</h5>${way.map(([l,w])=>{const D=LAYER_DOM(l);return `<div class="bnc"><span class="sw" style="background:${LAYERS[l].c}"></span>${LAYERS[l].n} <b>${w>=1?fmt(w,0)+' wk':'now'}</b>${D?` — <span class="linkn" data-a="rbgo" data-d="${D.id}">⚖ ${D.n}</span>`:''}</div>`}).join('')}`:''}</div>
       <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(d.dur.reduce((a,b)=>a+b,0))}</span></div>`).join('')}
-       <div class="bnc"><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>💸 Spot purchase</button> <span class="mini">${money(spotCost(id))} · 26 wk</span></div>
+       <div class="bnc"><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>💸 ${spotAct(id).length?'Buy more':'Spot purchase'}</button> <span class="mini">${money(spotCost(id))} · 26 wk</span>${spotLine(id)}</div>
        ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
   return h}
 /* ---------- getting around: one back stack for every jump, and a finder for everything ---------- */
@@ -2560,7 +2558,7 @@ function raisePanel(id,P){
       <div class="rmeta">${money(projCost(d))} · ${v.isPlant?'output':'online'} ${yr(v.wOn)}${v.isPlant&&v.wFull<END_W?`, full rate ${yr(v.wFull)}`:''}</div>
       ${d.req&&!passed(d.req)?`<span class="mini redt">🔒 Needs ${rname(RD[d.req])}</span>`:`<button class="pbtn primary" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch →</button>`}</div>`};
   const quick=isL?`<button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'⏩ Stop extra shifts':`⏩ Fund extra shifts · ${money(SHIFT_C)}/yr`}</button>`
-    :`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>💸 Spot purchase · ${money(spotCost(id))}</button>${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'🏭 Release DPA priority':'🏭 DPA priority · 5 PC'}</button>`:''}`;
+    :`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>💸 ${spotAct(id).length?`Buy more (${Math.max(...spotAct(id).map(x=>x.left))} wk left)`:'Spot purchase'} · ${money(spotCost(id))}</button>${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'🏭 Release DPA priority':'🏭 DPA priority · 5 PC'}</button>`:''}`;
   return `<div class="raise"><div class="raiseh"><b>⬆ ${head}</b><span class="dsp"></span><span class="mini">${status}</span></div>
     ${under.length?`<div class="mini" style="margin:2px 0 4px">Under way: ${under.map(q=>{const [t,c]=progStatus(q,true);return `<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t.replace(/^\S+\s/,'')}</span>`}).join(' · ')}</div>`:''}
     ${opts.length?`<div class="rcards">${opts.map(card).join('')}</div>`:'<p class="mini">Every build option is already under way or done.</p>'}
@@ -2753,7 +2751,7 @@ function dossierHTML(id,P){
      <div class="dsec" id="allopts"><h4>All ways to increase supply</h4>${constraintStrip(Math.min(spotCost(id),...levs.filter(d=>!d.req||passed(d.req)).map(projCost)))}
       <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${Object.entries(groups).map(([g,ds])=>`<tr class="grp"><td colspan="5">${g}</td></tr>${ds.map(d=>{const done=leverDone(d),running=S.projects.some(q=>q.def===d.id);return `<tr class="${d.ally?'al':''}"><td><b>${d.ally?'🤝 ':''}${d.n}</b><div class="mini">${d.d===n.d?'':d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>${leverEffect(d,P)}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${done?'<span class="okt">✓ done</span>':running?`<span class="linkn mini" data-a="prog" data-u="${S.projects.find(q=>q.def===d.id).uid}">Under way →</span>`:d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`}).join('')}`).join('')}
       <tr class="grp"><td colspan="5">Short-term measures</td></tr>
-       <tr><td><b>💸 Emergency spot purchase</b><div class="mini">Non-Chinese prices run several times higher when PRC supply is cut (game estimate: 1.6–7×).</div></td><td>+25% of scale for 26 weeks</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>Buy</button></td></tr>
+       <tr><td><b>💸 Emergency spot purchase</b><div class="mini">Non-Chinese prices run several times higher when PRC supply is cut (game estimate: 1.6–7×).</div></td><td>+25% of normal supply for 26 weeks${spotLine(id)}</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${spotAct(id).length?'Buy more':'Buy'}</button></td></tr>
        ${n.civ?`<tr><td><b>🏭 DPA priority rating</b><div class="mini">${CIV[n.cv||'general']}</div></td><td>+${pct(n.civ*.4*s.scale/Math.max(p.need,s.scale*.5))} of need from civilian customers · strain +${fmt(n.civ*.35,2)}/wk</td><td>${S.prio[id]?'—':'5 PC'}</td><td>now</td><td><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release':'Divert'}</button></td></tr>`:''}
        <tr><td><b>📦 Stockpile</b><div class="mini">${S.fac==='US'?'National Defense Stockpile':'Strategic Stockpiling Strategy'} reform buys buffers of gallium, germanium, heavy REEs, antimony, tungsten.</div></td><td>${S.stock[id]>0?'Buffer held':'—'}</td><td colspan="3">${passed('nds')?'Enacted':'Via the legislative agenda'}</td></tr></table></div>
      <div class="dsec"><h4>Capacity pipeline — domestic, as share of need</h4>${(()=>{const np=nodePipe(id,P);return stackBar(np.seg,v=>pct(v),1,'Need')+(np.blocked>0?`<p class="mini redt">${pct(np.blocked)} of need is stuck behind an obstacle.</p>`:'')})()}
@@ -3402,8 +3400,8 @@ function renderGame(){
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
     ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'vs. '+RV().n,`<b>Your output as a share of ${RV().n}'s</b><br>Across the seven end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
-    ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
-    ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
+    ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
+    ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${res(`${slotsUsed()}/${S.slots}`,'Offices busy','<b>Program offices</b><br>One program each. Full offices block new launches.','rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
     ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>Each takes its default after ${DECIDE_WK} weeks. Opens the first one.`:'Nothing is waiting on you.',S.inbox?.length?'evdo':firstStuck?'prog':'rtab',S.inbox?.length?`data-e="${S.inbox[0].ev}"`:firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short','<b>End-item lines below capacity</b><br>Opens the bottleneck analysis.','view','data-v="bn"',shortL?'rwarn':'')}
