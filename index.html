@@ -285,6 +285,16 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 /* binding constraints */
 .cstrip{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:6px 8px;margin:4px 0 8px;background:#e6dbbd;border:1px solid #cbbd95;font:12.5px "Segoe UI",system-ui,sans-serif}
 .cstrip>span{display:flex;align-items:center;gap:6px}.cstrip .bind{color:#8a1f15;background:#f0b3a8;padding:2px 6px;margin:-2px -6px;border-radius:2px}
+/* the race */
+.rc-rhead{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--brass)}
+.rc-rhead>div{background:var(--panel2);padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px}.rc-rhead b{font:700 18px Georgia;color:var(--ink)}.rc-rhead span{font-size:10.5px;color:var(--dim)}
+.rc-rhead .rc-rbig b{font-size:30px;line-height:1}
+.rc-rrow{background:var(--panel2);border:1px solid var(--line);padding:7px 9px 6px;margin:6px}
+.rc-rh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:3px}.rc-rh>b{font:600 14px Georgia;color:var(--ink)}.rc-rh>span{font-size:11.5px}
+.rc-rgrid{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:10px;align-items:center}
+.rc-rb{display:grid;grid-template-columns:62px minmax(0,1fr) 128px;gap:6px;align-items:center;font-size:11px;margin:3px 0}.rc-rb .nb{height:10px;margin:0}.rc-rb .v{text-align:right;white-space:nowrap;color:#a8a48e}.rc-rb .v b{color:var(--ink)}
+.rc-rlim{font-size:11.5px;margin-top:4px;color:#cfc6ad;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}.rc-rlim .linkn{color:#e8b8a8}.rc-rlim .btn{margin-left:auto}
+.rc-rwork{font-size:11px;color:#a8a48e;margin-top:3px}.rc-rwork .linkn{color:#cfc6ad}.rc-rclr{color:#8fb87a;margin-left:6px}
 /* defense needs */
 .throw{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));border-bottom:1px solid var(--brass)}.throw .th{border-right:1px solid #2b2a20}
 .ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px;padding:6px}
@@ -887,7 +897,7 @@ const ENEMIES={
   inv:{shells:5e6,interceptors:15000,strike:6000,aircraft:2250,surface:325,subs:62,drones:1e5},
   prod:{shells:1.5e6,interceptors:2000,strike:1000,aircraft:200,surface:20,subs:3.5,drones:6e4},
   sched:{aircraft:[0,200,weekOf(2028,0,3),350]},
-  gc:{shells:.02,interceptors:.04,strike:.05,subs:.03,drones:.1},
+  gc:{shells:.02,interceptors:.04,strike:.05,aircraft:.03,surface:.03,subs:.03,drones:.1},
   ret:{shells:.05,interceptors:.02,strike:.02,aircraft:.05,surface:.03,subs:.03,drones:.2},q:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:.7,drones:1}},
  eu:{n:'Russia',flag:FLAGS.ru,
   inv:{shells:3e6,interceptors:4000,strike:1900,aircraft:1200,surface:30,subs:45,drones:4e5},
@@ -1519,7 +1529,8 @@ EVENTS.push(
   body:"The Commission freezes EU funds to a member state over rule-of-law concerns. Jointly financed projects in funding and contracting stall while lawyers argue over which money is which.",
   fx:()=>gmod(0,12,'EU funds frozen',['approp','contract'],'FISCAL'),o:[{l:'Wait for the Council.'}]},
 );
-const CRISES={
+const CRISES={US:[],EU:[]}; // the race is about production; the old crisis dates are kept for reference
+const CRISES_OLD={
  US:[['baltic',weekOf(2029,3,2),'eu','the Baltic'],['strait',weekOf(2031,8,1),'pac','the Taiwan Strait'],['scs',weekOf(2033,5,6),'pac','the South China Sea'],['narva',weekOf(2035,2,5),'eu','Narva']],
  EU:[['baltic',weekOf(2029,3,2),'eu','the Baltic'],['suwalki',weekOf(2031,8,1),'eu','the Suwałki Gap'],['narva',weekOf(2033,5,6),'eu','Narva'],['blacksea',weekOf(2035,2,5),'eu','the Black Sea']],
 };
@@ -1711,7 +1722,7 @@ function mkEnemy(t){
     const rr=READY_E[t][c];const v=rr?tri(rr[0],rr[1],rr[2]):1;E.ready[c]=v;E.ready0[c]=v}
   E.war=!!X.use;return E}
 function prodAt(E,c,w){const sc=E.sched?.[c];let p;
-  if(sc){const [w0,v0,w1,v1]=sc;p=(w<=w0?v0:w>=w1?v1:v0+(v1-v0)*(w-w0)/(w1-w0))*E.pr[c]}
+  if(sc){const [w0,v0,w1,v1]=sc;p=(w<=w0?v0:w>=w1?v1:v0+(v1-v0)*(w-w0)/(w1-w0))*E.pr[c]*Math.pow(1+(E.gc?.[c]||0),Math.max(0,w-w1)/52)}
   else p=E.prod[c]*Math.pow(1+(E.gc?.[c]||0),Math.max(0,w)/52);
   return p*E.pm}
 function enemyStep(E,w){for(const c in LINES){const u=E.war?(E.use[c]||0):0;E.inv[c]=Math.max(0,E.inv[c]+(prodAt(E,c,w)-u)/52-E.inv[c]*E.ret[c]/52)}}
@@ -2024,7 +2035,7 @@ function plantsTick(){
     for(const o of pl.ops||[])if(S.w>=o.next){const x=PMD[o.id];o.next=S.w+x.yrs*52;o.last=S.w;
       if(!pl.issue&&!S.histMode&&rand()<renewRisk(x,kn)){pl.issue={id:'permitRenew',wait:0,permit:x.id};S.ledger.PERMIT.n++;log(`⚠ ${pl.nm}: ${x.n} renewal contested`,'bad');notify(`⚠ <b>${x.n} renewal contested</b><br><span class="dim">${pl.nm}</span>`,'',{a:'prog',u:pl.uid})}}
     if(pl.issue){S.ledger[OPSD[pl.issue.id].layer].wk++;if(pl.issue.wait>0&&--pl.issue.wait<=0){log(`✔ Resolved: ${OPSD[pl.issue.id].n} (${pl.nm})`);pl.issue=null}continue}
-    pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*(.006+kn*.0003)*(pl.rampM||1));
+    pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*RAMP(kn)*(pl.rampM||1));
     S.know[k]=Math.min(95,kn+(pl.full?.01:.05));
     if(!pl.full&&pl.yield>=.9){pl.full=true;log(`🏭 ${pl.nm} reaches full-rate production after ${yrs(S.w-pl.start)} of ramp-up.`,'good')}
     let ch=.013*(1.3-kn/100)*(pl.full?.35:1);if((S.nflags[k]||{}).know)ch*=.7;if(pl.kind==='line'&&S.shifts?.[k])ch*=1.3;if(passed('workforce')||carveOn('cvHire'))ch*=.85;
@@ -2126,7 +2137,7 @@ function tick(){
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
-  const R=production(true);S.lastOut=R.out;
+  const R=production(true);S.lastOut=R.out;limTick(R.out);
   for(const c in LINES)S.inv[c]=Math.max(0,S.inv[c]+R.out[c].yr/52-S.inv[c]*retRate(c)/52-(aidOn()?(F().aid?.[c]||0)*S.aidLvl/52:0));
   if(S.histMode)histTick();
   for(const c in S.ready)S.ready[c]+=(readyTarget(c,R).t-S.ready[c])/26;
@@ -2135,13 +2146,13 @@ function tick(){
   projectsTick();plantsTick();reformsTick();carvesTick();scenUpdate();homeTick(R.out);
   if(!S.histMode)eventsTick();
   if(S.w%2===0)S.hist.push(snapshot());
-  {const R0=S._R||production(false);(S.resH=S.resH||[]).push({budget:S.budget,short:S.order.filter(c=>R0.out[c].bott).length,expo:(S.exposure||0)*100,lev:S.lev,strain:S.strain});if(S.resH.length>4)S.resH.shift()}
+  {const R0=S._R||production(false);(S.resH=S.resH||[]).push({race:raceIdx(R0.out)*100,budget:S.budget,short:S.order.filter(c=>R0.out[c].bott).length,expo:(S.exposure||0)*100,lev:S.lev,strain:S.strain});if(S.resH.length>4)S.resH.shift()}
   if(S.queue.length&&!S.sim)S.speed=0;
   if(S.w>=END_W)gameOver(null);
 }
 function gameOver(why){
   if(S.over)return;S.over=true;S.overWhy=why;S.speed=0;
-  if(why)S.verdict='DEFEAT';else{const rs=S.theaters.map(trueScore);S.verdict=rs.every(r=>r>=1)?'DETERRENCE RESTORED':rs.every(r=>r>=CRISIS_WIN)?'MUDDLED THROUGH':'MANAGED DECLINE'}
+  if(why)S.verdict='DEFEAT';else{const x=raceIdx(S.lastOut||production(false).out),h0=S.hist.find(h=>h.w>=PLAY0&&h.prod),x0=h0?raceIdx(null,h0.w,c=>h0.prod[c]):x;S.race0=x0;S.verdict=x>=1?'ARSENAL RESTORED':x>=.75?'WITHIN REACH':x>=x0+.05?'GAINED GROUND':'OUT-BUILT'}
   S.modal='end';
 }
 
@@ -2259,7 +2270,8 @@ function constraintStrip(cheapest){const nf=nextFunds(),used=slotsUsed(),broke=i
      <button class="pbtn sm" data-a="repro" ${S.pc>=reproCost()?'':'disabled'} data-tip="Move money from other accounts now. Each one this fiscal year costs more Political Capital.">${S.fac==='US'?'Reprogram':'Transfer'} +${money(REPRO)} · ${reproCost()} PC</button></span>
     <span class="${full?'bind':''}">🏗 <b>${used}/${S.slots}</b> offices busy</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
 /* ---------- launch preview: when it arrives, and what it does to each gap ---------- */
-function rampWeeks(kn,y0,rm){let y=y0,k=kn,w=0;while(y<.9&&w<520){y=Math.min(1,y+Math.max(.02,y)*(1-y)*(.006+k*.0003)*rm);k=Math.min(95,k+.05);w++}return w}
+const RAMP=kn=>.018+kn*.0004; // weekly learning rate of a new plant's yield
+function rampWeeks(kn,y0,rm){let y=y0,k=kn,w=0;while(y<.9&&w<520){y=Math.min(1,y+Math.max(.02,y)*(1-y)*RAMP(k)*rm);k=Math.min(95,k+.05);w++}return w}
 function previewOf(def,ct,wOn0){
   const key=def.id+'|'+S.w+'|'+(ct?ct.b+ct.k:'')+'|'+(wOn0||'')+'|'+S.plants.length+'|'+S.done.length;if(S._pvc?.k===key)return S._pvc.v;
   const tm=ctTerms(def,ct),dur=ct?ctDur(def,ct):def.dur,build=dur.reduce((a,b)=>a+b,0)*slipF().f;
@@ -2942,6 +2954,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['The race','Your share of China’s output is the average, over the seven end-item lines, of your output divided by China’s estimated output, each capped at 100%. China’s output grows each year at game-estimated rates: shells 2%, interceptors 4%, strike missiles 5%, aircraft and surface combatants 3% (aircraft after the J-20 ramp to 2028), submarines 3%, drones 10%. A new plant’s yield follows a learning curve: about two years to half its nameplate at low know-how, under a year at high know-how (game estimate). A bottleneck counts as cleared when a line’s limit changes for at least six weeks and its output rises at least 3%.'],
  ['Permits','Statutory terms are from the statutes: Title V and NPDES permits run five years, RCRA permits up to ten, ATF explosives licenses three, ITAR registration one; ESA formal consultation is 135 days; NEPA assessments and impact statements have one- and two-year deadlines (2023). Which permits each project type needs, their review times relative to each other, and the odds that a renewal is contested are game estimates.'],
  ['US rulebook','Each rule’s status, date and scope is sourced. How much it changes obstacle odds, waits and costs (the ×multipliers shown on each rule), and the Political Capital needed to adopt, finalize or reverse executive actions, are game assumptions.'],
  ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
@@ -3019,7 +3032,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['pipe','🏗 Pipeline'],['arsenal','📈 Stocks & needs'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
@@ -3032,7 +3045,7 @@ function flowBody(){
 `;
 }
 function viewHTML(){
-  const T={permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const T={permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
   const body=S.view==='permits'?permitsBody():S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='pipe'?pipeBody():readyBody();
   return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
@@ -3167,20 +3180,66 @@ function needCard(c,R,pj){
   return `<div class="ncard trc" data-n="L:${c}"><div class="hd"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b><span class="tag ${tag[1]}">${tag[0]}</span></div>${h}</div>`;
 }
 function needsHTML(R){const pj=needsProj(R);return `<div class="ngrid">${Object.keys(LINES).map(c=>needCard(c,R,pj)).join('')}</div>`}
+/* ---------- the race: your output against China's, line by line, and what holds each line back ---------- */
+const cnOut=(c,w=S.w)=>estProd(S.enemy.pac,c,w);
+// the average over the seven lines of your output ÷ China's, each capped at 100%
+function raceIdx(out,w=S.w,get=c=>out[c].yr){const cs=Object.keys(LINES);return cs.reduce((a,c)=>a+Math.min(1,get(c)/Math.max(cnOut(c,w),1e-9)),0)/cs.length}
+const limOf=(o,c)=>o.bott?o.chain.at(-1):'L:'+c;
+const limName=id=>id.startsWith('L:')?'line capacity':ND[id].n;
+// what limits each line; a new limit has to hold for six weeks before it counts, and it counts as cleared only if output rose
+function limTick(out){S.lim=S.lim||{};S.limH=S.limH||{};S.limC=S.limC||{};
+  for(const c in LINES){const o=out[c],id=limOf(o,c),cur=S.lim[c];
+    if(!cur){S.lim[c]={id,w:S.w,yr:o.yr};continue}
+    if(id===cur.id){delete S.limC[c];continue}
+    const k=S.limC[c];if(!k||k.id!==id){S.limC[c]={id,n:1};continue}
+    if(++k.n<6)continue;
+    const up=o.yr>=cur.yr*1.03,dn=o.yr<cur.yr*.97;(S.limH[c]=S.limH[c]||[]).push({id:cur.id,w0:cur.w,w1:S.w,up});
+    S.lim[c]={id,w:S.w,yr:o.yr};delete S.limC[c];
+    if(!S.histMode&&(up||dn)){const msg=up?`${LINES[c].n}: ${limName(cur.id)} no longer limits output. Next: ${limName(id)}.`:`${LINES[c].n}: now limited by ${limName(id)}.`;
+      log(`⛓ ${msg}`,up?'good':'bad');flash('L:'+c,up?'good':'bad');
+      toast(`⛓ <b>${LINES[c].n}</b><br><span class="dim">${up?`${limName(cur.id)} cleared. Next: `:'Now short of '}${limName(id)}</span>`,'',{a:'node',n:id})}}}
+function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c],cnOut(c,h.w)]);pts.push([S.w,S._R?.out[c].yr??0,cnOut(c)]);
+  if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
+  const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
+  return `<svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Output per year since 2025: you (blue) and China (red)</title><polyline points="${pl(2)}" fill="none" stroke="#b0453a" stroke-width="1.5"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg>`}
+function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
+  const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
+  const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
+  const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
+  const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
+  let h=`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of China's</b><br>Line by line, each capped at 100%, averaged across the seven lines. China's figures are intelligence estimates."><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of China's output, across seven lines</span></div>
+   <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
+   <div><b>${matched}/${cs.length}</b><span>lines matching China</span></div>
+   <div data-tip="Average growth in China's output over the last year, across the seven lines."><b class="red">+${pct(cg)}</b><span>China's growth this year</span></div>
+   <div data-tip="Each time a line's limit stopped binding, output rose, and the next limit took over."><b>${cleared}</b><span>bottlenecks cleared</span></div></div>`;
+  h+=S.order.map(c=>{const o=out[c],L=LINES[c],cn=cnOut(c),r=cn/Math.max(o.yr,1e-9),mx=Math.max(o.capYr,o.yr,cn,1e-9),B=v=>Math.min(100,v/mx*100);
+    const lim=limOf(o,c),isL=lim.startsWith('L:'),cur=S.lim?.[c];
+    const fx=S.projects.filter(q=>isL?PD[q.def].t.line===c:PD[q.def].t.node===lim),rp=S.plants.filter(pl=>!pl.full&&(isL?pl.kind==='line'&&pl.target===c:pl.target===lim));
+    const gap=o.yr<1e-9?'<span class="red">You build none</span>':r>=1.1?`<span class="red">China builds <b>${r>=10?Math.round(r):fmt(r,1)}×</b> as many</span>`:r<=.9?`<span class="green">You out-build China <b>${fmt(1/r,1)}×</b></span>`:'<span class="gold">At parity</span>';
+    const g=cn/Math.max(cnOut(c,S.w-52),1e-9)-1;
+    const held=isL?`⚙ Limited by <span class="linkn" data-a="node" data-n="L:${c}">line capacity</span>`:`⛓ Short of ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join('<span class="ar">←</span>')}`;
+    const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].join(' · ')}`:`<span class="red">No fix under way.</span>`;
+    const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
+    return `<div class="rc-rrow trc" data-n="L:${c}"><div class="rc-rh"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${gap}</div>
+      <div class="rc-rgrid"><div>
+       <div class="rc-rb"><span>${F().flag} You</span><div class="nb"><i style="width:${B(o.capYr)}%;background:#34404c"></i><i style="width:${B(o.yr)}%;background:#5f8fc4"></i></div><span class="v"><b>${fmtN(o.yr)}</b>/yr${o.capYr>o.yr*1.02?` <span class="dim">of ${fmtN(o.capYr)}</span>`:''}</span></div>
+       <div class="rc-rb"><span>${FLAGS.cn} China</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
+       ${raceSpark(c)}</div>
+      <div class="rc-rlim">${held}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
+      <div class="rc-rwork">${work}${past.length?` <span class="rc-rclr">${past.map(x=>`✓ ${limName(x.id)} ${yr(x.w1)}`).join(' · ')}</span>`:''}</div></div>`}).join('');
+  return h}
 function renderGame(){
   const R=production(false),P=R.P,f=F();S._R=R;noteChanges(R);
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
+    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'vs. China',`<b>Your output as a share of China's</b><br>Across the seven end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${res(`${slotsUsed()}/${S.slots}`,'Offices busy','<b>Program offices</b><br>One program each. Full offices block new launches.','rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
     ${res(dpn,dpn===1?'Decision waiting':'Decisions waiting',dpn?'<b>Programs stalled on you</b><br>Opens the first one.':'Nothing is waiting on you.',firstStuck?'prog':'rtab',firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short','<b>End-item lines below capacity</b><br>Opens the bottleneck analysis.','view','data-v="bn"',shortL?'rwarn':'')}
     ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'PRC exposure','<b>PRC and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Opens the flows.','view','data-v="flow"')}
-    ${res(`${Math.round(S.lev)} ${resDelta('lev',S.lev,-1)}`,'Prime leverage',`<b>Prime contractor leverage</b><br>How much ${f.primes} can extract: higher prices, more pushback. Opens acquisition rules.`,'rbgo','data-d="acq"')}
-    ${res(`<span class="${S.strain>60?'red':S.strain>30?'amber':''}">${Math.round(S.strain)}</span> ${resDelta('strain',S.strain,-1)}`,'Civilian strain','<b>Civilian strain</b><br>Shortages and fatigue from DPA diversions, shifts and emergencies. Drains political capital.','rtab','data-t="home"')}
-    ${res(`${S.pages>=1e4?fmt(S.pages/1e3,0)+'k':S.pages.toLocaleString()} · ${S.waivers}`,'Pages · exceptions','<b>Red tape</b><br>Paperwork generated, and waivers, carve-outs and priority ratings issued.','view','data-v="rules"')}
     <div class="spacer"></div>
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
@@ -3245,17 +3304,6 @@ function renderGame(){
   const allyDone=S.done.filter(d=>PD[d.def].ally);
   if(allyDone.length)pr+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
   // ---- right
-  let det='';
-  // each theater: what share of the campaign's need you could meet, item by item, worst first
-  for(const t of S.theaters){const sc=S._sc[t],e=sc.est,r=e.score,E=S.enemy[t];
-    const cats=Object.keys(LINES).filter(c=>SCEN[t].w[c]&&F().alloc[t][c]>0).sort((x,y)=>e.cov[x]-e.cov[y]),short=cats.filter(c=>e.cov[c]<.995),ok=cats.filter(c=>e.cov[c]>=.995);
-    const col=v=>v>=1?'#5f9e4a':v>=.75?'#c9a227':'#b0453a',G=v=>Math.min(100,v/1.2*100);
-    const why=c=>{const bits=[];if(MUN.includes(c)&&e.wks[c]<e.wk)bits.push(`Runs dry in week ${fmt(e.wks[c],1)} of ${Math.round(e.wk)}.`);if(R.out[c].bott)bits.push(`Short: <span class="linkn" data-a="bngo" data-n="${R.out[c].chain.at(-1)}">${ND[R.out[c].chain.at(-1)].n}</span>.`);return bits.join(' ')};
-    det+=`<div class="th"><div class="top"><b>${THEATERS[t]} <span class="mini" style="font-weight:400">vs. ${E.flag} ${E.n}</span></b><span class="ratio ${r>=1?'green':r>=CRISIS_WIN?'gold':'red'}">${pct(Math.min(r,1.5))}</span></div>
-      <div class="mini" style="color:#a8a48e">Share of what ${SCEN[t].short} needs. Estimates range ${Math.round(sc.pes.score*100)}–${pct(sc.opt.score)}.</div>
-      ${short.map(c=>{const v=e.cov[c];return `<div class="cvr trc" data-n="L:${c}" data-fk="cv:${t}:${c}"><span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span><div class="nb"><i style="width:${G(v)}%;background:${col(v)}"></i><span class="mk" style="left:${G(1)}%"></span></div><b style="color:${col(v)}">${pct(v)}</b>${why(c)?`<div class="cvw">${why(c)}</div>`:''}</div>`}).join('')}
-      ${ok.length?`<div class="mini" style="margin-top:4px">✓ Covered: ${ok.map(c=>`<span class="linkn trc" data-a="node" data-n="L:${c}">${LINES[c].n}</span>`).join(', ')}.</div>`:''}</div>`}
-  if(S.ceasefire)det+=`<div class="sub red" style="padding:4px 10px">Ukraine ceasefire: Russian output now fills depots.</div>`;
   // home front
   const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
   let home=`<h2>Home Front <span class="r dim">PC ${rate>=0?'+':''}${fmt(rate,2)}/wk</span></h2>
@@ -3281,7 +3329,7 @@ function renderGame(){
   pr+=`<h2>Barrier Ledger <span class="r dim">Weeks lost</span></h2><div style="padding:6px 0">`+L.map(([k,v])=>`<div class="lg"><span class="sw" style="background:${LAYERS[k].c}"></span><span>${LAYERS[k].n}</span><b style="text-align:right">${fmt(v.wk,0)}</b><span class="dim" style="text-align:right">×${v.n}</span><div class="lgbar"><i style="width:${v.wk/mx*100}%;background:${LAYERS[k].c}"></i></div></div>`).join('')+`</div>`;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['home','🏛 Home front'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:pr);
-  const nd=`<h2>Defense Needs <span class="r"><button class="btn sm" data-a="view" data-v="arsenal">📈 Charts</button></span></h2><div class="throw">${det}</div>${needsHTML(R)}`;
+  const nd=`<h2>The Race with China <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2>Timeline${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
@@ -3321,7 +3369,8 @@ function renderModal(){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
     html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
       <div class="stamp" style="font-size:24px">${S.verdict}</div>${S.overWhy?`<p>${S.overWhy}</p>`:''}
-      <p>${S.theaters.map(t=>`${THEATERS[t]}: true coverage <b>${fmt(trueScore(t),2)}</b> (your estimate ${fmt(ratio(t),2)})`).join(' · ')}</p>
+      <p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of China's output across the seven lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
+      <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. China's ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
       <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Pages: <b>${S.pages.toLocaleString()}</b>. Exceptions: <b>${S.waivers}</b>.</p>
       <p><b>Where the time went</b> (${fmt(tot,0)} project/plant-weeks):</p>

@@ -2,15 +2,16 @@
 
 A grand strategy game of rearmament, exemptions and self-inflicted wounds, 2027–2037.
 
-Play as the United States and rebuild its arsenal against a fast-rearming China and Russia. (A European Union campaign is parked for now.) The obstacles are permitting, qualification, sole-source suppliers, mineral dependence, the Jones Act and a consolidated defense-industrial base.
+Play as the United States and try to out-build China. China's output grows every year; yours is held back by one bottleneck after another: permitting, qualification, sole-source suppliers, mineral dependence, the Jones Act and a consolidated defense-industrial base. Clear one and the next one binds. (A European Union campaign is parked for now.)
 
 **Play it:** open `index.html` in a browser, or use the GitHub Pages link once it's set up (see below).
 
 ## How it works
 
 - **A five-tier supply chain.** Raw minerals → processed materials and energetics → components → subsystems → end items. That's 65 nodes, each with domestic, allied and Chinese/Russian supply.
-- **Deterrence means being able to fight the war.** Each theater has a campaign: a Taiwan Strait fight of weeks, or an eastern-flank war of months. Coverage asks whether your munitions last the campaign and whether your platforms match the threat.
-- **You plan on estimates.** Enemy stocks, burn rates, war length and allied help are ranges. Each game draws hidden true values inside them, and crises are judged on those.
+- **The race with China.** The Command page puts your output next to China's on each of seven end-item lines (shells, interceptors, strike missiles, aircraft, surface ships, submarines, drones), names what limits each line, and records each bottleneck you clear. The game ends in 2037 and is judged on the race.
+- **Stocks & needs.** A secondary view asks whether your stocks would last a campaign. Each theater has one: a Taiwan Strait fight of weeks, or an eastern-flank war of months. Coverage asks whether your munitions last the campaign and whether your platforms match the threat.
+- **You plan on estimates.** Enemy stocks, burn rates, war length and allied help are ranges. Each game draws hidden true values inside them.
 - **The US rulebook.** The ⚖ Rulebook tab lays out permitting, acquisition, domestic sourcing and import controls, and money as they stand in late 2026: which rules are statutes or court rulings (locked), which the executive can switch, which are proposed, and which bills are pending. Each step of each process shows its live odds of stopping a program.
 - **History first.** The model starts in January 2025 and replays 2025–26: export bans, the Twelve-Day War and the Iran war. Then it hands you January 2027.
 - **Sources.** The 📚 Sources tab has:
