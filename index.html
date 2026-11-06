@@ -259,6 +259,15 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .pdg{font:700 10.5px "Segoe UI";letter-spacing:.07em;text-transform:uppercase;color:#6b5a35;margin:8px 0 2px;padding-bottom:2px;border-bottom:1px solid #cbbd95}
 .pdrow{display:grid;grid-template-columns:24px 1fr auto 82px;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px dotted #cbbd95;font-size:12.5px}
 .pdn{color:#8a7850;text-align:right;font-weight:600}.pdw{text-align:right;font-weight:600;white-space:nowrap}.pdrow>span:nth-child(3){white-space:nowrap;font-weight:600;font-size:12px}
+/* permits view */
+.pmtiles{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:4px 0 10px}
+.pmtile{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:#f3ebd6;border:1px solid #cbbd95;padding:7px 10px;cursor:pointer;font:12px "Segoe UI",system-ui,sans-serif;color:#5a4e38;text-align:left}
+.pmtile b{font:700 22px Georgia;color:#3a3020}.pmtile:hover{background:#fbf6e8}.pmtile.on{border:2px solid #3a3020;padding:6px 9px;background:#fbf6e8}
+.pmcols{display:grid;grid-template-columns:310px 1fr;gap:14px}.pmags h5{margin:0 0 4px;font:700 10.5px "Segoe UI";letter-spacing:.08em;text-transform:uppercase;color:#6b5a35}
+.pmag{padding:5px 6px;border-bottom:1px dotted #cbbd95;cursor:pointer}.pmag:hover{background:#efe6cf}.pmag.on{background:#fbf6e8;box-shadow:inset 3px 0 0 #3a3020}
+.pmagn{display:block;font-weight:600;font-size:12.5px}.pmag .nb{height:8px;margin:3px 0;background:#e6dbbd;border-color:#cbbd95}
+.pmt tr.pmr{cursor:pointer}.pmt tr.pmr:hover td{background:#fbf6e8}.pmt td{font-size:12.5px}
+@media(max-width:1180px){.pmtiles{grid-template-columns:repeat(2,1fr)}.pmcols{grid-template-columns:1fr}}
 /* program page */
 .paper .obs{color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif}
 .pstat{font:700 15px Georgia;padding:6px 10px;margin:4px 0 8px;background:#e6dbbd;border-left:5px solid currentColor}.pstat .mini{font-weight:400}
@@ -1041,7 +1050,7 @@ function rulesBody(){
       return `<tr class="${on?'rlon':''}" id="rl-${r.id}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td>${r.dyn?(S.truce?fxChips([r.dyn()[0]],[r.dyn()[1]]):fxChips([],r.dyn())):fxChips(r.up,r.dn)}</td></tr>`}).join('');
     const links=(RLINKS[D.id]||[]).filter(([id])=>(RD[id]&&facOk(RD[id]))||(CD[id]&&facOk(CD[id]))).map(([id,why])=>{const R=RD[id],C=CD[id],on=R?passed(id):carveOn(id);
       return `<tr class="${on?'rlon':''}"><td>${on?'✓':R?'📜':'🖋'}</td><td><b>${R?rname(R):cname(C)}</b><div class="mini">${R?(on?'Enacted':`Pending bill · ${rk}`):(on?'Emergency carve-out in force':'Emergency carve-out · fast, temporary, can be struck down')}</div></td><td><span class="mini">${why}</span> ${on?'':`<span class="linkn" data-a="remedy" data-r="${id}">${R?'On the agenda →':'Use it →'}</span>`}</td></tr>`}).join('');
-    return `<div class="rbdom" id="rb-${D.id}"><div class="rbh"><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span><span class="mini">${fmt(lost,0)} weeks lost this game</span>${stalled.length?` · <span class="redt mini">stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</span>`:''}</div>
+    return `<div class="rbdom" id="rb-${D.id}"><div class="rbh"><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span>${D.id==='permit'?`<span class="linkn mini" data-a="pmgo">📋 Permit docket →</span> · `:''}<span class="mini">${fmt(lost,0)} weeks lost this game</span>${stalled.length?` · <span class="redt mini">stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</span>`:''}</div>
      <div class="mini" style="margin:2px 0 4px">The process today. Each step shows the highest odds it stops a program you could launch now.</div><div class="steps">${steps}</div>
      <table class="ctable lev rbt"><colgroup><col style="width:42px"><col style="width:46%"><col></colgroup>${rows}${links}</table>${D.id==='source'?`<div class="rbic">${icPanel()}</div>`:''}</div>`}).join('');
 }
@@ -2334,7 +2343,7 @@ function progHTML(uid){
   let h=`<div class="dhead"><span class="dic">${def.ally?'🤝':p.inh?'📜':'🏗'}</span><div><h3>${nm}</h3><div class="sub2">${tgt} · ${def.ally?'allied deal':p.inh?'inherited program':'launched '+fmtDate(p.started)}${p.ct?` · ${BUILDERS[p.ct.b].ic} ${BUILDERS[p.ct.b].n} · ${CONTRACTS[p.ct.k].ic} ${CONTRACTS[p.ct.k].n}`:''}</div></div><span class="dsp"></span>${back}</div>
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}</div>
    <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
-   <div class="dsec"><h4>Permits</h4>${permitDocket(p,live,pl)}</div>`;
+   <div class="dsec"><h4>Permits <span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
   if(live&&p.obs.length){const o=p.obs[0];h+=`<div class="dsec"><h4>Why it's stuck</h4>${obsBlock(OD[o.id],o,'opt',p.uid)}${p.obs.length>1?`<p class="mini">${p.obs.length-1} more waiting behind it: ${p.obs.slice(1).map(x=>V(OD[x.id].n)).join(', ')}</p>`:''}</div>`}
   else if(live&&p.qf<1){const st=poolState()[p.qk];h+=`<div class="dsec"><h4>Why it's slow</h4><p>${POOLS[p.qk].ic} <b>${POOLS[p.qk].n}</b>: ${st.d} projects in ${STAGE_L[POOLS[p.qk].stage].toLowerCase()} want room for ${fmt(st.cap,1)}. Everyone in the queue moves at ×${fmt(st.f,2)}.</p></div>`}
   if(live){const ahead=[...new Set(OBSTACLES.filter(o=>STAGES.indexOf(o.stage)>p.stage&&p.dur[STAGES.indexOf(o.stage)]&&obsChance(o,def)*(p.lm?.[o.layer]??1)>=.3).map(o=>o.layer))];
@@ -2391,7 +2400,7 @@ function bnBody(){
        ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
   return h}
 /* ---------- getting around: one back stack for every jump, and a finder for everything ---------- */
-const NAV_ACTS=new Set(['home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
+const NAV_ACTS=new Set(['pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
 const navSnap=()=>({view:S.view,modal:S.modal,sel:S.sel,selP:S.selP,rtab:S.rtab});
 function navPush(){const s=navSnap(),t=S.navH?.at(-1);if(t&&JSON.stringify(t)===JSON.stringify(s))return;(S.navH=S.navH||[]).push(s);if(S.navH.length>40)S.navH.shift()}
 function navBackG(){const s=S.navH?.pop();if(!s)return;if(S.queue.length||S.modal==='end')return;Object.assign(S,s);S._vdirty=true}
@@ -2477,8 +2486,8 @@ const PERMITS=[
  {id:'esp',ph:'b',n:'Explosives safety site plan',ag:'DoD Explosives Safety Board',law:'DoDM 6055.09',w:26,tags:['energetic'],ob:['qd']},
  {id:'grid',ph:'b',n:'Grid interconnection agreement',ag:'Utility / grid operator',law:'FERC tariffs',w:40,tags:['power','smelter'],ob:['queue']},
  {id:'local',ph:'b',n:'Zoning & building permits',ag:'County / city',law:'Local codes',w:12,all:1,ob:['local']},
- {id:'titlev',ph:'o',n:'Title V operating permit',ag:'State air agency',law:'CAA Title V',yrs:5,risk:.12,tags:['energetic','smelter','refine','metal']},
- {id:'npdesR',ph:'o',n:'Wastewater permit renewal',ag:'State water agency',law:'CWA §402',yrs:5,risk:.08,tags:['energetic','refine','smelter','mine','electronics','metal']},
+ {id:'titlev',ph:'o',n:'Title V operating permit',ag:'State air agency / EPA',law:'CAA Title V',yrs:5,risk:.12,tags:['energetic','smelter','refine','metal']},
+ {id:'npdesR',ph:'o',n:'Wastewater permit renewal',ag:'State water agency / EPA',law:'CWA §402',yrs:5,risk:.08,tags:['energetic','refine','smelter','mine','electronics','metal']},
  {id:'rcraR',ph:'o',n:'Hazardous-waste permit renewal',ag:'EPA / state',law:'RCRA',yrs:10,risk:.15,tags:['energetic']},
  {id:'atf',ph:'o',n:'Explosives manufacturer license',ag:'ATF',law:'27 CFR 555',yrs:3,risk:.05,tags:['energetic','srm']},
  {id:'psm',ph:'o',n:'Process-safety & risk-management audit',ag:'OSHA / EPA',law:'PSM / RMP',yrs:3,risk:.08,tags:['energetic','refine','smelter']},
@@ -2492,26 +2501,58 @@ function permitsFor(def,ph){if(def.ally||def.kind==='maint'||(def.kind&&!['cap',
   return PERMITS.filter(x=>x.ph===ph&&(x.all||x.tags.some(t=>def.tags.includes(t)))&&!(ph==='b'&&brown&&['s404','esa','nhpa','mine'].includes(x.id)))}
 const permitOdds=(x,def,lm)=>Math.max(0,...x.ob.map(o=>OD[o]&&facOk(OD[o])?obsChance(OD[o],def)*(lm?.[OD[o].layer]??1):0));
 const renewRisk=(x,kn)=>x.risk*(1.3-(kn??40)/100);
-function permitDocket(p,live,pl){
-  const def=PD[p.def],B=permitsFor(def,'b'),O=permitsFor(def,'o');
-  if(def.ally)return '<p class="mini">Built abroad: the host country issues its permits.</p>';
-  if(!B.length&&!O.length)return '<p class="mini">Work inside an existing permitted site: no new permits.</p>';
+// every permit a program needs, with its live status; shared by the program page and the Permits view
+function permitItems(p,live,pl){
+  const def=PD[p.def],B=permitsFor(def,'b'),O=permitsFor(def,'o'),out=[];
   const h=p.h||[],SI=2,D=p.dur[SI]||0,start=h.find(e=>e.st===SI)?.w,end=h.find(e=>(e.st!=null&&e.st>SI)||e.done)?.w,maxW=Math.max(1,...B.map(x=>x.w));
   const obs=[];for(const e of h)if(e.ob){const c=h.find(x=>x.clr===e.ob&&x.w>=e.w);obs.push({id:e.ob,w0:e.w,w1:c?c.w:(live?S.w:end??S.w),open:!c&&live})}
-  const row=(n,name,sub,st,cls,wk,extra)=>`<div class="pdrow"><span class="pdn">${n}</span><div><b>${name}</b><div class="mini">${sub}</div></div><span class="${cls}">${st}</span><span class="pdw ${extra?'redt':''}">${wk}</span></div>`;
-  const bRows=B.map((x,i)=>{const d=Math.max(1,Math.round(x.w/maxW*D)),mine=obs.filter(o=>x.ob.includes(o.id)),extra=Math.round(mine.reduce((a,o)=>a+(o.w1-o.w0),0)),odds=permitOdds(x,def,p.lm),open=mine.find(o=>o.open);
-    let st,cls,dates='';
-    if(!D){st='Covered by existing permits';cls='okt'}
-    else if(start==null){st='Not started';cls='mini'}
-    else if(open){st=`Stalled: ${V(OD[open.id].n)}`;cls='redt';dates=` · since ${fmtDate(start)}`}
-    else if(end!=null||(live&&p.stage===SI&&p.prog>=d)){const iss=Math.min(start+d+extra,end??Infinity);st=`Issued ${fmtDate(Math.round(iss))}`;cls='okt';dates=` · ${fmtDate(start)} to ${fmtDate(Math.round(iss))}`}
-    else{st=`In review · ${Math.max(1,Math.round(d-(p.stage===SI?p.prog:0)))} wk left`;cls='st-t-tight';dates=` · since ${fmtDate(start)}`}
-    return row(i+1,x.n,`${x.ag} · ${x.law}${dates}${odds>0&&end==null?` · ${pct(odds)} odds of trouble`:''}`,st,cls,D?`${d+extra} wk${extra?` <span class="mini">(+${extra})</span>`:''}`:'—',extra>0)}).join('');
+  B.forEach(x=>{const d=Math.max(1,Math.round(x.w/maxW*D)),mine=obs.filter(o=>x.ob.includes(o.id)),extra=Math.round(mine.reduce((a,o)=>a+(o.w1-o.w0),0)),open=mine.find(o=>o.open);
+    const it={x,ph:'b',uid:p.uid,d,extra,odds:end==null?permitOdds(x,def,p.lm):0,weeks:d+extra,start};
+    if(!D)Object.assign(it,{st:'covered',t:'Covered by existing permits',cls:'okt'});
+    else if(start==null)Object.assign(it,{st:'notstarted',t:'Not started',cls:'mini'});
+    else if(open)Object.assign(it,{st:'stalled',t:`Stalled: ${V(OD[open.id].n)}`,cls:'redt',ob:open.id});
+    else if(end!=null||(live&&p.stage===SI&&p.prog>=d)){const iss=Math.round(Math.min(start+d+extra,end??Infinity));Object.assign(it,{st:'issued',t:`Issued ${fmtDate(iss)}`,cls:'okt',when:iss})}
+    else{const left=Math.max(1,Math.round(d-(p.stage===SI?p.prog:0)));Object.assign(it,{st:'review',t:`In review · ${left} wk left`,cls:'st-t-tight',left})}
+    out.push(it)});
   const kn=S.know[def.t.node||def.t.line];
-  const oRows=O.map((x,i)=>{const r=pl?.ops?.find(o=>o.id===x.id);
-    const [st,cls]=!pl?['Needed before operating','mini']:pl.issue?.permit===x.id?['Renewal contested','redt']:r?[`Valid · renews ${MON[dateOf(r.next).getMonth()]} ${dateOf(r.next).getFullYear()}`,'okt']:['Valid','okt'];
-    return row(B.length+i+1,x.n,`${x.ag} · ${x.law} · renewed every ${x.yrs===1?'year':x.yrs+' years'}${r?.last?` · last renewed ${fmtDate(r.last)}`:''} · ${pct(renewRisk(x,kn))} odds a renewal is contested`,st,cls,`${x.yrs} yr`,false)}).join('');
-  return `${B.length?`<div class="pdg">Before construction · ${B.length} permit${B.length>1?'s':''}${D?` · ${D} wk planned`:''}</div>${bRows}`:''}${O.length?`<div class="pdg">To operate · ${O.length} permit${O.length>1?'s':''}, renewed for the life of the plant</div>${oRows}`:''}`}
+  O.forEach(x=>{const r=pl?.ops?.find(o=>o.id===x.id),it={x,ph:'o',uid:p.uid,risk:renewRisk(x,kn),r};
+    if(!pl)Object.assign(it,{st:'needed',t:'Needed before operating',cls:'mini'});
+    else if(pl.issue?.permit===x.id)Object.assign(it,{st:'contested',t:'Renewal contested',cls:'redt'});
+    else Object.assign(it,{st:r&&r.next-S.w<=52?'due':'valid',t:r?`Valid · renews ${MON[dateOf(r.next).getMonth()]} ${dateOf(r.next).getFullYear()}`:'Valid',cls:r&&r.next-S.w<=52?'st-t-tight':'okt',due:r?.next});
+    out.push(it)});
+  return out}
+function permitDocket(p,live,pl){
+  const def=PD[p.def];if(def.ally)return '<p class="mini">Built abroad: the host country issues its permits.</p>';
+  const its=permitItems(p,live,pl);if(!its.length)return '<p class="mini">Work inside an existing permitted site: no new permits.</p>';
+  const B=its.filter(i=>i.ph==='b'),O=its.filter(i=>i.ph==='o'),D=p.dur[2]||0;
+  const row=(n,i)=>{const x=i.x,b=i.ph==='b',dates=b&&i.start!=null?(i.st==='issued'?` · ${fmtDate(i.start)} to ${fmtDate(i.when)}`:` · since ${fmtDate(i.start)}`):'';
+    const sub=b?`${x.ag} · ${x.law}${dates}${i.odds>0?` · ${pct(i.odds)} odds of trouble`:''}`:`${x.ag} · ${x.law} · renewed every ${x.yrs===1?'year':x.yrs+' years'}${i.r?.last?` · last renewed ${fmtDate(i.r.last)}`:''} · ${pct(i.risk)} odds a renewal is contested`;
+    const wk=b?(D?`${i.weeks} wk${i.extra?` <span class="mini">(+${i.extra})</span>`:''}`:'—'):`${x.yrs} yr`;
+    return `<div class="pdrow"><span class="pdn">${n}</span><div><b>${x.n}</b><div class="mini">${sub}</div></div><span class="${i.cls}">${i.t}</span><span class="pdw ${i.extra?'redt':''}">${wk}</span></div>`};
+  return `${B.length?`<div class="pdg">Before construction · ${B.length} permit${B.length>1?'s':''}${D?` · ${D} wk planned`:''}</div>${B.map((i,k)=>row(k+1,i)).join('')}`:''}${O.length?`<div class="pdg">To operate · ${O.length} permit${O.length>1?'s':''}, renewed for the life of the plant</div>${O.map((i,k)=>row(B.length+k+1,i)).join('')}`:''}`}
+/* ---------- the Permits view: every permit across every program, by agency and status ---------- */
+const PST=[['stalled','Stalled'],['contested','Renewal contested'],['review','In review'],['due','Renewal due within a year'],['notstarted','Not started'],['issued','Issued'],['valid','Valid'],['needed','Needed to operate']];
+function allPermits(){const all=[];
+  for(const p of S.projects)for(const i of permitItems(p,true,null))all.push({...i,nm:projName(p)});
+  for(const d of S.done)if(d.uid&&d.h){const pl=S.plants.find(x=>x.uid==d.uid);for(const i of permitItems(d,false,pl))all.push({...i,nm:d.nm})}
+  return all.filter(i=>i.st!=='covered')}
+function permitsBody(){
+  const all=allPermits(),f=S.pmF||(S.pmF={ag:'all',st:'open',ph:'all'});
+  const cnt=k=>all.filter(i=>i.st===k).length,open=i=>['stalled','contested','review','due'].includes(i.st);
+  const tiles=[['stalled','Stalled','redt'],['contested','Renewals contested','redt'],['review','In review','st-t-tight'],['due','Renewals due within a year','st-t-tight'],['issued','Issued','okt']];
+  // where the permits sit, agency by agency
+  const ags={};for(const i of all){const a=ags[i.x.ag]=ags[i.x.ag]||{n:0,stalled:0,review:0,wk:0};a.n++;if(i.st==='stalled'||i.st==='contested')a.stalled++;if(i.st==='review'||i.st==='due')a.review++;a.wk+=i.extra||0}
+  const agL=Object.entries(ags).sort((a,b)=>(b[1].stalled*100+b[1].review*10+b[1].wk)-(a[1].stalled*100+a[1].review*10+a[1].wk)),mx=Math.max(1,...agL.map(a=>a[1].stalled+a[1].review));
+  const btn=(k,v,l)=>`<button class="pbtn sm ${f[k]===v?'on':''}" data-a="pmf" data-k="${k}" data-v="${v}">${l}</button>`;
+  const rows=all.filter(i=>(f.ag==='all'||i.x.ag===f.ag)&&(f.ph==='all'||i.ph===f.ph)&&(f.st==='all'||(f.st==='open'?open(i):i.st===f.st)))
+    .sort((a,b)=>PST.findIndex(s=>s[0]===a.st)-PST.findIndex(s=>s[0]===b.st)||(a.left??a.due??0)-(b.left??b.due??0));
+  let h=`<div class="pmtiles">${tiles.map(([k,l,c])=>`<button class="pmtile ${f.st===k?'on':''}" data-a="pmf" data-k="st" data-v="${f.st===k?'open':k}"><b class="${cnt(k)&&k!=='issued'?c:''}">${cnt(k)}</b><span>${l}</span></button>`).join('')}</div>`;
+  h+=`<div class="pmcols"><div class="pmags"><h5>By agency</h5>${agL.map(([a,v])=>`<div class="pmag ${f.ag===a?'on':''}" data-a="pmf" data-k="ag" data-v="${f.ag===a?'all':a}"><span class="pmagn">${a}</span><div class="nb"><i style="width:${v.stalled/mx*100}%;background:#b0453a"></i><i style="left:${v.stalled/mx*100}%;width:${v.review/mx*100}%;background:#c9a227"></i></div><span class="mini">${v.stalled?`<b class="redt">${v.stalled}</b> stuck · `:''}${v.review} open · ${v.n} total${v.wk?` · +${v.wk} wk`:''}</span></div>`).join('')||'<p class="mini">No permits yet.</p>'}
+    <div class="sleg" style="margin-top:6px"><span><i style="background:#b0453a"></i>Stalled or contested</span><span><i style="background:#c9a227"></i>In review or renewal due</span></div>
+    <div class="mini" style="margin-top:8px"><span class="linkn" data-a="rbgo" data-d="permit">⚖ The permitting rules →</span></div></div>
+   <div><div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('st','open','Open')}${btn('st','all','All')}<span class="lab">Phase</span>${btn('ph','all','Both')}${btn('ph','b','To build')}${btn('ph','o','To operate')}${f.ag!=='all'?`<span class="lab">Agency</span><button class="pbtn sm on" data-a="pmf" data-k="ag" data-v="all">${f.ag} ✕</button>`:''}</div>
+    ${rows.length?`<table class="ctable pmt"><tr><th>Permit</th><th>Program</th><th>Agency</th><th>Status</th><th style="text-align:right">Weeks</th></tr>${rows.map(i=>`<tr class="pmr" data-a="prog" data-u="${i.uid}"><td><b>${i.x.n}</b><div class="mini">${i.x.law}${i.ph==='b'?(i.odds>0?` · ${pct(i.odds)} odds of trouble`:''):` · every ${i.x.yrs===1?'year':i.x.yrs+' yr'} · ${pct(i.risk)} contested`}</div></td><td><span class="linkn">${i.nm}</span></td><td>${i.x.ag}</td><td class="${i.cls}">${i.t}</td><td style="text-align:right" class="${i.extra?'redt':''}">${i.ph==='b'?`${i.weeks}${i.extra?` (+${i.extra})`:''}`:`${i.x.yrs} yr`}</td></tr>`).join('')}</table>`:`<p class="mini">${all.length?'Nothing matches these filters.':'Launch a program to start a permit docket.'}</p>`}</div></div>`;
+  return h}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
 function leversFor(id){return PROJECTS.filter(d=>facOk(d)&&d.t.node===id)}
@@ -2963,7 +3004,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['arsenal','📈 Arsenal & needs'],['pipe','🏗 Pipeline'],['ready','🔧 Readiness'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
@@ -2976,9 +3017,9 @@ function flowBody(){
 `;
 }
 function viewHTML(){
-  const T={bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
-  const body=S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='pipe'?pipeBody():readyBody();
-  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  const T={permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Arsenal & Requirements','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const body=S.view==='permits'?permitsBody():S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='pipe'?pipeBody():readyBody();
+  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -3377,6 +3418,8 @@ document.addEventListener('pointerdown',e=>{
     case 'goback':navBackG();break;
     case 'home':if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}S.view='cmd';break;
     case 'ovjump':S._ovScroll=b.dataset.s;break;
+    case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;break;
+    case 'pmgo':S.view='permits';S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'qj':setTimeout(qjOpen,0);break;
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rbgo':S.view='rules';S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
