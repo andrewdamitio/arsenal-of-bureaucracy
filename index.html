@@ -282,7 +282,7 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .swleg{margin-top:4px;flex-wrap:wrap}.swleg i.hatch{background:repeating-linear-gradient(45deg,#b0453a 0 2px,#e6dbbd 2px 5px)}
 /* factories view */
 .fctiles{grid-template-columns:repeat(6,1fr)}.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:10px;margin:4px 0 10px}
-.fcard{background:#f3ebd6;border:1px solid #cbbd95;padding:8px 10px;font-size:12.5px}.fcard.fstall{border-color:#b0453a;box-shadow:inset 3px 0 0 #b0453a}
+.fkcard{background:#f3ebd6;border:1px solid #cbbd95;padding:8px 10px;font-size:12.5px}.fkcard:hover{border-color:#8a6a1f}.fkcard.fstall{border-color:#b0453a;box-shadow:inset 3px 0 0 #b0453a}
 .fch{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}.fic{font-size:20px;line-height:1}.fch b{font:700 14px Georgia}
 .fsteps{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;margin-bottom:6px}.fsg{position:relative;background:#e6dbbd;height:18px;overflow:hidden}.fsg i{position:absolute;left:0;top:0;bottom:0;background:#d9a441}
 .fsg span{position:relative;display:block;text-align:center;font:600 9px/18px "Segoe UI";letter-spacing:.03em;text-transform:uppercase;color:#8a7850;white-space:nowrap;overflow:hidden}
@@ -293,6 +293,8 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 /* spending feedback */
 .res{position:relative}.spentf{position:absolute;left:50%;top:-1px;font-size:12px!important;transform:translateX(-50%);font:700 13px Georgia;font-style:normal;color:#ff9a86;text-shadow:0 1px 3px #000;pointer-events:none;white-space:nowrap;animation:spentup 2.6s ease-out forwards}.spentf.gain{color:#9fe08a}
 @keyframes spentup{0%{opacity:0;transform:translate(-50%,6px)}12%{opacity:1;transform:translate(-50%,0)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px)}}
+/* factories tab */
+.fcrow{align-items:flex-start}.fcbar{height:4px;width:160px;background:#0006;margin:3px 0 1px;position:relative}.fcbar i{position:absolute;left:0;top:0;bottom:0;background:#d9a441}
 /* decisions bar */
 #decbar{display:flex;align-items:center;gap:8px;height:40px;margin:4px 8px 0;padding:0 6px;background:#2a2416;border:1px solid #8a6a1f;box-shadow:0 0 0 1px #0006 inset}
 body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
@@ -2906,14 +2908,14 @@ function facCard(x){const sl=slipF().f,yr=w=>dateOf(w).getFullYear();
       :`<div class="fbig"><span>Construction</span><b class="okt">Complete</b><span class="mini">now ${STAGE_L[STAGES[p.stage]].toLowerCase()}</span></div>`;
     const its=permitItems(p,true,null).filter(i=>i.ph==='b'&&i.st!=='covered'),cnt=k=>its.filter(i=>i.st===k).length;
     const perm=its.length?`${cnt('issued')} of ${its.length} permits issued${cnt('stalled')?` · <span class="redt">${cnt('stalled')} stalled</span>`:''}${cnt('review')?` · ${cnt('review')} in review`:''}`:'Inside an existing permitted site';
-    return `<div class="fcard ${x.stalled?'fstall':''} trc" data-tn="${tn}" data-pu="${p.uid}"><div class="fch"><span class="fic">${x.stalled?'⛔':'🏗'}</span><div><b class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</b><div class="mini">${facKind(def)} · makes <span class="linkn" data-a="node" data-n="${tn}">${tgt}</span>${p.inh?' · inherited':''}</div></div></div>
+    return `<div class="fkcard ${x.stalled?'fstall':''} trc" data-tn="${tn}" data-pu="${p.uid}"><div class="fch"><span class="fic">${x.stalled?'⛔':'🏗'}</span><div><b class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</b><div class="mini">${facKind(def)} · makes <span class="linkn" data-a="node" data-n="${tn}">${tgt}</span>${p.inh?' · inherited':''}</div></div></div>
       <div class="fsteps">${steps}</div>${bar}
       <div class="fln"><span class="${stC}">${stT}</span></div>
       <div class="fln mini"><span class="linkn" data-a="pmgo">📋 ${perm}</span></div>
       <div class="fln mini">Output starts ~<b>${yr(Math.round(S.w+remW(p)*sl))}</b> at your track record (${yr(S.w+remW(p))} on schedule) · ${money(p.spent||0)} obligated</div></div>`}
   const pl=x.pl,isL=pl.kind==='line',L=isL?LINES[pl.target]:null,tn=(isL?'L:':'')+pl.target,tgt=isL?L.n:ND[pl.target].n,out=pl.gain*pl.yield*plantMult(pl),P=S._R.P;
   const steps=FSTEP.map((n,i)=>`<div class="fsg ${i<6||pl.full?'done':'cur'}"><i style="width:${i===6&&!pl.full?pl.yield/.9*100:0}%"></i><span>${n}</span></div>`).join('');
-  return `<div class="fcard ${x.stalled?'fstall':''} trc" data-tn="${tn}" data-pu="${pl.uid}"><div class="fch"><span class="fic">${x.stalled?'⚠':'🏭'}</span><div><b class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</b><div class="mini">${facKind(x.def)} · makes <span class="linkn" data-a="node" data-n="${tn}">${tgt}</span> · running since ${yr(pl.start)}</div></div></div>
+  return `<div class="fkcard ${x.stalled?'fstall':''} trc" data-tn="${tn}" data-pu="${pl.uid}"><div class="fch"><span class="fic">${x.stalled?'⚠':'🏭'}</span><div><b class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</b><div class="mini">${facKind(x.def)} · makes <span class="linkn" data-a="node" data-n="${tn}">${tgt}</span> · running since ${yr(pl.start)}</div></div></div>
     <div class="fsteps">${steps}</div>
     <div class="fbig"><span>Yield</span><div class="nb"><i style="width:${pl.yield*100}%;background:${pl.issue?'#a06030':'#5f9e4a'}"></i></div><b>${pct(pl.yield)}</b><span class="mini">of nameplate</span></div>
     <div class="fln">${pl.issue?`<span class="redt">⚠ ${OPSD[pl.issue.id].n}${pl.issue.wait?` · ${pl.issue.wait} wk left`:' · needs your decision'} · output ×${OPSD[pl.issue.id].mult}</span>`:pl.full?'<span class="okt">At full rate</span>':`Full rate ~${yr(S.w+rampWeeks(S.know[pl.target],pl.yield,pl.rampM||1))}`}</div>
@@ -3192,7 +3194,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['fac','🏭 Factories'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['pipe','🏗 Pipeline'],['arsenal','📈 Stocks & needs'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['pipe','🏗 Pipeline'],['arsenal','📈 Stocks & needs'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
@@ -3435,7 +3437,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto"><span class="dim" data-tip="<b>Program offices</b><br>Each program needs one. When all are busy, nothing new can launch until one finishes.">${slotsUsed()}/${S.slots} offices busy</span> <button class="btn sm" data-a="view" data-v="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ Launch Project</button></span></h2>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto"><span class="dim" data-tip="<b>Program offices</b><br>Each program needs one. When all are busy, nothing new can launch until one finishes.">${slotsUsed()}/${S.slots} offices busy</span> <button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ Launch Project</button></span></h2>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
@@ -3450,25 +3452,29 @@ function renderGame(){
     pr+=`</div>`;
   }
   const ramping=S.plants.filter(p=>!p.full||p.issue),fullP=S.plants.filter(p=>p.full&&!p.issue);
-  pr+=`<h2>Operations <span class="r"><span class="dim">${ramping.length} ramping · ${fullP.length} at rate</span> <button class="btn sm" data-a="view" data-v="fac">🏭 Factories</button></span></h2>`;
+  const fl=facList(),bld=fl.filter(x=>x.p),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
+  let fc=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Factories</span> <span class="r" style="margin-left:auto"><span class="dim">${bld.length} building · ${ramping.length} ramping · ${fullP.length} at rate</span> <button class="btn sm" data-a="view" data-v="fac">Full view →</button></span></h2>`;
+  if(bld.length)fc+=`<div class="sect"><span>Being built (${bld.length})</span><span>output starts</span></div>`+bld.sort((a,b)=>b.p.stage-a.p.stage||b.stalled-a.stalled).map(({p,def,stalled})=>{const tn=def.t.node||'L:'+def.t.line,D=p.dur[3],f=p.stage===3?Math.min(1,p.prog/D):p.stage>3?1:0;
+    return `<div class="prow fcrow trc" data-tn="${tn}" data-pu="${p.uid}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${stalled?'⛔':'🏗'} ${projName(p)}</span><div class="sub ${stalled?'red':''}">${stalled?V(OD[p.obs[0].id].n):p.stage<3?STAGE_L[STAGES[p.stage]]+' · not yet built':p.stage===3?`Construction ${pct(f)}`:'Built · '+STAGE_L[STAGES[p.stage]].toLowerCase()}</div>${p.stage>=3?`<div class="fcbar"><i style="width:${f*100}%"></i></div>`:''}</span><span class="dim">~${yr(Math.round(S.w+remW(p)*sl))}</span></div>`}).join('');
+  if(ramping.length||fullP.length)fc+=`<div class="sect"><span>Running (${ramping.length+fullP.length})</span><span></span></div>`;
   const dis=S.tmods.map(m=>{const nm=m.kind==='line'?LINES[m.id].n:(m.kind==='ally'?'Allied ':m.kind==='prc'?'PRC ':'')+ND[m.id].n;return {t:`${m.label}: ${nm}`,x:'×'+fmt(m.mult,2),w:m.left}});
   const seen={};const disU=dis.filter(d=>{const k=d.t.split(':')[0]+d.x;if(d.t.startsWith('Allies prioritize')){if(seen[k])return false;seen[k]=1;d.t='Allies prioritize own needs: all allied supply'}return true});
   for(const g of S.gmods)disU.unshift({t:`${g.label}: ${g.stages.map(s=>STAGE_L[s]).join(', ')}`,x:'×'+fmt(g.mult,2),w:g.left,g:1});
   for(const c of S.costMods)disU.unshift({t:`${c.label}: new-start costs`,x:'×'+fmt(c.mult,2),w:c.left,g:1});
-  if(disU.length)pr+=`<div class="sect"><span>Active disruptions (${disU.length})</span><span>weeks left</span></div>`+disU.map(d=>`<div class="prow"><span class="${d.g?'amber':'red'}">${d.t} <span class="dim">${d.x}</span></span><span class="dim">${d.w}</span></div>`).join('');
-  if(!S.plants.length)pr+=`<div class="empty" style="padding:12px">Completed plants appear here while they ramp toward nameplate.</div>`;
+  if(disU.length)fc+=`<div class="sect"><span>Active disruptions (${disU.length})</span><span>weeks left</span></div>`+disU.map(d=>`<div class="prow"><span class="${d.g?'amber':'red'}">${d.t} <span class="dim">${d.x}</span></span><span class="dim">${d.w}</span></div>`).join('');
+  if(!S.plants.length&&!bld.length)fc+=`<div class="empty" style="padding:12px">No factories yet. Launch a program to build one.</div>`;
   for(const pl of ramping){
     const isLine=pl.kind==='line',L=isLine?LINES[pl.target]:null,tgt=isLine?L.n:ND[pl.target].n;
     const outNow=pl.gain*pl.yield*plantMult(pl);
-    pr+=`<div class="pcard plant trc" data-tn="${isLine?'L:':''}${pl.target}" data-pu="${pl.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</b><span class="dim">${tgt} · yr ${fmt((S.w-pl.start)/52,1)} of ramp</span></div>
+    fc+=`<div class="pcard plant trc" data-tn="${isLine?'L:':''}${pl.target}" data-pu="${pl.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</b><span class="dim">${tgt} · yr ${fmt((S.w-pl.start)/52,1)} of ramp</span></div>
       <div class="yield"><span>${pct(pl.yield)} of nameplate</span><div class="bar"><i style="left:0;width:${pl.yield*100}%;background:${pl.issue?'#a06030':'var(--green)'}"></i><span class="need" style="left:90%"></span></div>
       <span>${isLine?fmtN(outNow*L.k)+'/yr':pct(outNow/Math.max(P[pl.target]?.need||1,1e-9))+' of need'}</span><span class="tag kh">KH ${Math.round(S.know[pl.target])}</span></div>
       ${pl.adv>0?`<div class="queued red">${pct(pl.adv)} of output depends on a PRC precursor</div>`:'<div style="height:6px"></div>'}
       ${pl.issue?obsBlock(OPSD[pl.issue.id],pl.issue,'ops',pl.uid,`<span class="sub red">Output ×${OPSD[pl.issue.id].mult} until resolved</span>`):''}</div>`;
   }
-  if(fullP.length)pr+=fullP.map(pl=>`<div class="prow trc" data-tn="${pl.kind==='line'?'L:':''}${pl.target}" data-pu="${pl.uid}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">✓ ${pl.nm}</span>${pl.adv>0?' <span class="red">⚠ PRC precursor</span>':''}</span><span class="dim">${pl.kind==='line'?fmtN(pl.gain*pl.yield*LINES[pl.target].k)+'/yr':ND[pl.target].n}</span></div>`).join('');
+  if(fullP.length)fc+=fullP.map(pl=>`<div class="prow trc" data-tn="${pl.kind==='line'?'L:':''}${pl.target}" data-pu="${pl.uid}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">✓ ${pl.nm}</span>${pl.adv>0?' <span class="red">⚠ PRC precursor</span>':''}</span><span class="dim">${pl.kind==='line'?fmtN(pl.gain*pl.yield*LINES[pl.target].k)+'/yr':ND[pl.target].n}</span></div>`).join('');
   const allyDone=S.done.filter(d=>PD[d.def].ally);
-  if(allyDone.length)pr+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
+  if(allyDone.length)fc+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
   // ---- right
   // home front
   const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
@@ -3494,7 +3500,7 @@ function renderGame(){
   const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),mx=Math.max(1,...L.map(x=>x[1].wk));
   pr+=`<h2>Barrier Ledger <span class="r dim">Weeks lost</span></h2><div style="padding:6px 0">`+L.map(([k,v])=>`<div class="lg"><span class="sw" style="background:${LAYERS[k].c}"></span><span>${LAYERS[k].n}</span><b style="text-align:right">${fmt(v.wk,0)}</b><span class="dim" style="text-align:right">×${v.n}</span><div class="lgbar"><i style="width:${v.wk/mx*100}%;background:${LAYERS[k].c}"></i></div></div>`).join('')+`</div>`;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
-  const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['home','🏛 Home front'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:pr);
+  const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['fac','🏭 Factories'],['home','🏛 Home front'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:rtab==='fac'?fc:pr);
   const nd=`<h2>The Race with <span class="rc-pick">${Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2>Timeline${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
