@@ -297,6 +297,9 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .fcrow{align-items:flex-start}.fcbar{height:4px;width:160px;background:#0006;margin:3px 0 1px;position:relative}.fcbar i{position:absolute;left:0;top:0;bottom:0;background:#d9a441}
 /* flows */
 .sk .skcut{font-size:9.5px;fill:#a3261c;font-weight:600}
+/* where it's made */
+.mdt td{font-size:12.5px;padding:3px 6px;vertical-align:middle}.mdt .mdv{text-align:right;white-space:nowrap;font-weight:600}.mdt .mdn{font-size:11.5px;color:#6b5a35}
+.mdbar{position:relative;height:12px;background:#e6dbbd;border:1px solid #cbbd95}.mdbar i{position:absolute;top:0;bottom:0}.mdbar .mdcut{background:repeating-linear-gradient(45deg,#b0453a 0 2px,#e6dbbd 2px 5px)}.mdbar .mdneed{position:absolute;top:-3px;bottom:-3px;width:2px;background:#2b241a}
 /* decisions bar */
 #decbar{display:flex;align-items:center;gap:8px;height:40px;margin:4px 8px 0;padding:0 6px;background:#2a2416;border:1px solid #8a6a1f;box-shadow:0 0 0 1px #0006 inset}
 body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
@@ -619,7 +622,7 @@ const NODES=[
  {id:'bearings',t:3,n:'Precision Bearings',ic:'⚙',in:[],arch:'metal',civ:.7,cv:'auto',
   d:'Engine, gimbal and actuator bearings. DoD may buy only US- or Canadian-made ball and roller bearings (DFARS 225.7009) — protection for a thin base.[c:dfarsbr]',
   US:{mix:[.8,.15,.05],kn:45},EU:{mix:[.6,.35,.05],kn:50},adv:.1,
-  dp:{n:'Aerospace Bearing Line',g:.5,c:.3},ap:{n:'Canadian & Allied Bearings',g:.3,c:.15}},
+  dp:{n:'Aerospace Bearing Line',g:.5,c:.3},ap:{n:'Canadian Bearings',g:.3,c:.15}},
  {id:'twt',t:3,n:'Vacuum Electronics (TWTs)',ic:'📟',in:[],arch:'fab',ss:'Sole sources',
   d:'Traveling-wave tubes still drive Aegis illuminators and EW jammers; the Navy buys many types sole-source.[c:twt]',
   US:{mix:[.9,.1,0],kn:35},EU:{mix:[.6,.4,0],kn:35},adv:0,
@@ -1054,6 +1057,10 @@ const RULES=[
   eff:{chance:{buyam:1}},up:['domestic suppliers protected'],dn:['foreign tooling triggers waivers; tighter in 2029']},
  {id:'rBerry',dom:'source',kind:'law',n:'Berry Amendment & specialty metals (titanium, armor steel)',since:'1941 · 10 U.S.C. 4863',c:'berry',on0:1,
   eff:{},up:['domestic or qualifying-country metal only'],dn:['shapes the titanium and steel supply shown in the chain']},
+ {id:'rShipyard',dom:'source',kind:'law',n:'Navy ships built only in US shipyards',since:'Byrnes-Tollefson · 10 U.S.C. 8679',c:'yard8679',on0:1,
+  eff:{},up:['protects US yards'],dn:['allied yards can’t build Navy hulls or major hull components','presidential exceptions only (the Senate FY27 NDAA markup would strip even that)']},
+ {id:'rBearings',dom:'source',kind:'law',n:'Ball and roller bearings from the US or Canada only',since:'annual appropriations · DFARS 225.7009',c:'bearings',on0:1,
+  eff:{},up:['protects the domestic bearing base'],dn:['Japanese and European bearings barred from defense work']},
  {id:'rJones',dom:'source',kind:'law',n:'Jones Act (with short emergency waivers)',since:'1920 · 60-day waiver Mar 2026',c:'jonesmap',on0:1,
   eff:{},up:['protects US yards and crews'],dn:['allied yards can’t help without a waiver']},
  // export & investment
@@ -1080,6 +1087,10 @@ const RULES=[
   eff:{},up:[],dn:['funding-stage projects freeze while a CR runs']},
 ];
 const RD2=Object.fromEntries(RULES.map(r=>[r.id,r]));
+// laws that bar foreign supply even from allies, and what lifts each
+const ALLY_BARS=[{r:'rShipyard',nodes:['shipyard','sub_yard'],waive:()=>passed('byrnes')||carveOn('cvJones'),fix:'the Ensuring Naval Readiness Act, or a presidential exception under a national emergency'},
+ {r:'rBearings',nodes:['bearings'],waive:()=>carveOn('cvBuyAm'),fix:'a Buy American waiver'}];
+const allyBar=id=>S.fac==='US'?ALLY_BARS.find(b=>b.nodes.includes(id)&&ruleOn(b.r)&&!b.waive())||null:null;
 const ruleOn=id=>S.fac==='US'&&!!S.rules?.[id];
 const ruleFits=(r,def)=>!r.eff.tags||!def||r.eff.tags.some(t=>def.tags.includes(t));
 function ruleChance(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)){const e=r.eff;for(const t of [e.chance,e.chance2])if(t)m*=t[o.id]??t[o.layer]??1}return m}
@@ -1117,7 +1128,7 @@ function rulesBody(){
 const RLINKS={
  permit:[['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
  acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['qualReform','Qualification by similarity.'],['acqWorkforce','More contracting officers.'],['cvQual','Accept allied qualification data now.']],
- source:[['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Allied yards build Navy auxiliaries.'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
+ source:[['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Ensuring Naval Readiness Act: allied yards build Navy ships when cheaper. [c:s406]'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
  export:[['itarReform','Extend license-free trade to Japan and Korea.'],['nds','Stockpile what Beijing can switch off.']],
  money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
 };
@@ -1356,7 +1367,7 @@ const REFORMS=[
  {id:'readiness',n:'Fix the Maintenance Backlog',nEU:'Readiness Recovery Programme',d:'More of what you own can fight: ships, subs & aircraft count +15% (EU +25%). Costs 3B.',pc:30,$:3,wk:20,p:.65,on:()=>{const m=S.fac==='EU'?1.25:1.15;for(const c of ['surface','subs','aircraft'])S.q[c]*=m}},
  {id:'itarReform',fac:['US'],n:'License-Free Defense Trade with Japan & Korea',d:'Extend AUKUS-style ITAR exemptions. Export-control obstacles −50%.',pc:35,wk:20,p:.55},
  {id:'jonesReform',fac:['US'],n:'Jones Act Reform',d:'Allow allied-built commercial hulls and allied-operated yards. Order-book obstacles −70%; +allied shipyard capacity.',pc:75,wk:30,p:.3,onStart:()=>queueEvent('unions'),on:()=>{const s=S.nodes.shipyard;s.ally.amt+=s.scale*.25;s.ally.src='Allied-operated US yards'}},
- {id:'byrnes',fac:['US'],n:'Byrnes-Tollefson Waiver',d:'Allied yards build auxiliaries and frigates for the Navy: +3 surface ships/yr of line capacity and allied yard capacity.',pc:40,wk:20,p:.45,on:()=>{const s=S.nodes.shipyard;s.ally.amt+=s.scale*.5;s.ally.src='Korea / Japan';S.lines.surface.base+=.5}},
+ {id:'byrnes',fac:['US'],n:'Ensuring Naval Readiness Act (S. 406)',d:'Lets yards in NATO and Indo-Pacific treaty allies build Navy ships and major hull components when it costs less than a US yard (introduced Feb 2025). +3 surface ships/yr of line capacity and allied yard capacity.',pc:40,wk:20,p:.45,on:()=>{const s=S.nodes.shipyard;s.ally.amt+=s.scale*.5;s.ally.src='Korea / Japan';S.lines.surface.base+=.5}},
  {id:'nds',n:'National Defense Stockpile Buy',nEU:'Strategic Stockpiling Strategy',d:'Buy buffers of gallium, germanium, heavy rare earths, antimony, and tungsten that drain when supply falls short. Costs 2B.',pc:12,$:2,wk:12,p:.9,on:()=>{for(const id of ['gallium','germanium','hree','antimony','tungsten'])S.stock[id]=(S.stock[id]||0)+S.nodes[id].scale*30}},
  {id:'crAnomaly',fac:['US'],n:'New-Start Authority Under CRs',d:'Projects in Appropriation progress at half speed during a CR instead of stopping.',pc:25,wk:12,p:.6},
  {id:'qualReform',n:'Qualification by Similarity',nEU:'Mutual Recognition of Qualification',d:'Energetics & motor qualification obstacles −50–60%, duration −50%.',pc:20,wk:16,p:.7},
@@ -1377,8 +1388,8 @@ const RD=Object.fromEntries(REFORMS.map(x=>[x.id,x]));
 const CARVES=[
  {id:'cvPermit',fac:['US'],n:'Defense-Industrial Permitting Emergency',d:'Emergency NEPA/CAA/CWA arrangements for defense plants: permitting obstacles −50–70%. Lawsuits +50%.',pc:25,wk:78,need:'ne',court:.006},
  {id:'cvDfars',fac:['US'],n:'DFARS Non-Availability Determinations',d:'Suspend the mine-to-magnet, tungsten and tantalum restrictions while compliant supply catches up.',pc:12,wk:52,need:'nonavail',court:0},
- {id:'cvBuyAm',fac:['US'],n:'Buy American & Specialty-Metals Waivers',d:'Foreign-tooling obstacles −80%. Domestic producers lobby against renewal.',pc:10,wk:52,need:'',court:0},
- {id:'cvJones',fac:['US'],n:'Jones Act / Byrnes-Tollefson Emergency Waiver',d:'Allied yards may repair and build auxiliaries: +allied shipyard capacity; order-book obstacles −70%. Unions sue.',pc:30,wk:52,need:'ne',court:.005},
+ {id:'cvBuyAm',fac:['US'],n:'Buy American & Specialty-Metals Waivers',d:'Foreign-tooling obstacles −80%; allied bearings allowed in defense work. Domestic producers lobby against renewal.',pc:10,wk:52,need:'',court:0},
+ {id:'cvJones',fac:['US'],n:'Jones Act / Byrnes-Tollefson Emergency Waiver',d:'A presidential exception (10 U.S.C. 8679(b)): allied yards may repair and build auxiliaries; +allied shipyard capacity; order-book obstacles −70%. Unions sue.',pc:30,wk:52,need:'ne',court:.005},
  {id:'cvPermitEU',fac:['EU'],n:'Defence Readiness Derogations',d:'Emergency derogations from EIA/Natura/IED timelines: permitting obstacles −60%. Aarhus challenges +50%.',pc:25,wk:78,need:'',court:.006},
  {id:'cvReach',fac:['EU'],n:'Blanket REACH Defence Exemptions',d:'Member states use Art. 2(3) across the board: REACH obstacles −90%.',pc:12,wk:52,need:'',court:.002},
  {id:'cv346',fac:['EU'],n:'Blanket Article 346 Invocation',d:'Skip open tenders for defence: tender obstacles −80%, award challenges −50%. The Commission may open infringement cases.',pc:18,wk:52,need:'',court:.005},
@@ -2183,10 +2194,10 @@ function crisisOpts(id,place){const c=S.cres[id];
   return [{l:'Read the after-action report.',fx:()=>gameOver(`Deterrence failed in ${place}.`)}]}
 /* ---------- home-front actions ---------- */
 // market: sold to civilian customers too · ally: defense-only, but allied producers make it · null: built to order by a few defense suppliers, nothing to buy
-const spotKind=id=>ND[id].civ>0&&ND[id].t<=3?'market':S.nodes[id].ally.amt/Math.max(S.nodes[id].scale,1e-9)>=.05?'ally':null;
+const spotKind=id=>allyBar(id)?null:ND[id].civ>0&&ND[id].t<=3?'market':S.nodes[id].ally.amt/Math.max(S.nodes[id].scale,1e-9)>=.05?'ally':null;
 const SPOT_L={market:['💸','Spot purchase','Emergency spot purchase'],ally:['🤝','Allied emergency buy','Emergency buy from allied producers']};
 function spotCost(id){const u=nodeSupply(id);const cutFrac=(u.prcRaw+u.allyRaw)>0?u.lost/(u.prcRaw+u.allyRaw):0;return .12*(1+4*cutFrac)*(spotKind(id)==='ally'?1.5:1)}
-function spotNone(id){return `No market to buy from: ${ND[id].n.toLowerCase()} ${/s$/.test(ND[id].n)?'are':'is'} built to order by a few defense suppliers, and no ally has spare output. Only new capacity helps.`}
+function spotNone(id){const b=allyBar(id);if(b)return `Barred by law: ${RD2[b.r].n} (${RD2[b.r].since}). Foreign supply for defense work needs ${b.fix}.`;return `No market to buy from: ${ND[id].n.toLowerCase()} ${/s$/.test(ND[id].n)?'are':'is'} built to order by a few defense suppliers, and no ally has spare output. Only new capacity helps.`}
 // what you just spent floats off its counter in the top bar for a moment
 function spent(k,v){(S._sp=S._sp||{})[k]={v,t0:performance.now()}}
 function spentTag(k){const x=S._sp?.[k];if(!x)return '';const el=performance.now()-x.t0;if(el>2600)return '';return `<i class="spentf ${v0(x.v)}" style="animation-delay:${-Math.round(el)}ms">${x.v<0?'+':'−'}${k==='$'?money(Math.abs(x.v)):Math.abs(x.v)+' PC'}</i>`}
@@ -3008,6 +3019,10 @@ const CITES=[
  {id:'fy27cr',g:'US rulebook',t:'Overview of Continuing Appropriations for FY2027',pub:'Congressional Research Service',d:'2026',url:'https://www.congress.gov/crs-product/R49353',use:'FY2027 began on a CR through 11 Dec 2026: prior-year levels, no new starts, no production-rate increases.'},
  {id:'obbba',g:'US rulebook',t:'One Big Beautiful Bill Act Makes $150B Investment in Defense',pub:'Covington, Inside Government Contracts',d:'Jul 2025',url:'https://www.insidegovernmentcontracts.com/2025/07/one-big-beautiful-bill-act-makes-150b-investment-in-defense/',use:'About $150B through FY2029: ~$25B munitions, $8.2B Industrial Base Fund, $1B supporting up to $100B of Office of Strategic Capital loans.'},
  {id:'bam',g:'US rulebook',t:'Final Rule Amends FAR Part 25 Domestic Content Threshold Under the Buy American Act',pub:'Thompson Hine',d:'2022',url:'https://www.thompsonhine.com/insights/final-rule-amends-far-part-25-domestic-content-threshold-under-buy-american-act/',use:'Domestic content threshold 60% → 65% (2024) → 75% (2029).'},
+ {id:'yard8679',g:'US rulebook',t:'10 U.S.C. 8679: Construction of combatant and escort vessels and assignment of vessel projects',pub:'U.S. Code (govinfo)',d:'2024 ed.',url:'https://www.govinfo.gov/content/pkg/USCODE-2024-title10/pdf/USCODE-2024-title10-subtitleC-partIV-chap863-sec8679.pdf',use:'No Navy vessel, or major component of its hull or superstructure, may be built in a foreign shipyard; the President may authorize exceptions.'},
+ {id:'s406',g:'US rulebook',t:'S. 406, Ensuring Naval Readiness Act (119th Congress)',pub:'Congress.gov',d:'Feb 2025',url:'https://www.congress.gov/119/bills/s406/BILLS-119s406is.htm',use:'Would allow Navy ships and major hull components to be built in NATO and Indo-Pacific treaty-ally shipyards when cheaper than a US yard.'},
+ {id:'sasc27',g:'US rulebook',t:'Congress seeks to limit US Navy vessels built in foreign shipyards',pub:'Defense News',d:'Jun 2026',url:'https://www.defensenews.com/news/pentagon-congress/2026/06/17/congress-seeks-to-limit-us-navy-vessels-built-in-foreign-shipyards/',use:'The Senate Armed Services FY2027 NDAA markup would strip the presidential waiver in 10 U.S.C. 8679 and cap foreign construction at two vessels per class.'},
+ {id:'bearings',g:'US rulebook',t:'DFARS 225.7009-2, Restriction (ball and roller bearings)',pub:'Acquisition.gov',d:'current',url:'https://www.acquisition.gov/dfars/225.7009-2-restriction.',use:'Ball and roller bearings must be made in the United States or Canada, with domestic components over 50% of cost; the restriction now rests on annual appropriations acts.'},
  {id:'berry',g:'US rulebook',t:'DFARS 252.225-7009, Restriction on Acquisition of Certain Articles Containing Specialty Metals',pub:'Acquisition.gov',d:'current',url:'https://www.acquisition.gov/dfars/252.225-7009-restriction-acquisition-certain-articles-containing-specialty-metals',use:'Specialty metals (titanium, certain steels and alloys) must be melted or produced in the US or a qualifying country.'},
  {id:'jonesmap',g:'US rulebook',t:'White House Releases America’s Maritime Action Plan',pub:'The Maritime Executive',d:'Feb 2026',url:'https://maritime-executive.com/article/white-house-releases-america-s-maritime-action-plan',use:'Maritime Action Plan (13 Feb 2026) under the April 2025 maritime order; the SHIPS for America Act is pending.'},
  {id:'affil',g:'US rulebook',t:'U.S.-China Trade Truce Extended Two Months: BIS Affiliates Rule Suspension Follows',pub:'Cassidy Levy Kent',d:'Sep 2026',url:'https://www.cmtradelaw.com/2026/09/u-s-china-trade-truce-extended-two-months-bis-affiliates-rule-suspension-follows/',use:'The Affiliates Rule (29 Sep 2025) was suspended for a year from 10 Nov 2025; the US says the truce now runs to 10 Jan 2027.'},
@@ -3210,9 +3225,26 @@ const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Pe
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
+function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
+  const foreign=id=>{const x=srcSplit(id,P),t=x.dom+x.ally+x.spot+x.prc;return t>1e-9?(x.ally+x.spot+x.prc)/t:0};
+  const keep=id=>f==='all'||(f==='short'&&P[id].need>1e-6&&P[id].cover<.999)||(f==='foreign'&&foreign(id)>.5)||(f==='barred'&&!!allyBar(id));
+  const cell=(v,d,c)=>`<td class="mdv" style="color:${v/d>.005?c:'#b8ad8a'}">${v/d>.005?pct(v/d):'—'}</td>`;
+  const row=id=>{const x0=srcSplit(id,P),p0=P[id],x={...x0,dom:x0.need>1e-6?x0.dom:p0.dom},d=Math.max(x.dom+x.ally+x.spot+x.prc+x.lost,1e-9),tot=Math.max(x.need,x.dom+x.ally+x.spot+x.prc+x.lost,1e-9),W=v=>(v/tot*100).toFixed(1),b=allyBar(id),src=S.nodes[id].ally.src;let l=0;
+    const seg=(v,c)=>{const o=`<i style="left:${W(l)}%;width:${W(v)}%;background:${c}"></i>`;l+=v;return o};
+    return `<tr class="trc" data-n="${id}"><td><span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span></td><td><div class="mdbar">${seg(x.dom,SRC_C.dom)}${seg(x.ally,SRC_C.ally)}${seg(x.spot,SRC_C.spot)}${seg(x.prc,SRC_C.prc)}${x.lost>0?`<i class="mdcut" style="left:${W(l)}%;width:${W(x.lost)}%"></i>`:''}<span class="mdneed" style="left:${W(x.need)}%"></span></div></td>`+
+      cell(x.dom,d,'#3f6b33')+cell(x.ally+x.spot,d,'#2f62a0')+cell(x.prc,d,'#a3261c')+cell(x.lost,d,'#8a1f15')+`<td class="mdv"><b class="${x.need>1e-6&&P[id].cover<.8?'redt':x.need>1e-6&&P[id].cover<.999?'st-t-tight':''}">${x.need>1e-6?pct(Math.min(P[id].cover,9.99)):'no demand'}</b></td>`+
+      `<td class="mdn">${b?`<span class="linkn redt" data-a="rbgo" data-d="source" data-tip="${tipQ(spotNone(id))}">⚖ Allies barred by law</span>`:src?src:''}${x.spot>.005?`${b||src?' · ':''}spot ${pct(x.spot/d)}`:''}</td></tr>`};
+  const btn=(v,l)=>`<button class="pbtn sm ${f===v?'on':''}" data-a="mdf" data-v="${v}">${l}</button>`;
+  let h=`<div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('all','Everything')}${btn('short','Short now')}${btn('foreign','Mostly foreign')}${btn('barred','Allies barred by law')}</div>
+   <table class="ctable mdt"><colgroup><col style="width:24%"><col style="width:30%"><col><col><col><col><col><col style="width:20%"></colgroup><tr><th>Item</th><th>Supply against demand</th><th>US-made</th><th>Allied</th><th>PRC / Russia</th><th>Cut off</th><th>Demand covered</th><th>Allied sources · limits</th></tr>`;
+  for(let t=1;t<=4;t++){const ids=NODES.filter(n=>n.t===t&&keep(n.id)).map(n=>n.id);if(!ids.length)continue;h+=`<tr class="grp"><td colspan="8">T${t} · ${TIERS[t]}</td></tr>`+ids.map(row).join('')}
+  if(f==='all'||f==='short'){const ls=S.order.filter(l=>f==='all'||R.out[l].bott);if(ls.length)h+=`<tr class="grp"><td colspan="8">T5 · ${TIERS[5]} · final assembly is in US plants</td></tr>`+ls.map(l=>{const o=R.out[l];return `<tr class="trc" data-n="L:${l}"><td><span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span></td><td><div class="mdbar"><i style="left:0;width:${(o.n/Math.max(o.cap,1e-9)*100).toFixed(1)}%;background:${SRC_C.dom}"></i></div></td><td class="mdv" colspan="5">${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity</td><td class="mdn">${o.bott?`short of ${ND[o.bott].n}`:'at capacity'}</td></tr>`}).join('')}
+  return h+`</table><div class="sleg" style="margin-top:6px"><span><i style="background:${SRC_C.dom}"></i>US-made</span><span><i style="background:${SRC_C.ally}"></i>Allied</span><span><i style="background:${SRC_C.spot}"></i>Spot / diverted</span><span><i style="background:${SRC_C.prc}"></i>PRC / Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span><span class="mini">US-made, allied, PRC and cut-off shares add up to 100% of supply. Allied includes spot purchases. The bar's black tick is this week's demand.</span></div>`}
 function flowBody(){
-  const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat';
-  return `<div class="sktool" style="padding-top:0"><span class="lab">Focus</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All end items</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">Node: ${ND[f].n}</button>`:''}
+  const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat',fv=S.flowV||'diag';
+  const vt=`<div class="sktool" style="padding-top:0"><span class="lab">View</span><button class="pbtn ${fv==='diag'?'on':''}" data-a="flowv" data-v="diag">⇶ Flow diagram</button><button class="pbtn ${fv==='table'?'on':''}" data-a="flowv" data-v="table">▤ Where it's made</button></div>`;
+  if(fv==='table')return vt+madeBody();
+  return vt+`<div class="sktool" style="padding-top:0"><span class="lab">Focus</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All end items</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">Node: ${ND[f].n}</button>`:''}
      <span class="lab">Width</span><button class="pbtn ${m==='det'?'on':''}" data-a="flowm" data-m="det" data-tip="Weight each end item by its deterrence value">Deterrence value</button><button class="pbtn ${m==='out'?'on':''}" data-a="flowm" data-m="out" data-tip="Weight each end item by output relative to the US base rate">Output volume</button>
      <span class="lab">Attribution</span><button class="pbtn ${at==='mat'?'on':''}" data-a="flowa" data-m="mat" data-tip="Trace physical dependence all the way down to raw sources">Material origin</button><button class="pbtn ${at==='va'?'on':''}" data-a="flowa" data-m="va" data-tip="Credit each domestic manufacturing step with half the value of its output">Value added</button></div>
     <div style="padding:8px 0 0">${sankeySVG(S._R||production(false),f,m,at)}</div>
@@ -3664,6 +3696,8 @@ document.addEventListener('pointerdown',e=>{
     case 'ser':S.hide=S.hide||{};S.hide[b.dataset.k]=!S.hide[b.dataset.k];break;
     case 'range':S.range=b.dataset.r;break;
     case 'flowm':S.flowMode=b.dataset.m;break;
+    case 'flowv':S.flowV=b.dataset.v;break;
+    case 'mdf':S.mdF=b.dataset.v;break;
     case 'flowa':S.flowAttr=b.dataset.m;break;
     case 'watch':newGame(S.fac,true);break;
     case 'prog':if(S.modal&&S.modal!=='prog')S.progBack={m:S.modal,sel:S.sel};else if(!S.modal)S.progBack=null;S.modal='prog';S.selP=b.dataset.u;S.speed=0;break;
