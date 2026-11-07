@@ -546,6 +546,7 @@ body{background:
 .pkgrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#c8c3b0;padding:2px 2px 6px}.pkgrow .r{margin-left:auto;display:flex;gap:4px}
 .ctft{flex-wrap:wrap;gap:6px}.ctft .pbtn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;max-width:420px}.ctft .pbtn .mini{white-space:normal}
 .dlim{margin-top:2px}
+.flfocus{display:flex;align-items:center;gap:10px;margin:6px 0 0;padding:7px 12px;background:#f3ebd6;border:1px solid #c8b48a;box-shadow:inset 4px 0 0 #b8860b}.flfocus .ffi{font-size:22px;display:flex}.flfocus b{font:400 19px var(--sten);letter-spacing:.03em;margin-right:10px}.flfocus .ffk{font:600 10.5px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a7440}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3596,9 +3597,11 @@ function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat',fv=S.flowV||'diag';
   const vt=`<div class="sktool" style="padding-top:0"><span class="lab">View</span><button class="pbtn ${fv==='diag'?'on':''}" data-a="flowv" data-v="diag">⇶ Flow diagram</button><button class="pbtn ${fv==='table'?'on':''}" data-a="flowv" data-v="table">▤ Where it's made</button></div>`;
   if(fv==='table')return vt+madeBody();
-  return vt+`<div class="sktool" style="padding-top:0"><span class="lab">Focus</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All end items</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">Node: ${ND[f].n}</button>`:''}
+  return vt+`<div class="sktool" style="padding-top:0"><span class="lab">Focus</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All end items</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">${ND[f].n}</button>`:''}
      <span class="lab">Width</span><button class="pbtn ${m==='det'?'on':''}" data-a="flowm" data-m="det" data-tip="Weight each end item by its deterrence value">Deterrence value</button><button class="pbtn ${m==='out'?'on':''}" data-a="flowm" data-m="out" data-tip="Weight each end item by output relative to the US base rate">Output volume</button>
      <span class="lab">Attribution</span><button class="pbtn ${at==='mat'?'on':''}" data-a="flowa" data-m="mat" data-tip="Trace physical dependence all the way down to raw sources">Material origin</button><button class="pbtn ${at==='va'?'on':''}" data-a="flowa" data-m="va" data-tip="Credit each domestic manufacturing step with half the value of its output">Value added</button></div>
+    ${f!=='all'?(()=>{const isL=f.startsWith('L:'),nm=isL?LINES[f.slice(2)].n:ND[f].n,ic=isL?lineIcon(f.slice(2),22,'lic'):ND[f].ic;
+      return `<div class="flfocus"><span class="ffi">${ic}</span><div><div class="ffk">Selected</div><b>${nm}</b><span class="mini">${isL?'Everything it is made from, traced back to raw sources.':'Its inputs back to raw sources, and the end items it feeds. Everything else is hidden.'}</span></div><span class="dsp"></span><button class="pbtn sm" data-a="node" data-n="${f}">Open its page →</button><button class="pbtn sm" data-a="flow" data-f="all">Show all end items</button></div>`})():''}
     <div style="padding:8px 0 0">${sankeySVG(S._R||production(false),f,m,at)}</div>
 `;
 }
