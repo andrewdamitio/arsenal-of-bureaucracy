@@ -2190,7 +2190,7 @@ function startProject(id,ct){
   const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):[...def.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:c};
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
-  log(`Program office stood up: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
+  log(`Ordered: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
   if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2037':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
     receipt({ic:def.ally?'🤝':'🏗',lab:def.ally?'Allied deal signed':pv.isPlant?'New plant ordered':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:'Follow it →',
       lines:[`Raises <b>${tgt}</b>.${pv.isPlant?' A program office now runs the contract, permits and construction; you can follow it under Programs and, once built, Factories.':''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far · ${money(c)} committed.`]})}
@@ -2632,15 +2632,16 @@ function contractHTML(){
 const STAGE_C=['#b8923a','#4a78c8','#6aa84f','#a0703a','#4fb3b0','#9a84c4'];
 function progRec(uid){const p=S.projects.find(x=>x.uid==uid);if(p)return {p,live:true};
   const r=S.done.find(x=>x.uid==uid)||S.gone.find(x=>x.uid==uid);return r?{p:r,live:false}:null}
+const STAGE_DO={approp:'Awaiting funds from Congress',contract:'Negotiating the contract',permit:'Siting and permitting',build:'Under construction',qual:'Qualification testing',ramp:'Lining up buyers and suppliers'};
 function progStatus(p,live){
   if(!live)return p.cancelled?['✖ Cancelled: '+p.cancelled,'redt']:['✔ Built','okt'];
   const st=STAGES[p.stage],def=PD[p.def];
-  if(p.obs.length){const o=p.obs[0],od=OD[o.id];return o.wait>0?[`⏳ Stalled: ${V(od.n)} · ${o.wait} wk left`,'redt']:[`⛔ Stalled: ${V(od.n)} — needs your decision`,'redt']}
+  if(p.obs.length){const o=p.obs[0],od=OD[o.id];return o.wait>0?[`⏳ Stalled: ${V(od.n)}, ${o.wait} more weeks`,'redt']:[`⛔ Stalled: ${V(od.n)}. Needs your decision.`,'redt']}
   if(st==='approp'&&S.cr>0&&!passed('crAnomaly'))return ['🧊 Frozen by a continuing resolution','redt'];
   const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));
-  if(p.qf<1)return [`🐢 Slowed: queued for ${POOLS[p.qk].n.toLowerCase()} (×${fmt(p.qf,2)})`,'st-t-tight'];
+  if(p.qf<1)return [`🐢 Slowed: waiting its turn for ${POOLS[p.qk].n.toLowerCase()}`,'st-t-tight'];
   if(slow.length)return [`🐢 Slowed: ${slow.map(g=>g.label.toLowerCase()).join(', ')}`,'st-t-tight'];
-  return [`▶ Moving · ${STAGE_L[st]}`,'okt']}
+  return [`▶ ${STAGE_DO[st]}`,'okt']}
 function progGantt(p,live){
   const h=p.h||[],t0=Math.min(p.started??0,h[0]?.w??S.w),stEv=h.filter(e=>e.st!=null),end=live?null:(h.find(e=>e.done||e.gone)?.w??S.w);
   // projected remainder: current stage + later stages at plan, obstacle waits included
@@ -2668,7 +2669,7 @@ function progHTML(uid){
   const lost=Object.entries(p.lost||{}).filter(x=>x[1]>.5).sort((a,b)=>b[1]-a[1]),lostT=lost.reduce((a,x)=>a+x[1],0);
   const planDone=p.dur.slice(0,live?p.stage:STAGES.length).reduce((a,b)=>a+b,0)+(live?p.prog:0),behind=Math.max(0,(live?S.w:(p.w??S.w))-(p.started??0)-planDone);
   const back='';
-  let h=`${crumb()}<div class="dhead"><span class="dic">${def.ally?'🤝':p.inh?'📜':'🏗'}</span><div><h3>${nm}</h3><div class="sub2">${tgt} · ${def.ally?'allied deal':p.inh?'inherited program':'launched '+fmtDate(p.started)}${p.ct?` · ${BUILDERS[p.ct.b].ic} ${BUILDERS[p.ct.b].n} · ${CONTRACTS[p.ct.k].ic} ${CONTRACTS[p.ct.k].n}`:''}</div></div><span class="dsp"></span>${back}</div>
+  let h=`${crumb()}<div class="dhead"><span class="dic">${def.ally?'🤝':p.inh?'📜':'🏗'}</span><div><h3>${nm}</h3><div class="sub2">${def.ally?'Allied deal for':needsContract(def)?'New plant for':'Upgrade for'} ${tgt} · ${p.inh?'started before you took office':'ordered '+fmtDate(p.started)}${p.ct?` · ${BUILDERS[p.ct.b].ic} ${BUILDERS[p.ct.b].n} · ${CONTRACTS[p.ct.k].ic} ${CONTRACTS[p.ct.k].n}`:''}</div></div><span class="dsp"></span>${back}</div>
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}</div>
    <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
    <div class="dsec"><h4>Permits <span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
@@ -2885,7 +2886,7 @@ function permitsBody(){
     <div class="sleg" style="margin-top:6px"><span><i style="background:#b0453a"></i>Stalled or contested</span><span><i style="background:#c9a227"></i>In review or renewal due</span></div>
     <div class="mini" style="margin-top:8px"><span class="linkn" data-a="rbgo" data-d="permit">⚖ The permitting rules →</span></div></div>
    <div><div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('st','open','Open')}${btn('st','all','All')}<span class="lab">Phase</span>${btn('ph','all','Both')}${btn('ph','b','To build')}${btn('ph','o','To operate')}${f.ag!=='all'?`<span class="lab">Agency</span><button class="pbtn sm on" data-a="pmf" data-k="ag" data-v="all">${f.ag} ✕</button>`:''}</div>
-    ${rows.length?`<table class="ctable pmt"><tr><th>Permit</th><th>Program</th><th>Agency</th><th>Status</th><th style="text-align:right">Weeks</th></tr>${rows.map(i=>`<tr class="pmr" data-a="prog" data-u="${i.uid}"><td><b>${i.x.n}</b><div class="mini">${i.x.law}${i.ph==='b'?(i.odds>0?` · ${pct(i.odds)} odds of trouble`:''):` · every ${i.x.yrs===1?'year':i.x.yrs+' yr'} · ${pct(i.risk)} contested`}</div></td><td><span class="linkn">${i.nm}</span></td><td>${i.x.ag}</td><td class="${i.cls}">${i.t}</td><td style="text-align:right" class="${i.extra?'redt':''}">${i.ph==='b'?`${i.weeks}${i.extra?` (+${i.extra})`:''}`:`${i.x.yrs} yr`}</td></tr>`).join('')}</table>`:`<p class="mini">${all.length?'Nothing matches these filters.':'Launch a program to start a permit docket.'}</p>`}</div></div>`;
+    ${rows.length?`<table class="ctable pmt"><tr><th>Permit</th><th>Program</th><th>Agency</th><th>Status</th><th style="text-align:right">Weeks</th></tr>${rows.map(i=>`<tr class="pmr" data-a="prog" data-u="${i.uid}"><td><b>${i.x.n}</b><div class="mini">${i.x.law}${i.ph==='b'?(i.odds>0?` · ${pct(i.odds)} odds of trouble`:''):` · every ${i.x.yrs===1?'year':i.x.yrs+' yr'} · ${pct(i.risk)} contested`}</div></td><td><span class="linkn">${i.nm}</span></td><td>${i.x.ag}</td><td class="${i.cls}">${i.t}</td><td style="text-align:right" class="${i.extra?'redt':''}">${i.ph==='b'?`${i.weeks}${i.extra?` (+${i.extra})`:''}`:`${i.x.yrs} yr`}</td></tr>`).join('')}</table>`:`<p class="mini">${all.length?'Nothing matches these filters.':'Order a new plant to start a permit docket.'}</p>`}</div></div>`;
   return h}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
@@ -2974,7 +2975,7 @@ function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,y
   rows.push(`<tr><td><b>${F().flag} Existing US plants</b><div class="mini">${who||'None of note'}</div></td><td>${base>1e-9?share(base):'—'}</td><td>${idle.length?`<span class="redt">🚧 ${idle[0].label.toLowerCase()}, ${idle[0].left} wk left</span>`:base>1e-9?`<span class="okt">Running</span>${!isL&&nshiftOn(id)?' · ⏩ extra shifts':isL&&S.shifts[l]?' · ⏩ extra shifts':''}`:'<span class="mini">No US plant</span>'}</td></tr>`);
   for(const pl of pls){const out=pl.gain*pl.yield*plantMult(pl);rows.push(`<tr><td><b>🏭 <span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span></b><div class="mini">Built ${yr(pl.start)}</div></td><td>${share(out)}</td><td>${pl.issue?`<span class="redt">⚠ ${OPSD[pl.issue.id].n}</span>`:pl.full?'<span class="okt">Full rate</span>':`Ramping · ${pct(pl.yield)} of nameplate`}</td></tr>`)}
   const up=[];
-  for(const q of prs){const [t,cl]=progStatus(q,true);up.push(`<tr><td><b>${PD[q.def].ally?'🤝':'🏗'} <span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span></b><div class="mini">${PD[q.def].ally?'Allied deal you funded · ':''}${STAGE_L[STAGES[q.stage]]}</div></td><td>+${share(projGain(PD[q.def]))} <span class="mini">when done</span></td><td><span class="${cl}">${t}</span> · output ~${yr(Math.round(S.w+remW(q)*sl))}</td></tr>`)}
+  for(const q of prs){const [t,cl]=progStatus(q,true);up.push(`<tr><td><b>${PD[q.def].ally?'🤝':'🏗'} <span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span></b><div class="mini">${PD[q.def].ally?'Allied deal you funded':needsContract(PD[q.def])?'New plant':'Upgrade to existing plants'}</div></td><td>+${share(projGain(PD[q.def]))} <span class="mini">when done</span></td><td><span class="${cl}">${t}</span><div class="mini">Output expected ~${yr(Math.round(S.w+remW(q)*sl))}</div></td></tr>`)}
   for(const x of ald)rows.push(`<tr><td><b>🤝 <span class="linkn" data-a="prog" data-u="${x.uid}">${x.nm}</span></b><div class="mini">Allied deal you funded · online ${yr(x.w)}</div></td><td>${share(x.g)}</td><td><span class="okt">Supplying</span> <span class="mini">(part of the allied row below)</span></td></tr>`);
   if(isL){const al=allyOut(l);if(al>0)rows.push(`<tr><td><b>🤝 ${AL().n}</b><div class="mini">Their own lines, counted toward sufficiency</div></td><td>${fmtN(al)}/yr</td><td>${allyDivert(l)>.005?`<span class="redt">−${pct(allyDivert(l))} from your purchases</span>`:'<span class="okt">Running</span>'}</td></tr>`)}
   else{if(p.ally>1e-9)rows.push(`<tr><td><b>🤝 Allied suppliers</b><div class="mini">${S.nodes[id].ally.src||'Allied producers'}</div></td><td>${share(p.ally)}</td><td>${allyBar(id)?'<span class="redt">⚖ barred by law for defense work</span>':'<span class="okt">Supplying</span>'}</td></tr>`);
@@ -3198,7 +3199,7 @@ function facCard(x){const sl=slipF().f,yr=w=>dateOf(w).getFullYear();
 function facBody(){const all=facList(),f=S.fcF||'all',n=k=>all.filter(x=>x.ph===k).length,ns=all.filter(x=>x.stalled).length;
   const tiles=[...FST.map(([k,l])=>[k,l,n(k)]),['stalled','Stalled or in trouble',ns]];
   let h=`<div class="pmtiles fctiles">${tiles.map(([k,l,c])=>`<button class="pmtile ${f===k?'on':''}" data-a="fcf" data-v="${f===k?'all':k}"><b class="${k==='stalled'&&c?'redt':''}">${c}</b><span>${l}</span></button>`).join('')}</div>`;
-  if(!all.length)return h+'<p class="mini">No factories yet. Launch a program to build one.</p>';
+  if(!all.length)return h+'<p class="mini">No factories yet. Order a new plant to build one.</p>';
   for(const [k,l] of FST){const xs=all.filter(x=>x.ph===k&&(f==='all'||f===k||(f==='stalled'&&x.stalled))).sort((a,b)=>b.stalled-a.stalled);if(!xs.length)continue;
     h+=`<div class="pdg">${l} · ${xs.length}</div><div class="fgrid">${xs.map(facCard).join('')}</div>`}
   const al=S.projects.filter(p=>PD[p.def].ally).length;if(al)h+=`<p class="mini" style="margin-top:10px">🤝 ${al} allied deal${al>1?'s are':' is'} being built abroad; see Programs.</p>`;
@@ -3981,7 +3982,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto"><span class="dim" data-tip="<b>Program offices</b><br>Each program needs one. When all are busy, nothing new can launch until one finishes.">${slotsUsed()}/${S.slots} offices busy</span> <button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ Launch Project</button></span></h2>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto"><span class="dim" data-tip="<b>Program offices</b><br>Each program needs one. When all are busy, nothing new can launch until one finishes.">${slotsUsed()}/${S.slots} offices busy</span> <button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ New order</button></span></h2>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
@@ -3989,10 +3990,10 @@ function renderGame(){
     const def=PD[p.def],st=STAGES[p.stage],D=p.dur[p.stage];
     const tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
     const remain=p.dur.slice(p.stage).reduce((a,b)=>a+b,0)-p.prog;
-    pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}" data-pu="${p.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · inherited':' · yr '+fmt((S.w-p.started)/52,1)}${p.ct?` · ${CONTRACTS[p.ct.k].ic}${BUILDERS[p.ct.b].ic}`:''} · ≥${yrs(remain)} left</span></div>
+    pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}" data-pu="${p.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · begun before 2027':''}${p.ct?` · ${CONTRACTS[p.ct.k].ic}${BUILDERS[p.ct.b].ic}`:''} · at least ${yrs(remain)} to go</span></div>
       <div class="pipe">${STAGES.map((s,i)=>`<div class="${p.dur[i]===0?'skip':i<p.stage?'done':i===p.stage?'cur':''}">${STAGE_N[s]}</div>`).join('')}</div><div class="prog"><i style="width:${Math.min(100,p.prog/D*100)}%"></i></div>`;
     if(p.obs.length){pr+=obsBlock(OD[p.obs[0].id],p.obs[0],'opt',p.uid);if(p.obs.length>1)pr+=`<div class="queued">+${p.obs.length-1} more queued</div>`}
-    else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]} · ${fmt(p.prog,0)}/${D} wk ${crBlock?`<span class="red">— frozen by CR</span>`:''}${slow.map(g=>` <span class="amber">— ${g.mult===0?'halted':'slowed ×'+fmt(g.mult,2)} by ${g.label.toLowerCase()}</span>`).join('')}${p.qf<1?` <span class="amber">— queued for ${POOLS[p.qk].ic} ${POOLS[p.qk].n.toLowerCase()} ×${fmt(p.qf,2)}</span>`:''}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
+    else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]}: week ${fmt(p.prog,0)} of ${D}${crBlock?` <span class="red">· frozen by a continuing resolution</span>`:''}${slow.map(g=>` <span class="amber">· ${g.mult===0?'halted':'slowed'} by ${g.label.toLowerCase()}</span>`).join('')}${p.qf<1?` <span class="amber">· waiting its turn for ${POOLS[p.qk].ic} ${POOLS[p.qk].n.toLowerCase()}</span>`:''}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
     pr+=`</div>`;
   }
   const ramping=S.plants.filter(p=>!p.full||p.issue),fullP=S.plants.filter(p=>p.full&&!p.issue);
@@ -4006,7 +4007,7 @@ function renderGame(){
   for(const g of S.gmods)disU.unshift({t:`${g.label}: ${g.stages.map(s=>STAGE_L[s]).join(', ')}`,x:'×'+fmt(g.mult,2),w:g.left,g:1});
   for(const c of S.costMods)disU.unshift({t:`${c.label}: new-start costs`,x:'×'+fmt(c.mult,2),w:c.left,g:1});
   if(disU.length)fc+=`<div class="sect"><span>Active disruptions (${disU.length})</span><span>weeks left</span></div>`+disU.map(d=>`<div class="prow"><span class="${d.g?'amber':'red'}">${d.t} <span class="dim">${d.x}</span></span><span class="dim">${d.w}</span></div>`).join('');
-  if(!S.plants.length&&!bld.length)fc+=`<div class="empty" style="padding:12px">No factories yet. Launch a program to build one.</div>`;
+  if(!S.plants.length&&!bld.length)fc+=`<div class="empty" style="padding:12px">No factories yet. Order a new plant to build one.</div>`;
   for(const pl of ramping){
     const isLine=pl.kind==='line',L=isLine?LINES[pl.target]:null,tgt=isLine?L.n:ND[pl.target].n;
     const outNow=pl.gain*pl.yield*plantMult(pl);
@@ -4121,7 +4122,7 @@ function renderModal(){
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
     const list=S.ptab==5?ok.filter(d=>d.t.line):ok.filter(d=>d.t.node&&ND[d.t.node].t==S.ptab).sort((a,b)=>P[a.t.node].cover-P[b.t.node].cover);
-    html=`<div class="paper wide"><div class="hd"><span class="ic">🏗</span>Launch a Project <span style="margin-left:auto;font-size:13px">Budget ${money(S.budget)} · ${S.slots-slotsUsed()} slots free</span></div>
+    html=`<div class="paper wide"><div class="hd"><span class="ic">🏗</span>New order <span style="margin-left:auto;font-size:13px">Budget ${money(S.budget)} · ${S.slots-slotsUsed()} slots free</span></div>
      <div style="padding:8px 14px 0">${constraintStrip(Math.min(...ok.filter(d=>!d.req||passed(d.req)).map(projCost)))}</div><div class="ptab">${tabs.map(([k,l])=>`<button class="pbtn ${S.ptab==k?'on':''}" data-a="ptab" data-t="${k}">${l}</button>`).join('')}</div>
      <div style="padding:8px 14px"><table class="ctable"><tr><th>Project · likely barriers</th><th>Target</th><th>Gain</th><th>Cost</th><th>Base time</th><th></th></tr>${list.map(d=>projRow(d,P)).join('')}</table></div>
      <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
