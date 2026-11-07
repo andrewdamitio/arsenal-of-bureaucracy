@@ -542,6 +542,9 @@ body{background:
 .dtop{position:sticky;top:-12px;z-index:5;margin:-12px -18px 8px;padding:12px 18px 0;background:linear-gradient(#efe6cf,#ebe1c6);box-shadow:0 6px 8px -6px rgba(60,45,20,.35)}.dtop .dhead{margin-bottom:0}
 .rc-fixed{cursor:default}
 .lbu{display:inline-flex;flex-direction:column;gap:1px;padding:3px 8px;border:1px solid #6a8f5a;background:#e4ecd2;cursor:pointer;font-size:11.5px;line-height:1.25}.lbu b{color:#3f6a2e;font-size:12px}.lbu:hover{background:#d6e3bf}
+.offs{display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center}.offl{font:600 10.5px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#8a8672;margin-right:2px}.offc{font:600 11px var(--disp);padding:1px 5px;border:1px solid #4a4532;color:#a8a48e;background:#1d201a}.offc.full{color:#dcc78e;border-color:#8a7440}.offc.over{color:#f0b0a0;border-color:#b0453a;background:#3a1f1a}
+.pkgrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#c8c3b0;padding:2px 2px 6px}.pkgrow .r{margin-left:auto;display:flex;gap:4px}
+.ctft{flex-wrap:wrap;gap:6px}.ctft .pbtn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;max-width:420px}.ctft .pbtn .mini{white-space:normal}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1203,7 +1206,7 @@ const RULES=[
   eff:{tags:['greenfield','mine','smelter','energetic'],wait:{PERMIT:.8},chance:{lawsuit:.75}},up:['coordinated schedules (permitting waits ×0.8)','2-year window to sue (×0.75)']},
  // acquisition
  {id:'rWAS',dom:'acq',kind:'exec',n:'Warfighting Acquisition System (portfolio acquisition executives)',since:'7 Nov 2025',c:'was',pc:[10,25],slots:1,
-  eff:{wait:{PROCURE:.85},chance:{reqcreep:.7}},up:['+1 program office','contracting waits ×0.85','requirements creep less (×0.7)']},
+  eff:{wait:{PROCURE:.85},chance:{reqcreep:.7}},up:['more staff in every portfolio office','contracting waits ×0.85','requirements creep less (×0.7)']},
  {id:'rNDAA26',dom:'acq',kind:'law',n:'FY2026 NDAA: portfolio executives in law, commercial solutions openings',since:'18 Dec 2025',c:'ndaa26',
   eff:{chance:{far:.8,cas:.8}},up:['full competitions less often (×0.8)','cost-accounting fights less often (×0.8)']},
  {id:'rRFO',dom:'acq',kind:'exec',n:'Revolutionary FAR Overhaul (deviations now, final rules pending)',since:'2025 · proposed rules Jun 2026',c:'rfo',pc:[8,15],
@@ -1537,7 +1540,7 @@ const REFORMS=[
  {id:'crAnomaly',fac:['US'],n:'New-Start Authority Under CRs',d:'Projects in Appropriation progress at half speed during a CR instead of stopping.',pc:25,wk:12,p:.6},
  {id:'qualReform',n:'Qualification by Similarity',nEU:'Mutual Recognition of Qualification',d:'Energetics & motor qualification obstacles −50–60%, duration −50%.',pc:20,wk:16,p:.7},
  {id:'tariffExempt',fac:['US'],n:'Exempt Allied Metals from §232',d:'+allied aluminum supply; no tariff spats. But domestic smelters face 40% more price-collapse risk.',pc:15,wk:8,p:.7,on:()=>{const s=S.nodes.al_primary;s.ally.amt+=s.scale*.3}},
- {id:'acqWorkforce',n:'Hire Acquisition Workforce',nEU:'Joint Programme Office',d:'+3 Program Office slots. Costs 0.5B.',pc:20,$:.5,wk:12,p:.85,on:()=>{S.slots+=3}},
+ {id:'acqWorkforce',n:'Hire Acquisition Workforce',nEU:'Joint Programme Office',d:'Adds staff to every portfolio office: each runs about one more order at full speed. Costs 0.5B.',pc:20,$:.5,wk:12,p:.85,on:()=>{S.slots+=3}},
  {id:'omnibus',fac:['EU'],n:'Defence Readiness Omnibus',d:'REACH defence carve-outs and faster permits. REACH −80%; EIA & emissions −40%.',pc:40,wk:20,p:.6},
  {id:'safe',fac:['EU'],n:'SAFE II Loans',d:'€15B for industrial projects — disbursed in quarterly tranches over three years (SAFE I was fully allocated but slow to pay out).',pc:30,wk:16,p:.8,on:()=>{S.safeLeft=15}},
  {id:'taxonomy',fac:['EU'],n:'Defence Is Not "Controversial"',d:'Clarify sustainable-finance rules. ESG bank exclusions −70%.',pc:25,wk:12,p:.7},
@@ -2174,7 +2177,35 @@ function projCost(def){
   return c;
 }
 const slotsUsed=()=>S.projects.filter(p=>!p.inh).length;
-function canStart(def,cost=projCost(def)){if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&slotsUsed()<S.slots&&S.budget>=cost-1e-9}
+// Portfolio acquisition executives (the November 2025 overhaul): one office per sector runs every plant, upgrade and deal in it.
+// Each has staff for about three orders at full speed (more with reforms); past that, every order in the office slows together.
+const OFFICES={mun:{n:'Munitions & Energetics',ic:'💥'},msl:{n:'Missiles & Seekers',ic:'🚀'},ship:{n:'Ships & Submarines',ic:'⚓'},air:{n:'Aircraft & Drones',ic:'✈'},elec:{n:'Electronics',ic:'📡'},mat:{n:'Minerals & Materials',ic:'⛏'}};
+const OFF_N={mun:['linters','chem','al_powder','propchem','imx','ap','rdx','tnt','nc','primers','shell_bodies','fuzes','srm','warhead','thermal_bat'],msl:['rf_seeker','ir_seeker','imu','turbofan','actuators','composites','cfiber','fiber','wha'],
+  ship:['propulsion','shipyard','sub_yard','sub_parts','castings','hy_steel'],air:['fengine','airframe','blades','li_cells','al_plate'],elec:['pcb','micro','mmic','gan','fpa','tantcap','twt','aesa','ir_optics']};
+const OFF_L={shells:'mun',interceptors:'msl',strike:'msl',a2a:'msl',fires:'msl',subs:'ship',surface:'ship',aircraft:'air',drones:'air'};
+function officeOf(def){if(def.t.line)return OFF_L[def.t.line]||'mat';for(const k in OFF_N)if(OFF_N[k].includes(def.t.node))return k;return 'mat'}
+const officeCap=()=>S.slots/3,staffed=p=>!p.inh&&!p.pkg;
+function officeLoad(){const o={};for(const k in OFFICES)o[k]={n:0,cap:officeCap()};for(const p of S.projects)if(staffed(p))o[officeOf(PD[p.def])].n++;for(const k in o)o[k].f=o[k].n>o[k].cap+1e-9?o[k].cap/o[k].n:1;return o}
+const OFF_TIP='Since the November 2025 acquisition overhaul, one portfolio acquisition executive runs each sector: every plant, upgrade and deal in it. Each has staff for about three orders at full speed; past that, all of its orders slow down together. The Hire Acquisition Workforce reform adds staff to every office.';
+function officeChips(){const L=officeLoad();return `<span class="offs"><span class="offl">Offices</span>${Object.entries(OFFICES).map(([k,o])=>`<span class="offc ${L[k].f<1?'over':L[k].n>=L[k].cap-1e-9?'full':''}" data-tip="${tipQ(`<b>${o.ic} ${o.n} office</b><br>${L[k].n} order${L[k].n===1?'':'s'} running, staff for about ${fmt(L[k].cap,0)} at full speed.${L[k].f<1?` <span style='color:#e8a090'>Every order here moves at ${pct(L[k].f)} speed.</span>`:''}<br><br>${OFF_TIP}`)}">${o.ic} ${L[k].n}/${fmt(L[k].cap,0)}</span>`).join('')}</span>`}
+// New plants are new starts: they need the annual NDAA and appropriations. An order joins the next request and waits for
+// enactment (October, later under a continuing resolution); about one in ten is cut in markup, and money is charged only if funded.
+// Starting sooner takes a prior-approval reprogramming through the four defense committees: Political Capital, and the money now.
+const PKG_CUT=.1,NSR_WK=6,FYOF=w=>{const d=dateOf(w);return d.getFullYear()+(d.getMonth()>=9?1:0)};
+const pkgItems=()=>S.projects.filter(p=>p.pkg),pkgSum=()=>pkgItems().reduce((a,p)=>a+p.req,0);
+function pkgW(){const cur=S.projects.find(p=>p.pkg&&p.pkg<=S.w);return cur?cur.pkg:nextFunds().w}
+const pkgWhen=()=>{const w=pkgW();return w<=S.w?S.w+Math.max(1,S.cr||0):w+1},pkgFY=()=>FYOF(pkgW());
+const nsrCost=()=>Math.round(15*Math.pow(1.5,S.nsr||0)),billN=()=>S.fac==='US'?'NDAA and appropriations':'budget law';
+function enactPkg(){const its=pkgItems().filter(p=>p.pkg<S.w).sort((a,b)=>a.uid-b.uid);if(!its.length||S.cr>0)return;
+  const fy=FYOF(its[0].pkg),got=[],lost=[];
+  for(const p of its){const def=PD[p.def],why=rand()<PKG_CUT?'cut in markup':S.budget<p.req-1e-9?'not enough money left in the bill':null;
+    if(why){S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);lost.push(`${projName(p)} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${projName(p)} not funded, ${why}.`,'bad');continue}
+    spendB(p.req,'Programs');p.spent=p.req;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1});got.push(projName(p))}
+  log(`🏛 FY${fy%100} ${billN()} enacted: ${got.length} of ${its.length} new plants funded.`,got.length?'good':'bad');
+  receipt({ic:'🏛',lab:`FY${fy} ${billN()} enacted`,title:`${got.length} of ${its.length} new plants funded`,ok:!lost.length,act:'data-a="rtab" data-t="prog"',actL:'See programs →',
+    lines:[got.length?`Funded: ${got.join(', ')}. Contracting starts now.`:'',lost.length?`<span class="redt">Not funded: ${lost.join(', ')}. Order again for next year’s request, or start one now by reprogramming.</span>`:'']})}
+
+function canStart(def,cost=projCost(def)){if(S.projects.some(p=>p.def===def.id&&p.pkg))return false;if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&(needsContract(def)&&!S.histMode||S.budget>=cost-1e-9)}
 function projName(p){return p.nm||PD[p.def].n}
 function projGain(def,gm=1){return def.t.node?def.gain*S.nodes[def.t.node].scale*gm:def.gain*gm}
 // which lines a fix to this target would lift now, and which are held by something else first
@@ -2184,16 +2215,17 @@ function launchVerdict(def){const R=S._R||production(false),tgt=def.t.node||'L:'
   if(hits.length)return {ok:1,t:`✓ Aims at the current limit on ${hits.map(x=>LINES[x.c].n).join(', ')}`};
   if(later.length){const x=later[0];return {ok:0,t:`Not the limit yet: ${LINES[x.c].n} ${later.length>1?`and ${later.length-1} more `:''}held by ${limName(x.lim)} first`}}
   return def.t.node&&endItemsOf(def.t.node).length?{ok:0,t:'Not limiting any line right now: this adds margin against future cuts'}:null}
-function startProject(id,ct){
-  const def=PD[id],c=ct?ctCost(def,ct):projCost(def);if(!canStart(def,c))return;
-  spendB(c,'Programs');S.built[id]=(S.built[id]||0)+1;
-  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):[...def.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:c};
+function startProject(id,ct,mode){
+  const def=PD[id],c=ct?ctCost(def,ct):projCost(def),pk=mode==='pkg'&&!S.histMode;if(!canStart(def,c))return;
+  if(!pk&&S.budget<c-1e-9)return;if(mode==='now'){const k=nsrCost();if(S.pc<k)return;S.pc-=k;spent('pc',k);S.nsr=(S.nsr||0)+1}
+  if(!pk)spendB(c,'Programs');S.built[id]=(S.built[id]||0)+1;
+  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):[...def.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};if(pk){p.pkg=pkgW();p.req=c}if(mode==='now'){p.nsr=1;p.dur[0]=Math.min(p.dur[0],NSR_WK)}
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
-  log(`Ordered: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
+  log(`${pk?`Added to the FY${FYOF(p.pkg)} request`:mode==='now'?'Started now by reprogramming':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
   if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2037':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
-    receipt({ic:def.ally?'🤝':'🏗',lab:def.ally?'Allied deal signed':pv.isPlant?'New plant ordered':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:'Follow it →',
-      lines:[`Raises <b>${tgt}</b>.${pv.isPlant?' A program office now runs the contract, permits and construction; you can follow it under Programs and, once built, Factories.':''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far · ${money(c)} committed.`]})}
+    receipt({ic:def.ally?'🤝':pk?'🏛':'🏗',lab:def.ally?'Allied deal signed':pk?`Added to the FY${FYOF(p.pkg)} request`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:'Follow it →',
+      lines:[`Raises <b>${tgt}</b>.${pk?` Congress decides when the FY${FYOF(p.pkg)} ${billN()} pass, expected ${fmtDate(pkgWhen())}. About one new start in ten is cut in markup; ${money(c)} is charged only if it is funded.`:pv.isPlant?` The ${OFFICES[officeOf(def)].n} office runs the contract, permits and construction.`:''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far${pk?'':` · ${money(c)} committed`}.`]})}
 }
 const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x};
 // start work before the price is settled: contracting ends in ~4 weeks, the government carries the cost risk
@@ -2299,8 +2331,9 @@ function chooseOps(uid,k){
   const w=Math.round(eff.wait||0);if(w>0){pl.issue.wait=w;pl.issue.total=w;pl.issue.label=V(opt.l)}else pl.issue=null;
 }
 function projectsTick(){
-  const PS=S.histMode?null:poolState();
+  const PS=S.histMode?null:poolState(),OL=S.histMode?null:officeLoad();
   for(const p of [...S.projects]){
+    if(p.pkg){S.ledger.FISCAL.wk++;plose(p,'FISCAL',1);continue}
     if(p.obs.length){const inst=p.obs[0],od=OD[inst.id];S.ledger[od.layer].wk++;plose(p,od.layer,1);
       if(inst.wait>0&&--inst.wait<=0){if(inst.after==='cancel'){cancelProject(p,'mothballed');continue}p.obs.shift();pmark(p,{clr:inst.id,how:inst.label});log(`✔ Cleared: ${V(od.n)} (${projName(p)})`)}continue}
     const due=p.sched.length&&p.sched[0].at<=p.prog?p.sched.shift():null;
@@ -2309,6 +2342,7 @@ function projectsTick(){
     for(const g of S.gmods)if(g.stages.includes(STAGES[p.stage])&&!(g.dom&&PD[p.def].ally)){S.ledger[g.layer].wk+=rate*(1-g.mult);plose(p,g.layer,rate*(1-g.mult));rate*=g.mult}
     p.qf=1;if(PS){const st=STAGES[p.stage];for(const k of poolsOf(PD[p.def]))if(POOLS[k].stage===st&&PS[k].f<p.qf){p.qf=PS[k].f;p.qk=k}
       if(p.qf<1){S.ledger[POOLS[p.qk].layer].wk+=rate*(1-p.qf);plose(p,POOLS[p.qk].layer,rate*(1-p.qf));rate*=p.qf}}
+    p.of=1;if(OL&&staffed(p)){p.of=OL[officeOf(PD[p.def])].f;if(p.of<1){S.ledger.PROCURE.wk+=rate*(1-p.of);plose(p,'PROCURE',rate*(1-p.of));rate*=p.of}}
     p.prog+=rate;if(p.prog>=p.dur[p.stage]){p.stage++;enterStage(p)}
   }
 }
@@ -2436,9 +2470,10 @@ function homeTick(lastOut){
 function tick(){
   if(S.over)return;
   S.w++;
-  if(S.fac==='US'&&fyStart()){gainB(F().fyBudget,'Annual appropriations');S.repro=0;log(`FY${(dateOf(S.w).getFullYear()+1)%100} industrial-base funding: +${money(F().fyBudget)}.`,'good')}
+  if(S.fac==='US'&&fyStart()){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${(dateOf(S.w).getFullYear()+1)%100} industrial-base funding: +${money(F().fyBudget)}.`,'good')}
   if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good')}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
+  if(!S.histMode)enactPkg();
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
@@ -2577,15 +2612,16 @@ function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;gainB(REPRO,'R
 function constraintStrip(cheapest){const nf=nextFunds(),used=slotsUsed(),broke=isFinite(cheapest)&&S.budget<cheapest,full=used>=S.slots;
   return `<div class="cstrip"><span class="${broke?'bind':''}">💰 <b>${money(S.budget)}</b> <span class="mini">Next +${money(nf.amt)} on ${fmtDate(nf.w)}</span>
      <button class="pbtn sm" data-a="repro" ${S.pc>=reproCost()?'':'disabled'} data-tip="Move money from other accounts now. Each one this fiscal year costs more Political Capital.">${S.fac==='US'?'Reprogram':'Transfer'} +${money(REPRO)} · ${reproCost()} PC</button></span>
-    <span class="${full?'bind':''}" data-tip="<b>Program offices</b><br>Every new plant, upgrade or allied deal needs a government team to run it: contracting officers, engineers and program managers who negotiate the contract, shepherd the permits and oversee construction. You have ${S.slots}. Each is tied up until its order is finished, so when all are busy, nothing new can start.<br><br>The DoD’s acquisition workforce really is a bottleneck. The Hire Acquisition Workforce reform adds three.">🏗 <b>${used}/${S.slots}</b> program offices busy</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
+    <span data-tip="${tipQ(`New plants wait for the annual ${billN()}; Start now on the award screen skips the wait for Political Capital.`)}">🏛 <b>${pkgItems().length}</b> in the FY${pkgFY()} request · Congress decides ~${fmtDate(pkgWhen())}</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
 /* ---------- launch preview: when it arrives, and what it does to each gap ---------- */
 const RAMP=kn=>.018+kn*.0004; // weekly learning rate of a new plant's yield
 function rampWeeks(kn,y0,rm){let y=y0,k=kn,w=0;while(y<.9&&w<520){y=Math.min(1,y+Math.max(.02,y)*(1-y)*RAMP(k)*rm);k=Math.min(95,k+.05);w++}return w}
 function previewOf(def,ct,wOn0){
-  const key=def.id+'|'+S.w+'|'+(ct?ct.b+ct.k:'')+'|'+(wOn0||'')+'|'+S.plants.length+'|'+S.done.length;if(S._pvc?.k===key)return S._pvc.v;
+  const key=def.id+'|'+S.w+'|'+(ct?ct.b+ct.k+(ct.now?'n':''):'')+'|'+(wOn0||'')+'|'+S.plants.length+'|'+S.done.length+'|'+(S.cr||0);if(S._pvc?.k===key)return S._pvc.v;
   const tm=ctTerms(def,ct),dur=ct?ctDur(def,ct):def.dur,build=dur.reduce((a,b)=>a+b,0)*slipF().f;
   const tgt=def.t.node||def.t.line,kn=S.know[tgt]??40,isPlant=needsContract(def);
-  const wPlan=S.w+dur.reduce((a,b)=>a+b,0),ramp=isPlant?rampWeeks(kn,Math.min(.55,.05+kn*.003+tm.y0),tm.rampM):0,wOn=wOn0??S.w+build,wFull=wOn+ramp;
+  const pkWait=isPlant&&!S.histMode?(ct&&ct.now?-Math.max(0,dur[0]-NSR_WK):Math.max(0,pkgWhen()-S.w-dur[0])):0;
+  const wPlan=S.w+pkWait+dur.reduce((a,b)=>a+b,0),ramp=isPlant?rampWeeks(kn,Math.min(.55,.05+kn*.003+tm.y0),tm.rampM):0,wOn=wOn0??S.w+pkWait+build,wFull=wOn+ramp;
   // this week's output with the finished project at full rate
   const R0=S._R||production(false),g=projGain(def);let undo=()=>{};
   if(isPlant){const pl={kind:def.t.node?'node':'line',target:tgt,gain:g,yield:1,issue:null,full:true,adv:0};S.plants.push(pl);undo=()=>S.plants.splice(S.plants.indexOf(pl),1)}
@@ -2627,7 +2663,8 @@ function contractHTML(){
   return `<div class="paper wide"><div class="hd"><span class="ic">🖋</span>Award: ${def.n}<span style="margin-left:auto;font-size:13px">${def.t.node?ND[def.t.node].n:LINES[def.t.line].n}</span></div>
    <div class="bd" style="font-size:13px"><div class="dsec"><h4>Who builds it</h4>${bOpts}</div><div class="dsec"><h4>Terms</h4>${kOpts}</div>
    <div class="dsec"><h4>What you get</h4>${previewHTML(def,c)}</div></div>
-   <div class="ft"><button class="pbtn primary" data-a="ctgo" ${S.budget>=cost-1e-9&&slotsUsed()<S.slots?'':'disabled'}><b>Award · ${money(cost)}</b> <span class="mini">Budget ${money(S.budget)}</span></button><button class="pbtn" data-a="ctback">Back</button></div></div>`}
+   <div class="ft ctft"><button class="pbtn primary" data-a="ctgo" data-m="pkg"><b>🏛 Add to the FY${pkgFY()} request · ${money(cost)}</b><span class="mini">Congress decides ~${fmtDate(pkgWhen())}. Charged only if funded; about 1 in 10 is cut.</span></button>
+   <button class="pbtn" data-a="ctgo" data-m="now" ${S.budget>=cost-1e-9&&S.pc>=nsrCost()?'':'disabled'}><b>⚡ Start now · ${money(cost)} + ${nsrCost()} PC</b><span class="mini">A new-start reprogramming the four defense committees must approve${(()=>{const w=Math.max(0,pkgWhen()-S.w-Math.min(ctDur(def,c)[0],NSR_WK));return w>4?`: about ${Math.round(w/4.35)} months sooner`:''})()}. Budget ${money(S.budget)}.</span></button><button class="pbtn" data-a="ctback">Back</button></div></div>`}
 /* ---------- program page: one project's story — plan vs. actual, what's blocking it, where the time went, what it will do ---------- */
 const STAGE_C=['#b8923a','#4a78c8','#6aa84f','#a0703a','#4fb3b0','#9a84c4'];
 function progRec(uid){const p=S.projects.find(x=>x.uid==uid);if(p)return {p,live:true};
@@ -2635,13 +2672,15 @@ function progRec(uid){const p=S.projects.find(x=>x.uid==uid);if(p)return {p,live
 const STAGE_DO={approp:'Awaiting funds from Congress',contract:'Negotiating the contract',permit:'Siting and permitting',build:'Under construction',qual:'Qualification testing',ramp:'Lining up buyers and suppliers'};
 function progStatus(p,live){
   if(!live)return p.cancelled?['✖ Cancelled: '+p.cancelled,'redt']:['✔ Built','okt'];
+  if(p.pkg)return [`🏛 In the FY${FYOF(p.pkg)} request: Congress decides ~${fmtDate(pkgWhen())}`,'st-t-tight'];
   const st=STAGES[p.stage],def=PD[p.def];
   if(p.obs.length){const o=p.obs[0],od=OD[o.id];return o.wait>0?[`⏳ Stalled: ${V(od.n)}, ${o.wait} more weeks`,'redt']:[`⛔ Stalled: ${V(od.n)}. Needs your decision.`,'redt']}
   if(st==='approp'&&S.cr>0&&!passed('crAnomaly'))return ['🧊 Frozen by a continuing resolution','redt'];
   const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));
   if(p.qf<1)return [`🐢 Slowed: waiting its turn for ${POOLS[p.qk].n.toLowerCase()}`,'st-t-tight'];
   if(slow.length)return [`🐢 Slowed: ${slow.map(g=>g.label.toLowerCase()).join(', ')}`,'st-t-tight'];
-  return [`▶ ${STAGE_DO[st]}`,'okt']}
+  if(p.of<1)return [`🐢 Slowed: the ${OFFICES[officeOf(def)].n.toLowerCase()} office is stretched`,'st-t-tight'];
+  return [`▶ ${st==='approp'&&p.nsr?'Awaiting committee approval':STAGE_DO[st]}`,'okt']}
 function progGantt(p,live){
   const h=p.h||[],t0=Math.min(p.started??0,h[0]?.w??S.w),stEv=h.filter(e=>e.st!=null),end=live?null:(h.find(e=>e.done||e.gone)?.w??S.w);
   // projected remainder: current stage + later stages at plan, obstacle waits included
@@ -3114,7 +3153,7 @@ function stockBody(){
 const OUTLAY={approp:[0,0],contract:[0,.05],permit:[.05,.12],build:[.12,.8],qual:[.8,.95],ramp:[.95,1]};
 function billedFrac(p){const st=STAGES[Math.min(p.stage,5)],[a,b]=OUTLAY[st],f=a+(b-a)*Math.min(1,p.prog/Math.max(1,p.dur[p.stage]));return p.b0?p.b0+(1-p.b0)*f:f}
 function billRate(p){if(p.obs.length)return 0;const st=STAGES[Math.min(p.stage,5)],[a,b]=OUTLAY[st];let r=1;if(st==='approp'&&S.cr>0)r=passed('crAnomaly')?.5:0;for(const g of S.gmods)if(g.stages.includes(st))r*=g.mult;return (p.spent||0)*(1-(p.b0||0))*(b-a)/Math.max(1,p.dur[p.stage])*52*r}
-function remW(p){let r=Math.max(0,p.dur[p.stage]-p.prog);for(let i=p.stage+1;i<STAGES.length;i++)r+=p.dur[i];for(const o of p.obs)r+=o.wait||0;return r}
+function remW(p){let r=Math.max(0,p.dur[p.stage]-p.prog)+(p.pkg?Math.max(0,pkgWhen()-S.w-p.dur[0]):0);for(let i=p.stage+1;i<STAGES.length;i++)r+=p.dur[i];for(const o of p.obs)r+=o.wait||0;return r}
 function slipF(){const d=S.done.filter(x=>x.plan>0&&!x.inh);if(d.length<2)return {f:1.6,n:d.length,assumed:true};return {f:Math.max(1,d.reduce((a,x)=>a+x.weeks/x.plan,0)/d.length),n:d.length}}
 function billing(projs){let ob=0,bi=0,rate=0,stall=0,funded=0;for(const p of projs){const s=p.spent||0;ob+=s;bi+=s*billedFrac(p);rate+=billRate(p);if(p.obs.length)stall+=s;if(STAGES[p.stage]==='approp')funded+=s}return {ob,bi,rate,stall,funded}}
 const PIPE_SEG=[['prod','Producing','#2f62a0'],['starved','Idle: inputs short','#9cb5d1'],['offline','Offline: equipment problems & disruptions','#b0453a'],['spares','Diverted to spare parts','#8a7cc0'],['ramp','Built, still ramping','#5f9e4a'],['qual','In qualification / first article','#9cc48a'],['build','Under construction','#d9a441'],['permit','Siting & permitting','#e8cf8c'],['contract','Contracting','#c9b98f'],['approp','Funded, awaiting appropriation','#efe4c6']];
@@ -3419,6 +3458,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['New starts and offices','A new plant is a new start: it waits for the next NDAA and appropriations (October, later under a continuing resolution), and about one in ten is cut in markup (game estimate); money is charged only if funded. Starting sooner takes a new-start reprogramming, which the four defense committees must approve: 15 Political Capital, rising with each one in a fiscal year, and about six weeks. Since the November 2025 overhaul, a portfolio acquisition executive runs each sector, not one office per plant; each office in the game staffs about three orders at full speed, and beyond that all its orders slow together (game estimate). Upgrades, workforce measures and allied deals are funded from existing accounts and start at once.'],
  ['Mid-length fixes','Supplier shifts add 15% of existing domestic capacity over a 13-week hiring ramp for $0.08B a year each and raise equipment-problem odds at new plants by 30%. While any shifts run, each line or supplier faces about a 0.25% weekly chance of an outage, rising to 0.75% after a year of wear: worn equipment (−30% for 4–8 weeks), an injury and safety stand-down (−40% for 2–4 weeks), or, where explosives are handled, a fire (−65% for 10–20 weeks). Repairs reset some of the wear. Overtime is linked to a 61% higher injury rate[c:dembe05] (estimates, set against Scranton’s rise, which also needed a $400M modernization).[c:scranton24] An undefinitized contract action ends contracting in about 4 weeks for 10% of the price, with a 25% chance of a cost overrun at construction (estimates; the risk itself is documented by the DoD IG).[c:ucaig] Not offered as fast fixes because they were not fast in practice: buying an ally’s production (Japan’s PAC-3 export took about two years from the December 2023 rule change to first delivery)[c:jpac3] and restarting closed lines.'],
  ['Hyperscale drone plant','Modeled on Anduril’s Arsenal-1 (about $1B and 4,000 jobs);[c:arsenal1] its output of 80,000 small drones a year once ramped is a game estimate.'],
  ['Mandates','Each mandate has a floor halfway from the January 2027 level to the real target (for the magnet target, 60% of it; content cut by a quarter; output held at 90%). Each scenario’s targets come from public goals (cited on the mandate card); the deadline of January 2030 reflects the threat windows cited. The US shares (1,800 interceptors and 1,800 strike missiles a year, 9 surface ships out of CRS’s 11 battle-force ships a year, 16,000 rockets of the planned 19,002, 330,000 drones a year from the Army’s million-in-three-years plan) are game estimates. The tests reuse the campaign model on the true hidden values (pass at 85% coverage), or remove all Chinese supply at once (pass if you keep 80% of output). The verdict names are design choices.'],
@@ -3956,7 +3996,7 @@ function renderGame(){
     ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
-    ${res(`${slotsUsed()}/${S.slots}`,'Offices busy',`<b>Program offices</b><br>Every new plant, upgrade or allied deal needs a government team to run it: contracting officers, engineers and program managers who negotiate the contract, shepherd the permits and oversee construction. You have ${S.slots}. Each is tied up until its order is finished, so when all are busy, nothing new can start.<br><br>The DoD’s acquisition workforce really is a bottleneck. The Hire Acquisition Workforce reform adds three.`,'rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
+    ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,`FY${pkgFY()%100} request`,`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br><br>${OFF_TIP}`,'rtab','data-t="prog"',over.length?'rwarn':'')})()}
     ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>Each takes its default after ${DECIDE_WK} weeks. Opens the first one.`:'Nothing is waiting on you.',S.inbox?.length?'evdo':firstStuck?'prog':'rtab',S.inbox?.length?`data-e="${S.inbox[0].ev}"`:firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short','<b>End-item lines below capacity</b><br>Opens the bottleneck analysis.','view','data-v="bn"',shortL?'rwarn':'')}
     ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'PRC exposure','<b>PRC and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Opens the flows.','view','data-v="flow"')}
@@ -3989,7 +4029,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto"><span class="dim" data-tip="<b>Program offices</b><br>Every new plant, upgrade or allied deal needs a government team to run it: contracting officers, engineers and program managers who negotiate the contract, shepherd the permits and oversee construction. You have ${S.slots}. Each is tied up until its order is finished, so when all are busy, nothing new can start.<br><br>The DoD’s acquisition workforce really is a bottleneck. The Hire Acquisition Workforce reform adds three.">${slotsUsed()}/${S.slots} offices busy</span> <button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ New order</button></span></h2>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto">${officeChips()}</span></h2><div class="pkgrow" data-tip="${tipQ(`New plants need the annual ${billN()}. Orders wait in the request until it passes. To start one sooner, choose Start now on the award screen: a reprogramming that costs Political Capital.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress decides ~${fmtDate(pkgWhen())}<span class="r"><button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
@@ -4000,6 +4040,7 @@ function renderGame(){
     pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}" data-pu="${p.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · begun before 2027':''}${p.ct?` · ${CONTRACTS[p.ct.k].ic}${BUILDERS[p.ct.b].ic}`:''} · at least ${yrs(remain)} to go</span></div>
       <div class="pipe">${STAGES.map((s,i)=>`<div class="${p.dur[i]===0?'skip':i<p.stage?'done':i===p.stage?'cur':''}">${STAGE_N[s]}</div>`).join('')}</div><div class="prog"><i style="width:${Math.min(100,p.prog/D*100)}%"></i></div>`;
     if(p.obs.length){pr+=obsBlock(OD[p.obs[0].id],p.obs[0],'opt',p.uid);if(p.obs.length>1)pr+=`<div class="queued">+${p.obs.length-1} more queued</div>`}
+    else if(p.pkg)pr+=`<div class="queued">🏛 In the FY${FYOF(p.pkg)} request · Congress decides ~${fmtDate(pkgWhen())} · ${money(p.req)}</div>`;
     else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]}: week ${fmt(p.prog,0)} of ${D}${crBlock?` <span class="red">· frozen by a continuing resolution</span>`:''}${slow.map(g=>` <span class="amber">· ${g.mult===0?'halted':'slowed'} by ${g.label.toLowerCase()}</span>`).join('')}${p.qf<1?` <span class="amber">· waiting its turn for ${POOLS[p.qk].ic} ${POOLS[p.qk].n.toLowerCase()}</span>`:''}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
     pr+=`</div>`;
   }
@@ -4129,7 +4170,7 @@ function renderModal(){
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
     const list=S.ptab==5?ok.filter(d=>d.t.line):ok.filter(d=>d.t.node&&ND[d.t.node].t==S.ptab).sort((a,b)=>P[a.t.node].cover-P[b.t.node].cover);
-    html=`<div class="paper wide"><div class="hd"><span class="ic">🏗</span>New order <span style="margin-left:auto;font-size:13px">Budget ${money(S.budget)} · ${S.slots-slotsUsed()} slots free</span></div>
+    html=`<div class="paper wide"><div class="hd"><span class="ic">🏗</span>New order <span style="margin-left:auto;font-size:13px">Budget ${money(S.budget)} · FY${pkgFY()} request ${money(pkgSum())}</span></div>
      <div style="padding:8px 14px 0">${constraintStrip(Math.min(...ok.filter(d=>!d.req||passed(d.req)).map(projCost)))}</div><div class="ptab">${tabs.map(([k,l])=>`<button class="pbtn ${S.ptab==k?'on':''}" data-a="ptab" data-t="${k}">${l}</button>`).join('')}</div>
      <div style="padding:8px 14px"><table class="ctable"><tr><th>Project · likely barriers</th><th>Target</th><th>Gain</th><th>Cost</th><th>Base time</th><th></th></tr>${list.map(d=>projRow(d,P)).join('')}</table></div>
      <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
@@ -4149,11 +4190,9 @@ function whyOff(b){
   const d=b.dataset,a=d.a,needPC=n=>`Needs ${n} Political Capital — you have ${Math.floor(S.pc)}.`,needM=n=>`Costs ${money(n)} — the budget holds ${money(S.budget)}. Next funding ${fmtDate(nextFunds().w)}; or reprogram now.`;
   if(S.replay&&REPLAY_LOCK.has(a))return 'This is the 2025–26 record. You take over in January 2027.';
   const optWhy=o=>o.req&&!passed(o.req)?`Requires the reform ${rname(RD[o.req])}.`:(o.pc||0)>S.pc?needPC(o.pc):(o.$||0)>S.budget?needM(o.$):'';
-  const busy=()=>`All ${S.slots} program offices are busy running orders. One frees up when an order is finished, or pass the Hire Acquisition Workforce reform for three more.`;
   switch(a){
     case 'launch':{const def=PD[d.p];if(def.req&&!passed(def.req))return `Requires the reform ${rname(RD[def.req])}.`;if(S.projects.some(p=>p.def===def.id))return 'Already under way.';
-      if(def.kind==='maint'?S.mxDone[def.id]:def.kind&&def.kind!=='cap'&&(S.nflags[def.t.node]||{})[def.kind])return 'Already done.';if(slotsUsed()>=S.slots)return busy();if(S.budget<projCost(def))return needM(projCost(def));break}
-    case 'cat':return busy();
+      if(def.kind==='maint'?S.mxDone[def.id]:def.kind&&def.kind!=='cap'&&(S.nflags[def.t.node]||{})[def.kind])return 'Already done.';if(!needsContract(def)&&S.budget<projCost(def))return needM(projCost(def));break}
     case 'opt':{const p=S.projects.find(x=>x.uid==d.u),o=p&&OD[p.obs[0]?.id]?.o[d.k];if(o)return optWhy(o);break}
     case 'ops':{const pl=S.plants.find(x=>x.uid==d.u),o=pl?.issue&&OPSD[pl.issue.id].o[d.k];if(o)return optWhy(o);break}
     case 'evopt':{const q=S.queue[0],o=q?.ev&&(V(ED[q.ev].o)||[])[d.k];if(o)return optWhy(o);break}
@@ -4170,7 +4209,7 @@ function whyOff(b){
     case 'rule':{const r=RD2[d.r];return needPC(r.pc[ruleOn(r.id)?1:0])}
     case 'ic':{const c=ICD[d.c],on=icOn(c.id);if(!on&&c.req&&!icOn(c.req))return `Needs “${ICD[c.req].n}” in force first.`;return needPC(c.pc[on?1:0])}
     case 'repro':return needPC(reproCost());
-    case 'ctgo':{const def=PD[S.ct.id];if(slotsUsed()>=S.slots)return busy();return needM(ctCost(def,S.ct))}
+    case 'ctgo':{const def=PD[S.ct.id];if(S.pc<nsrCost())return needPC(nsrCost());return needM(ctCost(def,S.ct))}
     case 'up':case 'lineup':return 'Already first in line.';
     case 'dn':return 'Already last in line.';
   }
@@ -4245,9 +4284,9 @@ document.addEventListener('pointerdown',e=>{
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
     case 'close':if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;break;
-    case 'launch':{const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id);if(slotsUsed()>=S.slots&&S.modal==='cat')S.modal=null}break}
+    case 'launch':{const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id)}break}
     case 'ct':S.ct[b.dataset.g]=b.dataset.v;break;
-    case 'ctgo':startProject(S.ct.id,{b:S.ct.b,k:S.ct.k});S.modal=S.ctBack==='cat'&&slotsUsed()>=S.slots?null:S.ctBack||null;S.ct=null;break;
+    case 'ctgo':startProject(S.ct.id,{b:S.ct.b,k:S.ct.k},b.dataset.m||'pkg');S.modal=S.ctBack||null;S.ct=null;break;
     case 'ctback':S.modal=S.ctBack||null;S.ct=null;break;
     case 'opt':chooseOpt(b.dataset.u,+b.dataset.k);break;
     case 'ops':chooseOps(b.dataset.u,+b.dataset.k);break;
