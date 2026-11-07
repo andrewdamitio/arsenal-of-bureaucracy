@@ -125,8 +125,11 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .map .col{display:flex;flex-direction:column;gap:3px}
 .map .npill{border-radius:3px;padding:3px 6px;display:flex;justify-content:space-between;gap:4px}
 .stamp{display:inline-block;border:3px solid #a3261c;color:#a3261c;padding:2px 10px;font:700 20px Georgia;letter-spacing:.2em;transform:rotate(-4deg);margin:8px 0 18px}
-#toasts{position:fixed;right:14px;bottom:150px;display:flex;flex-direction:column;gap:6px;z-index:60;pointer-events:none}
-.toast{background:#2a1a17;border:1px solid var(--red);border-left:5px solid var(--red);padding:7px 12px;max-width:340px;box-shadow:0 4px 14px #000;font-size:12px;animation:tin .25s}
+#toasts{position:fixed;top:104px;left:50%;transform:translateX(-50%);width:min(520px,calc(100vw - 32px));display:flex;flex-direction:column;gap:6px;z-index:60;pointer-events:none}
+.toast{background:#2a1a17;border:1px solid var(--red);border-left:5px solid var(--red);padding:7px 12px;box-shadow:0 6px 18px #000a;font-size:12.5px;animation:tin .25s;transition:opacity .3s}.toast.out{opacity:0}
+.toast.news{background:#efe6cf;color:#2a2418;border:1px solid #a8925a;border-left:5px solid #8a6d2e}.toast.news .dim{color:#6b5a35}
+.tn-h{display:flex;align-items:center;gap:8px}.tn-h b{font:600 15px var(--disp);letter-spacing:.02em;flex:1}.tn-ic{font-size:17px}.tn-x{font:600 11px var(--disp);letter-spacing:.08em;text-transform:uppercase;color:#8a6d2e;white-space:nowrap}
+.tn-e{margin:2px 0 0 25px;font-size:12.5px;color:#3d5a2a;font-weight:600}.tn-b{display:none;margin:6px 0 2px 25px;font:14px/1.45 Georgia,serif}.tn-b p{margin:0 0 6px}.toast.open .tn-b{display:block}
 .toast.good{border-color:var(--green);background:#1b2a17}
 @keyframes tin{from{transform:translateX(30px);opacity:0}}
 #start{max-width:1020px;margin:0 auto;padding:30px 20px;text-align:center}
@@ -230,7 +233,7 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 #tip{max-width:370px}
 /* navigation */
 .vback{padding:4px 10px;font-weight:700}.vback:disabled{opacity:.35;cursor:default}.vfind{margin-left:auto}
-.toast.act{pointer-events:auto;cursor:pointer}.toast.act:hover{filter:brightness(1.25)}
+.toast.act{pointer-events:auto;cursor:pointer}.toast.act:hover{filter:brightness(1.25)}.toast.news:hover{filter:none;box-shadow:0 6px 22px #000c}
 #qj{position:fixed;inset:0;z-index:300;background:#000a;display:flex;justify-content:center;align-items:flex-start;padding-top:90px}
 .qjbox{width:min(660px,92vw);background:var(--paper) linear-gradient(#efe6cf,#e2d5b4);border:3px double #6b5a35;box-shadow:0 10px 40px #000}
 .qjbox input{width:100%;font:16px Georgia;padding:11px 14px;border:0;border-bottom:1px solid #cbbd95;background:#fbf6e8;color:#2b241a;outline:none;user-select:text}
@@ -2538,7 +2541,7 @@ function queueEvent(id){S.queue.push({ev:id})}
 function infoOnly(q){if(q.read)return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
 function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(S.autoPause||q.read||!q.ev)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
     const e=ED[q.ev];S.inbox.push({ev:q.ev,due:S.w+DECIDE_WK,w:S.w});return false}
-  if(q.ev){const e=ED[q.ev];(V(e.o)||[])[0]?.fx?.();toast(`${e.ic||'📰'} <b>${V(e.t)}</b><br><span class="dim">Click to read</span>`,'',{a:'evread',e:q.ev})}
+  if(q.ev){const e=ED[q.ev];(V(e.o)||[])[0]?.fx?.();newsToast(e)}
   else if(q.sys==='fw')toast(`${q.r>=.7?'📈 Framework target met':'📉 Framework audit: far below goal'}<br><span class="dim">${LINES[q.lid].n} · ${q.r>=.7?'+10':'−20'} PC</span>`,'',{a:'node',n:'L:'+q.lid});
   else toast(`${q.sys==='pass'?'✅ Enacted':'❌ Stripped in conference'}<br><span class="dim">${rname(RD[q.id])}</span>`,'',{a:'rtab',t:'agenda'});
   return false})}
@@ -3857,7 +3860,13 @@ function mountView(st0){
    UI
    ===================================================================== */
 const app=document.getElementById('app'),ov=document.getElementById('ov');
-function toast(html,cls='',act){if(S&&S.sim)return;const d=document.createElement('div');d.className='toast '+cls+(act?' act':'');d.innerHTML=html;if(act)for(const k in act)d.dataset[k]=act[k];document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),4200)}
+function toast(html,cls='',act,ms=4200){if(S&&S.sim)return;const box=document.getElementById('toasts'),d=document.createElement('div');d.className='toast '+cls+(act?' act':'');d.innerHTML=html;if(act)for(const k in act)d.dataset[k]=act[k];
+  box.prepend(d);while(box.children.length>4)box.lastElementChild.remove();
+  const end=()=>{if(d.classList.contains('open')||d.matches(':hover'))setTimeout(end,1500);else{d.classList.add('out');setTimeout(()=>d.remove(),300)}};setTimeout(end,ms)}
+// news that needs no decision: headline, what it did, and the story on a click, without stopping the game
+function newsToast(e){const os=V(e.o)||[],o=os[0],eff=o&&!/^(ok|noted|understood|close|continue)\.?$/i.test(String(V(o.l)).trim())?V(o.l):'';
+  const body=String(V(e.body)||'').replace(/\[c:[^\]]+\]/g,'');
+  toast(`<div class="tn-h"><span class="tn-ic">${e.ic||'📰'}</span><b>${V(e.t)}</b><span class="tn-x">Read ▾</span></div>${eff?`<div class="tn-e">→ ${eff}</div>`:''}<div class="tn-b">${body.startsWith('<')?body:`<p>${body}</p>`}</div>`,'news',{a:'tread'},7000)}
 const chip=l=>`<span class="tag" style="background:${LAYERS[l].c}">${LAYERS[l].n}</span>`;
 const res=(v,l,tip,a='',d='',cls='')=>`<button class="res ${cls}" data-tip="${tip||''}" ${a?`data-a="${a}"`:''} ${d}><b>${v}</b><span>${l}</span></button>`;
 // change over the last four weeks, shown as a small arrow next to the value
@@ -4511,7 +4520,7 @@ document.addEventListener('pointerdown',e=>{
   if(!S)return;
   if(a==='skip'){if(S.replay){endHistory();render()}return}
   if(S.replay&&REPLAY_LOCK.has(a))return;
-  if(b.classList.contains('toast'))b.remove();
+  if(b.classList.contains('toast')&&a!=='tread')b.remove();
   if(NAV_ACTS.has(a))navPush();
   S._vdirty=true;
   switch(a){
@@ -4594,6 +4603,7 @@ if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=nul
     case 'scenon':S.modal=null;break;
     case 'scenstop':S.over=true;S.speed=0;S.verdict=S.scenRes.verdict;S.overWhy='';S.modal=null;S.view='rec';S._vdirty=true;break;
     case 'rcptx':if(S._rcpt)S._rcpt.gone=true;renderReceipt();return;
+    case 'tread':{const t=b.closest('.toast');if(t){t.classList.toggle('open');const x=t.querySelector('.tn-x');if(x)x.textContent=t.classList.contains('open')?'Close ▴':'Read ▾'}return}
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;break;
