@@ -280,7 +280,7 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 /* supply web */
 .swhd{display:flex;justify-content:flex-end;font-size:12px;margin:-2px 0 2px}.sweb{display:block;max-width:1000px;overflow:visible}
 .sweb text{font-family:"Segoe UI",system-ui,sans-serif}.swn{font-size:12.5px;font-weight:600;fill:#3a3020}.swb{fill:#a3261c}.swp{font-size:12px;font-weight:700}.swm{font-size:12px;fill:#6b5a35}
-.swt{font:700 13px Georgia!important;fill:#3a3020}.swbig{font:700 22px Georgia!important;fill:#3a3020}.swbig .swm{font:12px "Segoe UI",system-ui,sans-serif}.swr{cursor:pointer}.swr:hover .swn{text-decoration:underline}
+.swt{font:700 13px Georgia!important;fill:#3a3020}.swbig{font:700 22px Georgia!important;fill:#3a3020}.swbig .swm{font:12px "Segoe UI",system-ui,sans-serif}.swr{cursor:pointer}.sweb .swsib{fill:#a3261c;font-size:11px}.sweb .swme{fill:#a3261c;font-size:11px;font-weight:700}.swr:hover .swn{text-decoration:underline}
 .swleg{margin-top:4px;flex-wrap:wrap}.swleg i.hatch{background:repeating-linear-gradient(45deg,#b0453a 0 2px,#e6dbbd 2px 5px)}
 /* factories view */
 .fctiles{grid-template-columns:repeat(6,1fr)}.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:10px;margin:4px 0 10px}
@@ -2818,6 +2818,10 @@ function srcBar(id,P,x,y,w,h){const s=srcSplit(id,P),sc=w*.8/Math.max(s.need,1e-
   for(const [v,c] of [[s.dom,SRC_C.dom],[s.ally,SRC_C.ally],[s.spot,SRC_C.spot],[s.prc,SRC_C.prc]])if(v>0){o+=`<rect x="${cx.toFixed(1)}" y="${y}" width="${(v*k).toFixed(1)}" height="${h}" fill="${c}"/>`;cx+=v*k}
   if(s.lost>0)o+=`<rect x="${cx.toFixed(1)}" y="${y}" width="${(s.lost*k).toFixed(1)}" height="${h}" fill="url(#swh)"/>`;
   if(s.need>1e-6)o+=`<line x1="${(x+s.need*k).toFixed(1)}" x2="${(x+s.need*k).toFixed(1)}" y1="${y-3}" y2="${y+h+3}" stroke="#2b241a" stroke-width="2"/>`;return o}
+// what limits an item this one feeds: this item itself, or something else
+function feedWhy(c,id){const R=S._R;if(!R)return null;
+  if(c.startsWith('L:')){const o=R.out[c.slice(2)];if(!o.bott)return null;const ch=o.chain;return ch.includes(id)?{me:1,t:'⛓ held back by this item'}:{t:`held back by ${ND[ch.at(-1)].n}`}}
+  const p=R.P[c];if(!p.starvedBy||p.cover>=.999)return null;const ch=chainOf(R.P,c).slice(1);return ch.includes(id)?{me:1,t:'⛓ starved by this item'}:{t:`short of ${ND[ch.at(-1)].n}`}}
 function supplyWeb(id,P){
   const isL=id.startsWith('L:'),l=isL?id.slice(2):null,o=isL?S._R.out[l]:null,ins=isL?LINES[l].in:ND[id].in,cons=isL?[]:CONSUMERS[id];
   const bind=isL?o.bott:P[id].starvedBy,RH=40,top=26,n=Math.max(ins.length,cons.length,isL?3:1,2),H=top+n*RH+8,W=1000;
@@ -2846,7 +2850,7 @@ function supplyWeb(id,P){
   else{const dem=c=>c.startsWith('L:')?S._R.out[c.slice(2)].cap:(P[c]?.need||0),tot=Math.max(1e-9,cons.reduce((a,c)=>a+dem(c),0));let sy2=cy0+ch/2-cons.reduce((a,c)=>a+3+15*dem(c)/tot+4,0)/2;
     cons.forEach((c,k)=>{const y=rowY(k,cons.length),t=3+15*dem(c)/tot,ty=sy2+t/2;sy2+=t+4;const isLn=c.startsWith('L:'),nm=isLn?LINES[c.slice(2)].n:ND[c].n,st=isLn?(S._R.out[c.slice(2)].n<S._R.out[c.slice(2)].cap-1e-6?'tight':'ok'):nodeStatus(P[c]);
       g+=`<path d="M${RX},${ty.toFixed(1)} C${RX+90},${ty.toFixed(1)} ${RX+90},${y+16} ${RX+170},${y+16}" fill="none" stroke="#8a7440" stroke-opacity=".4" stroke-width="${t.toFixed(1)}"/>`;
-      g+=`<g class="swr" data-a="node" data-n="${c}" data-tip="${tipQ(`<b>${nm}</b><br>Takes ${pct(dem(c)/tot)} of demand for ${ND[id].n}`)}"><rect x="${RX+172}" y="${y+2}" width="${W-RX-172}" height="${RH-6}" fill="transparent"/><circle cx="${RX+180}" cy="${y+16}" r="4" fill="${ST_C[st]}"/><text x="${RX+190}" y="${y+20}" class="swn">${nm}${isLn?' 🏭':''}</text><text x="${W-2}" y="${y+20}" text-anchor="end" class="swp">${pct(dem(c)/tot)}</text></g>`})}
+      g+=`<g class="swr" data-a="node" data-n="${c}" data-tip="${tipQ(`<b>${nm}</b><br>Takes ${pct(dem(c)/tot)} of demand for ${ND[id].n}`)}"><rect x="${RX+172}" y="${y+2}" width="${W-RX-172}" height="${RH-6}" fill="transparent"/><circle cx="${RX+180}" cy="${y+16}" r="4" fill="${ST_C[st]}"/><text x="${RX+190}" y="${y+(feedWhy(c,id)?15:20)}" class="swn">${nm}${isLn?' 🏭':''}</text>${(()=>{const fw=feedWhy(c,id);return fw?`<text x="${RX+190}" y="${y+29}" class="swm ${fw.me?'swme':'swsib'}">${fw.t}</text>`:''})()}<text x="${W-2}" y="${y+20}" text-anchor="end" class="swp">${pct(dem(c)/tot)}</text></g>`})}
   const leg=[['US-made',SRC_C.dom],['Allied',SRC_C.ally],['Spot / diverted',SRC_C.spot],['PRC / Russia',SRC_C.prc]].map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join('')+`<span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span>`;
   return `<div class="swhd"><span class="linkn" data-a="flow" data-f="${id}">⇶ Open in Flows</span></div>
     <svg class="sweb" viewBox="0 0 ${W} ${H}" width="100%"><defs><pattern id="swh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#e6dbbd"/><line x1="0" y1="0" x2="0" y2="5" stroke="#b0453a" stroke-width="2.5"/></pattern></defs>${g}</svg>
