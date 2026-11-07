@@ -514,6 +514,15 @@ body{background:
 .lad-s em{font:600 12px var(--disp);font-style:normal;letter-spacing:.03em}.lad em.ok{color:#8fd07a}.lad em.okish{color:#8a8672}.paper .lad em.okish{color:#6b5a35}.lad em.tmp{color:#c9b98f}.lad em.none{color:#e0604c}.lad .ar{color:#6b5a35;font-size:13px}
 .paper .lad-s,.vpaper .lad-s{background:#f3ebd6;border-color:#b8a57a}.paper .lad-s b{color:#2b241a}.paper .lad-s i{color:#8a6a1f}.paper .lad-s.bind{background:#f6dcd4;border-color:#b0453a}.paper .lad-s.bind i{color:#a3261c}
 .paper .lad em.ok{color:#2f6a24}.paper .lad em.tmp{color:#6b5a35}.paper .lad em.none{color:#a3261c}.paper .lad-h{color:#6b5a35}
+/* order receipts */
+#receipt{position:fixed;left:50%;top:66px;transform:translateX(-50%);z-index:72;width:min(560px,92vw);transition:opacity .5s,transform .5s}#receipt.out{opacity:0;transform:translate(-50%,-10px)}
+.rcpt{position:relative;background:linear-gradient(#f8f2e1,#e8dcbd);color:#2b241a;border:1px solid #6b5a35;border-left-width:9px;box-shadow:0 14px 34px #000c,inset 0 0 0 1px #fff6;padding:12px 16px 11px 64px;animation:rcin .35s cubic-bezier(.2,1.4,.4,1)}
+.rcpt.ok{border-left-color:#3f6b33}.rcpt.meh{border-left-color:#b8860b}
+.rcpt-ic{position:absolute;left:14px;top:14px;font-size:32px;line-height:1}
+.rcpt-lab{display:inline-block;font:400 12px var(--sten);letter-spacing:.12em;text-transform:uppercase;color:#a3261c;border:2px solid #a3261c;padding:0 6px;transform:rotate(-2deg);margin-bottom:4px}.rcpt.ok .rcpt-lab{color:#2f6a24;border-color:#2f6a24}
+.rcpt-t{font:700 21px var(--disp);letter-spacing:.02em;line-height:1.1;margin-bottom:4px}.rcpt-l{font-size:13px;margin-top:2px}.rcpt-l .amb{color:#8a5a10;font-weight:600}.rcpt-l .okt{font-weight:600}
+.rcpt-b{display:flex;gap:6px;margin-top:8px}
+@keyframes rcin{0%{opacity:0;transform:translateY(-14px) scale(.97)}100%{opacity:1;transform:none}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1544,7 +1553,8 @@ const NSHIFT_M=.15,NSHIFT_C=.08,NSHIFT_RAMP=13;
 const nshiftOn=id=>!!S.nshift?.[id],nshiftF=id=>nshiftOn(id)?1+NSHIFT_M*Math.min(1,(S.w-S.nshift[id].since)/NSHIFT_RAMP):1;
 function toggleNShift(id){S.nshift=S.nshift||{};if(S.nshift[id]){delete S.nshift[id];log(`⏩ Extra shifts end at ${ND[id].n.toLowerCase()} suppliers.`);toast(`⏩ <b>Supplier shifts ended</b><br><span class="dim">${ND[id].n}</span>`);return}
   if(!(S.nodes[id].base>0)||S.budget<NSHIFT_C/4)return;S.nshift[id]={since:S.w};log(`⏩ Overtime and extra shifts funded at ${ND[id].n.toLowerCase()} suppliers (${money(NSHIFT_C)}/yr).`,'ev');
-  toast(`⏩ <b>Supplier shifts funded: ${ND[id].n}</b><br><span class="dim">${money(NSHIFT_C)}/yr · +15% of existing capacity as workers are hired (~3 months)</span>`,'good')}
+  {const v=nodeVerdict(id);receipt({ic:'⏩',lab:'Shifts funded',title:`${ND[id].n} suppliers`,ok:v?.ok,act:`data-a="node" data-n="${id}"`,actL:'Open the item →',
+    lines:['+15% of existing US capacity, phased in over about three months of hiring.',v?`<span class="${v.ok?'okt':'amb'}">${v.t.replace('Aims at','Eases')}.</span>`:'',`${money(NSHIFT_C)} a year while it runs.`]})}}
 function toggleShift(lid){if(S.shifts[lid]){S.shifts[lid]=false;log(`⏩ Extra shifts end at the ${LINES[lid].n.toLowerCase()} lines.`);toast(`⏩ <b>Extra shifts ended</b><br><span class="dim">${LINES[lid].n}</span>`);return}
   if(S.budget<SHIFT_C/4)return;S.shifts[lid]=true;log(`⏩ Extra shifts funded at the ${LINES[lid].n.toLowerCase()} lines (${money(SHIFT_C)}/yr).`,'ev');toast(`⏩ <b>Extra shifts funded: ${LINES[lid].n}</b><br><span class="dim">${money(SHIFT_C)}/yr from the budget · +${Math.round((SHIFT_M-1)*100)}% line capacity</span>`,'good')}
 const DFARS_NODES=['ndpr','hree','magnets','tungsten','wha','tantalum','tantcap','bearings'];
@@ -2148,7 +2158,9 @@ function startProject(id,ct){
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
   log(`Program office stood up: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
-  if(!S.histMode){const v=launchVerdict(def);if(v)toast(`🏗 <b>Launched: ${def.n}</b><br><span class="dim">${v.t}</span>`,v.ok?'good':'')}
+  if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2037':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
+    receipt({ic:def.ally?'🤝':'🏗',lab:def.ally?'Allied deal signed':'Program launched',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:'Open the program →',
+      lines:[`Raises <b>${tgt}</b>.`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far · ${money(c)} committed.`]})}
 }
 const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x};
 // start work before the price is settled: contracting ends in ~4 weeks, the government carries the cost risk
@@ -2157,7 +2169,8 @@ function ucaOK(p){const def=PD[p.def];return !def.ally&&STAGES[p.stage]==='contr
 function doUCA(uid){const p=S.projects.find(x=>x.uid==uid);if(!p||!ucaOK(p))return;const c=ucaCost(p);if(S.budget<c)return;
   const was=Math.round(p.dur[1]-p.prog);p.uca=1;p.dur[1]=Math.min(p.dur[1],Math.ceil(p.prog)+4);spendB(c,'Contract premiums');S.pages+=40;spent('$',c);
   log(`⚡ Undefinitized contract action: ${projName(p)} starts work now; the price is settled later (${money(c)}).`,'ev');
-  toast(`⚡ <b>Work starts now: ${projName(p)}</b><br><span class="dim">Contracting ends in ~4 weeks instead of ${was} · −${money(c)}</span>`,'good')}
+  receipt({ic:'⚡',lab:'Work starts now',title:projName(p),ok:1,act:`data-a="prog" data-u="${p.uid}"`,actL:'Open the program →',
+    lines:[`Contracting ends in about 4 weeks instead of ${was}.`,'The price is settled later; until then the government carries the cost risk.',`${money(c)} spent.`]})}
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
@@ -2365,7 +2378,8 @@ function spentTag(k){const x=S._sp?.[k];if(!x)return '';const el=performance.now
 const v0=v=>v<0?'gain':'';
 const spotAct=id=>S.spot.filter(x=>x.id===id),spotLine=id=>{const a=spotAct(id);return a.length?`<div class="okt mini">✓ ${a.length>1?a.length+' purchases':'Purchase'} arriving · ${Math.max(...a.map(x=>x.left))} wk left</div>`:''};
 function spotBuy(id){const k=spotKind(id);if(!k)return;const c=spotCost(id);if(S.budget<c)return;spendB(c,'Emergency purchases');S.spot.push({id,amt:S.nodes[id].scale*.25,left:26});log(`${SPOT_L[k][0]} ${SPOT_L[k][2]}: ${ND[id].n} (${money(c)}).`);spent('$',c);
-  toast(`${SPOT_L[k][0]} <b>Bought: ${ND[id].n}</b><br><span class="dim">−${money(c)} · +25% of normal supply for 26 weeks</span>`,'good')}
+  {const v=nodeVerdict(id);receipt({ic:SPOT_L[k][0],lab:k==='ally'?'Allied order placed':'Purchase ordered',title:ND[id].n,ok:v?.ok,act:`data-a="node" data-n="${id}"`,actL:'Open the item →',
+    lines:['+25% of normal supply, arriving now and lasting 26 weeks.',v?`<span class="${v.ok?'okt':'amb'}">${v.t.replace('Aims at','Eases')}.</span>`:'',`${money(c)} spent.`]})}}
 function togglePrio(id){if(S.prio[id]){S.prio[id]=false;log(`DPA priority released: ${ND[id].n}.`);toast(`<b>DPA priority released</b><br><span class="dim">${ND[id].n}</span>`);return}if(S.pc<5)return;S.pc-=5;S.prio[id]=true;S.waivers++;log(`🏭 DPA priority rating: ${ND[id].n} diverted from civilian customers.`,'ev');spent('pc',5);toast(`🏭 <b>DPA priority: ${ND[id].n}</b><br><span class="dim">−5 PC · civilian supply diverted to defense</span>`,'good')}
 function setAid(v){if(v===S.aidLvl)return;if(v<S.aidLvl){const c=Math.round(10*(S.aidLvl-v)/.5);if(S.pc<c)return;S.pc-=c}S.aidLvl=v;log(`🇺🇦 Aid to Ukraine set to ${v===1?'full':v===.5?'half':'stopped'}.`,'ev')}
 function framework(lid){if(S.fw[lid])return;const tgt=lineName(lid)*2;S.fw[lid]={target:tgt,due:S.w+156,start:S.w};S.pc+=12;log(`📣 Framework agreement announced: ${LINES[lid].n} to ${fmtN(tgt*LINES[lid].k)}/yr within three years.`,'ev')}
@@ -4016,7 +4030,15 @@ function markOff(root){
   if(S?.replay)for(const b of root.querySelectorAll('[data-a]'))if(REPLAY_LOCK.has(b.dataset.a)&&!b.classList.contains('off'))off(b);
 }
 function popWhy(b){const r=b.getBoundingClientRect();showTip(b.dataset.tip,r.left+r.width/2,r.bottom);b.classList.remove('nope');void b.offsetWidth;b.classList.add('nope')}
-function render(){if(!S)newGame(PLAYABLE[0]);renderGame();renderModal();rehover()}
+const RCPT_MS=7000;
+function receipt(o){if(!S||S.sim||S.histMode)return;S._rcpt={...o,t0:performance.now(),k:String(Math.random())};renderReceipt();setTimeout(renderReceipt,RCPT_MS-500);setTimeout(renderReceipt,RCPT_MS+50)}
+function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=document.createElement('div');el.id='receipt';document.body.appendChild(el)}
+  const r=S?._rcpt,age=r?performance.now()-r.t0:1e9;if(!r||age>RCPT_MS||r.gone){if(el.innerHTML)el.innerHTML='';el.dataset.k='';return}
+  el.classList.toggle('out',age>RCPT_MS-600);if(el.dataset.k===r.k)return;el.dataset.k=r.k;
+  el.innerHTML=cz(`<div class="rcpt ${r.ok?'ok':'meh'}"><span class="rcpt-ic">${r.ic}</span><div class="rcpt-lab">${r.lab}</div><div class="rcpt-t">${r.title}</div>${r.lines.filter(Boolean).map(x=>`<div class="rcpt-l">${x}</div>`).join('')}<div class="rcpt-b">${r.act?`<button class="pbtn sm primary" ${r.act} data-rc="1">${r.actL||'Open →'}</button>`:''}<button class="pbtn sm" data-a="rcptx">Dismiss</button></div></div>`)}
+// does a supply move on this item touch a line's current limit?
+const nodeVerdict=id=>launchVerdict({t:{node:id}});
+function render(){if(!S)newGame(PLAYABLE[0]);renderGame();renderModal();rehover();renderReceipt()}
 
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
 document.addEventListener('pointerdown',e=>{
@@ -4098,6 +4120,7 @@ document.addEventListener('pointerdown',e=>{
     case 'scenpick':if(!S.scen&&S.w===PLAY0){S.modal='scenPick';S.speed=0}break;
     case 'scenon':S.modal=null;break;
     case 'scenstop':S.over=true;S.speed=0;S.verdict=S.scenRes.verdict;S.overWhy='';S.modal=null;S.view='rec';S._vdirty=true;break;
+    case 'rcptx':if(S._rcpt)S._rcpt.gone=true;renderReceipt();return;
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;break;
