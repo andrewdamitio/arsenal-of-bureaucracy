@@ -2804,7 +2804,7 @@ function raisePanel(id,P){
   return `<div class="raise"><div class="raiseh"><b>⬆ ${head}</b><span class="dsp"></span><span class="mini">${status}</span></div>
     ${under.length?`<div class="mini" style="margin:2px 0 4px">Under way: ${under.map(q=>{const [t,c]=progStatus(q,true);return `<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t.replace(/^\S+\s/,'')}</span>`}).join(' · ')}</div>`:''}
     ${opts.length?`<div class="rcards">${opts.map(card).join('')}</div>`:'<p class="mini">Every build option is already under way or done.</p>'}
-    <div class="rquick"><span class="mini">Quick fixes:</span>${quick}<span class="dsp"></span><span class="linkn mini" data-a="aotog">${S.aoOpen?'Hide options ▴':'All options ▾'}</span></div></div>`}
+    <div class="rquick"><span class="mini">Quick fixes:</span>${quick}<span class="dsp"></span><span class="linkn mini" data-a="aotog">${!S.aoShut?'Hide options ▴':'All options ▾'}</span></div></div>`}
 /* ---------- permits: the docket a program has to clear, and the ones a plant has to keep ---------- */
 // ph 'b' = before construction (the Siting & Permitting stage); 'o' = to operate, renewed for the life of the plant
 const PERMITS=[
@@ -3030,7 +3030,7 @@ function dossierHTML(id,P){
       ${act.length?`<div class="lgrp">Projects</div>${projTable(act)}`:''}${plants.length?`<div class="lgrp">Plants</div>${plantsTable(plants)}`:''}</div>
      ${Object.keys(fl).length?`<div class="dsec"><h4>Improvements in place</h4><p>${Object.keys(fl).map(k=>({mod:'Modernized',know:'Workforce trained',power:'Firm power secured',test:'Qualification capacity'}[k])).join(' · ')}</p></div>`:''}`;
   }
-  {const i=main.indexOf('<!--AO-->'),j=main.indexOf('<!--/AO-->');if(i>=0&&j>i){const sec=main.slice(i+9,j),n=(sec.match(/data-a="launch"/g)||[]).length,open=!!S.aoOpen;
+  {const i=main.indexOf('<!--AO-->'),j=main.indexOf('<!--/AO-->');if(i>=0&&j>i){const sec=main.slice(i+9,j),n=(sec.match(/data-a="launch"/g)||[]).length,open=!S.aoShut;
     main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',makersHTML(id,S._R.P)+`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} programs`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
   return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${pinTop(main)}</div></div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
 }
@@ -4216,7 +4216,7 @@ document.addEventListener('pointerdown',e=>{
     case 'goback':navBackG();break;
     case 'home':if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}S.view='cmd';break;
     case 'ovjump':S._ovScroll=b.dataset.s;break;
-    case 'aotog':S.aoOpen=!S.aoOpen;break;
+    case 'aotog':S.aoShut=!S.aoShut;break;
     case 'fcf':S.fcF=b.dataset.v;break;
     case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;break;
     case 'pmgo':S.view='permits';S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
