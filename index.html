@@ -547,6 +547,7 @@ body{background:
 .ctft{flex-wrap:wrap;gap:6px}.ctft .pbtn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;max-width:420px}.ctft .pbtn .mini{white-space:normal}
 .dlim{margin-top:2px}
 .flfocus{display:flex;align-items:center;gap:10px;margin:6px 0 0;padding:7px 12px;background:#f3ebd6;border:1px solid #c8b48a;box-shadow:inset 4px 0 0 #b8860b}.flfocus .ffi{font-size:22px;display:flex}.flfocus b{font:400 19px var(--sten);letter-spacing:.03em;margin-right:10px}.flfocus .ffk{font:600 10.5px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a7440}
+.dbg{margin-top:14px;padding-top:6px;border-top:2px solid #8a7850}.dbgh{font:400 15px var(--sten);letter-spacing:.06em;color:#6b5a35;margin-bottom:2px}.dbg .dsec h4{font-size:12px}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3047,6 +3048,9 @@ function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,y
     if(p.prc+p.lost>1e-9)rows.push(`<tr><td><b>${FLAGS.cn} China / ${FLAGS.ru} Russia</b></td><td>${share(p.prc)}</td><td>${p.lost>.005?`<span class="redt">✂ ${share(p.lost)} cut off</span>`:'Supplying'}</td></tr>`)}
   const grp=(t,n)=>`<tr class="mkg"><td colspan="3">${t} <span>${n}</span></td></tr>`;
   return `<div class="dsec" id="makers"><h4>🏭 Who makes it</h4><table class="ctable mkt"><tr><th>Producer</th><th>${isL?'Output':'Supply'}</th><th>Status</th></tr>${grp('Existing',`${rows.length} source${rows.length===1?'':'s'}${pls.length+ald.length?` · ${pls.length+ald.length} you built or funded`:''}`)}${rows.join('')}${grp('Upcoming',up.length?`${up.length} under construction`:'nothing ordered')}${up.length?up.join(''):`<tr><td colspan="3" class="mini">No new capacity on order. The options above start some.</td></tr>`}</table></div>`}
+// lift one titled section out of a page: [page without it, the section]
+function takeSec(h,title){const k=h.indexOf('<div class="dsec"><h4>'+title);if(k<0)return [h,''];let d=0,e=k;const re=/<div\b|<\/div>/g;re.lastIndex=k;let m;
+  while((m=re.exec(h))){d+=m[0]==='</div>'?-1:1;if(d===0){e=m.index+6;break}}return [h.slice(0,k)+h.slice(e),h.slice(k,e)]}
 function dossierHTML(id,P){
   const sb=`<div class="dsb">${[1,2,3,4].map(t=>`<div class="dsbt">T${t} · ${TIERS[t]}</div>`+NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<div class="dsbi ${n.id===id?'on':''}" data-a="node" data-n="${n.id}"><i class="dot st-${st}"></i>${n.n}</div>`}).join('')).join('')}
     <div class="dsbt">T5 · ${TIERS[5]}</div>${S.order.map(l=>{const o=S._R.out[l],r=o.n/Math.max(o.cap,1e-9);return `<div class="dsbi ${id==='L:'+l?'on':''}" data-a="node" data-n="L:${l}"><i class="dot st-${r>=.999?'ok':r>=.8?'tight':'short'}"></i>${LINES[l].n}</div>`}).join('')}</div>`;
@@ -3098,7 +3102,12 @@ function dossierHTML(id,P){
      ${Object.keys(fl).length?`<div class="dsec"><h4>Improvements in place</h4><p>${Object.keys(fl).map(k=>({mod:'Modernized',know:'Workforce trained',power:'Firm power secured',test:'Qualification capacity'}[k])).join(' · ')}</p></div>`:''}`;
   }
   {const i=main.indexOf('<!--AO-->'),j=main.indexOf('<!--/AO-->');if(i>=0&&j>i){const sec=main.slice(i+9,j),n=(sec.match(/data-a="launch"/g)||[]).length,open=!S.aoShut;
-    main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',makersHTML(id,S._R.P)+`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} programs`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
+    main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} programs`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
+  // page order: what limits it, what you can do, how it is supplied, what is coming, how you compare, then background
+  {let bg='',isv;for(const t of ['Situation','Why it matters','Where it comes from',"How it's made"]){const r=takeSec(main,t);main=r[0];bg+=r[1]}
+   [main,isv]=takeSec(main,'In service');const mk=makersHTML(id,S._R.P),pk='<div class="dsec"><h4>Capacity pipeline';main=main.includes(pk)?main.replace(pk,mk+pk):main+mk;
+   if(isv){const rk='<div class="dsec"><h4>Readiness';main=main.includes(rk)?main.replace(rk,isv+rk):main+isv}
+   if(bg)main+=`<div class="dbg"><div class="dbgh">Background</div>${bg}</div>`}
   return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${pinTop(main)}</div></div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
 }
 
