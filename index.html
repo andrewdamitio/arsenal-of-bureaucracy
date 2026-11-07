@@ -4117,7 +4117,7 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   const laws=S.lawLog||[],dec=S.decN||{you:0,auto:0},plants=S.plants.filter(p=>p.start>=PLAY0),cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
   const d=(a,b,f,good=1)=>{const x=b-a;return Math.abs(x)<1e-9?'<span class="dim">no change</span>':`<span class="${(x>0)===(good>0)?'okt':'redt'}">${x>0?'▲':'▼'} ${f(Math.abs(x))}</span>`};
   const tile=(ic,v,l,sub)=>`<div class="rec-t"><span class="rec-ic">${ic}</span><b>${v}</b><span class="rec-l">${l}</span><span class="rec-s">${sub}</span></div>`;
-  let h=(S.scen?`<div class="sc-rec">${scenCard()}</div>`:'')+`<div class="rec-tiles">
+  let h=(S.scen?`<div class="sc-rec"></div>`:'')+`<div class="rec-tiles">
     ${tile('🎯',pct(idx),`of what the plan requires`,`from ${pct(idx0)} in Jan 2027 · ${d(idx0*100,idx*100,v=>fmt(v,0)+' pt')}`)}
     ${tile('💵',money(spent),'spent since Jan 2027',`of ${money(inc+r0.budget)} available · ${money(S.budget)} unspent`)}
     ${tile('👷',`~${fmtN(Math.round(J.j/100)*100)}`,'industrial jobs at new plants',`~${fmtN(Math.round(J.more/100)*100)} more as plants ramp and finish (estimate)`)}
