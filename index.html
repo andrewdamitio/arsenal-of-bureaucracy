@@ -558,6 +558,11 @@ body{background:
 .cseg{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 14px 0}.cseg-h td{background:#e9dfc4;border-top:2px solid #8a7850;padding:7px 8px 5px}.cseg-h b{font:400 15px var(--sten);letter-spacing:.04em;margin-right:8px}.cs-ally td{background:#d9e2ea;border-top-color:#6d8396}
 .bl-alert{margin:0 0 10px;padding:12px 16px;background:#3a2f1c;color:#f3ead2;border:2px solid #d9a441;box-shadow:inset 6px 0 0 #d9a441;font-size:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}.bl-ah{font:400 22px var(--sten);letter-spacing:.04em;color:#f1c96a}
 .bl-cp{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:14px}.bl-cp b{display:block;margin-bottom:2px}
+.wmwrap{display:grid;grid-template-columns:210px 1fr;gap:12px;margin-top:8px}.wmlist{display:flex;flex-direction:column;gap:3px;max-height:70vh;overflow:auto}.wmi{display:flex;justify-content:space-between;align-items:center;gap:6px;background:none;border:1px solid transparent;padding:3px 5px;cursor:pointer;text-align:left}.wmi.on{border-color:#8a7850;background:#efe6cf}.wmi .npill{font-size:12px}
+.wmsvg{width:100%;height:auto;display:block;border:1px solid #c8b48a;background:#e9e1cc}.wml{font:600 11.5px var(--disp);fill:#2a2418;paint-order:stroke;stroke:#f7f2e6;stroke-width:3px;stroke-linejoin:round}
+.wmsum{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;margin-bottom:6px;align-items:center}.wmsum i{display:inline-block;width:11px;height:11px;margin-right:4px;vertical-align:-1px}.wmsum b{font:600 15px var(--disp)}
+.wmsrc{font-size:13px;margin-top:6px}.wmg{font-size:13px;margin-top:6px;padding:6px 10px;background:#f3ebd6;border-left:3px solid #b8860b}.wmload{height:300px;display:flex;align-items:center;justify-content:center;color:#6b5a35;border:1px dashed #c8b48a}
+@media(max-width:900px){.wmwrap{grid-template-columns:1fr}.wmlist{flex-direction:row;flex-wrap:wrap;max-height:none}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3143,6 +3148,75 @@ const LINE_MAKERS={interceptors:'Lockheed Martin, Camden AR and Grand Prairie TX
  subs:'General Dynamics Electric Boat, Groton CT and Quonset RI; HII Newport News, VA',shells:'Army plants at Scranton and Wilkes-Barre PA (bodies), Mesquite TX (GD-OTS), Iowa AAP (load and pack); Holston TN and Radford VA (explosives and propellant)',
  drones:'AeroVironment, Skydio, Anduril, Shield AI and Red Cat, among others'};
 // everyone who makes this item: existing US producers, plants you built, plants under construction, allies, and China or Russia
+
+// Where US imports of each raw material came from, 2021–24, as printed in the USGS Mineral Commodity Summaries 2026
+// (one line per chapter; shares of US imports, not of world output). nir: net import reliance, 2025e.[c:mcs26]
+const WMD=[
+ {k:'lithium',node:'lithium',n:'Lithium',nir:'>50%',src:[['Chile',54],['Argentina',43]],oth:3,ln:'Chile, 54%; Argentina, 43%; and other, 3%.'},
+ {k:'rhenium',node:'rhenium',n:'Rhenium',nir:'75%',src:[['Chile',31],['Canada',27],['Germany',16],['Poland',14]],oth:12,ln:'Total imports: Chile, 31%; Canada, 27%; Germany, 16%; Poland, 14%; and other, 12%.'},
+ {k:'gallium',node:'gallium',n:'Gallium',nir:'100%',src:[['Canada',28],['Japan',22],['China',18],['Germany',16]],oth:16,ln:'Metal: Canada, 28%; Japan, 22%; China, 18%; Germany, 16%; and other, 16%.'},
+ {k:'germanium',node:'germanium',n:'Germanium',nir:'>50%',src:[['Belgium',41],['China',23],['Canada',17],['Germany',14]],oth:5,ln:'Combined total: Belgium, 41%; China, 23%; Canada, 17%; Germany, 14%; and other, 5%.'},
+ {k:'ree',node:'ndpr',n:'Rare earths',nir:'67%',src:[['China',71],['Malaysia',13],['Japan',5],['Estonia',5]],oth:6,ln:'Rare-earth compounds and metals: China, 71%; Malaysia, 13%; Japan, 5%; Estonia, 5%; and other, 6%.',note:'USGS: imports from Estonia, Japan and Malaysia were refined from concentrates produced in Australia, China and elsewhere.'},
+ {k:'hree',node:'hree',n:'Heavy rare earths (terbium)',nir:'—',src:[['China',100]],oth:0,ln:'Terbium compounds and metals: China, 100%.',note:'No US trade codes exist for individual heavy rare earths; USGS reports shipping records. Dysprosium is not listed separately; terbium is shown.'},
+ {k:'antimony',node:'antimony',n:'Antimony',nir:'91%',src:[['China',55],['Belgium',12],['Thailand',8],['India',6]],oth:19,ln:'Total metal and oxide: China, 55%; Belgium, 12%; Thailand, 8%; India, 6%; and other, 19%.'},
+ {k:'tungsten',node:'tungsten',n:'Tungsten',nir:'>50%',src:[['China',26],['Germany',14],['Bolivia',8],['Vietnam',8]],oth:44,ln:'Ores, concentrates, and other forms: China, 26%; Germany, 14%; Bolivia, 8%; Vietnam, 8%; and other, 44%.'},
+ {k:'magnesium',node:'magnesium',n:'Magnesium metal',nir:'>75%',src:[['Israel',20],['Canada',15],['Turkey',11],['Czechia',9]],oth:45,ln:'Combined total: Israel, 20%; Canada, 15%; Turkey, 11%; Czechia, 9%; and other, 45%.'},
+ {k:'ti_sponge',node:'ti_sponge',n:'Titanium sponge',nir:'100%',src:[['Japan',77],['Saudi Arabia',13],['Kazakhstan',8]],oth:2,ln:'Sponge metal: Japan, 77%; Saudi Arabia, 13%; Kazakhstan, 8%; and other, 2%.'},
+ {k:'graphite',node:'graphite',n:'Natural graphite',nir:'100%',src:[['China',46],['Canada',13],['Mozambique',13],['Mexico',12]],oth:16,ln:'China, 46%; Canada, 13%; Mozambique, 13%; Mexico, 12%; and other, 16%.'},
+ {k:'nickel',node:'nico',n:'Nickel',nir:'41%',src:[['Canada',44],['Norway',11],['Australia',8],['Brazil',7]],oth:30,ln:'Primary nickel: Canada, 44%; Norway, 11%; Australia, 8%; Brazil, 7%; and other, 30%.'},
+ {k:'cobalt',node:'nico',n:'Cobalt',nir:'79%',src:[['Norway',26],['Finland',16],['Canada',14],['Japan',14]],oth:30,ln:'Metal, oxide, and salts: Norway, 26%; Finland, 16%; Canada, 14%; Japan, 14%; and other, 30%.'},
+ {k:'tantalum',node:'tantalum',n:'Tantalum',nir:'100%',src:[['China',22],['Australia',14],['Germany',11],['Indonesia',7]],oth:46,ln:'Total: China, 22%; Australia, 14%; Germany, 11%; Indonesia, 7%; and other, 46%.'},
+ {k:'niobium',node:'tantalum',n:'Niobium',nir:'100%',src:[['Brazil',67],['Canada',28]],oth:5,ln:'Total imports: Brazil, 67%; Canada, 28%; and other, 5%.'},
+ {k:'indium',node:'indium',n:'Indium',nir:'100%',src:[['South Korea',25],['Japan',22],['China',12],['Canada',11]],oth:30,ln:'Republic of Korea, 25%; Japan, 22%; China, 12%; Canada, 11%; and other, 30%.'},
+ {k:'aluminum',node:'al_primary',n:'Aluminum',nir:'60%',src:[['Canada',56],['United Arab Emirates',8],['Bahrain',4],['China',3]],oth:29,ln:'Canada, 56%; United Arab Emirates, 8%; Bahrain, 4%; China, 3%; and other, 29%.'},
+ {k:'beryllium',node:'beryllium',n:'Beryllium',nir:'—',src:[['Kazakhstan',31],['Latvia',25],['Japan',19],['Germany',5]],oth:20,ln:'Kazakhstan, 31%; Latvia, 25%; Japan, 19%; Germany, 5%; and other, 20%.',note:'The United States mines and refines beryllium (Utah, Ohio); these are its imports.'}];
+// where each arrow starts (longitude, latitude), and which group the country is in
+const WMC={'China':[105,34],'Russia':[45,56],'Canada':[-96,54],'Chile':[-71,-30],'Argentina':[-65,-34],'Germany':[10,51],'Poland':[19.5,52],'Japan':[138,36.5],'Belgium':[4.5,50.6],
+ 'Malaysia':[102,4],'Estonia':[25.5,58.7],'Thailand':[101,15],'India':[79,22],'Bolivia':[-65,-17],'Vietnam':[106,16],'Israel':[35,31.5],'Turkey':[35,39],'Czechia':[15.5,49.8],
+ 'Saudi Arabia':[45,24],'Kazakhstan':[67,48],'Mozambique':[35,-17],'Mexico':[-102,23],'Norway':[9,61],'Australia':[134,-25],'Brazil':[-50,-12],'Finland':[26,63],'Indonesia':[113,-2],
+ 'South Korea':[128,36.3],'United Arab Emirates':[54,24],'Bahrain':[50.55,26.05],'Latvia':[24.6,56.9]};
+const US_LL=[-96,38.5];
+// treaty allies (NATO, Japan, South Korea, Australia) and close partners named in the data
+const WM_AL=['Canada','Germany','Poland','Japan','Belgium','Estonia','Turkey','Czechia','Norway','Finland','South Korea','Australia','Latvia','Israel'],WM_ADV=['China','Russia'];
+const wmGrp=c=>WM_ADV.includes(c)?'adv':WM_AL.includes(c)?'al':'oth',WM_COL={adv:'#c0392b',al:'#2f62a0',oth:'#8a7440'};
+const WM_NAME={'South Korea':['South Korea','S. Korea','Korea'],'United Arab Emirates':['United Arab Emirates'],'Czechia':['Czechia','Czech Rep.','Czech Republic'],'Turkey':['Turkey','Türkiye'],'United States':['United States of America']};
+// the base map: Natural Earth 1:110m countries (world-atlas), drawn once with d3-geo
+let WM=null,WMload=null;
+function wmLoad(){if(WM||WMload)return;const add=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
+  WMload=(window.d3?.geoPath?Promise.resolve():add('https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js')).then(()=>window.topojson?0:add('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js'))
+   .then(()=>fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json')).then(r=>r.json()).then(t=>{
+    const fc=topojson.feature(t,t.objects.countries),land=fc.features.filter(f=>f.properties.name!=='Antarctica');
+    const W=960,H=470,proj=d3.geoNaturalEarth1().fitExtent([[6,6],[W-6,H-6]],{type:'FeatureCollection',features:land}),path=d3.geoPath(proj);
+    const byN={};for(const f of land)byN[f.properties.name]=path(f);
+    WM={W,H,proj,path,byN,grat:path(d3.geoGraticule10()),sph:path({type:'Sphere'})};render()}).catch(()=>{WM={err:1};render()})}
+function wmCPath(c){const ns=WM_NAME[c]||[c];for(const n of ns)if(WM.byN[n])return WM.byN[n];return null}
+function wmSVG(d){const {W,H,path,proj}=WM,P=S._R?.P||production(false).P,cut=S.fac==='US'?(cutOf(d.node)||0):0;
+  let g=`<path d="${WM.sph}" fill="#e9e1cc"/><path d="${WM.grat}" fill="none" stroke="#d6cbb0" stroke-width=".5"/>`;
+  const src=new Set(d.src.map(x=>x[0]));
+  for(const n in WM.byN){const us=n==='United States of America',hit=[...src].find(c=>(WM_NAME[c]||[c]).includes(n));
+    g+=`<path d="${WM.byN[n]}" fill="${us?'#cfdcea':hit?(wmGrp(hit)==='adv'?'#f0c8c0':wmGrp(hit)==='al'?'#d6e0ee':'#eadfb8'):'#f7f2e6'}" stroke="#b9ad8c" stroke-width=".5"/>`}
+  const [ux,uy]=proj(US_LL);let arcs='',labs='';
+  for(const [c,v] of d.src.slice().sort((a,b)=>a[1]-b[1])){const ll=WMC[c];if(!ll)continue;const gp=wmGrp(c),col=WM_COL[gp],off=gp==='adv'&&cut>.01,w=(1.2+v*.16).toFixed(1);
+    const [x,y]=proj(ll),dx=ux-x,dy=uy-y,L=Math.hypot(dx,dy)||1,bend=Math.min(.32,90/L+.12),cx=(x+ux)/2+dy/L*L*bend*(dx>0?1:-1),cy=(y+uy)/2-Math.abs(dx/L)*L*bend,
+      ex=ux-(ux-cx)/Math.hypot(ux-cx,uy-cy)*8,ey=uy-(uy-cy)/Math.hypot(ux-cx,uy-cy)*8,dd=`M${x.toFixed(1)},${y.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}`;
+    arcs+=`<path d="${dd}" fill="none" stroke="${col}" stroke-width="${w}" stroke-opacity="${off?.35:.8}" ${off?'stroke-dasharray="5 4"':''} stroke-linecap="round" marker-end="url(#wmah-${gp})"><title>${c}: ${v}% of US imports${off?` · ${pct(cut)} cut by export controls in the game now`:''}</title></path>`;
+    labs+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(2.5+v*.06).toFixed(1)}" fill="${col}" stroke="#fff" stroke-width="1"/><text x="${(x+6).toFixed(1)}" y="${(y-5).toFixed(1)}" class="wml">${c} ${v}%${off?` <tspan fill="${col}">· ${pct(cut)} cut</tspan>`:''}</text>`}
+  labs+=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.5"/><text x="${(ux-8).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text>`;
+  const mk=k=>`<marker id="wmah-${k}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="${WM_COL[k]}"/></marker>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="wmsvg" role="img" aria-label="Map of US import sources for ${d.n}"><defs>${mk('adv')}${mk('al')}${mk('oth')}</defs>${g}${arcs}${labs}</svg>`}
+function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?(cutOf(d.node)||0):0;
+  if(!WM)wmLoad();
+  const sh=k=>d.src.filter(x=>wmGrp(x[0])===k).reduce((a,x)=>a+x[1],0);
+  const list=WMD.map(x=>{const pp=P[x.node],st=pp?nodeStatus(pp):'ok';return `<button class="wmi ${x.k===d.k?'on':''}" data-a="map" data-m="${x.k}"><span class="npill np-${st==='idle'?'ok':st}" style="pointer-events:none">${x.n}</span><span class="mini">${x.src[0][0]} ${x.src[0][1]}%</span></button>`}).join('');
+  const gm=p?(()=>{const n=Math.max(p.need,1e-9),dom=Math.min(1,p.dom/n);return `<div class="wmg"><b>In the game now</b> (${ND[d.node].n}): domestic ${pct(dom)} of need · allied ${pct(Math.min(1,p.ally/n))} · Chinese ${pct(Math.min(1,p.prc/n))}${cut>.01?` · <span class="redt">${pct(cut)} of Chinese supply cut by export controls</span>`:''}. <span class="linkn" data-a="node" data-n="${d.node}">Open its page →</span></div>`})():'';
+  const body=WM?.err?`<p class="redt">The world map could not load (it needs an internet connection for the Natural Earth outlines). The figures are below.</p>`:WM?wmSVG(d):'<div class="wmload">Loading the world map…</div>';
+  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(`<div class="dtop"><div class="dhd"><span class="ic">🌍</span><div><div class="dkind">Where US imports come from</div><h2 class="dttl">${d.n}</h2></div></div></div>`)}
+    <div class="wmwrap"><div class="wmlist">${list}</div><div class="wmmain">
+      <div class="wmsum"><span>Net import reliance <b>${d.nir}</b> <span class="mini">(2025, USGS)</span></span><span><i style="background:${WM_COL.adv}"></i>China / Russia <b>${sh('adv')}%</b></span><span><i style="background:${WM_COL.al}"></i>Allies and close partners <b>${sh('al')}%</b></span><span><i style="background:${WM_COL.oth}"></i>Other named countries <b>${sh('oth')}%</b></span><span>Other, unnamed <b>${d.oth}%</b></span></div>
+      ${body}
+      <div class="wmsrc"><b>USGS, import sources 2021–24:</b> ${d.ln}${d.note?` <span class="mini">${d.note}</span>`:''}</div>${gm}
+      <p class="mini" style="margin:4px 0 0">Shares of US imports by country of shipment, from the USGS Mineral Commodity Summaries 2026, not of world production: material refined in one country may have been mined in another. Arrow width shows the share; arrows show where shipments come from, not shipping routes. ${cut>.01?'Dashed: supply that export controls have cut in the game now.':''} Outlines: Natural Earth, 1:110m.</p>
+    </div></div></div></div>`}
 function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const pls=S.plants.filter(p=>isL?(p.kind==='line'&&p.target===l):p.target===id),prs=S.projects.filter(q=>{const d=PD[q.def];return q.dur[3]>0&&(isL?d.t.line===l:d.t.node===id)}),ald=isL?[]:S.done.filter(x=>PD[x.def].ally&&PD[x.def].t.node===id);
   const I=isL?null:INFO[id]||{},who=isL?LINE_MAKERS[l]:I.who?(I.who[S.fac]||I.who.US||I.who):'',p=P[id];
@@ -3216,7 +3290,7 @@ function dossierHTML(id,P){
     main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} programs`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
   // page order: what limits it, what you can do, how it is supplied, what is coming, how you compare, then background
   {let bg='',isv;for(const t of ['Situation','Why it matters','Where it comes from',"How it's made"]){const r=takeSec(main,t);main=r[0];bg+=r[1]}
-   [main,isv]=takeSec(main,'In service');const mk=makersHTML(id,S._R.P),pk='<div class="dsec"><h4>Capacity pipeline';main=main.includes(pk)?main.replace(pk,mk+pk):main+mk;
+   [main,isv]=takeSec(main,'In service');const wd=WMD.filter(x=>x.node===id),mk=(wd.length?`<div class="dsec"><h4>Where US imports come from</h4>${wd.map(x=>`<div class="wmsrc" style="margin:2px 0 6px"><b>${x.n}</b> (USGS, 2021–24): ${x.ln} <button class="btn sm" data-a="map" data-m="${x.k}">🌍 On the map</button></div>`).join('')}</div>`:'')+makersHTML(id,S._R.P),pk='<div class="dsec"><h4>Capacity pipeline';main=main.includes(pk)?main.replace(pk,mk+pk):main+mk;
    if(isv){const rk='<div class="dsec"><h4>Readiness';main=main.includes('<!--ISV-->')?main.replace('<!--ISV-->',isv):main.includes(rk)?main.replace(rk,isv+rk):main+isv}
    if(bg)main+=`<div class="dbg"><div class="dbgh">Background</div>${bg}</div>`}
   return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${pinTop(main)}</div></div></div>`;
@@ -3469,6 +3543,7 @@ const CITES=[
  {id:'hellscape',g:'Wars of 2025–26',t:'Indo-Pacific commander plans ‘hellscape’ for China’s military if it invades Taiwan',pub:'Washington Times',d:'Jun 2024',url:'https://m.washingtontimes.com/news/2024/jun/14/indo-pacific-commander-plans-hellscape-chinas-mili/',use:'Adm. Paparo: thousands of uncrewed submarines, surface vessels and aerial drones would engage an invasion force in the Strait, buying about a month.'},
  {id:'crsnavy',g:'Ships, submarines & readiness',t:'Navy Force Structure and Shipbuilding Plans: Background and Issues for Congress (RL32665)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/files/2026-01-20_RL32665_56fe7a4e3f7660d51984a2058aa270cb1973b2c4.html',use:'291 battle force ships; about 11 ships a year sustained to grow toward 381; the 381 goal is being replaced by a Golden Fleet goal.'},
  {id:'scranton24',g:'Munitions & energetics',t:'US Army ammo plant boosts artillery shell production for Ukraine',pub:'Defense News (AP)',d:'Aug 2024',url:'https://www.defensenews.com/global/the-americas/2024/08/28/us-army-ammo-plant-boosts-artillery-shell-production-for-ukraine/',use:'Scranton went from about 24,000 to 36,000 155mm rounds a month with weekend overtime and a $400M modernization; RAND notes shifts and overtime can only go so far.'},
+ {id:'mcs26',g:'Minerals & materials',t:'Mineral Commodity Summaries 2026',pub:'U.S. Geological Survey',d:'Feb 2026',url:'https://pubs.usgs.gov/publication/mcs2026',use:'Import sources by country (2021–24) and net import reliance (2025) for each raw material on the world map, copied from each chapter.'},
  {id:'ndsa',g:'US rulebook',t:'Strategic and Critical Materials Stock Piling Act (50 U.S.C. 98 et seq.)',pub:'Office of the Law Revision Counsel',d:'current',url:'https://uscode.house.gov/view.xhtml?path=/prelim@title50/chapter5/subchapter3&edition=prelim',use:'Stockpile acquisitions need authorization in law, which Congress gives in the annual NDAA. Buy size and price in the game are estimates.'},
  {id:'upl',g:'US rulebook',t:'Defense Primer: Defense and Intelligence Unfunded Priorities (IF11964)',pub:'Congressional Research Service',d:'2026',url:'https://www.everycrsreport.com/reports/IF11964.html',use:'Services and combatant commands must send Congress lists of what they need but did not request (10 U.S.C. 222a); DOD sent $53.7 billion of them for FY2026. Congress funds part of each list with money it adds. Odds of funding in the game are estimates.'},
  {id:'pl11850',g:'US rulebook',t:'H.R. 815, the 2024 national security supplemental (Public Law 118-50), including the Ukraine Security Supplemental Appropriations Act',pub:'Congress.gov',d:'Apr 2024',url:'https://www.congress.gov/bill/118th-congress/house-bill/815',use:'Emergency money outside the annual bill, including munitions production and industrial-base funds; it passed the Senate in February 2024 and the House only in April.'},
@@ -4160,7 +4235,7 @@ function renderGame(){
     <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
-  let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button></span></h2>
+  let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button> <button class="btn sm" data-a="map" data-tip="Where US imports of each raw material come from: a world map, from USGS data">🌍 Imports</button></span></h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
    <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
   if(S.tab==='bott'){
@@ -4319,11 +4394,7 @@ function renderModal(){
     html=contractHTML();
   } else if(S.modal==='node'&&S.sel){
     html=dossierHTML(S.sel,P);
-  } else if(S.modal==='map'){
-    html=`<div class="paper wide"><div class="hd"><span class="ic">🗺</span>Supply Chain Map <span style="margin-left:auto;font-size:12px">Green: OK · Amber: tight · Red: short · Dark red: cut off. Click any node.</span></div>
-     <div class="map">${[1,2,3,4].map(t=>`<div class="col"><h4>T${t} · ${TIERS[t]}</h4>${NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<span class="npill np-${st==='idle'?'ok':st}" data-a="node" data-n="${n.id}"><span>${n.ic} ${n.n}</span><span>${P[n.id].need>1e-6?pct(Math.min(P[n.id].cover,9.99)):'—'}</span></span>`}).join('')}</div>`).join('')}
-      <div class="col"><h4>T5 · End Items</h4>${S.order.map(l=>{const o=S._R.out[l];const r=o.n/Math.max(o.cap,1e-9);return `<span class="npill np-${r>=.999?'ok':r>=.8?'tight':'short'}" data-a="tab" data-t="5"><span>${LINES[l].n}</span><span>${pct(r)}</span></span><div style="font:11px 'Segoe UI';color:#6b5a35;margin:-1px 0 4px 6px">${LINES[l].in.map(i=>ND[i].n).join(' · ')}</div>`}).join('')}</div></div>
-     </div>`;
+  } else if(S.modal==='map'){html=wmHTML()
   } else if(S.modal==='bill'){html=billHTML()
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
@@ -4420,7 +4491,7 @@ document.addEventListener('pointerdown',e=>{
     case 'up':{const i=+b.dataset.i;[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
     case 'dn':{const i=+b.dataset.i;[S.order[i+1],S.order[i]]=[S.order[i],S.order[i+1]];break}
     case 'cat':S.modal='cat';S.speed=0;break;
-    case 'map':S.modal='map';S.speed=0;break;
+    case 'map':if(b.dataset.m)S.wmat=b.dataset.m;S.modal='map';S.speed=0;break;
     case 'flow':S.flowFocus=b.dataset.f||'all';S.view='flow';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'cite':S.view='src';S.citeHi=b.dataset.c;S._citeScroll=true;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'view':S.view=b.dataset.v;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
