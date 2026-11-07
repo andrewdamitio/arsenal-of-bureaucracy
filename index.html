@@ -584,6 +584,7 @@ body{background:
 @media(max-width:1100px){.ndaav{grid-template-columns:1fr}}
 .ref .rbtns{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 .rbkey{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 12px}.rbkey div{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid #c8b48a;background:#f3ebd6;font-size:12.5px;color:#3d3426}.rbkey b{font:600 13.5px var(--disp);letter-spacing:.03em;color:#2a2418}@media(max-width:900px){.rbkey{grid-template-columns:1fr}}
+.wmv{max-width:none}.wmv .dtop{position:static;margin:0 0 6px;padding:0;background:none;box-shadow:none}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3281,7 +3282,7 @@ function wmSVG(d,dsh=0){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1
   dots=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="${(6+26*Math.sqrt(dsh)).toFixed(1)}" fill="#2d5f99" fill-opacity=".18" stroke="#2d5f99" stroke-width="1.2" stroke-dasharray="3 2"><title>US production: ${pct(dsh)} of supply in the game now</title></circle>`+dots+`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.6"/><text x="${(ux-10).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text><text x="${(ux-10).toFixed(1)}" y="${(uy+30).toFixed(1)}" class="wmv" fill="#2d5f99" text-anchor="end">US plants: ${pct(dsh)} of supply now</text>`;
   const mk=k=>`<marker id="wmah-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="${WM_COL[k]}"/></marker>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="wmsvg" role="img" aria-label="Map of US import sources for ${d.n}"><defs>${mk('adv')}${mk('al')}${mk('oth')}</defs>${g}${arcs}${dots}${labs.join('')}</svg>`}
-function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
+function wmBody(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
   if(!WM)wmLoad();
   const shOf=(x,k)=>x.src.filter(y=>wmGrp(y[0])===k).reduce((a,y)=>a+y[1],0);
   const segs=[['adv','China and Russia',shOf(d,'adv'),WM_COL.adv],['al','Allies and close partners',shOf(d,'al'),WM_COL.al],['oth','Other named countries',shOf(d,'oth'),WM_COL.oth],['un','Not named by USGS',d.oth,'#cfc5ad']];
@@ -3301,14 +3302,14 @@ function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||productio
     <div class="wmacts">${acts.length?acts.map(x=>`<div>${x}</div>`).join(''):'<div class="mini">Nothing under way for this material yet: build a plant, sign an allied deal, or request a stockpile buy from its page.</div>'}</div>
     <div style="margin-top:6px"><button class="btn sm" data-a="node" data-n="${d.node}">Open its page to act →</button></div></div>`:'';
   const body=WM?.err?`<div class="wmload">The map outlines could not load; they need an internet connection. The figures are listed below.</div>`:WM?wmSVG(d,dsh):'<div class="wmload">Loading map…</div>';
-  const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Raw material imports: where they come from · shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
+  const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
     <div class="wmhd"><div class="wmnir"><b>${d.nir}</b><span>net import reliance, 2025</span></div><div class="wmshare">${bar}</div></div></div>`;
-  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(top)}
+  return `<div class="billv wmv">${top}
     <div class="wmwrap"><div class="wmlist"><div class="wmlh"><span>Raw material</span><span>From China / Russia</span></div>${list}</div><div class="wmmain">
       ${body}
       <div class="wmsrc"><span class="wmk">Source</span>USGS, import sources 2021–24: “${d.ln}”${d.note?`<div class="wmnote">${d.note}</div>`:''}</div>${gm}
       <p class="wmfoot">Shares of US imports by the country that shipped them, not of world production; material refined in one country may have been mined in another. Line width shows the share; lines mark origins, not shipping routes. The arrows are the USGS record; the blue circle on the United States and the panel below are your supply in the game, and change with what you do.${cut>.01?' Dashed: supply cut by export controls in the game now.':''} Allies: NATO, Japan, South Korea, Australia and Israel. Map: Natural Earth.</p>
-    </div></div></div></div>`}
+    </div></div></div>`}
 function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const pls=S.plants.filter(p=>isL?(p.kind==='line'&&p.target===l):p.target===id),prs=S.projects.filter(q=>{const d=PD[q.def];return q.dur[3]>0&&(isL?d.t.line===l:d.t.node===id)}),ald=isL?[]:S.done.filter(x=>PD[x.def].ally&&PD[x.def].t.node===id);
   const I=isL?null:INFO[id]||{},who=isL?LINE_MAKERS[l]:I.who?(I.who[S.fac]||I.who.US||I.who):'',p=P[id];
@@ -3892,7 +3893,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['ndaa','🏛 NDAA & Congress'],['arsenal','📈 Stocks & needs'],['rec','📊 Record'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['imports','🌍 Imports'],['ndaa','🏛 NDAA & Congress'],['arsenal','📈 Stocks & needs'],['rec','📊 Record'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
@@ -3924,9 +3925,9 @@ function flowBody(){
 `;
 }
 function viewHTML(){
-  const T={ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
-  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?permitsBody():S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
-  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  const T={imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?permitsBody():S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
+  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa','imports'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -4359,7 +4360,7 @@ function renderGame(){
     <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
-  let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button> <button class="btn sm" data-a="map" data-tip="Where US imports of 18 raw materials come from: a world map, from USGS data">🌍 Raw material imports</button></span></h2>
+  let sup=`<h2>Supply Chain</h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
    <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
   if(S.tab==='bott'){
@@ -4510,7 +4511,6 @@ function renderModal(){
     html=contractHTML();
   } else if(S.modal==='node'&&S.sel){
     html=dossierHTML(S.sel,P);
-  } else if(S.modal==='map'){html=wmHTML()
   } else if(S.modal==='bill'){html=billHTML()
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
@@ -4607,7 +4607,7 @@ document.addEventListener('pointerdown',e=>{
     case 'up':{const i=+b.dataset.i;[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
     case 'dn':{const i=+b.dataset.i;[S.order[i+1],S.order[i]]=[S.order[i],S.order[i+1]];break}
     case 'cat':S.modal='cat';S.speed=0;break;
-    case 'map':if(b.dataset.m)S.wmat=b.dataset.m;S.modal='map';S.speed=0;break;
+    case 'map':if(b.dataset.m)S.wmat=b.dataset.m;S.view='imports';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'flow':S.flowFocus=b.dataset.f||'all';S.view='flow';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'cite':S.view='src';S.citeHi=b.dataset.c;S._citeScroll=true;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'view':S.view=b.dataset.v;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
