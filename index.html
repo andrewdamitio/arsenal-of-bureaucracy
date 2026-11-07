@@ -583,6 +583,7 @@ body{background:
 .ndaav{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}.ndaaref{background:#1d1e18;border:1px solid #3a3626;color:#ddd3b8}.ndaaref h2{margin:0;padding:8px 10px;font:400 16px var(--sten);letter-spacing:.04em;background:#25261e;border-bottom:1px solid var(--brass);display:flex;gap:6px;align-items:center}.ndaaref h2 .r{margin-left:auto;font:400 11px var(--disp)}
 @media(max-width:1100px){.ndaav{grid-template-columns:1fr}}
 .ref .rbtns{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.rbkey{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 12px}.rbkey div{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid #c8b48a;background:#f3ebd6;font-size:12.5px;color:#3d3426}.rbkey b{font:600 13.5px var(--disp);letter-spacing:.03em;color:#2a2418}@media(max-width:900px){.rbkey{grid-template-columns:1fr}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1308,8 +1309,8 @@ function oddsMax(o){const k=bnKey()+JSON.stringify([S.reforms,Object.keys(S.carv
   return S._rbo.m[o.id]??=(()=>{let c=0,who=null;for(const d of PROJECTS)if(facOk(d)){const x=obsChance(o,d);if(x>c){c=x;who=d}}return {o,c,who}})()}
 function rulesBody(){
   if(S.fac!=='US')return '<p class="mini">The rulebook covers the US regime.</p>';
-  const rk=S.fac==='US'?'Congress':'Council';
-  return DOMAINS.map(D=>{const lost=D.layers.reduce((a,l)=>a+(S.ledger[l]?.wk||0),0);
+  const key=`<div class="rbkey"><div><b>🔘 Executive rules</b><span>Switch on or off for Political Capital. Fast, but the next administration can reverse them.</span></div><div><b>🖋 Emergency carve-outs</b><span>Fast and temporary; courts can strike them down.</span></div><div><b>📜 Laws</b><span>Permanent. Defense law and money rides the annual NDAA, decided every 18 December. Other committees’ reforms are stand-alone bills, one at a time, or a long-shot rider on the NDAA. <span class="linkn" data-a="view" data-v="ndaa">NDAA & Congress →</span></span></div></div>`;
+  return key+DOMAINS.map(D=>{const lost=D.layers.reduce((a,l)=>a+(S.ledger[l]?.wk||0),0);
     const stalled=S.projects.filter(p=>p.obs.length&&D.layers.includes(OD[p.obs[0].id].layer));
     const steps=D.steps.map(([nm,ids,t])=>{const os=ids.map(i=>OD[i]).filter(o=>o&&facOk(o));
       // worst case across everything you could launch now, so the odds move when a rule changes
@@ -1320,10 +1321,12 @@ function rulesBody(){
       const ctl=sw?`<button class="tog ${on?'on':''}" data-a="rule" data-r="${r.id}" ${S.pc>=cost?'':'disabled'} data-tip="${on?'Reverse':r.kind==='proposed'?'Finalize':'Adopt'}: ${cost} Political Capital. ${k[1]}"><i></i></button>`:`<span class="lock" data-tip="${k[1]}">🔒</span>`;
       return `<tr class="${on?'rlon':''}" id="rl-${r.id}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td>${r.dyn?(S.truce?fxChips([r.dyn()[0]],[r.dyn()[1]]):fxChips([],r.dyn())):fxChips(r.up,r.dn)}</td></tr>`}).join('');
     const links=(RLINKS[D.id]||[]).filter(([id])=>(RD[id]&&facOk(RD[id]))||(CD[id]&&facOk(CD[id]))).map(([id,why])=>{const R=RD[id],C=CD[id],on=R?passed(id):carveOn(id);
-      return `<tr class="${on?'rlon':''}"><td>${on?'✓':R?'📜':'🖋'}</td><td><b>${R?rname(R):cname(C)}</b><div class="mini">${R?(on?'Enacted':`Pending bill · ${rk}`):(on?'Emergency carve-out in force':'Emergency carve-out · fast, temporary, can be struck down')}</div></td><td><span class="mini">${why}</span> ${on?'':`<span class="linkn" data-a="remedy" data-r="${id}">${R?'On the agenda →':'Use it →'}</span>`}</td></tr>`}).join('');
+      if(!R)return `<tr class="${on?'rlon':''}"><td>${on?'✓':'🖋'}</td><td><b>${cname(C)}</b><div class="mini">${on?'Emergency carve-out in force':'Emergency carve-out · fast, temporary, can be struck down'}</div></td><td><span class="mini">${why}</span> ${on?'':`<span class="linkn" data-a="remedy" data-r="${id}">Use it →</span>`}</td></tr>`;
+      return `<tr class="${on?'rlon':''}"><td>${on?'✓':'📜'}</td><td><b>${rname(R)}</b><div class="mini">${refStatus(R)}</div></td><td><span class="mini">${why}</span> ${on?'':refAct(R)}</td></tr>`}).join('');
+    const extra=D.id==='money'?`<tr><td>🏛</td><td><b>New plants and stockpile buys</b><div class="mini">Annual bill · decided every 18 December</div></td><td><span class="mini">Build a plant now from your budget, or request it in the NDAA for Political Capital and let Congress pay. Stockpile buys of raw materials go in the same request.</span> <span class="linkn" data-a="view" data-v="ndaa">NDAA & Congress →</span></td></tr>`:'';
     return `<div class="rbdom" id="rb-${D.id}"><div class="rbh"><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span>${D.id==='permit'?`<span class="linkn mini" data-a="pmgo">📋 Permit docket →</span> · `:''}<span class="mini">${fmt(lost,0)} weeks lost this game</span>${stalled.length?` · <span class="redt mini">stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</span>`:''}</div>
      <div class="mini" style="margin:2px 0 4px">The process today. Each step shows the highest odds it stops a program you could launch now.</div><div class="steps">${steps}</div>
-     <table class="ctable lev rbt"><colgroup><col style="width:42px"><col style="width:46%"><col></colgroup>${rows}${links}</table>${D.id==='source'?`<div class="rbic">${icPanel()}</div>`:''}</div>`}).join('');
+     <table class="ctable lev rbt"><colgroup><col style="width:42px"><col style="width:46%"><col></colgroup>${rows}${links}${extra}</table>${D.id==='source'?`<div class="rbic">${icPanel()}</div>`:''}</div>`}).join('');
 }
 // pending bills and emergency powers that belong to each domain
 const RLINKS={
@@ -2552,6 +2555,13 @@ function refEnact(got,lost,fy,room){const its=refReqs().filter(x=>x.pkg<S.w);if(
     const why=room.r<x.req-1e-9?'below the money line':rand()<refPass(x)?null:x.rider?'stripped in conference':'dropped in conference';
     if(why){lost.push(`${n} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${n} ${why}.`,'bad');continue}
     room.r-=x.req;S.reforms[x.id]='passed';lawRec('Law',n);R.on?.();got.push(`Law: ${n}`);log(`✅ Enacted in the FY${fy%100} ${billN()}: ${n}.`,'good')}}
+function refStatus(R){if(passed(R.id))return 'Enacted';const q=refReqs().find(x=>x.id===R.id),v=vehOf(R);
+  if(q)return `${q.rider?'Rider on':'In'} the FY${FYOF(q.pkg)} NDAA · ~${Math.round(refPass(q)*100)}% chance it survives conference`;
+  if(S.bill?.id===R.id)return `Stand-alone bill on the floor · vote in ${S.bill.left} wk`;
+  return v==='ndaa'?'Defense provision · rides the annual NDAA':v==='rider'?'Stand-alone bill · other committees (rider possible)':'Bill'}
+function refAct(R){const q=inReq(R.id),v=vehOf(R),ok=reformAvail(R);if(q||S.bill?.id===R.id)return `<span class="linkn" data-a="remedy" data-r="${R.id}">Follow it →</span>`;
+  if(v==='ndaa')return `<button class="btn sm" data-a="refadd" data-r="${R.id}" ${ok&&S.pc>=refReqCost(R)?'':'disabled'}>+ FY${pkgFY()%100} NDAA · ${refReqCost(R)} PC</button>`;
+  return `<span class="linkn" data-a="remedy" data-r="${R.id}">Bill or rider →</span>`}
 function reformCost(R){return Math.round(R.pc*(S.reforms[R.id]==='failed'?.6:1))}
 function reformAvail(R){return facOk(R)&&!passed(R.id)&&(!R.req||passed(R.req))}
 function reformsTick(){
