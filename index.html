@@ -554,6 +554,8 @@ body{background:
 .bl-t td{vertical-align:top}.bl-t .num{white-space:nowrap}.bl-ord{white-space:nowrap}.bl-ord .btn{padding:1px 5px;margin-right:2px}.bl-act{white-space:nowrap}.bl-act .btn{margin:0 3px 3px 0}
 .bl-out td{opacity:.62}.bl-upl td{background:rgba(217,164,65,.08)}.bl-line td{text-align:center;font:600 11.5px var(--disp);letter-spacing:.06em;color:#a3261c;border-top:2px dashed #a3261c;padding:5px}
 .bl-res{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 20px;font-size:13px}.bl-res b{display:block;margin-bottom:3px}@media(max-width:900px){.bl-res{grid-template-columns:1fr}}
+.ov2{position:fixed;inset:58px 0 0 0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:51;padding:44px 16px}.ov2>*{max-height:calc(100vh - 150px)!important;max-width:min(1040px,calc(100vw - 160px));box-shadow:0 10px 40px #000c}@media(max-width:900px){.ov2>*{max-width:100%}}
+.cseg{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 14px 0}.cseg-h td{background:#e9dfc4;border-top:2px solid #8a7850;padding:7px 8px 5px}.cseg-h b{font:400 15px var(--sten);letter-spacing:.04em;margin-right:8px}.cs-ally td{background:#d9e2ea;border-top-color:#6d8396}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -4226,6 +4228,10 @@ const launchVerb=d=>d.ally?'Sign deal':needsContract(d)?'Build plant':'Start';
 function launchBtn(d,big){const q=S.projects.find(x=>x.def===d.id);if(q){const [t,cl]=progStatus(q,true);
     return `<span class="lbu" data-a="prog" data-u="${q.uid}" data-tip="Ordered. Open it to follow contract, permits and construction."><b>✓ Ordered</b><span class="${cl}">${t.replace(/^\S+\s/,'')}</span></span>`}
   return `<button class="pbtn ${big?'primary':'sm'}" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${launchVerb(d)}${big?' →':''}</button>`}
+const CSEG=[['plant','🏗','New plants','Built at home. Needs Congress (or a reprogramming), then contract, permits and construction.'],
+  ['ally','🤝','Allied deals','You pay a producer in an allied country to make more for you. Faster, no plant of your own; the supply sits abroad and depends on that ally.'],
+  ['other','⚙','Upgrades, workforce & upkeep','Improves plants and people you already have. No new start: it begins as soon as you fund it.']];
+const csegOf=d=>d.ally?'ally':needsContract(d)?'plant':'other';
 function projRow(d,P){
   const c=projCost(d),lk=d.req&&!passed(d.req),tot=d.dur.reduce((a,b)=>a+b,0),node=d.t.node;
   const gainTxt=d.kind==='maint'?`+${Math.round(d.eff*100)} pts readiness`:d.t.line?`+${fmtN(d.gain*LINES[d.t.line].k)} ${LINES[d.t.line].u}/yr`:`+${pct(projGain(d)/Math.max(P[node].need,S.nodes[node].scale*.5))} of need`;
@@ -4235,7 +4241,7 @@ function projRow(d,P){
 }
 function renderModal(){
   for(const k in CH)if(CH[k].ctx==='m')delete CH[k];CHctx='m';
-  let html='';const P=S._R?.P||production(false).P;
+  const P=S._R?.P||production(false).P;const build=()=>{let html='';
   if(S.modal==='end'){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
     html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
@@ -4275,16 +4281,25 @@ function renderModal(){
     const list=S.ptab==5?ok.filter(d=>d.t.line):ok.filter(d=>d.t.node&&ND[d.t.node].t==S.ptab).sort((a,b)=>P[a.t.node].cover-P[b.t.node].cover);
     html=`<div class="paper wide"><div class="hd"><span class="ic">🏗</span>New order <span style="margin-left:auto;font-size:13px">Budget ${money(S.budget)} · FY${pkgFY()} request ${money(pkgSum())}</span></div>
      <div style="padding:8px 14px 0">${constraintStrip(Math.min(...ok.filter(d=>!d.req||passed(d.req)).map(projCost)))}</div><div class="ptab">${tabs.map(([k,l])=>`<button class="pbtn ${S.ptab==k?'on':''}" data-a="ptab" data-t="${k}">${l}</button>`).join('')}</div>
-     <div class="mini" style="padding:6px 14px 0;display:flex;align-items:center;gap:6px"><i style="display:inline-block;width:14px;height:11px;background:#e3e9ee;border:1px solid #b9c4cc"></i>🤝 Blue rows are deals with allies: you pay a producer in an allied country to make more for you. Faster than building, but the supply sits abroad and depends on that ally.</div><div style="padding:8px 14px"><table class="ctable"><tr><th>Project · likely barriers</th><th>Target</th><th>Gain</th><th>Cost</th><th>Base time</th><th></th></tr>${list.map(d=>projRow(d,P)).join('')}</table></div>
+     ${(()=>{const sg=S.cseg||'all',segs=CSEG.filter(([k])=>sg==='all'||k===sg).map(([k,ic,n,ds])=>[k,ic,n,ds,list.filter(d=>csegOf(d)===k)]);
+       return `<div class="cseg"><span class="mini">Show:</span><button class="pbtn sm ${sg==='all'?'on':''}" data-a="cseg" data-v="all">All · ${list.length}</button>${CSEG.map(([k,ic,n])=>`<button class="pbtn sm ${sg===k?'on':''}" data-a="cseg" data-v="${k}">${ic} ${n} · ${list.filter(d=>csegOf(d)===k).length}</button>`).join('')}</div>
+       <div style="padding:4px 14px 8px"><table class="ctable"><tr><th>Project · likely barriers</th><th>Target</th><th>Gain</th><th>Cost</th><th>Base time</th><th></th></tr>${segs.map(([k,ic,n,ds,ls])=>`<tr class="cseg-h cs-${k}"><td colspan="6"><b>${ic} ${n}</b> <span class="mini">${ds}</span></td></tr>${ls.length?ls.map(d=>projRow(d,P)).join(''):'<tr><td colspan="6" class="mini">None at this tier.</td></tr>'}`).join('')}</table></div>`})()}
      <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
   }
-  const mkey=S.modal+'|'+(S.sel||'')+'|'+(S.ptab||'')+'|'+(S.selP||''),SCS=['.paper','.dmain','.dsb','.bd'],saved={};
-  if(html&&ov.dataset.k)for(const q of SCS){const el=ov.querySelector(q);if(el)saved[q]=el.scrollTop}
+  return html};let html=build();
+  // launching from a list or a page: the award screen is a second popup over it, and the page stays where it was
+  const stk=S.modal==='contract'&&S.ct&&S.ctBack&&S.ctBack!=='contract'&&!S.queue.length;
+  if(stk){const m=S.modal;S.modal=S.ctBack;const back=build();S.modal=m;if(back)html=`${back}<div class="ov2">${html}</div>`}
+  const SCS=['.paper','.dmain','.dsb','.bd'],saved={},wasStk=ov.dataset.stk==='1',bk=stk?S.ctBack:S.modal;
+  const mkey=(stk?bk+'+ct':S.modal)+'|'+(S.sel||'')+'|'+(S.ptab||'')+'|'+(S.selP||'');
+  if(html&&ov.dataset.k)for(const q of SCS){const el=[...ov.querySelectorAll(q)].find(e=>!e.closest('.ov2'));if(el)saved[q]=el.scrollTop}
+  const keepBack=(stk||wasStk)&&(ov.dataset.k||'').split('|')[0].replace('+ct','')===bk;
   const sameK=ov.dataset.k===mkey,sameModal=(ov.dataset.k||'').split('|')[0]===S.modal;
   html=cz(html);ov.innerHTML=html;ov.classList.toggle('show',!!html);ov.dataset.k=html?mkey:'';
-  for(const q in saved){const el=ov.querySelector(q);if(el&&(sameK||(q==='.dsb'&&sameModal)))el.scrollTop=saved[q]}
+  for(const q in saved){const el=[...ov.querySelectorAll(q)].find(e=>!e.closest('.ov2'));if(el&&(sameK||keepBack||(q==='.dsb'&&sameModal)))el.scrollTop=saved[q]}
+  ov.dataset.stk=stk?'1':'';
   CHctx='v';markOff(ov);
-  if(html&&closable()){const pp=ov.querySelector('.paper');if(pp){const r=pp.getBoundingClientRect(),x=document.createElement('button');x.className='xclose';x.dataset.a='close';x.title='Close (Esc)';x.textContent='✕';x.style.top=(r.top+7)+'px';x.style.left=(r.right-41)+'px';ov.appendChild(x)}}
+  if(html&&closable()){const pp=ov.querySelector('.ov2 .paper')||ov.querySelector('.paper');if(pp){const r=pp.getBoundingClientRect(),x=document.createElement('button');x.className='xclose';x.dataset.a=stk?'ctback':'close';x.title='Close (Esc)';x.textContent='✕';x.style.top=(r.top+7)+'px';x.style.left=(r.right-41)+'px';ov.appendChild(x)}}
   if(S._ovScroll){ov.querySelector(S._ovScroll)?.scrollIntoView({block:'start'});S._ovScroll=null}
   if(S.modal==='node'){const on=document.querySelector('#ov .dsbi.on');if(on&&S._dsbSel!==S.sel){on.scrollIntoView({block:'nearest'});S._dsbSel=S.sel}}else S._dsbSel=null;
 }
@@ -4337,7 +4352,7 @@ function render(){if(!S)newGame(PLAYABLE[0]);renderGame();renderModal();rehover(
 
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
 document.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;if(e.target===ov&&closable()){S.modal=null;S.navBack=[];render();return}
+  if(e.button!==0)return;if(e.target===ov&&closable()){S.modal=null;S.navBack=[];render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
@@ -4373,6 +4388,7 @@ document.addEventListener('pointerdown',e=>{
     case 'home':if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}S.view='cmd';break;
     case 'ovjump':S._ovScroll=b.dataset.s;break;
     case 'supp':suppAsk();break;
+    case 'cseg':S.cseg=b.dataset.v;break;
     case 'bill':S.modal='bill';S.speed=0;break;
     case 'bmv':billAct('mv',b.dataset.u,b.dataset.d);break;
     case 'bch':billAct('champ',b.dataset.u);break;
