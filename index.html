@@ -580,6 +580,8 @@ body{background:
 .pwhy{font:400 13px/1.45 'Segoe UI',system-ui,sans-serif;color:#3d3426;margin-top:4px}.ledrec .lg{color:#2a2418}
 .billv{max-width:1180px;color:#2a2418;background:#efe6cf;padding:12px 18px;border:1px solid #a8925a}
 .bltt{margin:0 0 4px;font:400 24px var(--sten);letter-spacing:.03em;color:#2a2418}.bltop{border-bottom:2px solid #8a7850;margin-bottom:6px}
+.ndaav{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}.ndaaref{background:#1d1e18;border:1px solid #3a3626;color:#ddd3b8}.ndaaref h2{margin:0;padding:8px 10px;font:400 16px var(--sten);letter-spacing:.04em;background:#25261e;border-bottom:1px solid var(--brass);display:flex;gap:6px;align-items:center}.ndaaref h2 .r{margin-left:auto;font:400 11px var(--disp)}
+@media(max-width:1100px){.ndaav{grid-template-columns:1fr}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2325,6 +2327,16 @@ function ndsSec(){const P=S._R?.P||production(false).P,left0=pkgRoom()-pkgPlan()
   return `<div class="dsec"><h4>Stockpile buys</h4><p class="mini" style="margin:0 0 6px">The NDAA authorizes National Defense Stockpile purchases. Each buy is about ${NDS_WK} weeks of demand for one material, ${money(NDS_C)}, and it drains only when supply falls short. Each costs ${REQ_PC(NDS_C)} PC to request; Congress pays for the ones it funds, after the plants above, from what is left of its money.</p>
     ${rows?`<table class="ctable bl-t"><tr><th>Material</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:'<p class="mini">No stockpile buys in the request.</p>'}
     ${sh.length?`<div class="mini" style="margin-top:6px">Short now: ${sh.map(id=>`<button class="btn sm" data-a="ndsadd" data-n="${id}" ${S.pc>=REQ_PC(NDS_C)?'':'disabled'}>+ ${ND[id].n} · ${REQ_PC(NDS_C)} PC</button>`).join(' ')}</div>`:''}</div>`}
+// the reform agenda: bills you push through Congress, shown on the NDAA tab
+function agendaHTML(){
+  let ag=`<h2>${S.fac==='US'?'Congressional':'Council'} Agenda <span class="r dim">Reforms: slow, permanent</span></h2>`;
+  if(S.bill){const Rf=RD[S.bill.id],p=clamp(Rf.p+S.bill.boost,.05,.98);
+    ag+=`<div class="bill" data-fk="ag:${Rf.id}"><b>📜 ${rname(Rf)}</b><div class="sub">${S.bill.left} wk to vote · pass chance <b class="gold">${Math.round(p*100)}%</b></div><div class="prog" style="margin:5px 0"><i style="width:${(1-S.bill.left/S.bill.total)*100}%"></i></div><button class="btn sm" data-a="whip" ${S.pc<10||S.bill.whips>=3?'disabled':''}>Whip votes (10 PC, +10%)</button></div>`}
+  else ag+=`<div class="sub" style="padding:6px 10px">One bill at a time.</div>`;
+  for(const Rf of REFORMS.filter(R=>facOk(R)&&!passed(R.id))){const ok=reformAvail(Rf),c=reformCost(Rf),fail=S.reforms[Rf.id]==='failed';
+    ag+=`<div class="ref ${fail?'fail':''}" id="ag-${Rf.id}" data-fk="ag:${Rf.id}"><span class="nm">${rname(Rf)}${fail?' <span class="sub red">(failed — retry 40% off)</span>':''}</span><button class="btn sm" data-a="intro" data-r="${Rf.id}" ${!S.bill&&ok&&S.pc>=c&&(Rf.$||0)<=S.budget?'':'disabled'}>${c} PC${Rf.$?' + '+money(Rf.$):''} · ${Rf.wk}w · ${Math.round(Rf.p*100)}%</button><span class="d">${Rf.req&&!passed(Rf.req)?`<span class="red">Requires ${rname(RD[Rf.req])}.</span> `:''}${Rf.d}</span></div>`}
+  const pas=REFORMS.filter(R=>passed(R.id));if(pas.length)ag+=`<div class="sect"><span>Enacted</span><span></span></div>`+pas.map(R=>`<div class="ref pass" id="ag-${R.id}" data-fk="ag:${R.id}"><span class="nm">✓ ${rname(R)}</span></div>`).join('');
+  return ag}
 function billBody(){const fy=pkgFY(),cp=cprioOf(fy),pl=pkgPlan(),room=pkgRoom(),inS=pl.filter(x=>x.st==='in').reduce((a,x)=>a+x.p.req,0),P=S._R?.P||production(false).P;
   const when=fmtDate(pkgWhen()),pcIn=pl.reduce((a,x)=>a+(x.p.pc||0),0)+ndsReqs().reduce((a,x)=>a+(x.pc||0),0);
   const gainOf=p=>{const d=PD[p.def];return d.t.line?`+${fmtN(projGain(d,p.gm)*lineMultOf(d.t.line)*LINES[d.t.line].k)} ${LINES[d.t.line].u}/yr`:`+${pct(projGain(d,p.gm)/Math.max(P[d.t.node].need,S.nodes[d.t.node].scale*.5))} of need`};
@@ -3872,7 +3884,7 @@ function flowBody(){
 }
 function viewHTML(){
   const T={ndaa:['🏛',S.fac==='US'?'NDAA and appropriations':'Budget law','your request for the next annual bill: what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
-  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?permitsBody():S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='ndaa'?`<div class="billv">${billBody()}</div>`:S.view==='pipe'?facBody():readyBody();
+  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?permitsBody():S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
   return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
@@ -4328,7 +4340,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span></h2><div class="pintro">Plants, allied deals and upgrades you have started. Each passes through up to six stages: fund, contract, permit, build, qualify, market. Hover a stage for what it means.</div><div class="pkgrow" data-tip="${tipQ(`Two ways to pay for a new plant: build it now from your budget, or request it in the annual ${billN()} with Political Capital, and Congress pays if it funds it. The bill passes every 18 December and brings next year’s budget.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress decides ~${fmtDate(pkgWhen())}<span class="r"><button class="btn sm" data-a="bill">🏛 Work the bill</button>${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Development Pipeline</span></h2><div class="pintro">Plants, allied deals and upgrades you have started. Each passes through up to six stages: fund, contract, permit, build, qualify, market. Hover a stage for what it means.</div><div class="pkgrow" data-tip="${tipQ(`Two ways to pay for a new plant: build it now from your budget, or request it in the annual ${billN()} with Political Capital, and Congress pays if it funds it. The bill passes every 18 December and brings next year’s budget.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress decides ~${fmtDate(pkgWhen())}<span class="r"><button class="btn sm" data-a="bill">🏛 Work the bill</button>${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
   const PSu=poolState(),capH=`<h2>What slows your programs</h2><div class="pintro">Program offices and a few shared resources serve every program at once. Past capacity, everything using them slows down.</div><div class="sect"><span>Program offices</span><span></span></div><div style="padding:4px 10px">${officeChips(false)}</div><div class="sect"><span>Shared resources</span><span>in use / room</span></div><div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><span class="pnm">${POOLS[k].n}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
@@ -4382,16 +4394,9 @@ function renderGame(){
    ${S.fac==='US'?`<div class="ref ${S.ne?'act':''}"><span class="nm">🚨 National emergency on the defense industrial base</span>${S.ne?`<span class="sub green">since ${fmtDate(S.ne.since)}</span>`:`<button class="btn sm" data-a="ne" ${S.pc>=NE_COST?'':'disabled'}>${NE_COST} PC · declare</button>`}<span class="d">The legal trigger for emergency permitting, the Jones Act waiver, emergency qualification and hiring. Renewed each year (${NE_RENEW} PC); lapses if you can’t.</span></div>`:''}`;
   for(const C of CARVES.filter(facOk)){const on=carveOn(C.id),c=carveCost(C),k=S.carve[C.id];
     home+=`<div class="ref ${on?'act':''}" id="ag-${C.id}" data-fk="ag:${C.id}"><span class="nm">${on?'🖋 ':''}${cname(C)}</span>${on?`<span class="sub green">${k.left} wk left</span>`:`<button class="btn sm" data-a="carve" data-c="${C.id}" ${carveAvail(C)&&S.pc>=c?'':'disabled'}>${c} PC · ${C.wk}w${carveNeed(C)?' · 🔒':''}${k?' · renew':''}</button>`}<span class="d">${C.d}${C.court?` <span class="red">Court risk.</span>`:''}</span></div>`}
-  let ag=`<h2>${S.fac==='US'?'Congressional':'Council'} Agenda <span class="r dim">Reforms: slow, permanent</span></h2>`;
-  if(S.bill){const Rf=RD[S.bill.id],p=clamp(Rf.p+S.bill.boost,.05,.98);
-    ag+=`<div class="bill" data-fk="ag:${Rf.id}"><b>📜 ${rname(Rf)}</b><div class="sub">${S.bill.left} wk to vote · pass chance <b class="gold">${Math.round(p*100)}%</b></div><div class="prog" style="margin:5px 0"><i style="width:${(1-S.bill.left/S.bill.total)*100}%"></i></div><button class="btn sm" data-a="whip" ${S.pc<10||S.bill.whips>=3?'disabled':''}>Whip votes (10 PC, +10%)</button></div>`}
-  else ag+=`<div class="sub" style="padding:6px 10px">One bill at a time.</div>`;
-  for(const Rf of REFORMS.filter(R=>facOk(R)&&!passed(R.id))){const ok=reformAvail(Rf),c=reformCost(Rf),fail=S.reforms[Rf.id]==='failed';
-    ag+=`<div class="ref ${fail?'fail':''}" id="ag-${Rf.id}" data-fk="ag:${Rf.id}"><span class="nm">${rname(Rf)}${fail?' <span class="sub red">(failed — retry 40% off)</span>':''}</span><button class="btn sm" data-a="intro" data-r="${Rf.id}" ${!S.bill&&ok&&S.pc>=c&&(Rf.$||0)<=S.budget?'':'disabled'}>${c} PC${Rf.$?' + '+money(Rf.$):''} · ${Rf.wk}w · ${Math.round(Rf.p*100)}%</button><span class="d">${Rf.req&&!passed(Rf.req)?`<span class="red">Requires ${rname(RD[Rf.req])}.</span> `:''}${Rf.d}</span></div>`}
-  const pas=REFORMS.filter(R=>passed(R.id));if(pas.length)ag+=`<div class="sect"><span>Enacted</span><span></span></div>`+pas.map(R=>`<div class="ref pass" id="ag-${R.id}" data-fk="ag:${R.id}"><span class="nm">✓ ${rname(R)}</span></div>`).join('');
   pr+=capH;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
-  const rt=`<div class="rtabs">${[['prog','🏗 Programs'],['fac','🏭 Factories'],['home','🏛 Home'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:rtab==='fac'?fc:pr);
+  const rt=`<div class="rtabs">${[['prog','🏗 Pipeline'],['fac','🏭 Factories'],['home','🏛 Home']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
   const nd=`<h2>Arming against <span class="rc-pick">${S.scen?`<span class="btn sm on rc-fixed" data-tip="${tipQ(`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2>Timeline${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
@@ -4403,7 +4408,7 @@ function renderGame(){
   if(S._rtTop){const el=document.getElementById('right');if(el)el.scrollTop=0;S._rtTop=false}
   if(S.view&&S.view!=='cmd'){mountView(vs)}else viewKey='';
   applyFlashes();applyTrace();markOff(app);
-  if(S._jump){const el=document.getElementById('ag-'+S._jump);if(el)el.scrollIntoView({block:'center'});S._jump=null}
+  if(S._jump){const el=document.querySelector('#ag-'+S._jump)||document.getElementById('ag-'+S._jump);if(el)el.scrollIntoView({block:'center'});S._jump=null}
 }
 const waitingToStart=()=>(S.replay?S.w===0:S.w===PLAY0)&&!S.speed&&!S.modal&&!S.queue.length;
 // the timeline lives outside #app so redraws don't wipe a selection; it only changes when there's something new
@@ -4594,9 +4599,9 @@ document.addEventListener('pointerdown',e=>{
     case 'qj':setTimeout(qjOpen,0);break;
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rbgo':S.view='rules';S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'rtab':S.rtab=b.dataset.t;S._rtTop=true;break;
+    case 'rtab':if(b.dataset.t==='agenda'){S.view='ndaa';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break}S.rtab=b.dataset.t;S._rtTop=true;break;
     case 'rival':if(!S.scen&&S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
-    case 'remedy':if(S.modal==='prog')S.modal=null;S.rtab=CD[b.dataset.r]?'home':'agenda';S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
+    case 'remedy':if(S.modal==='prog')S.modal=null;if(CD[b.dataset.r])S.rtab='home';else{S.view='ndaa';S.modal=null;S.navBack=[]}S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
     case 'arsenal':S.view=({stock:'arsenal',pipe:'fac',ready:'ready'})[b.dataset.t]||'arsenal';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
