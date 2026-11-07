@@ -2577,7 +2577,7 @@ function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;gainB(REPRO,'R
 function constraintStrip(cheapest){const nf=nextFunds(),used=slotsUsed(),broke=isFinite(cheapest)&&S.budget<cheapest,full=used>=S.slots;
   return `<div class="cstrip"><span class="${broke?'bind':''}">💰 <b>${money(S.budget)}</b> <span class="mini">Next +${money(nf.amt)} on ${fmtDate(nf.w)}</span>
      <button class="pbtn sm" data-a="repro" ${S.pc>=reproCost()?'':'disabled'} data-tip="Move money from other accounts now. Each one this fiscal year costs more Political Capital.">${S.fac==='US'?'Reprogram':'Transfer'} +${money(REPRO)} · ${reproCost()} PC</button></span>
-    <span class="${full?'bind':''}">🏗 <b>${used}/${S.slots}</b> offices busy</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
+    <span class="${full?'bind':''}" data-tip="<b>Program offices</b><br>Every new plant, upgrade or allied deal needs a government team to run it: contracting officers, engineers and program managers who negotiate the contract, shepherd the permits and oversee construction. You have ${S.slots}. Each is tied up until its order is finished, so when all are busy, nothing new can start.<br><br>The DoD’s acquisition workforce really is a bottleneck. The Hire Acquisition Workforce reform adds three.">🏗 <b>${used}/${S.slots}</b> program offices busy</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
 /* ---------- launch preview: when it arrives, and what it does to each gap ---------- */
 const RAMP=kn=>.018+kn*.0004; // weekly learning rate of a new plant's yield
 function rampWeeks(kn,y0,rm){let y=y0,k=kn,w=0;while(y<.9&&w<520){y=Math.min(1,y+Math.max(.02,y)*(1-y)*RAMP(k)*rm);k=Math.min(95,k+.05);w++}return w}
@@ -3755,14 +3755,15 @@ let NO_PRC=false; // set while testing what survives if China switches everythin
 const outOf=c=>(S._R||production(false)).out[c].yr;
 const SCENS=[
  {id:'taiwan',n:'The Taiwan Window',rival:'pac',ic:FLAGS.cn,dl:weekOf(2030,0,7),
-  threat:'The PLA was ordered to be ready to take Taiwan by 2027, and US commanders warn the window stays open through the decade.[c:cmpr] You have until January 2030 to build the munitions and boats a fight in the Strait would burn through.',
+  threat:'The PLA was ordered to be ready to take Taiwan by 2027, and US commanders warn the window stays open through the decade.[c:cmpr] You have until January 2030 to build the munitions and boats a fight in the Strait would burn through, and to keep building them once China, the supplier of many of their parts, stops selling.',
   mand:[{n:'Air & missile defense interceptors',c:'interceptors',tgt:1800,src:'PAC-3 MSE to 2,000 a year (about half for the US), THAAD to 400, SM-6 past 500.[c:lmpac3,thaad,rtxfw]'},
         {n:'Long-range strike missiles',c:'strike',tgt:1800,src:'JASSM/LRASM toward 1,100 a year plus a Tomahawk framework past 1,000.[c:jassm,tlam26]'},
         {n:'Submarines',c:'subs',tgt:2,dec:1,src:'The Navy needs two Virginia-class boats a year (2.33 with AUKUS); it has built about 1.2.[c:crsva]'},
         {n:'Surface combatants',c:'surface',tgt:9,dec:1,src:'Growing the fleet takes about 11 battle-force ships a year, roughly 9 of them surface ships; the FY2027 plan funds 7 destroyers and 4 frigates over five years.[c:crsnavy]'},
-        {n:'Drones',c:'drones',tgt:330000,src:'INDOPACOM’s “hellscape” plan would fill the Strait with thousands of uncrewed systems; the Army plans to buy a million drones in two to three years.[c:hellscape,army1m]'}],
+        {n:'Drones',c:'drones',tgt:330000,src:'INDOPACOM’s “hellscape” plan would fill the Strait with thousands of uncrewed systems; the Army plans to buy a million drones in two to three years.[c:hellscape,army1m]'},
+        {n:'Output kept if China cuts you off',kind:'keep',lines:['interceptors','strike','subs','surface','drones'],tgt:.8,pct:1,src:'A war over Taiwan ends Chinese exports to the US on day one. Measured across the five lines above: the share of today’s output (or January 2027’s, if higher) you would still build with no Chinese or Russian inputs, before stocks run down. Beijing’s 2023–25 bans on gallium, germanium, antimony and rare earths were the preview.[c:truce]'}],
   test:{t:'pac',n:'Taiwan Strait campaign'},
-  lesson:'Interceptors, strike missiles and air-to-air missiles all wait on the same solid rocket motors and seekers; ships and submarines on yards that take a decade to grow; drones on cells, magnets and boards that come from China.'},
+  lesson:'Interceptors, strike missiles and air-to-air missiles all wait on the same solid rocket motors and seekers; ships and submarines on yards that take a decade to grow; drones on cells, magnets and boards that come from China. Whatever still needs China stops the day the fighting starts.'},
  {id:'flank',n:'The Eastern Flank',rival:'eu',ic:FLAGS.ru,dl:weekOf(2030,0,7),
   threat:'Germany’s military chief points to 2029 and its intelligence service to 2030 as the year Russia could be ready to test NATO.[c:bund29,bnd30] You have until January 2030 to build the volume a long war on the flank would eat.',
   mand:[{n:'155mm artillery shells',c:'shells',tgt:1.2e6,src:'The Army’s goal: 100,000 shells a month.[c:dodig]'},
@@ -3780,14 +3781,19 @@ const SCENS=[
   lesson:'Independence costs output before it pays: every magnet, cell and wafer not bought from China has to be mined, refined and qualified somewhere else first.'}];
 const SCD=Object.fromEntries(SCENS.map(x=>[x.id,x]));
 // each mandate's current value, whether the real target is met, and the halfway floor
-function mandFloor(m){const r0=S.rec0||{};if(m.c){const a=r0.out?.[m.c]??0;return a+(m.tgt-a)/2}if(m.kind==='magnets')return m.tgt*.6;if(m.kind==='expo')return .75;if(m.kind==='hold')return .9;return m.tgt}
+// what the given lines would still build with every Chinese and Russian input cut, as a share of what they build now
+function keepOf(lines){const k=`${S.w}|${S.projects.length}|${S.plants.length}|${S.spot?.length||0}|${S.budget.toFixed(3)}`;if(S._kpc?.k===k)return S._kpc.v;
+  const now=production(false).out;NO_PRC=true;let cut;try{cut=production(false).out}finally{NO_PRC=false}
+  const by=Object.fromEntries(lines.map(c=>{const d=Math.max(now[c].yr,S.rec0?.out?.[c]||0);return [c,d>1e-9?Math.min(1,cut[c].yr/d):1]})),v=lines.reduce((a,c)=>a+by[c],0)/lines.length;S._kpc={k,v:{v,by}};return S._kpc.v}
+function mandFloor(m){const r0=S.rec0||{};if(m.kind==='keep')return .65;if(m.c){const a=r0.out?.[m.c]??0;return a+(m.tgt-a)/2}if(m.kind==='magnets')return m.tgt*.6;if(m.kind==='expo')return .75;if(m.kind==='hold')return .9;return m.tgt}
 function mandVal(m){const r0=S.rec0||{},x=mandValRaw(m),fl=mandFloor(m);
   const half=m.kind==='expo'?S.exposure<=(r0.expo||S.exposure)*fl:x.v>=fl*.999;return {...x,fl,half:x.ok||half}}
 function mandValRaw(m){const r0=S.rec0||{};
   if(m.c)return {v:outOf(m.c),ok:outOf(m.c)>=m.tgt*.999,show:v=>m.dec?fmt(v,1):fmtN(v)};
   if(m.kind==='magnets'){const P=(S._R||production(false)).P.magnets,x=srcSplit('magnets',(S._R||production(false)).P),v=P.need>1e-6?Math.min(1,(x.dom+x.ally+x.spot)/P.need):1;return {v,ok:v>=m.tgt,show:pct}}
   if(m.kind==='expo'){const t=(r0.expo||S.exposure)*m.tgt;return {v:S.exposure,ok:S.exposure<=t,t,show:pct}}
-  if(m.kind==='hold'){const v=Math.min(...m.lines.map(c=>outOf(c)/Math.max(r0.out?.[c]||1e-9,1e-9)));return {v,ok:v>=.999,show:pct}}}
+  if(m.kind==='hold'){const v=Math.min(...m.lines.map(c=>outOf(c)/Math.max(r0.out?.[c]||1e-9,1e-9)));return {v,ok:v>=.999,show:pct}}
+  if(m.kind==='keep'){const {v}=keepOf(m.lines);return {v,ok:v>=m.tgt-1e-9,show:pct}}}
 // the test: would it have been enough?
 function scenTest(sc){const T=sc.test;
   if(T.cut){const r0=S.rec0?.out||{},now=Object.fromEntries(Object.keys(LINES).map(c=>[c,{yr:Math.max(r0[c]??0,1e-9)}]));NO_PRC=true;const cut=production(false).out;NO_PRC=false;
@@ -3801,6 +3807,7 @@ function mandWhy(m){const R=S._R||production(false);
   if(m.c){const o=R.out[m.c],lim=limOf(o,m.c);return lim.startsWith('L:')?'Line capacity: more lines needed':'Short of '+o.chain.map(i=>ND[i].n).join(' ← ')}
   if(m.kind==='magnets'){const P=R.P.magnets;return P.starvedBy?'Short of '+chainOf(R.P,'magnets').slice(1).map(i=>ND[i].n).join(' ← '):'Not enough non-Chinese magnet capacity yet'}
   if(m.kind==='hold'){const c=m.lines.reduce((a,c)=>outOf(c)/Math.max(S.rec0?.out?.[c]||1e-9,1e-9)<outOf(a)/Math.max(S.rec0?.out?.[a]||1e-9,1e-9)?c:a);const o=R.out[c];return LINES[c].n+': '+(o.bott?'short of '+ND[o.chain.at(-1)].n:'line capacity')}
+  if(m.kind==='keep'){const {by}=keepOf(m.lines);return 'Without China: '+m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>`${LINES[c].n} ${pct(by[c])}`).join(', ')}
   if(m.kind==='expo'){const P=R.P,top=ORDER.filter(id=>P[id].need>1e-6).sort((a,b)=>P[b].prc*(1-P[b].expo*0)-P[a].prc).slice(0,2);return 'Still buying from China: '+top.map(id=>ND[id].n).join(', ')}
   return ''}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
@@ -3816,10 +3823,10 @@ function scenCard(){
   const sc=SCD[S.scen],left=sc.dl-S.w,res=S.scenRes;
   return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span>`}</div>
     ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
-      return `<div class="sc-m"><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}">${x.ok?'✓':x.half?'◐':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the floor (halfway from January 2027). End: the real target."><i style="width:${f*100}%;background:${x.ok?'#76b357':x.half?'#d9a441':'#d0503f'}"></i><span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
+      return `<div class="sc-m"><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}">${x.ok?'✓':x.half?'◐':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.kind==='keep'?`<span data-tip="${tipQ(mandWhy(m))}">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the floor (halfway from January 2027). End: the real target."><i style="width:${f*100}%;background:${x.ok?'#76b357':x.half?'#d9a441':'#d0503f'}"></i><span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
     <div class="sc-test">${res?`Test: ${res.test.txt}`:`◐ floor met · ✓ real target met. At the deadline: ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}. Mandate met: every target. Enough, barely: every floor.`}</div></div>`}
 function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"><span class="ic">🎯</span>January 2027: choose your mandate</div><div class="bd">
-  <p>Each scenario hands you three dated targets drawn from real public goals, and a test at the deadline. They are real targets on real timelines: the US is not on track for most of them. The floors show how close you can get.</p>
+  <p>Each scenario hands you dated targets drawn from real public goals, and a test at the deadline. They are real targets on real timelines: the US is not on track for most of them. The floors show how close you can get.</p>
   <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
   <div class="ft"><button class="pbtn" data-a="scenskip">No mandate: play the open race to 2037</button></div></div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
@@ -3949,7 +3956,7 @@ function renderGame(){
     ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
-    ${res(`${slotsUsed()}/${S.slots}`,'Offices busy','<b>Program offices</b><br>One program each. Full offices block new launches.','rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
+    ${res(`${slotsUsed()}/${S.slots}`,'Offices busy',`<b>Program offices</b><br>Every new plant, upgrade or allied deal needs a government team to run it: contracting officers, engineers and program managers who negotiate the contract, shepherd the permits and oversee construction. You have ${S.slots}. Each is tied up until its order is finished, so when all are busy, nothing new can start.<br><br>The DoD’s acquisition workforce really is a bottleneck. The Hire Acquisition Workforce reform adds three.`,'rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
     ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>Each takes its default after ${DECIDE_WK} weeks. Opens the first one.`:'Nothing is waiting on you.',S.inbox?.length?'evdo':firstStuck?'prog':'rtab',S.inbox?.length?`data-e="${S.inbox[0].ev}"`:firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short','<b>End-item lines below capacity</b><br>Opens the bottleneck analysis.','view','data-v="bn"',shortL?'rwarn':'')}
     ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'PRC exposure','<b>PRC and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Opens the flows.','view','data-v="flow"')}
@@ -3982,7 +3989,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto"><span class="dim" data-tip="<b>Program offices</b><br>Each program needs one. When all are busy, nothing new can launch until one finishes.">${slotsUsed()}/${S.slots} offices busy</span> <button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ New order</button></span></h2>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto"><span class="dim" data-tip="<b>Program offices</b><br>Every new plant, upgrade or allied deal needs a government team to run it: contracting officers, engineers and program managers who negotiate the contract, shepherd the permits and oversee construction. You have ${S.slots}. Each is tied up until its order is finished, so when all are busy, nothing new can start.<br><br>The DoD’s acquisition workforce really is a bottleneck. The Hire Acquisition Workforce reform adds three.">${slotsUsed()}/${S.slots} offices busy</span> <button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat" ${slotsUsed()>=S.slots?'disabled':''}>+ New order</button></span></h2>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
@@ -4142,7 +4149,7 @@ function whyOff(b){
   const d=b.dataset,a=d.a,needPC=n=>`Needs ${n} Political Capital — you have ${Math.floor(S.pc)}.`,needM=n=>`Costs ${money(n)} — the budget holds ${money(S.budget)}. Next funding ${fmtDate(nextFunds().w)}; or reprogram now.`;
   if(S.replay&&REPLAY_LOCK.has(a))return 'This is the 2025–26 record. You take over in January 2027.';
   const optWhy=o=>o.req&&!passed(o.req)?`Requires the reform ${rname(RD[o.req])}.`:(o.pc||0)>S.pc?needPC(o.pc):(o.$||0)>S.budget?needM(o.$):'';
-  const busy=()=>`All ${S.slots} program offices are busy. One frees up when a project finishes.`;
+  const busy=()=>`All ${S.slots} program offices are busy running orders. One frees up when an order is finished, or pass the Hire Acquisition Workforce reform for three more.`;
   switch(a){
     case 'launch':{const def=PD[d.p];if(def.req&&!passed(def.req))return `Requires the reform ${rname(RD[def.req])}.`;if(S.projects.some(p=>p.def===def.id))return 'Already under way.';
       if(def.kind==='maint'?S.mxDone[def.id]:def.kind&&def.kind!=='cap'&&(S.nflags[def.t.node]||{})[def.kind])return 'Already done.';if(slotsUsed()>=S.slots)return busy();if(S.budget<projCost(def))return needM(projCost(def));break}
