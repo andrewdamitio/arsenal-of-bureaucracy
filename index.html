@@ -3005,18 +3005,20 @@ function supplyWeb(id,P){
     <div class="sleg swleg">${leg}<span class="mini">Band width: how well each input is covered. Hover for sources.</span></div>`}
 /* ---------- in service: your stock and output next to China's and Russia's, then and projected ---------- */
 const RIV_C={pac:'#b0453a',eu:'#7a5a8c'};
-function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],st={pac:estInv(S.enemy.pac,l),eu:estInv(S.enemy.eu,l)},pr={pac:estProd(S.enemy.pac,l,S.w),eu:estProd(S.enemy.eu,l,S.w)};
-  const grp=(title,mine,th,unit)=>{const mx=Math.max(mine,th.pac,th.eu,1e-9),B=v=>Math.min(100,v/mx*100),big=th.pac>=th.eu?'pac':'eu',r=th[big]/Math.max(mine,1e-9);
-    const row=(fl,nm,v,c,lab)=>`<div class="pvsr"><span>${fl} ${nm}</span><div class="nb"><i style="width:${B(v)}%;background:${c}"></i></div><span class="v">${lab}</span></div>`;
-    return `<div><div class="isgt">${title}</div>${row(F().flag,'You',mine,'#2f62a0',`<b>${fmtN(mine)}</b>${unit}`)}${row(FLAGS.cn,'China',th.pac,RIV_C.pac,`~${fmtN(th.pac)}${unit}`)}${row(FLAGS.ru,'Russia',th.eu,RIV_C.eu,`~${fmtN(th.eu)}${unit}`)}
-      <div class="isgr">${r>=1.1?`<span class="redt">${RIVALS[big].n} has <b>${r>=10?Math.round(r):fmt(r,1)}×</b> yours</span>`:r<=.9?`<span class="okt">You lead both</span>`:'<span>Roughly level</span>'}</div></div>`};
-  const hs=S.hist.filter(h=>h.en),pts=k=>hs.map(h=>[h.w,k==='us'?h.inv[l]:h.en[k][l]]),fut=k=>[[S.w,k==='us'?us:st[k]],...pj.map(r=>[r.w,k==='us'?r.inv[l]:r.en[k][l]])];
-  const all=[...pts('us'),...pts('pac'),...pts('eu'),...fut('us'),...fut('pac'),...fut('eu')].map(p=>p[1]),yMax=Math.max(...all,1e-9)*1.05;
-  const ser=[];for(const [k,c,n] of [['pac',RIV_C.pac,'China'],['eu',RIV_C.eu,'Russia'],['us','#2f62a0','You']]){ser.push({pts:pts(k),c,wd:2.2,n});ser.push({pts:fut(k),c,wd:1.4,dash:'4 3',n:n+' (projected)'})}
-  return `<div class="isg">${grp('In service',us,st,'')}${grp('Built per year',o.yr,pr,'/yr')}</div>
+function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#4fa894',al=allyOut(l),A=AL();
+  const st=estInv(S.enemy[rv],l),pr=estProd(S.enemy[rv],l,S.w);
+  const row=(B,fl,nm,v,c,lab)=>`<div class="pvsr"><span>${fl} ${nm}</span><div class="nb"><i style="width:${B(v)}%;background:${c}"></i></div><span class="v">${lab}</span></div>`;
+  const verdict=(mine,th,who)=>{const r=th/Math.max(mine,1e-9);return `<div class="isgr">${r>=1.1?`<span class="redt">${R.n} has <b>${r>=10?Math.round(r):fmt(r,1)}×</b> ${who}</span>`:r<=.9?`<span class="okt">${who==='yours'?'You lead':'You and your allies lead'}</span>`:'<span>Roughly level</span>'}</div>`};
+  const B1=v=>Math.min(100,v/Math.max(us,st,1e-9)*100),B2=v=>Math.min(100,v/Math.max(o.yr+al,pr,1e-9)*100);
+  const g1=`<div><div class="isgt">In service</div>${row(B1,F().flag,'You',us,'#2f62a0',`<b>${fmtN(us)}</b>`)}${row(B1,R.f,R.n,st,rc,`~${fmtN(st)}`)}${verdict(us,st,'yours')}<div class="mini">Allied stocks are not tracked.</div></div>`;
+  const g2=`<div><div class="isgt">Built per year</div>${row(B2,F().flag,'You',o.yr,'#2f62a0',`<b>${fmtN(o.yr)}</b>/yr`)}${row(B2,'🤝',`<span data-tip="${tipQ(A.n)}">Allies</span>`,al,AC,`${fmtN(al)}/yr`)}${row(B2,R.f,R.n,pr,rc,`~${fmtN(pr)}/yr`)}${verdict(o.yr+al,pr,'you and your allies combined')}</div>`;
+  const hs=S.hist.filter(h=>h.en),pts=k=>hs.map(h=>[h.w,k==='us'?h.inv[l]:h.en[k][l]]),fut=k=>[[S.w,k==='us'?us:st],...pj.map(r=>[r.w,k==='us'?r.inv[l]:r.en[k][l]])];
+  const all=[...pts('us'),...pts(rv),...fut('us'),...fut(rv)].map(p=>p[1]),yMax=Math.max(...all,1e-9)*1.05;
+  const ser=[];for(const [k,c,n] of [[rv,rc,R.n],['us','#2f62a0','You']]){ser.push({pts:pts(k),c,wd:2.2,n});ser.push({pts:fut(k),c,wd:1.4,dash:'4 3',n:n+' (projected)'})}
+  return `<div class="isg">${g1}${g2}</div>
     <div class="isgt" style="margin-top:8px">In service since 2025, and where today's output leads by 2037</div>
     ${lineChart({W:900,H:170,yMax,yFmt:fmtN,vf:fmtN,series:ser,unit:'📦 In service (stock)'})}
-    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span><span><i style="background:${RIV_C.pac}"></i>China</span><span><i style="background:${RIV_C.eu}"></i>Russia</span><span class="mini">Solid: history · dashed: today's output held constant, rivals keep growing. Retiring ~${fmtN(us*retRate(l))} ${L.u}/yr. Rival figures are intelligence estimates.</span></div>`}
+    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span><span><i style="background:${rc}"></i>${R.n}</span><span class="mini">Solid: history · dashed: today's output held constant, ${R.n} keeps growing. Retiring ~${fmtN(us*retRate(l))} ${L.u}/yr. ${R.n}'s figures are intelligence estimates.${S.scen?'':' Switch the rival on Command to compare the other.'}</span></div>`}
 // the main US producers of each end item
 const LINE_MAKERS={interceptors:'Lockheed Martin, Camden AR and Grand Prairie TX (PAC-3 MSE); Lockheed Martin, Troy AL (THAAD); RTX, Tucson AZ and Huntsville AL (SM-6, SM-3)',
  strike:'Lockheed Martin, Troy AL (JASSM, LRASM); RTX, Tucson AZ (Tomahawk)',a2a:'RTX, Tucson AZ (AMRAAM)',fires:'Lockheed Martin, Camden AR (GMLRS, PrSM)',
@@ -3056,7 +3058,7 @@ function dossierHTML(id,P){
       <tr><td><b>⏩ Fund extra shifts</b><div class="mini">Overtime and another shift at existing lines. Only helps when the line itself, not its inputs, is the limit. Tired crews and harder-run machines mean more breakdowns and accidents${BOOM_L.includes(l)?', and fires where explosives are loaded':''}.</div></td><td>+${Math.round((SHIFT_M-1)*100)}% line capacity${o.bott?` · <span class="redt">${ND[o.bott].n} binds now</span>`:''}</td><td>${money(SHIFT_C)}/yr</td><td>now</td><td><button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'Stop':'Fund'}</button></td></tr>
       <tr><td><b>📣 Framework agreement</b><div class="mini">Headline now; audit in three years.</div></td><td>+12 PC now; ±PC on audit</td><td>—</td><td>3 yr</td><td>${S.fw[l]?'active':`<button class="pbtn sm" data-a="fw" data-l="${l}">Announce</button>`}</td></tr>
       <tr><td><b>Priority order</b><div class="mini">Lines higher in the T5 list get scarce shared inputs first.</div></td><td>Currently #${S.order.indexOf(l)+1} of ${S.order.length}</td><td>—</td><td>now</td><td><button class="pbtn sm" data-a="lineup" data-l="${l}" ${S.order.indexOf(l)===0?'disabled':''}>▲ Raise</button></td></tr></table></div>
-     <!--/AO--><div class="dsec"><h4>Capacity pipeline</h4>${stackBar(lp.seg,v=>fmtN(v)+'/yr',rq.req,'Needed for parity')}${pipeLeg()}${pipeChart(l,lp,rq.req,900,170)}
+     <!--/AO--><div class="dsec"><h4>Capacity pipeline</h4>${(()=>{const yr=usReq(l);return stackBar(lp.seg,v=>fmtN(v)+'/yr',yr,'Your share of the requirement')+pipeLeg()+pipeChart(l,lp,yr,900,170)})()}
       <div class="lgrp">Projects</div>${projTable(S.projects.filter(p=>PD[p.def].t.line===l))}${plantsFor('line',l).length?`<div class="lgrp">Plants</div>${plantsTable(plantsFor('line',l))}`:''}</div>
      ${S.ready[l]!=null?`<div class="dsec"><h4>Readiness — built but not available</h4>${readyCard(l,true,true)}</div>`:''}`;
   } else {
@@ -3203,6 +3205,8 @@ function stackBar(seg,fv,mark,markL){
   const leg=PIPE_SEG.filter(([k])=>seg[k]>tot*1e-4).map(([k,l,c])=>`<span><i style="background:${c}"></i>${l} <b>${fv(seg[k])}</b></span>`).join('');
   return `<div class="bigbar sb">${bar}</div><div class="sleg">${leg}${mark?`<span><i class="mk"></i>${markL} <b>${fv(mark)}</b></span>`:''}</div>`;
 }
+// what the requirement leaves for US lines once allied output is counted
+const usReq=c=>Math.max(0,reqOut(c)-allyOut(c));
 function reqRate(c,pj){
   const nw=needOf(c,S.enemy,S.allied),bt=nw.t||S.theaters[0],cr=CRISES[S.fac]||[];
   const nxt=cr.find(x=>x[2]===bt&&x[1]>S.w+52)||[null,END_W,bt,'2037'];const T=Math.max(4,nxt[1]-S.w)/52;
@@ -3218,9 +3222,9 @@ function pipeChart(c,lp,req,W=440,H=140){
   const H2=S.hist.filter(h=>h.prod),fc=forecastSeries(c,lp);
   const dm=Math.max(...fc.a.map(x=>x[1]),...H2.map(h=>Math.max(h.prod[c],h.name?.[c]||0)),1e-9),off=req>dm*3;
   const yMax=(off?dm*1.25:Math.max(req||0,dm))*1.08,now=S._R.out[c].yr;
-  return (off?`<div class="mini redt" style="margin:2px 0">Rate needed for parity (${fmtN(req)}/yr) is off the chart — ${now>0?fmt(req/now,0)+'× today\'s output':'and output is zero'}.</div>`:'')+lineChart({unit:'⟳ Output per year (flow)',W,H,yMax,vf:v=>fmtN(v)+'/yr',hl:req&&!off?[{v:req,c:'#b8860b',n:'Needed for parity',k:'req'}]:[],series:[{pts:H2.map(h=>[h.w,h.name[c]]),c:'#7fa3cc',wd:1.4,n:'Nameplate built',k:'name'},{pts:H2.map(h=>[h.w,h.prod[c]]),c:'#2f62a0',wd:2.2,n:'Actual output',k:'actual'},{pts:fc.a,c:'#5f9e4a',dash:'6 4',n:'Nameplate, on schedule',k:'sched'},{pts:fc.b,c:'#b0453a',dash:'2 3',n:'Nameplate, at your record',k:'record'}]});
+  return (off?`<div class="mini redt" style="margin:2px 0">Your share of the requirement (${fmtN(req)}/yr) is off the chart — ${now>0?fmt(req/now,0)+'× today\'s output':'and output is zero'}.</div>`:'')+lineChart({unit:'⟳ Output per year (flow)',W,H,yMax,vf:v=>fmtN(v)+'/yr',hl:req&&!off?[{v:req,c:'#b8860b',n:'Your share of the requirement',k:'req'}]:[],series:[{pts:H2.map(h=>[h.w,h.name[c]]),c:'#7fa3cc',wd:1.4,n:'Nameplate built',k:'name'},{pts:H2.map(h=>[h.w,h.prod[c]]),c:'#2f62a0',wd:2.2,n:'Actual output',k:'actual'},{pts:fc.a,c:'#5f9e4a',dash:'6 4',n:'Nameplate, on schedule',k:'sched'},{pts:fc.b,c:'#b0453a',dash:'2 3',n:'Nameplate, at your record',k:'record'}]});
 }
-const pipeLeg=()=>`<div class="aleg">${legI('actual','Actual output','<i style="background:#2f62a0"></i>')}${legI('name','Nameplate built','<i style="background:#7fa3cc"></i>')}${legI('sched','Nameplate if the pipeline finishes on schedule','<i class="dsh" style="border-color:#5f9e4a"></i>')}${legI('record','…at your track record','<i class="dot2" style="border-color:#b0453a"></i>')}${legI('req','Rate needed for parity','<i class="dsh" style="border-color:#b8860b"></i>')}</div>`;
+const pipeLeg=()=>`<div class="aleg">${legI('actual','Actual output','<i style="background:#2f62a0"></i>')}${legI('name','Nameplate built','<i style="background:#7fa3cc"></i>')}${legI('sched','Nameplate if the pipeline finishes on schedule','<i class="dsh" style="border-color:#5f9e4a"></i>')}${legI('record','…at your track record','<i class="dot2" style="border-color:#b0453a"></i>')}${legI('req','Your share of the requirement','<i class="dsh" style="border-color:#b8860b"></i>')}</div>`;
 function projLine(p){const def=PD[p.def],w1=S.w+remW(p),sl=slipF().f;return `<tr><td>${def.ally?'🤝 ':''}<b class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</b>${p.inh?' <span class="mini">(inherited)</span>':''}</td><td>${STAGE_L[STAGES[Math.min(p.stage,5)]]}${p.obs.length?` · <span class="redt">blocked: ${V(OD[p.obs[0].id].n)}${p.obs[0].wait?` (${p.obs[0].wait} wk)`:''}</span>`:''}</td><td>${money(p.spent||0)} · billed ${pct(billedFrac(p))}</td><td>${fmtDate(Math.min(w1,END_W+520))}${sl>1.05?` <span class="mini">(~${dateOf(Math.round(S.w+remW(p)*sl)).getFullYear()} at your record)</span>`:''}</td></tr>`}
 function projTable(ps){return ps.length?`<table class="ctable"><tr><th>Project</th><th>Stage</th><th>Obligated · billed</th><th>Online (on schedule)</th></tr>${ps.map(projLine).join('')}</table>`:'<p class="mini">Nothing in the pipeline.</p>'}
 function plantsTable(pls){return pls.length?`<table class="ctable"><tr><th>Plant</th><th>Status</th><th>Output</th></tr>${pls.map(pl=>`<tr><td><b class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</b></td><td>${pl.issue?`<span class="redt">⚠ ${OPSD[pl.issue.id].n}${pl.issue.wait?` · ${pl.issue.wait} wk left`:' · needs a decision'}</span>`:pl.full?'<span class="okt">Full rate</span>':'Ramping'}</td><td>${pct(pl.yield*plantMult(pl))} of nameplate</td></tr>`).join('')}</table>`:''}
@@ -3285,9 +3289,9 @@ function pipeBody(){
       return Object.values(g).map(({m,ids})=>`<tr><td><b>${m.label||'Disruption'}</b></td><td>${KL[m.kind]||m.kind} of ${ids.length>3?ids.length+' inputs':ids.map(i=>m.kind==='line'?LINES[i]?.n:ND[i]?.n||i).join(', ')}</td><td>${m.mult<1?'−'+pct(1-m.mult):'+'+pct(m.mult-1)}</td><td>${m.left} wk</td></tr>`).join('')})()}</table>`:''}
     ${ramping.length?`<div class="lgrp">Ramping</div>${plantsTable(ramping)}`:''}</div></div>
    ${pipeLeg()}<div class="agrid">`;
-  for(const c of Object.keys(LINES)){const lp=linePipe(c),{req,by}=reqRate(c,pj),L=LINES[c],B2=billing(lp.projs);
-    h+=`<div class="acard"><div class="ah"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b><span class="mini">${fmtN(S._R.out[c].yr)}/yr now · ${req>0?`need ${fmtN(req)}/yr`:'parity on track'}</span></div>
-     ${stackBar(lp.seg,v=>fmtN(v)+'/yr',req,`Needed for parity by ${by[3]==='2037'?'2037':dateOf(by[1]).getFullYear()}`)}
+  for(const c of Object.keys(LINES)){const lp=linePipe(c),req=usReq(c),L=LINES[c],B2=billing(lp.projs);
+    h+=`<div class="acard"><div class="ah"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b><span class="mini">${fmtN(S._R.out[c].yr)}/yr now · ${req>S._R.out[c].yr?`your share: ${fmtN(req)}/yr`:'your share met'}</span></div>
+     ${stackBar(lp.seg,v=>fmtN(v)+'/yr',req,'Your share of the requirement')}
      ${pipeChart(c,lp,req)}
      <div class="mini">${lp.projs.length} line projects · obligated ${money(B2.ob)}, billed ${money(B2.bi)}${lp.blocked>0?` · <span class="redt">${fmtN(lp.blocked)}/yr of capacity blocked</span>`:''}${S._R.out[c].bott?` · <span class="redt">inputs short: ${S._R.out[c].chain.map(i=>ND[i].n).join(' ← ')}</span>`:''}</div></div>`}
   return h+`</div>`;
