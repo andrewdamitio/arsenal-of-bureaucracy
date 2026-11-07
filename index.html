@@ -2051,6 +2051,7 @@ function endHistory(quiet){ // quiet: the instant run at game start, no handover
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
   log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
   S.spendBy={};S.incBy={};S.lawLog=[];S.decN={you:0,auto:0};{const R0=production(false),o=R0.out;S.rec0={budget:S.budget,expo:S.exposure,out:Object.fromEntries(Object.keys(LINES).map(c=>[c,o[c].yr])),inv:{...S.inv},ally:Object.fromEntries(ORDER.map(id=>[id,R0.P[id].ally]))}}
+  if(S.fac==='US')setTheater(S.rival||'pac');
   if(!S.scen&&S.fac==='US')S.modal='scenPick';
   S.resH=[];S._handT0=quiet?0:performance.now();S._flW=null;for(const k in FL)delete FL[k]; // handover starts from a clean slate, no flashes
 }
@@ -2936,18 +2937,19 @@ const LINE_MAKERS={interceptors:'Lockheed Martin, Camden AR and Grand Prairie TX
  drones:'AeroVironment, Skydio, Anduril, Shield AI and Red Cat, among others'};
 // everyone who makes this item: existing US producers, plants you built, plants under construction, allies, and China or Russia
 function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
-  const pls=S.plants.filter(p=>isL?(p.kind==='line'&&p.target===l):p.target===id),prs=S.projects.filter(q=>{const d=PD[q.def];return !d.ally&&q.dur[3]>0&&(isL?d.t.line===l:d.t.node===id)});
+  const pls=S.plants.filter(p=>isL?(p.kind==='line'&&p.target===l):p.target===id),prs=S.projects.filter(q=>{const d=PD[q.def];return q.dur[3]>0&&(isL?d.t.line===l:d.t.node===id)}),ald=isL?[]:S.done.filter(x=>PD[x.def].ally&&PD[x.def].t.node===id);
   const I=isL?null:INFO[id]||{},who=isL?LINE_MAKERS[l]:I.who?(I.who[S.fac]||I.who.US||I.who):'',p=P[id];
   const share=v=>isL?`${fmtN(v*LINES[l].k)}/yr`:p.need>1e-6?`${pct(v/p.need)} of need`:'—';
   const idle=S.tmods.filter(m=>(isL?m.kind==='line'&&m.id===l:(m.kind==='node'||m.kind==='cap')&&m.id===id)&&m.mult<1);
   const base=isL?S.lines[l].base:S.nodes[id].base,rows=[];
   rows.push(`<tr><td><b>${F().flag} Existing US plants</b><div class="mini">${who||'None of note'}</div></td><td>${base>1e-9?share(base):'—'}</td><td>${idle.length?`<span class="redt">🚧 ${idle[0].label.toLowerCase()}, ${idle[0].left} wk left</span>`:base>1e-9?`<span class="okt">Running</span>${!isL&&nshiftOn(id)?' · ⏩ extra shifts':isL&&S.shifts[l]?' · ⏩ extra shifts':''}`:'<span class="mini">No US plant</span>'}</td></tr>`);
   for(const pl of pls){const out=pl.gain*pl.yield*plantMult(pl);rows.push(`<tr><td><b>🏭 <span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span></b><div class="mini">Built ${yr(pl.start)}</div></td><td>${share(out)}</td><td>${pl.issue?`<span class="redt">⚠ ${OPSD[pl.issue.id].n}</span>`:pl.full?'<span class="okt">Full rate</span>':`Ramping · ${pct(pl.yield)} of nameplate`}</td></tr>`)}
-  for(const q of prs){const [t,cl]=progStatus(q,true);rows.push(`<tr><td><b>🏗 <span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span></b><div class="mini">${STAGE_L[STAGES[q.stage]]}</div></td><td>+${share(projGain(PD[q.def]))} <span class="mini">when done</span></td><td><span class="${cl}">${t}</span> · output ~${yr(Math.round(S.w+remW(q)*sl))}</td></tr>`)}
+  for(const q of prs){const [t,cl]=progStatus(q,true);rows.push(`<tr><td><b>${PD[q.def].ally?'🤝':'🏗'} <span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span></b><div class="mini">${PD[q.def].ally?'Allied deal you funded · ':''}${STAGE_L[STAGES[q.stage]]}</div></td><td>+${share(projGain(PD[q.def]))} <span class="mini">when done</span></td><td><span class="${cl}">${t}</span> · output ~${yr(Math.round(S.w+remW(q)*sl))}</td></tr>`)}
+  for(const x of ald)rows.push(`<tr><td><b>🤝 <span class="linkn" data-a="prog" data-u="${x.uid}">${x.nm}</span></b><div class="mini">Allied deal you funded · online ${yr(x.w)}</div></td><td>${share(x.g)}</td><td><span class="okt">Supplying</span> <span class="mini">(part of the allied row below)</span></td></tr>`);
   if(isL){const al=allyOut(l);if(al>0)rows.push(`<tr><td><b>🤝 ${AL().n}</b><div class="mini">Their own lines, counted toward sufficiency</div></td><td>${fmtN(al)}/yr</td><td>${allyDivert(l)>.005?`<span class="redt">−${pct(allyDivert(l))} from your purchases</span>`:'<span class="okt">Running</span>'}</td></tr>`)}
   else{if(p.ally>1e-9)rows.push(`<tr><td><b>🤝 Allied suppliers</b><div class="mini">${S.nodes[id].ally.src||'Allied producers'}</div></td><td>${share(p.ally)}</td><td>${allyBar(id)?'<span class="redt">⚖ barred by law for defense work</span>':'<span class="okt">Supplying</span>'}</td></tr>`);
     if(p.prc+p.lost>1e-9)rows.push(`<tr><td><b>${FLAGS.cn} China / ${FLAGS.ru} Russia</b></td><td>${share(p.prc)}</td><td>${p.lost>.005?`<span class="redt">✂ ${share(p.lost)} cut off</span>`:'Supplying'}</td></tr>`)}
-  return `<div class="dsec" id="makers"><h4>🏭 Who makes it <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· ${pls.length} plant${pls.length===1?'':'s'} you built · ${prs.length} under construction</span></h4><table class="ctable mkt"><tr><th>Producer</th><th>${isL?'Output':'Supply'}</th><th>Status</th></tr>${rows.join('')}</table></div>`}
+  return `<div class="dsec" id="makers"><h4>🏭 Who makes it <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· ${pls.length+ald.length} you built or funded · ${prs.length} under construction</span></h4><table class="ctable mkt"><tr><th>Producer</th><th>${isL?'Output':'Supply'}</th><th>Status</th></tr>${rows.join('')}</table></div>`}
 function dossierHTML(id,P){
   const sb=`<div class="dsb">${[1,2,3,4].map(t=>`<div class="dsbt">T${t} · ${TIERS[t]}</div>`+NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<div class="dsbi ${n.id===id?'on':''}" data-a="node" data-n="${n.id}"><i class="dot st-${st}"></i>${n.n}</div>`}).join('')).join('')}
     <div class="dsbt">T5 · ${TIERS[5]}</div>${S.order.map(l=>{const o=S._R.out[l],r=o.n/Math.max(o.cap,1e-9);return `<div class="dsbi ${id==='L:'+l?'on':''}" data-a="node" data-n="L:${l}"><i class="dot st-${r>=.999?'ok':r>=.8?'tight':'short'}"></i>${LINES[l].n}</div>`}).join('')}</div>`;
@@ -3037,7 +3039,7 @@ function stockBody(){
   const prodNow={},prodCap={};for(const c in LINES){prodNow[c]=R.out[c].yr;prodCap[c]=lineName(c)*LINES[c].k}
   const pj=project(prodNow),pc=project(prodCap);
   const cr=CRISES[S.fac]||[];
-  let html=`<div class="aleg">${legI('you','You (history)','<i style="background:#2f62a0"></i>')}${legI('proj','You, projected at current output','<i class="dsh" style="border-color:#2f62a0"></i>')}${legI('cap','You, if every line ran at capacity','<i class="dot2" style="border-color:#7fa3cc"></i>')}${legI('need','Need (scenario)','<i style="background:#b8860b"></i>')}${legI('band','80% range','<i class="dot2" style="border-color:#9a9a9a"></i>')}${legI('enemy','Enemy in service','<i style="background:#b0453a"></i>')}<span><i style="background:#a03a30;width:2px"></i>Crisis</span></div>
+  let html=`${S.fac==='US'?`<p class="mini" style="margin:0 0 6px">Showing the ${SCEN[S.theaters[0]].short.replace(/^an? /,'')} against ${RV().f} ${RV().n}${S.scen?`, the theater of <b>${SCD[S.scen].n}</b>`:''}. ${S.scen?'':`Switch the rival on Command to see the other theater.`}</p>`:''}<div class="aleg">${legI('you','You (history)','<i style="background:#2f62a0"></i>')}${legI('proj','You, projected at current output','<i class="dsh" style="border-color:#2f62a0"></i>')}${legI('cap','You, if every line ran at capacity','<i class="dot2" style="border-color:#7fa3cc"></i>')}${legI('need','Need (scenario)','<i style="background:#b8860b"></i>')}${legI('band','80% range','<i class="dot2" style="border-color:#9a9a9a"></i>')}${legI('enemy','Enemy in service','<i style="background:#b0453a"></i>')}<span><i style="background:#a03a30;width:2px"></i>Crisis</span></div>
    <div class="ogrid">`;
   for(const t of S.theaters){const E=S.enemy[t];const end=pj[pj.length-1][t],endC=pc[pc.length-1][t];
     const nxt=cr.find(c=>c[2]===t&&c[1]>S.w);const at=(arr,w)=>arr.reduce((b,x)=>Math.abs(x.w-w)<Math.abs(b.w-w)?x:b,arr[0]);
@@ -3760,7 +3762,8 @@ function scenTest(sc){const T=sc.test;
     return {v:kept,ok:kept>=.8,txt:`If China switched everything off, you would build ${pct(kept)} of your January 2027 output (pass: 80%).`,worst:cs.filter(c=>now[c].yr>1e-9).sort((a,b)=>cut[a].yr/now[a].yr-cut[b].yr/now[b].yr).slice(0,2).map(c=>`${LINES[c].n} ${pct(cut[c].yr/now[c].yr)}`).join(', ')}}
   scenUpdate();const tr=trueScore(T.t),es=ratio(T.t);
   return {v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
-function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;if(S.modal==='scenPick')S.modal=null;S.rival=sc.rival;S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
+function setTheater(t){if(S.fac!=='US')return;S.theaters=[t];scenUpdate();PJC.clear()}
+function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;if(S.modal==='scenPick')S.modal=null;S.rival=sc.rival;setTheater(sc.rival);S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
 function mandWhy(m){const R=S._R||production(false);
   if(m.c){const o=R.out[m.c],lim=limOf(o,m.c);return lim.startsWith('L:')?'Line capacity: more lines needed':'Short of '+o.chain.map(i=>ND[i].n).join(' ← ')}
   if(m.kind==='magnets'){const P=R.P.magnets;return P.starvedBy?'Short of '+chainOf(R.P,'magnets').slice(1).map(i=>ND[i].n).join(' ← '):'Not enough non-Chinese magnet capacity yet'}
@@ -4187,7 +4190,7 @@ document.addEventListener('pointerdown',e=>{
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rbgo':S.view='rules';S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rtab':S.rtab=b.dataset.t;S._rtTop=true;break;
-    case 'rival':if(S.rival!==b.dataset.t){S.rival=b.dataset.t;S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
+    case 'rival':if(S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
     case 'remedy':if(S.modal==='prog')S.modal=null;S.rtab=CD[b.dataset.r]?'home':'agenda';S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
