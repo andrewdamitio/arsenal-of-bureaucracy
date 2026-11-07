@@ -2330,7 +2330,7 @@ function billHTML(){const fy=pkgFY(),cp=cprioOf(fy),pl=pkgPlan(),room=pkgRoom(),
     ${cpH}<div class="dsec"><h4>Work the bill</h4><p class="mini" style="margin:0 0 6px">Each item costs Political Capital to request; what Congress funds, it pays for, on top of your budget. It funds the request top to bottom until its money runs out, so set the order. In markup it cuts some items anyway: it backs plants that fix what is holding output back and is quickest to cut the rest, though never reliably either way. A champion on the committees helps. PC spent on an item that is cut or falls below the line is lost. Congress may also add a plant of its own for a member’s district (about even odds each year), paid with money it adds.</p>
       ${pl.length?`<table class="ctable bl-t"><tr><th>Priority</th><th>Plant</th><th>Raises</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:`<p class="mini">Nothing in the request. New plants you order join it.</p>`}
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-a="cat">+ New order</button>${suppBtn('btn sm')}</div></div>${S.fac==='US'?ndsSec():''}${lastH}`;
-  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(h)}</div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`}
+  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(h)}</div></div>`}
 function canStart(def,cost=projCost(def)){if(S.projects.some(p=>p.def===def.id&&p.pkg))return false;if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&(needsContract(def)&&!S.histMode||S.budget>=cost-1e-9)}
 function projName(p){return p.nm||PD[p.def].n}
 function projGain(def,gm=1){return def.t.node?def.gain*S.nodes[def.t.node].scale*gm:def.gain*gm}
@@ -2852,7 +2852,7 @@ function progHTML(uid){
   h+=`<div class="dsec"><h4>Money</h4><div class="kv"><b>Committed</b><span>${money(p.spent||0)}</span>${live?`<b>Spent so far</b><span>${money((p.spent||0)*billedFrac(p))} (${pct(billedFrac(p))})</span>`:''}</div></div>`;
   const lg=S.log.filter(l=>l.m.includes(nm)).slice(0,24);
   if(lg.length)h+=`<div class="dsec"><h4>Record</h4>${lg.map(l=>`<div class="mini" style="padding:2px 0;border-bottom:1px dotted #cbbd95"><b>${fmtDate(l.w)}</b> · ${l.m}</div>`).join('')}</div>`;
-  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(h)}</div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`}
+  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(h)}</div></div>`}
 /* ---------- bottlenecks: where output is lost, why, what's being done, what's in the way ---------- */
 const CAUSES=[['cut','Cut off or barred','#8a1f15'],['starved','Waiting on an input','#d07a3a'],['issue','Plant problems','#a06030'],['ramp','Plants still ramping','#c9a227'],['cap','Not enough capacity','#5a4e38']];
 // split a node's shortfall into causes, in the order a planner would check them
@@ -3219,7 +3219,7 @@ function dossierHTML(id,P){
    [main,isv]=takeSec(main,'In service');const mk=makersHTML(id,S._R.P),pk='<div class="dsec"><h4>Capacity pipeline';main=main.includes(pk)?main.replace(pk,mk+pk):main+mk;
    if(isv){const rk='<div class="dsec"><h4>Readiness';main=main.includes('<!--ISV-->')?main.replace('<!--ISV-->',isv):main.includes(rk)?main.replace(rk,isv+rk):main+isv}
    if(bg)main+=`<div class="dbg"><div class="dbgh">Background</div>${bg}</div>`}
-  return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${pinTop(main)}</div></div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
+  return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${pinTop(main)}</div></div></div>`;
 }
 
 /* =====================================================================
@@ -4324,7 +4324,7 @@ function renderModal(){
     html=`<div class="paper wide"><div class="hd"><span class="ic">🗺</span>Supply Chain Map <span style="margin-left:auto;font-size:12px">Green: OK · Amber: tight · Red: short · Dark red: cut off. Click any node.</span></div>
      <div class="map">${[1,2,3,4].map(t=>`<div class="col"><h4>T${t} · ${TIERS[t]}</h4>${NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<span class="npill np-${st==='idle'?'ok':st}" data-a="node" data-n="${n.id}"><span>${n.ic} ${n.n}</span><span>${P[n.id].need>1e-6?pct(Math.min(P[n.id].cover,9.99)):'—'}</span></span>`}).join('')}</div>`).join('')}
       <div class="col"><h4>T5 · End Items</h4>${S.order.map(l=>{const o=S._R.out[l];const r=o.n/Math.max(o.cap,1e-9);return `<span class="npill np-${r>=.999?'ok':r>=.8?'tight':'short'}" data-a="tab" data-t="5"><span>${LINES[l].n}</span><span>${pct(r)}</span></span><div style="font:11px 'Segoe UI';color:#6b5a35;margin:-1px 0 4px 6px">${LINES[l].in.map(i=>ND[i].n).join(' · ')}</div>`}).join('')}</div></div>
-     <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
+     </div>`;
   } else if(S.modal==='bill'){html=billHTML()
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
@@ -4334,7 +4334,7 @@ function renderModal(){
      ${(()=>{const sg=S.cseg||'all',segs=CSEG.filter(([k])=>sg==='all'||k===sg).map(([k,ic,n,ds])=>[k,ic,n,ds,list.filter(d=>csegOf(d)===k)]);
        return `<div class="cseg"><span class="mini">Show:</span><button class="pbtn sm ${sg==='all'?'on':''}" data-a="cseg" data-v="all">All · ${list.length}</button>${CSEG.map(([k,ic,n])=>`<button class="pbtn sm ${sg===k?'on':''}" data-a="cseg" data-v="${k}">${ic} ${n} · ${list.filter(d=>csegOf(d)===k).length}</button>`).join('')}</div>
        <div style="padding:4px 14px 8px"><table class="ctable"><tr><th>Project · likely barriers</th><th>Target</th><th>Gain</th><th>Cost</th><th>Base time</th><th></th></tr>${segs.map(([k,ic,n,ds,ls])=>`<tr class="cseg-h cs-${k}"><td colspan="6"><b>${ic} ${n}</b> <span class="mini">${ds}</span></td></tr>${ls.length?ls.map(d=>projRow(d,P)).join(''):'<tr><td colspan="6" class="mini">None at this tier.</td></tr>'}`).join('')}</table></div>`})()}
-     <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
+     </div>`;
   }
   return html};let html=build();
   // launching from a list or a page: the award screen is a second popup over it, and the page stays where it was
