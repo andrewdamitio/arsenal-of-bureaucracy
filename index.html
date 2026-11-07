@@ -3011,18 +3011,21 @@ function supplyWeb(id,P){
 const RIV_C={pac:'#b0453a',eu:'#7a5a8c'};
 function allyAdd(c){const r=retRate(c),m={};let a=0;for(let w=PLAY0;w<=END_W+60;w++){m[w]=a;a=a*(1-r/52)+allyOut(c,w)/52}return w=>w<PLAY0?null:m[Math.min(Math.round(w),END_W+60)]}
 function outRaceHTML(l,o,lp){const rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#4fa894',hasA=!!AL().lines[l];
-  const H=S.hist.filter(h=>h.prod),util=o.yr/Math.max(lp.name,1e-9),fc=forecastSeries(l,lp).b.map(([w,v])=>[w,v*Math.min(1,util)]);
+  const H=S.hist.filter(h=>h.prod),util=o.yr/Math.max(lp.name,1e-9),FS=forecastSeries(l,lp),fc=FS.b.map(([w,v])=>[w,v*Math.min(1,util)]),fa=[[S.w,o.yr],...FS.a.map(([w,v])=>[w,v*Math.min(1,util)])];
   const usH=H.map(h=>[h.w,h.prod[l]]),usF=[[S.w,o.yr],...fc],al=w=>hasA?allyOut(l,w):0;
   const fut=[];for(let w=S.w;w<=END_W;w+=8)fut.push(w);const hw=H.map(h=>h.w);
   const ser=[{pts:hw.map(w=>[w,cnOut(l,w)]),c:rc,wd:2.2,n:R.n},{pts:fut.map(w=>[w,cnOut(l,w)]),c:rc,wd:1.4,dash:'4 3',n:R.n+' (projected)'},
     {pts:fut.map(w=>[w,reqOut(l,w)]),c:'#b8860b',wd:1.6,dash:'6 4',n:'Requirement (you + allies)'}];
   if(hasA)ser.push({pts:usH.map(([w,v])=>[w,v+al(w)]),c:AC,wd:2,n:'You + allies'},{pts:usF.map(([w,v])=>[w,v+al(w)]),c:AC,wd:1.4,dash:'4 3',n:'You + allies (projected)'});
+  const slip=fa.at(-1)[1]-usF.at(-1)[1]>Math.max(1e-9,usF.at(-1)[1]*.02);
+  ser.push({pts:H.map(h=>[h.w,h.name?.[l]??h.prod[l]]),c:'#9dbbdc',wd:1.3,n:'Your capacity (nameplate)'});
+  if(slip)ser.push({pts:fa,c:'#5f9e4a',wd:1.3,dash:'6 4',n:'You, if plants finish on schedule'});
   ser.push({pts:usH,c:'#2f62a0',wd:2.4,n:'You'},{pts:usF,c:'#2f62a0',wd:1.6,dash:'4 3',n:'You (projected)'});
   const yMax=Math.max(...ser.flatMap(x=>x.pts.map(p=>p[1])),1e-9)*1.06,now=o.yr+al(S.w),rq=reqOut(l),gap=rq-now;
   const end=usF.at(-1)[1]+al(END_W),cnE=cnOut(l,END_W);
-  return `<div class="orhd"><span><b>${fmtN(o.yr)}</b>/yr you${hasA?` + <b style="color:#2e8a74">${fmtN(al(S.w))}</b> allies`:''} vs <b class="red">~${fmtN(cnOut(l))}</b> ${R.n} · requirement <b>${fmtN(rq)}</b>/yr</span><span class="${gap>0?'redt':'okt'}">${gap>0?`short ${fmtN(gap)}/yr`:'requirement met'}</span><span class="mini">2037, with today’s orders: ${fmtN(end)}/yr vs ~${fmtN(cnE)}</span></div>
+  return `<div class="orhd"><span><b>${fmtN(o.yr)}</b>/yr you${hasA?` + <b style="color:#2e8a74">${fmtN(al(S.w))}</b> allies`:''} vs <b class="red">~${fmtN(cnOut(l))}</b> ${R.n} · requirement <b>${fmtN(rq)}</b>/yr</span><span class="${gap>0?'redt':'okt'}">${gap>0?`short ${fmtN(gap)}/yr`:'requirement met'}</span><span class="mini">2037, with today’s orders: ${fmtN(end)}/yr${slip?` (${fmtN(fa.at(-1)[1]+al(END_W))} if on schedule)`:''} vs ~${fmtN(cnE)}</span></div>
     ${lineChart({W:900,H:180,yMax,yFmt:fmtN,vf:v=>fmtN(v)+'/yr',series:ser,unit:'⟳ Output per year (flow)'})}
-    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span>${hasA?`<span><i style="background:${AC}"></i>You + allies</span>`:''}<span><i style="background:${rc}"></i>${R.n}</span><span><i class="dsh" style="border-color:#b8860b"></i>Requirement</span><span class="mini">Dashed: your plants on order at your track record so far, held to today’s input limits; ${R.n} keeps growing. ${R.n}'s figures are intelligence estimates.</span></div>`}
+    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span>${hasA?`<span><i style="background:${AC}"></i>You + allies</span>`:''}<span><i style="background:${rc}"></i>${R.n}</span><span><i class="dsh" style="border-color:#b8860b"></i>Requirement</span><span><i style="background:#9dbbdc"></i>Your capacity</span>${slip?'<span><i class="dsh" style="border-color:#5f9e4a"></i>If on schedule</span>':''}<span class="mini">Light blue: what your plants could build if nothing were short. Dashed: your plants on order at your track record so far, held to today’s input limits; ${R.n} keeps growing. ${R.n}'s figures are intelligence estimates.</span></div>`}
 function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#4fa894',al=allyOut(l),A=AL();
   const st=estInv(S.enemy[rv],l),pr=estProd(S.enemy[rv],l,S.w);
   const row=(B,fl,nm,v,c,lab)=>`<div class="pvsr"><span>${fl} ${nm}</span><div class="nb"><i style="width:${B(v)}%;background:${c}"></i></div><span class="v">${lab}</span></div>`;
@@ -3072,7 +3075,7 @@ function dossierHTML(id,P){
       <tr><td><b>⏩ Fund extra shifts</b><div class="mini">Overtime and another shift at existing lines. Only helps when the line itself, not its inputs, is the limit. Tired crews and harder-run machines mean more breakdowns and accidents${BOOM_L.includes(l)?', and fires where explosives are loaded':''}.</div></td><td>+${Math.round((SHIFT_M-1)*100)}% line capacity${o.bott?` · <span class="redt">${ND[o.bott].n} binds now</span>`:''}</td><td>${money(SHIFT_C)}/yr</td><td>now</td><td><button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'Stop':'Fund'}</button></td></tr>
       <tr><td><b>📣 Framework agreement</b><div class="mini">Headline now; audit in three years.</div></td><td>+12 PC now; ±PC on audit</td><td>—</td><td>3 yr</td><td>${S.fw[l]?'active':`<button class="pbtn sm" data-a="fw" data-l="${l}">Announce</button>`}</td></tr>
       <tr><td><b>Priority order</b><div class="mini">Lines higher in the T5 list get scarce shared inputs first.</div></td><td>Currently #${S.order.indexOf(l)+1} of ${S.order.length}</td><td>—</td><td>now</td><td><button class="pbtn sm" data-a="lineup" data-l="${l}" ${S.order.indexOf(l)===0?'disabled':''}>▲ Raise</button></td></tr></table></div>
-     <!--/AO--><div class="dsec"><h4>Capacity pipeline</h4>${(()=>{const yr=usReq(l);return stackBar(lp.seg,v=>fmtN(v)+'/yr',yr,'Your share of the requirement')+pipeLeg()+pipeChart(l,lp,yr,900,170)})()}
+     <!--/AO--><div class="dsec"><h4>Capacity pipeline</h4>${(()=>{const yr=usReq(l);return stackBar(lp.seg,v=>fmtN(v)+'/yr',yr,'Your share of the requirement')})()}
       <div class="lgrp">Projects</div>${projTable(S.projects.filter(p=>PD[p.def].t.line===l))}${plantsFor('line',l).length?`<div class="lgrp">Plants</div>${plantsTable(plantsFor('line',l))}`:''}</div>
      ${S.ready[l]!=null?`<div class="dsec"><h4>Readiness — built but not available</h4>${readyCard(l,true,true)}</div>`:''}`;
   } else {
