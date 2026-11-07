@@ -3198,7 +3198,7 @@ function wmLoad(){if(WM||WMload)return;const add=src=>new Promise((ok,no)=>{cons
     const byN={};for(const f of land)byN[f.properties.name]=path(f);
     WM={W,H,proj,path,byN,grat:path(d3.geoGraticule10()),sph:path({type:'Sphere'})};render()}).catch(()=>{WM={err:1};render()})}
 function wmCPath(c){const ns=WM_NAME[c]||[c];for(const n of ns)if(WM.byN[n])return WM.byN[n];return null}
-function wmSVG(d){const {W,H,proj}=WM,cut=S.fac==='US'?(cutOf(d.node)||0):0;
+function wmSVG(d){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
   let g=`<path d="${WM.sph}" fill="#ece5d3"/><path d="${WM.grat}" fill="none" stroke="#ddd3bc" stroke-width=".4"/>`;
   const src=new Set(d.src.map(x=>x[0]));
   for(const n in WM.byN){const us=n==='United States of America',hit=[...src].find(c=>(WM_NAME[c]||[c]).includes(n));
@@ -3219,14 +3219,14 @@ function wmSVG(d){const {W,H,proj}=WM,cut=S.fac==='US'?(cutOf(d.node)||0):0;
   dots+=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.6"/><text x="${(ux-10).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text>`;
   const mk=k=>`<marker id="wmah-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="${WM_COL[k]}"/></marker>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="wmsvg" role="img" aria-label="Map of US import sources for ${d.n}"><defs>${mk('adv')}${mk('al')}${mk('oth')}</defs>${g}${arcs}${dots}${labs.join('')}</svg>`}
-function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?(cutOf(d.node)||0):0;
+function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
   if(!WM)wmLoad();
   const shOf=(x,k)=>x.src.filter(y=>wmGrp(y[0])===k).reduce((a,y)=>a+y[1],0);
   const segs=[['adv','China and Russia',shOf(d,'adv'),WM_COL.adv],['al','Allies and close partners',shOf(d,'al'),WM_COL.al],['oth','Other named countries',shOf(d,'oth'),WM_COL.oth],['un','Not named by USGS',d.oth,'#cfc5ad']];
   const bar=`<div class="wmbar">${segs.filter(x=>x[2]>0).map(([k,n,v,c])=>`<i style="width:${v}%;background:${c}" data-tip="<b>${n}</b><br>${v}% of US imports"></i>`).join('')}</div>
     <div class="wmleg">${segs.map(([k,n,v,c])=>`<span><i style="background:${c}"></i>${n} <b>${v}%</b></span>`).join('')}</div>`;
   const list=WMD.map(x=>{const a=shOf(x,'adv');return `<button class="wmi ${x.k===d.k?'on':''}" data-a="map" data-m="${x.k}"><span class="wmn">${x.n.replace(' (terbium)','')}</span><span class="wmc" data-tip="Share of US imports from China and Russia"><i style="width:${a}%"></i></span><span class="wmp">${a?a+'%':'—'}</span></button>`}).join('');
-  const gm=p?(()=>{const n=Math.max(p.dom+p.ally+p.prc,1e-9);return `<div class="wmg"><div class="wmgh">In the game now · ${ND[d.node].n} · where supply comes from</div><div class="wmgs"><span>Domestic <b>${pct(p.dom/n)}</b></span><span>Allied <b>${pct(p.ally/n)}</b></span><span>Chinese <b>${pct(p.prc/n)}</b></span><span class="mini">covers <b>${pct(Math.min(n,p.need)/Math.max(p.need,1e-9))}</b> of need</span>${cut>.01?`<span class="redt">Export controls cut <b>${pct(cut)}</b> of Chinese supply</span>`:''}<span class="dsp"></span><button class="btn sm" data-a="node" data-n="${d.node}">Open its page →</button></div></div>`})():'';
+  const gm=p?(()=>{const n=Math.max(p.dom+p.ally+p.prc,1e-9);return `<div class="wmg"><div class="wmgh">In the game now · ${ND[d.node].n} · where supply comes from</div><div class="wmgs"><span>Domestic <b>${pct(p.dom/n)}</b></span><span>Allied <b>${pct(p.ally/n)}</b></span><span>Chinese <b>${pct(p.prc/n)}</b></span><span class="mini">covers <b>${pct(Math.min(1,p.cover??1))}</b> of need</span>${cut>.01?`<span class="redt">Export controls cut <b>${pct(cut)}</b> of Chinese supply</span>`:''}<span class="dsp"></span><button class="btn sm" data-a="node" data-n="${d.node}">Open its page →</button></div></div>`})():'';
   const body=WM?.err?`<div class="wmload">The map outlines could not load; they need an internet connection. The figures are listed below.</div>`:WM?wmSVG(d):'<div class="wmload">Loading map…</div>';
   const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Where US imports come from · shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
     <div class="wmhd"><div class="wmnir"><b>${d.nir}</b><span>net import reliance, 2025</span></div><div class="wmshare">${bar}</div></div></div>`;
