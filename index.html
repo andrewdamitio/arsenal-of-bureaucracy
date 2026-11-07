@@ -511,7 +511,7 @@ body{background:
 .lad{display:flex;flex-wrap:wrap;align-items:center;gap:4px 3px;font-size:11.5px}.lad-h{font:600 11px var(--disp);letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-right:4px}
 .lad-s{display:inline-flex;align-items:baseline;gap:6px;padding:2px 8px;border:1px solid #4a4532;background:#1b1d16;cursor:pointer;border-radius:2px}.lad-s:hover{border-color:#c9a227}
 .lad-s.bind{border-color:#d0503f;background:#3a1d18;box-shadow:inset 3px 0 0 #d0503f}.lad-s b{font:600 13.5px var(--disp);color:var(--ink);letter-spacing:.02em}.lad-s i{font:700 13.5px var(--disp);font-style:normal;color:#d9a441}.lad-s.bind i{color:#ff9a86}
-.lad-s em{font:600 12px var(--disp);font-style:normal;letter-spacing:.03em}.lad em.ok{color:#8fd07a}.lad em.okish{color:#8a8672}.paper .lad em.okish{color:#6b5a35}.lad em.tmp{color:#c9b98f}.lad em.none{color:#e0604c}.lad .ar{color:#6b5a35;font-size:13px}
+.lad-s em{font:600 12px var(--disp);font-style:normal;letter-spacing:.03em}.lad em.ok{color:#8fd07a}.lad em.okish{color:#8a8672}.paper .lad em.okish{color:#6b5a35}.lad em.tmp{color:#c9b98f}.lad em.none{color:#e0604c}.lad .ar{color:#6b5a35;font-size:13px}.lad-s{flex-wrap:wrap;row-gap:0}.lad-w{flex-basis:100%;font-size:11px;color:#c9b98f;line-height:1.25;margin-top:1px}.lad-s.bind .lad-w{color:#ffb4a6}.paper .lad-w{color:#6b5a35}.paper .lad-s.bind .lad-w{color:#8a1f15}
 .paper .lad-s,.vpaper .lad-s{background:#f3ebd6;border-color:#b8a57a}.paper .lad-s b{color:#2b241a}.paper .lad-s i{color:#8a6a1f}.paper .lad-s.bind{background:#f6dcd4;border-color:#b0453a}.paper .lad-s.bind i{color:#a3261c}
 .paper .lad em.ok{color:#2f6a24}.paper .lad em.tmp{color:#6b5a35}.paper .lad em.none{color:#a3261c}.paper .lad-h{color:#6b5a35}
 /* order receipts */
@@ -1863,7 +1863,7 @@ function production(commit){
   for(const lid of S.order){const L=LINES[lid],capL=lineCap(lid);let n=capL,bott=null;const memo={};
     const vs={};for(const i of L.in){const v=avail(i,memo);vs[i]=v;if(v<n-1e-9){n=v;bott=i}}n=Math.max(0,n);
     for(const i of L.in)take(i,n);
-    out[lid]={n,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[],lims:L.in.map(i=>({id:i,f:capL>1e-9?vs[i]/capL:0}))}}
+    out[lid]={n,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[],lims:L.in.map(i=>({id:i,f:vs[i]/Math.max(lineName(lid),1e-9)})),capF:capL/Math.max(lineName(lid),1e-9)}}
   // PRC exposure (bottom-up)
   const expo={};
   for(const id of ORDER){const p=P[id];let inE=0;const ins=ND[id].in;if(ins.length)inE=ins.reduce((a,i)=>a+expo[i],0)/ins.length;
@@ -3767,10 +3767,22 @@ function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   if(ps.length)return {cls:'ok',t:`🏗 ${yr(Math.min(...ps.map(q=>Math.round(S.w+remW(q)*sl))))}`,tip:ps.map(projName).join(', ')};
   if(pl.length)return {cls:'ok',t:'🏭 ramping',tip:pl.map(p=>p.nm).join(', ')};
   const tmp=[ch.some(n=>S.spot.some(x=>x.id===n))?'💸':'',ch.some(n=>nshiftOn(n))?'⏩':''].join('');return tmp?{cls:'tmp',t:tmp+' short-term'}:{cls:'none',t:'✗ no fix'}}
-function ladder(c,R,max=4){const o=R.out[c],steps=[...(o.lims||[]),{id:'L:'+c,f:1}].sort((a,b)=>a.f-b.f);
+// why a limit is short when it isn't waiting on an input: plants idle, plant problems, ramping, cut off, or simply too little capacity
+const LAYER_IC={LABOR:'👷',PERMIT:'🌿',QUAL:'🔬',GRID:'⚡',EXPERT:'🛠',LEGAL:'⚖'};
+function limWhy(id,c,R){const idle=ms=>{const m=ms.sort((a,b)=>a.mult-b.mult)[0];return {ic:'🚧',t:`idle: ${m.label.toLowerCase()}, ${m.left} wk left`}};
+  const prob=pl=>{const od=OPSD[pl.issue.id];return {ic:LAYER_IC[od.layer]||'⚠',t:`${od.n.toLowerCase()} at ${pl.nm}`}};
+  if(id.startsWith('L:')){const l=id.slice(2),dm=S.tmods.filter(m=>m.kind==='line'&&m.id===l&&m.mult<1),iss=S.plants.filter(p=>p.kind==='line'&&p.target===l&&p.issue);
+    if(dm.length)return idle(dm);if(iss.length)return prob(iss[0]);if(S.plants.some(p=>p.kind==='line'&&p.target===l&&!p.full))return {ic:'⏳',t:'new lines still ramping'};return null}
+  const P=R.P,p=P[id];if(!p||p.need<1e-6||p.cover>=.999)return null;if(p.starvedBy)return {ic:'⛓',t:`short of ${ND[p.starvedBy].n}`};
+  const dm=S.tmods.filter(m=>(m.kind==='node'||m.kind==='cap')&&m.id===id&&m.mult<1);if(dm.length)return idle(dm);
+  const cs=shortCauses(id,P),k=Object.entries(cs).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  if(k==='issue'){const pl=plantsFor('node',id).find(q=>q.issue);if(pl)return prob(pl)}
+  if(k==='cut')return {ic:'✂',t:'cut off by bans or controls'};if(k==='ramp')return {ic:'⏳',t:'new plants still ramping'};
+  return {ic:'⚙',t:p.dom<1e-6?'no US plant: all imported':'not enough capacity'}}
+function ladder(c,R,max=4){const o=R.out[c],steps=[...(o.lims||[]),{id:'L:'+c,f:o.capF??1}].sort((a,b)=>a.f-b.f);
   const shown=steps.filter((x,k)=>x.f<=1+1e-9||k===steps.findIndex(y=>y.f>1+1e-9)).slice(0,max);
-  return `<div class="lad"><span class="lad-h" data-tip="How much of the line's capacity each input allows, lowest first. Output stops at the first one; fixing it lifts output only to the next.">Limits, lowest first</span>${shown.map((x,k)=>{const isL=x.id.startsWith('L:'),st0=fixStat(x.id,c,R),st=x.f>1+1e-9&&st0.cls==='none'?{cls:'okish',t:'✓ enough'}:st0,ch=isL?[]:chainOf(R.P,x.id);
-    return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?'Line capacity':ND[x.id].n}</b><br>Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?'Line capacity':ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em></span>`}).join('')}</div>`}
+  return `<div class="lad"><span class="lad-h" data-tip="How much of the line’s rated capacity each input (and the line itself) allows, lowest first. Output stops at the first one; fixing it lifts output only to the next.">Limits, lowest first</span>${shown.map((x,k)=>{const isL=x.id.startsWith('L:'),st0=fixStat(x.id,c,R),st=x.f>1+1e-9&&st0.cls==='none'?{cls:'okish',t:'✓ enough'}:st0,ch=isL?[]:chainOf(R.P,x.id);
+    return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?'Line capacity':ND[x.id].n}</b><br>Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?'Line capacity':ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em>${(()=>{const w=x.f<1-1e-9||(isL&&k===0)?limWhy(x.id,c,R):null;return w?`<span class="lad-w">${w.ic} ${w.t}</span>`:''})()}</span>`}).join('')}</div>`}
 function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
   const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
