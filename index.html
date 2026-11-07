@@ -1880,6 +1880,7 @@ function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors',
 function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)*ruleLine(lid)}
 function lineName(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain;return c*lineMultOf(lid)}
 
+const RATION=[.5,.8,1];
 function production(commit){
   const P={};
   for(const id of ORDER){const u=nodeSupply(id);P[id]={...u,extRem:u.ext,domRem:u.dom,stockRem:S.stock[id]||0,usedExt:0,usedDom:0,usedStock:0,starvedBy:null,unmet:0}}
@@ -1895,10 +1896,13 @@ function production(commit){
     let lim=Infinity,li=null;for(const i of ND[id].in)if(avail0[i]<lim){lim=avail0[i];li=i}
     p.starvedBy=(li&&lim<p.dom-1e-6&&p.cover<.999)?li:null}
   const out={};
-  for(const lid of S.order){const L=LINES[lid],capL=lineCap(lid);let n=capL,bott=null;const memo={};
-    const vs={};for(const i of L.in){const v=avail(i,memo);vs[i]=v;if(v<n-1e-9){n=v;bott=i}}n=Math.max(0,n);
-    for(const i of L.in)take(i,n);
-    out[lid]={n,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[],lims:L.in.map(i=>({id:i,f:vs[i]/Math.max(lineName(lid),1e-9)})),capF:capL/Math.max(lineName(lid),1e-9)}}
+  // Scarce inputs are rationed, the way allocation boards and DPA ratings work in practice, not handed out whole in priority
+  // order: every line gets up to half its capacity first, then up to 80%, then the rest. Priority picks first within each round.
+  const got={},bt={},caps={};for(const lid of S.order){got[lid]=0;caps[lid]=lineCap(lid);bt[lid]=null}
+  for(const q of RATION)for(const lid of S.order){const L=LINES[lid],want=caps[lid]*q-got[lid];if(want<=1e-12)continue;let n=want,b=null;const memo={};
+    for(const i of L.in){const v=avail(i,memo);if(v<n-1e-9){n=v;b=i}}n=Math.max(0,n);if(b)bt[lid]=b;if(n>0){for(const i of L.in)take(i,n);got[lid]+=n}}
+  for(const lid of S.order){const L=LINES[lid],capL=caps[lid],n=got[lid],memo={},bott=n<capL-1e-9?bt[lid]:null;
+    out[lid]={n,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[],lims:L.in.map(i=>({id:i,f:(n+avail(i,memo))/Math.max(lineName(lid),1e-9)})),capF:capL/Math.max(lineName(lid),1e-9)}}
   // PRC exposure (bottom-up)
   const expo={};
   for(const id of ORDER){const p=P[id];let inE=0;const ins=ND[id].in;if(ins.length)inE=ins.reduce((a,i)=>a+expo[i],0)/ins.length;
@@ -2196,13 +2200,28 @@ const pkgItems=()=>S.projects.filter(p=>p.pkg),pkgSum=()=>pkgItems().reduce((a,p
 function pkgW(){const cur=S.projects.find(p=>p.pkg&&p.pkg<=S.w);return cur?cur.pkg:nextFunds().w}
 const pkgWhen=()=>{const w=pkgW();return w<=S.w?S.w+Math.max(1,S.cr||0):w+1},pkgFY=()=>FYOF(pkgW());
 const nsrCost=()=>Math.round(15*Math.pow(1.5,S.nsr||0)),billN=()=>S.fac==='US'?'NDAA and appropriations':'budget law';
-function enactPkg(){const its=pkgItems().filter(p=>p.pkg<S.w).sort((a,b)=>a.uid-b.uid);if(!its.length||S.cr>0)return;
+// Emergency supplementals: after a shock, Congress can pass money outside the annual bill, as it did for munitions in 2022–24.
+// It costs Political Capital, takes months, can stall (the 2024 Ukraine supplemental sat in the House for two months),
+// and funds every new plant waiting in the request at once.[c:pl11850]
+const SUPP_PC=30,SUPP_AMT=4,SUPP_OK=.75;
+function suppWhy(){const r=[];if(S.w>=PLAY0&&S.truce===false)r.push('Chinese export bans');const m=S.tmods.find(m=>m.kind==='cap'&&/explosion|stand-down|fire/i.test(m.label||''));if(m)r.push(`${m.label.toLowerCase()} at the ${(ND[m.id]?.n||m.id).toLowerCase()} plant`);return r}
+const suppReady=()=>S.fac==='US'&&!S.supp&&suppWhy().length&&S.pc>=SUPP_PC&&S.suppFY!==FYOF(S.w);
+function suppAsk(){if(!suppReady())return;const why=suppWhy();S.pc-=SUPP_PC;spent('pc',SUPP_PC);S.suppFY=FYOF(S.w);
+  S.supp={w0:S.w,due:S.w+8+Math.floor(rand()*13),ok:rand()<SUPP_OK,why:why[0]};log(`🏛 Emergency supplemental requested, citing ${why[0]}.`,'ev');
+  receipt({ic:'🏛',lab:'Supplemental requested',title:'Emergency supplemental',ok:true,lines:[`Citing ${why[0]}. A vote is expected around <b>${fmtDate(S.supp.due)}</b>, if it does not stall.`,`If it passes: +${money(SUPP_AMT)}, and every new plant in your request is funded at once.`,`${SUPP_PC} PC spent.`]})}
+function suppTick(){const x=S.supp;if(!x||S.w<x.due)return;S.supp=null;
+  if(!x.ok){log('✂ The emergency supplemental stalls in the House and dies.','bad');toast('✂ <b>Emergency supplemental stalled</b><br><span class="dim">The PC is spent; try again next fiscal year</span>','bad');return}
+  gainB(SUPP_AMT,'Emergency supplemental');const n=pkgItems().length;for(const p of pkgItems())p.pkg=Math.min(p.pkg,S.w-1);
+  log(`🏛 Emergency supplemental enacted: +${money(SUPP_AMT)}.`,'good');if(n)enactPkg('Emergency supplemental');else toast(`🏛 <b>Emergency supplemental enacted</b><br><span class="dim">+${money(SUPP_AMT)}</span>`,'good')}
+function suppBtn(cls){if(S.fac!=='US')return '';if(S.supp)return `<span class="mini amb">🏛 Supplemental pending · vote ~${fmtDate(S.supp.due)}</span>`;const why=suppWhy();
+  return `<button class="${cls}" data-a="supp" ${suppReady()?'':'disabled'} data-tip="${tipQ(`<b>Emergency supplemental</b><br>Money outside the annual bill, the way Congress paid for munitions after Russia invaded Ukraine. It needs a shock to point to: ${why.length?why.join(', '):'none right now (Chinese export bans, or a disaster at a plant)'}.<br>${SUPP_PC} PC · one a fiscal year · two to five months · can stall.<br>If it passes: +${money(SUPP_AMT)}, and every new plant in your request is funded at once.`)}">🏛 Supplemental · ${SUPP_PC} PC</button>`}
+function enactPkg(src){const its=pkgItems().filter(p=>p.pkg<S.w).sort((a,b)=>a.uid-b.uid);if(!its.length||S.cr>0&&!src)return;
   const fy=FYOF(its[0].pkg),got=[],lost=[];
   for(const p of its){const def=PD[p.def],why=rand()<PKG_CUT?'cut in markup':S.budget<p.req-1e-9?'not enough money left in the bill':null;
     if(why){S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);lost.push(`${projName(p)} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${projName(p)} not funded, ${why}.`,'bad');continue}
     spendB(p.req,'Programs');p.spent=p.req;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1});got.push(projName(p))}
-  log(`🏛 FY${fy%100} ${billN()} enacted: ${got.length} of ${its.length} new plants funded.`,got.length?'good':'bad');
-  receipt({ic:'🏛',lab:`FY${fy} ${billN()} enacted`,title:`${got.length} of ${its.length} new plants funded`,ok:!lost.length,act:'data-a="rtab" data-t="prog"',actL:'See programs →',
+  log(`🏛 ${src||`FY${fy%100} ${billN()}`} enacted: ${got.length} of ${its.length} new plants funded.`,got.length?'good':'bad');
+  receipt({ic:'🏛',lab:`${src||`FY${fy} ${billN()}`} enacted`,title:`${got.length} of ${its.length} new plants funded`,ok:!lost.length,act:'data-a="rtab" data-t="prog"',actL:'See programs →',
     lines:[got.length?`Funded: ${got.join(', ')}. Contracting starts now.`:'',lost.length?`<span class="redt">Not funded: ${lost.join(', ')}. Order again for next year’s request, or start one now by reprogramming.</span>`:'']})}
 
 function canStart(def,cost=projCost(def)){if(S.projects.some(p=>p.def===def.id&&p.pkg))return false;if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&(needsContract(def)&&!S.histMode||S.budget>=cost-1e-9)}
@@ -2473,7 +2492,7 @@ function tick(){
   if(S.fac==='US'&&fyStart()){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${(dateOf(S.w).getFullYear()+1)%100} industrial-base funding: +${money(F().fyBudget)}.`,'good')}
   if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good')}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
-  if(!S.histMode)enactPkg();
+  if(!S.histMode){enactPkg();suppTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
@@ -2612,7 +2631,7 @@ function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;gainB(REPRO,'R
 function constraintStrip(cheapest){const nf=nextFunds(),used=slotsUsed(),broke=isFinite(cheapest)&&S.budget<cheapest,full=used>=S.slots;
   return `<div class="cstrip"><span class="${broke?'bind':''}">💰 <b>${money(S.budget)}</b> <span class="mini">Next +${money(nf.amt)} on ${fmtDate(nf.w)}</span>
      <button class="pbtn sm" data-a="repro" ${S.pc>=reproCost()?'':'disabled'} data-tip="Move money from other accounts now. Each one this fiscal year costs more Political Capital.">${S.fac==='US'?'Reprogram':'Transfer'} +${money(REPRO)} · ${reproCost()} PC</button></span>
-    <span data-tip="${tipQ(`New plants wait for the annual ${billN()}; Start now on the award screen skips the wait for Political Capital.`)}">🏛 <b>${pkgItems().length}</b> in the FY${pkgFY()} request · Congress decides ~${fmtDate(pkgWhen())}</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
+    <span data-tip="${tipQ(`New plants wait for the annual ${billN()}; Start now on the award screen skips the wait for Political Capital.`)}">🏛 <b>${pkgItems().length}</b> in the FY${pkgFY()} request · Congress decides ~${fmtDate(pkgWhen())} ${suppBtn('pbtn sm')}</span><span>⚖ <b>${Math.floor(S.pc)}</b> PC</span></div>`}
 /* ---------- launch preview: when it arrives, and what it does to each gap ---------- */
 const RAMP=kn=>.018+kn*.0004; // weekly learning rate of a new plant's yield
 function rampWeeks(kn,y0,rm){let y=y0,k=kn,w=0;while(y<.9&&w<520){y=Math.min(1,y+Math.max(.02,y)*(1-y)*RAMP(k)*rm);k=Math.min(95,k+.05);w++}return w}
@@ -3321,6 +3340,7 @@ const CITES=[
  {id:'hellscape',g:'Wars of 2025–26',t:'Indo-Pacific commander plans ‘hellscape’ for China’s military if it invades Taiwan',pub:'Washington Times',d:'Jun 2024',url:'https://m.washingtontimes.com/news/2024/jun/14/indo-pacific-commander-plans-hellscape-chinas-mili/',use:'Adm. Paparo: thousands of uncrewed submarines, surface vessels and aerial drones would engage an invasion force in the Strait, buying about a month.'},
  {id:'crsnavy',g:'Ships, submarines & readiness',t:'Navy Force Structure and Shipbuilding Plans: Background and Issues for Congress (RL32665)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/files/2026-01-20_RL32665_56fe7a4e3f7660d51984a2058aa270cb1973b2c4.html',use:'291 battle force ships; about 11 ships a year sustained to grow toward 381; the 381 goal is being replaced by a Golden Fleet goal.'},
  {id:'scranton24',g:'Munitions & energetics',t:'US Army ammo plant boosts artillery shell production for Ukraine',pub:'Defense News (AP)',d:'Aug 2024',url:'https://www.defensenews.com/global/the-americas/2024/08/28/us-army-ammo-plant-boosts-artillery-shell-production-for-ukraine/',use:'Scranton went from about 24,000 to 36,000 155mm rounds a month with weekend overtime and a $400M modernization; RAND notes shifts and overtime can only go so far.'},
+ {id:'pl11850',g:'US rulebook',t:'H.R. 815, the 2024 national security supplemental (Public Law 118-50), including the Ukraine Security Supplemental Appropriations Act',pub:'Congress.gov',d:'Apr 2024',url:'https://www.congress.gov/bill/118th-congress/house-bill/815',use:'Emergency money outside the annual bill, including munitions production and industrial-base funds; it passed the Senate in February 2024 and the House only in April.'},
  {id:'dembe05',g:'Workforce',t:'The impact of overtime and long work hours on occupational injuries and illnesses: new evidence from the United States',pub:'Occupational and Environmental Medicine 62(9):588–597 (Dembe et al.)',d:'Sep 2005',url:'https://oem.bmj.com/content/62/9/588',use:'Jobs with overtime schedules had a 61% higher injury hazard rate than jobs without; risk rose with hours worked.'},
  {id:'ucaig',g:'US rulebook',t:'Audit of the Army’s management of undefinitized contract actions awarded to provide Ukraine assistance (DODIG-2025-059)',pub:'DoD Inspector General',d:'Jan 2025',url:'https://www.dodig.mil/reports.html/Article/4034904/audit-of-the-armys-management-of-undefinitized-contract-actions-awarded-to-prov/',use:'UCAs let work start before terms and price are agreed; the government carries nearly all the risk until definitization; 7 of 13 did not adjust profit, totaling $1.2B.'},
  {id:'jpac3',g:'Missiles, motors & engines',t:'Japan sends first PAC-3 interceptors to U.S. to support Patriot stockpile rebuild',pub:'The Defense Post',d:'Nov 2025',url:'https://thedefensepost.com/2025/11/25/japan-patriot-interceptors-us/amp/',use:'Export rules eased December 2023; first delivery November 2025; MHI builds about 30 a year, limited by Boeing seekers.'},
@@ -3458,7 +3478,8 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
- ['New starts and offices','A new plant is a new start: it waits for the next NDAA and appropriations (October, later under a continuing resolution), and about one in ten is cut in markup (game estimate); money is charged only if funded. Starting sooner takes a new-start reprogramming, which the four defense committees must approve: 15 Political Capital, rising with each one in a fiscal year, and about six weeks. Since the November 2025 overhaul, a portfolio acquisition executive runs each sector, not one office per plant; each office in the game staffs about three orders at full speed, and beyond that all its orders slow together (game estimate). Upgrades, workforce measures and allied deals are funded from existing accounts and start at once.'],
+ ['New starts and offices','A new plant is a new start: it waits for the next NDAA and appropriations (October, later under a continuing resolution), and about one in ten is cut in markup (game estimate); money is charged only if funded. Starting sooner takes a new-start reprogramming, which the four defense committees must approve: 15 Political Capital, rising with each one in a fiscal year, and about six weeks. Since the November 2025 overhaul, a portfolio acquisition executive runs each sector, not one office per plant; each office in the game staffs about three orders at full speed, and beyond that all its orders slow together (game estimate). Upgrades, workforce measures and allied deals are funded from existing accounts and start at once. After a shock (Chinese export bans, or a disaster at a plant), you can ask for an emergency supplemental: 30 PC, one a fiscal year, a vote in two to five months with a 75% chance of passing (game estimates); it adds $4B and funds every waiting new plant at once.[c:pl11850]'],
+ ['Shared shortages','When an input is short, lines share it: each gets up to half its capacity first, then up to 80%, then the rest, with the priority order deciding who picks first in each round. A shortage slows several lines instead of shutting the last one in line (a game simplification of how allocation and DPA ratings work).'],
  ['Mid-length fixes','Supplier shifts add 15% of existing domestic capacity over a 13-week hiring ramp for $0.08B a year each and raise equipment-problem odds at new plants by 30%. While any shifts run, each line or supplier faces about a 0.25% weekly chance of an outage, rising to 0.75% after a year of wear: worn equipment (−30% for 4–8 weeks), an injury and safety stand-down (−40% for 2–4 weeks), or, where explosives are handled, a fire (−65% for 10–20 weeks). Repairs reset some of the wear. Overtime is linked to a 61% higher injury rate[c:dembe05] (estimates, set against Scranton’s rise, which also needed a $400M modernization).[c:scranton24] An undefinitized contract action ends contracting in about 4 weeks for 10% of the price, with a 25% chance of a cost overrun at construction (estimates; the risk itself is documented by the DoD IG).[c:ucaig] Not offered as fast fixes because they were not fast in practice: buying an ally’s production (Japan’s PAC-3 export took about two years from the December 2023 rule change to first delivery)[c:jpac3] and restarting closed lines.'],
  ['Hyperscale drone plant','Modeled on Anduril’s Arsenal-1 (about $1B and 4,000 jobs);[c:arsenal1] its output of 80,000 small drones a year once ramped is a game estimate.'],
  ['Mandates','Each mandate has a floor halfway from the January 2027 level to the real target (for the magnet target, 60% of it; content cut by a quarter; output held at 90%). Each scenario’s targets come from public goals (cited on the mandate card); the deadline of January 2030 reflects the threat windows cited. The US shares (1,800 interceptors and 1,800 strike missiles a year, 9 surface ships out of CRS’s 11 battle-force ships a year, 16,000 rockets of the planned 19,002, 330,000 drones a year from the Army’s million-in-three-years plan) are game estimates. The tests reuse the campaign model on the true hidden values (pass at 85% coverage), or remove all Chinese supply at once (pass if you keep 80% of output). The verdict names are design choices.'],
@@ -4029,7 +4050,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto">${officeChips()}</span></h2><div class="pkgrow" data-tip="${tipQ(`New plants need the annual ${billN()}. Orders wait in the request until it passes. To start one sooner, choose Start now on the award screen: a reprogramming that costs Political Capital.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress decides ~${fmtDate(pkgWhen())}<span class="r"><button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto">${officeChips()}</span></h2><div class="pkgrow" data-tip="${tipQ(`New plants need the annual ${billN()}. Orders wait in the request until it passes. To start one sooner, choose Start now on the award screen: a reprogramming that costs Political Capital.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress decides ~${fmtDate(pkgWhen())}<span class="r">${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
@@ -4209,6 +4230,7 @@ function whyOff(b){
     case 'rule':{const r=RD2[d.r];return needPC(r.pc[ruleOn(r.id)?1:0])}
     case 'ic':{const c=ICD[d.c],on=icOn(c.id);if(!on&&c.req&&!icOn(c.req))return `Needs “${ICD[c.req].n}” in force first.`;return needPC(c.pc[on?1:0])}
     case 'repro':return needPC(reproCost());
+    case 'supp':return S.supp?'Already before Congress.':!suppWhy().length?'Congress passes supplementals after a shock: Chinese export bans, or a disaster at a plant. There is nothing to point to right now.':S.suppFY===FYOF(S.w)?'One supplemental a fiscal year.':needPC(SUPP_PC);
     case 'ctgo':{const def=PD[S.ct.id];if(S.pc<nsrCost())return needPC(nsrCost());return needM(ctCost(def,S.ct))}
     case 'up':case 'lineup':return 'Already first in line.';
     case 'dn':return 'Already last in line.';
@@ -4268,6 +4290,7 @@ document.addEventListener('pointerdown',e=>{
     case 'goback':navBackG();break;
     case 'home':if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}S.view='cmd';break;
     case 'ovjump':S._ovScroll=b.dataset.s;break;
+    case 'supp':suppAsk();break;
     case 'aotog':S.aoShut=!S.aoShut;break;
     case 'fcf':S.fcF=b.dataset.v;break;
     case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;break;
