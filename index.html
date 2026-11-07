@@ -2367,7 +2367,7 @@ function startProject(id,ct,mode){
   S.projects.push(p);enterStage(p);
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
   if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2037':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
-    receipt({ic:def.ally?'🤝':pk?'🏛':'🏗',lab:def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:'Follow it →',
+    receipt({ic:def.ally?'🤝':pk?'🏛':'🏗',lab:def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:pk?'Track it in the request →':'Open its program →',
       lines:[`Raises <b>${tgt}</b>.${pk?` ${rk} Political Capital spent. Congress votes on the FY${FYOF(p.pkg)} ${billN()} ~${fmtDate(pkgWhen())}; if it funds the plant, Congress pays the ${money(c)}, not your budget. It is likelier to cut it the less it holds back output.`:pv.isPlant?` The ${OFFICES[officeOf(def)].n} office runs the contract, permits and construction.`:''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far${pk?'':` · ${money(c)} committed`}.`]})}
 }
 const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x};
@@ -4508,7 +4508,7 @@ function render(){if(!S)newGame(PLAYABLE[0]);renderGame();renderModal();rehover(
 
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
 document.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;if(e.target===ov&&closable()){S.modal=null;S.navBack=[];render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
+  if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
@@ -4569,7 +4569,7 @@ document.addEventListener('pointerdown',e=>{
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
     case 'close':if(S.billAlert){S.billAlert=null;S.speed=S.billSpd||1;S.billSpd=null}
-if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;break;
+if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;break;
     case 'launch':{const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id)}break}
     case 'ct':S.ct[b.dataset.g]=b.dataset.v;break;
     case 'ctgo':startProject(S.ct.id,{b:S.ct.b,k:S.ct.k},b.dataset.m||'pkg');S.modal=S.ctBack||null;S.ct=null;break;
@@ -4612,7 +4612,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed)S.modal=S.modal==='end'?S.modal:null;render()}
   else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VIEWS.findIndex(v=>v[0]===(S.view||'cmd'));S.view=VIEWS[(i+(e.shiftKey?VIEWS.length-1:1))%VIEWS.length][0];render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
-  else if(e.key==='Escape'&&closable()){S.modal=null;S.navBack=[];render()}
+  else if(e.key==='Escape'&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
 });
 const MS=[0,1000,500,190,60],RENDER_MS=[0,0,0,120,150];let acc=0,last=performance.now(),lastR=0,dirtyR=false;
 function loop(now){
