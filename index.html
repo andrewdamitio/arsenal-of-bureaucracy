@@ -550,6 +550,10 @@ body{background:
 .dbg{margin-top:14px;padding-top:6px;border-top:2px solid #8a7850}.dbgh{font:400 15px var(--sten);letter-spacing:.06em;color:#6b5a35;margin-bottom:2px}.dbg .dsec h4{font-size:12px}
 .orhd{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;font-size:13px;margin:2px 0 4px}.orhd b{font:600 15px var(--disp)}
 .sc-sep{margin:8px 0 2px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.22);font-size:11.5px;color:#b9ad8c}.sc-keep .sc-n{font-style:italic}
+.bl-sum{display:flex;flex-wrap:wrap;gap:6px 26px;padding:4px 0 6px}.bl-sum div{display:flex;flex-direction:column}.bl-sum b{font:600 20px var(--disp)}.bl-sum span{font-size:11.5px;color:#6b5a35}
+.bl-t td{vertical-align:top}.bl-t .num{white-space:nowrap}.bl-ord{white-space:nowrap}.bl-ord .btn{padding:1px 5px;margin-right:2px}.bl-act{white-space:nowrap}.bl-act .btn{margin:0 3px 3px 0}
+.bl-out td{opacity:.62}.bl-upl td{background:rgba(217,164,65,.08)}.bl-line td{text-align:center;font:600 11.5px var(--disp);letter-spacing:.06em;color:#a3261c;border-top:2px dashed #a3261c;padding:5px}
+.bl-res{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 20px;font-size:13px}.bl-res b{display:block;margin-bottom:3px}@media(max-width:900px){.bl-res{grid-template-columns:1fr}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2220,15 +2224,62 @@ function suppTick(){const x=S.supp;if(!x||S.w<x.due)return;S.supp=null;
   log(`🏛 Emergency supplemental enacted: +${money(SUPP_AMT)}.`,'good');if(n)enactPkg('Emergency supplemental');else toast(`🏛 <b>Emergency supplemental enacted</b><br><span class="dim">+${money(SUPP_AMT)}</span>`,'good')}
 function suppBtn(cls){if(S.fac!=='US')return '';if(S.supp)return `<span class="mini amb">🏛 Supplemental pending · vote ~${fmtDate(S.supp.due)}</span>`;const why=suppWhy();
   return `<button class="${cls}" data-a="supp" ${suppReady()?'':'disabled'} data-tip="${tipQ(`<b>Emergency supplemental</b><br>Money outside the annual bill, the way Congress paid for munitions after Russia invaded Ukraine. It needs a shock to point to: ${why.length?why.join(', '):'none right now (Chinese export bans, or a disaster at a plant)'}.<br>${SUPP_PC} PC · one a fiscal year · two to five months · can stall.<br>If it passes: +${money(SUPP_AMT)}, and every new plant in your request is funded at once.`)}">🏛 Supplemental · ${SUPP_PC} PC</button>`}
-function enactPkg(src){const its=pkgItems().filter(p=>p.pkg<S.w).sort((a,b)=>a.uid-b.uid);if(!its.length||S.cr>0&&!src)return;
-  const fy=FYOF(its[0].pkg),got=[],lost=[];
-  for(const p of its){const def=PD[p.def],why=rand()<PKG_CUT?'cut in markup':S.budget<p.req-1e-9?'not enough money left in the bill':null;
-    if(why){S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);lost.push(`${projName(p)} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${projName(p)} not funded, ${why}.`,'bad');continue}
-    spendB(p.req,'Programs');p.spent=p.req;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1});got.push(projName(p))}
-  log(`🏛 ${src||`FY${fy%100} ${billN()}`} enacted: ${got.length} of ${its.length} new plants funded.`,got.length?'good':'bad');
-  receipt({ic:'🏛',lab:`${src||`FY${fy} ${billN()}`} enacted`,title:`${got.length} of ${its.length} new plants funded`,ok:!lost.length,act:'data-a="rtab" data-t="prog"',actL:'See programs →',
-    lines:[got.length?`Funded: ${got.join(', ')}. Contracting starts now.`:'',lost.length?`<span class="redt">Not funded: ${lost.join(', ')}. Order again for next year’s request, or start one now by reprogramming.</span>`:'']})}
+// Working the bill: the request is funded in your priority order until the money runs out. A champion on the committees
+// (Political Capital) protects an item in markup. Items moved to the unfunded priorities list cost you nothing, but are
+// funded only if Congress adds money for them, as it does for some of each service's list every year. And Congress adds
+// projects of its own: plus-ups for plants in members' districts, paid with money it adds.[c:upl]
+const CHAMP_PC=4,CHAMP_CUT=.03,UPL_OK=.45,UPL_MAX=3,PLUS_OK=.5;
+const pkgOrd=()=>pkgItems().slice().sort((a,b)=>(a.pri??a.uid)-(b.pri??b.uid));
+function pkgRoom(){const wks=Math.max(0,pkgWhen()-S.w),nf=nextFunds(),burn=(Object.values(S.shifts||{}).filter(Boolean).length*SHIFT_C+Object.keys(S.nshift||{}).length*NSHIFT_C)/52;
+  return Math.max(0,S.budget+(S.fac==='US'&&nf.w<=pkgWhen()?nf.amt:0)-burn*wks)}
+function pkgPlan(){let room=pkgRoom();return pkgOrd().map(p=>{if(p.upl)return {p,st:'upl'};const ok=room>=p.req-1e-9;if(ok)room-=p.req;return {p,st:ok?'in':'out',left:room}})}
+function plusUpPick(){const P=S._R?.P||production(false).P;const c=PROJECTS.filter(d=>d.t.node&&!d.ally&&!d.req&&facOk(d)&&!d.kind&&!S.projects.some(p=>p.def===d.id)&&P[d.t.node]&&P[d.t.node].cover<1);
+  return c.length?c[Math.floor(rand()*c.length)]:null}
+function enactPkg(src){const its=pkgOrd().filter(p=>p.pkg<S.w);if(!its.length||S.cr>0&&!src)return;
+  const fy=FYOF(its[0].pkg),got=[],lost=[],added=[];
+  const drop=(p,why)=>{S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);lost.push(`${projName(p)} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${projName(p)} not funded, ${why}.`,'bad')};
+  const fund=(p,paid)=>{if(paid)spendB(p.req,'Programs');p.spent=paid?p.req:0;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1})};
+  for(const p of its){if(p.upl){if(rand()<UPL_OK){fund(p,false);added.push(`${projName(p)} (from your unfunded priorities list)`)}else drop(p,'left on the unfunded list');continue}
+    const why=rand()<(p.champ?CHAMP_CUT:PKG_CUT)?'cut in markup':S.budget<p.req-1e-9?'below the money line':null;
+    if(why){drop(p,why);continue}fund(p,true);got.push(projName(p))}
+  if(!src&&S.fac==='US'&&rand()<PLUS_OK){const d=plusUpPick();if(d){const c=projCost(d),p={uid:uidN++,def:d.id,stage:0,prog:d.dur[0],dur:[...d.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:0,plus:1};
+    S.projects.push(p);S.built[d.id]=(S.built[d.id]||0)+1;added.push(`${d.n} (a plus-up for a member’s district, ${money(c)} Congress added)`);log(`🏛 FY${fy%100} ${billN()}: Congress adds ${d.n}, unrequested.`,'ev')}}
+  S.bills=S.bills||[];S.bills.unshift({fy,src:src||'',w:S.w,got,lost,added});S.bills.length=Math.min(S.bills.length,4);
+  const n=got.length+added.length;
+  log(`🏛 ${src||`FY${fy%100} ${billN()}`} enacted: ${got.length} of ${its.filter(p=>!p.upl).length} requested plants funded${added.length?`, ${added.length} added`:''}.`,n?'good':'bad');
+  receipt({ic:'🏛',lab:`${src||`FY${fy} ${billN()}`} enacted`,title:`${got.length} funded · ${added.length} added · ${lost.length} not funded`,ok:!lost.length,act:'data-a="bill"',actL:'See the bill →',
+    lines:[got.length?`Funded: ${got.join(', ')}. Contracting starts now.`:'',added.length?`Added: ${added.join(', ')}.`:'',lost.length?`<span class="redt">Not funded: ${lost.join(', ')}. Order again for next year’s request, or start one now by reprogramming.</span>`:'']})}
+function billAct(a,uid,d){const p=S.projects.find(x=>x.uid===+uid);if(!p||!p.pkg)return;const o=pkgOrd();o.forEach((x,i)=>x.pri=i);
+  if(a==='mv'){const i=o.indexOf(p),j=i+(+d);if(j<0||j>=o.length)return;[o[i].pri,o[j].pri]=[o[j].pri,o[i].pri]}
+  else if(a==='top'){p.pri=-1}
+  else if(a==='champ'){if(p.champ||S.pc<CHAMP_PC)return;S.pc-=CHAMP_PC;spent('pc',CHAMP_PC);p.champ=1;log(`🏛 A committee member champions ${projName(p)} in markup (${CHAMP_PC} PC).`)}
+  else if(a==='upl'){if(!p.upl&&pkgItems().filter(x=>x.upl).length>=UPL_MAX)return;p.upl=!p.upl;p.champ=p.upl?0:p.champ}
+  else if(a==='wd'){S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);log(`Withdrawn from the FY${FYOF(p.pkg)} request: ${projName(p)}.`)}
+  else if(a==='now'){const k=nsrCost();if(S.pc<k||S.budget<p.req-1e-9)return;S.pc-=k;spent('pc',k);S.nsr=(S.nsr||0)+1;spendB(p.req,'Programs');p.spent=p.req;p.pkg=null;p.upl=0;p.nsr=1;p.dur[0]=Math.min(p.dur[0],NSR_WK);p.prog=0;
+    log(`Started now by reprogramming: ${projName(p)} (${money(p.req)}, ${k} PC).`)}}
 
+
+function billHTML(){const fy=pkgFY(),pl=pkgPlan(),room=pkgRoom(),inS=pl.filter(x=>x.st==='in').reduce((a,x)=>a+x.p.req,0),P=S._R?.P||production(false).P;
+  const nUpl=pl.filter(x=>x.st==='upl').length,cr=S.cr>0,when=fmtDate(pkgWhen());
+  const gainOf=p=>{const d=PD[p.def];return d.t.line?`+${fmtN(projGain(d,p.gm)*lineMultOf(d.t.line)*LINES[d.t.line].k)} ${LINES[d.t.line].u}/yr`:`+${pct(projGain(d,p.gm)/Math.max(P[d.t.node].need,S.nodes[d.t.node].scale*.5))} of need`};
+  const tgt=p=>{const d=PD[p.def];return d.t.node?pill(d.t.node,P):`<span class="linkn" data-a="node" data-n="L:${d.t.line}">${LINES[d.t.line].n}</span>`};
+  const odds=x=>x.st==='upl'?`<span class="amb">~${Math.round(UPL_OK*100)}% Congress adds the money</span>`:x.st==='out'?'<span class="redt">Not funded: below the money line</span>':`<span class="okt">Funded</span>${x.p.champ?` <span class="mini">· championed, ~${Math.round(CHAMP_CUT*100)}% cut risk</span>`:` <span class="mini">· ~${Math.round(PKG_CUT*100)}% cut in markup</span>`}`;
+  let line=false,rows='';pl.forEach((x,i)=>{const p=x.p;
+    if(!line&&x.st!=='in'&&pl.slice(i).every(y=>y.st!=='in')){line=true;rows+=`<tr class="bl-line"><td colspan="6">— The money line: about ${money(room)} will be in the account when Congress acts. Everything below is not funded. —</td></tr>`}
+    rows+=`<tr class="${x.st==='out'?'bl-out':x.st==='upl'?'bl-upl':''}"><td class="bl-ord"><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="-1" ${i?'':'disabled'} title="Higher priority">▲</button><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="1" ${i<pl.length-1?'':'disabled'} title="Lower priority">▼</button></td>
+      <td><b class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</b><div class="mini">${OFFICES[officeOf(PD[p.def])].n}</div></td><td>${tgt(p)}<div class="mini">${gainOf(p)}</div></td><td class="num">${x.st==='upl'?`<s>${money(p.req)}</s><div class="mini">not from your budget</div>`:money(p.req)}</td><td>${odds(x)}</td>
+      <td class="bl-act"><button class="btn sm" data-a="bch" data-u="${p.uid}" ${p.champ||p.upl||S.pc<CHAMP_PC?'disabled':''} data-tip="${tipQ(`<b>Find a champion</b><br>A member on the armed services or appropriations committees defends it in markup. Cut risk ${Math.round(PKG_CUT*100)}% → ${Math.round(CHAMP_CUT*100)}%. ${CHAMP_PC} PC.`)}">${p.champ?'✓ Championed':`🛡 Champion · ${CHAMP_PC} PC`}</button>
+        <button class="btn sm" data-a="bupl" data-u="${p.uid}" ${!p.upl&&nUpl>=UPL_MAX?'disabled':''} data-tip="${tipQ(`<b>Unfunded priorities list</b><br>Take it out of your request and send it to Congress as a priority you could not afford. It costs your budget nothing, but it happens only if Congress adds the money: about ${Math.round(UPL_OK*100)}% of the time. Up to ${UPL_MAX} items.`)}">${p.upl?'↩ Back into the request':'📋 To unfunded list'}</button>
+        <button class="btn sm" data-a="bnow" data-u="${p.uid}" ${S.pc>=nsrCost()&&S.budget>=p.req-1e-9?'':'disabled'} data-tip="${tipQ(`<b>Start now</b><br>A new-start reprogramming the four defense committees approve: ${money(p.req)} now and ${nsrCost()} PC. It starts in about ${NSR_WK} weeks instead of waiting for the bill.`)}">⚡ Start now</button>
+        <button class="btn sm" data-a="bwd" data-u="${p.uid}" data-tip="Take it out of the request. Nothing has been charged.">✕</button></td></tr>`});
+  const last=(S.bills||[])[0];
+  const lastH=last?`<div class="dsec"><h4>Last bill: ${last.src||`FY${last.fy} ${billN()}`}, ${fmtDate(last.w)}</h4><div class="bl-res"><div><b class="okt">Funded</b>${last.got.length?last.got.map(x=>`<div>${x}</div>`).join(''):'<div class="mini">Nothing</div>'}</div><div><b class="amb">Added by Congress</b>${last.added.length?last.added.map(x=>`<div>${x}</div>`).join(''):'<div class="mini">Nothing</div>'}</div><div><b class="redt">Taken out</b>${last.lost.length?last.lost.map(x=>`<div>${x}</div>`).join(''):'<div class="mini">Nothing</div>'}</div></div></div>`:'';
+  const h=`<div class="dtop"><div class="dhd"><span class="ic">🏛</span><div><div class="dkind">${billN()}</div><h2 class="dttl">FY${fy} request</h2></div></div>
+     <div class="bl-sum"><div><b>${pl.length}</b><span>new plant${pl.length===1?'':'s'} requested</span></div><div><b>${money(pkgSum())}</b><span>asked</span></div><div><b>~${money(room)}</b><span>in the account when Congress acts</span></div><div><b class="${pl.some(x=>x.st==='out')?'redt':'okt'}">${pl.filter(x=>x.st==='in').length}</b><span>above the money line · ${money(inS)}</span></div><div><b>~${when}</b><span>Congress decides${cr?' · a continuing resolution blocks new starts':''}</span></div></div></div>
+    <div class="dsec"><h4>Work the bill</h4><p class="mini" style="margin:0 0 6px">Congress funds the request top to bottom until the money runs out; set the order. About 1 in ${Math.round(1/PKG_CUT)} items is cut in markup anyway unless someone on the committees champions it. What you cannot afford can go on the unfunded priorities list instead. Congress may also add a plant of its own for a member’s district (about even odds each year), paid with money it adds.</p>
+      ${pl.length?`<table class="ctable bl-t"><tr><th>Priority</th><th>Plant</th><th>Raises</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:`<p class="mini">Nothing in the request. New plants you order join it.</p>`}
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-a="cat">+ New order</button>${suppBtn('btn sm')}</div></div>${lastH}`;
+  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(h)}</div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`}
 function canStart(def,cost=projCost(def)){if(S.projects.some(p=>p.def===def.id&&p.pkg))return false;if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&(needsContract(def)&&!S.histMode||S.budget>=cost-1e-9)}
 function projName(p){return p.nm||PD[p.def].n}
 function projGain(def,gm=1){return def.t.node?def.gain*S.nodes[def.t.node].scale*gm:def.gain*gm}
@@ -3367,6 +3418,7 @@ const CITES=[
  {id:'hellscape',g:'Wars of 2025–26',t:'Indo-Pacific commander plans ‘hellscape’ for China’s military if it invades Taiwan',pub:'Washington Times',d:'Jun 2024',url:'https://m.washingtontimes.com/news/2024/jun/14/indo-pacific-commander-plans-hellscape-chinas-mili/',use:'Adm. Paparo: thousands of uncrewed submarines, surface vessels and aerial drones would engage an invasion force in the Strait, buying about a month.'},
  {id:'crsnavy',g:'Ships, submarines & readiness',t:'Navy Force Structure and Shipbuilding Plans: Background and Issues for Congress (RL32665)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/files/2026-01-20_RL32665_56fe7a4e3f7660d51984a2058aa270cb1973b2c4.html',use:'291 battle force ships; about 11 ships a year sustained to grow toward 381; the 381 goal is being replaced by a Golden Fleet goal.'},
  {id:'scranton24',g:'Munitions & energetics',t:'US Army ammo plant boosts artillery shell production for Ukraine',pub:'Defense News (AP)',d:'Aug 2024',url:'https://www.defensenews.com/global/the-americas/2024/08/28/us-army-ammo-plant-boosts-artillery-shell-production-for-ukraine/',use:'Scranton went from about 24,000 to 36,000 155mm rounds a month with weekend overtime and a $400M modernization; RAND notes shifts and overtime can only go so far.'},
+ {id:'upl',g:'US rulebook',t:'Defense Primer: Defense and Intelligence Unfunded Priorities (IF11964)',pub:'Congressional Research Service',d:'2026',url:'https://www.everycrsreport.com/reports/IF11964.html',use:'Services and combatant commands must send Congress lists of what they need but did not request (10 U.S.C. 222a); DOD sent $53.7 billion of them for FY2026. Congress funds part of each list with money it adds. Odds of funding in the game are estimates.'},
  {id:'pl11850',g:'US rulebook',t:'H.R. 815, the 2024 national security supplemental (Public Law 118-50), including the Ukraine Security Supplemental Appropriations Act',pub:'Congress.gov',d:'Apr 2024',url:'https://www.congress.gov/bill/118th-congress/house-bill/815',use:'Emergency money outside the annual bill, including munitions production and industrial-base funds; it passed the Senate in February 2024 and the House only in April.'},
  {id:'dembe05',g:'Workforce',t:'The impact of overtime and long work hours on occupational injuries and illnesses: new evidence from the United States',pub:'Occupational and Environmental Medicine 62(9):588–597 (Dembe et al.)',d:'Sep 2005',url:'https://oem.bmj.com/content/62/9/588',use:'Jobs with overtime schedules had a 61% higher injury hazard rate than jobs without; risk rose with hours worked.'},
  {id:'ucaig',g:'US rulebook',t:'Audit of the Army’s management of undefinitized contract actions awarded to provide Ukraine assistance (DODIG-2025-059)',pub:'DoD Inspector General',d:'Jan 2025',url:'https://www.dodig.mil/reports.html/Article/4034904/audit-of-the-armys-management-of-undefinitized-contract-actions-awarded-to-prov/',use:'UCAs let work start before terms and price are agreed; the government carries nearly all the risk until definitization; 7 of 13 did not adjust profit, totaling $1.2B.'},
@@ -4046,7 +4098,7 @@ function renderGame(){
     ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
-    ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,`FY${pkgFY()%100} request`,`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br><br>${OFF_TIP}`,'rtab','data-t="prog"',over.length?'rwarn':'')})()}
+    ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,`FY${pkgFY()%100} request`,`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br>Click to work the bill.<br><br>${OFF_TIP}`,'bill','',over.length?'rwarn':'')})()}
     ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>Each takes its default after ${DECIDE_WK} weeks. Opens the first one.`:'Nothing is waiting on you.',S.inbox?.length?'evdo':firstStuck?'prog':'rtab',S.inbox?.length?`data-e="${S.inbox[0].ev}"`:firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short','<b>End-item lines below capacity</b><br>Opens the bottleneck analysis.','view','data-v="bn"',shortL?'rwarn':'')}
     ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'PRC exposure','<b>PRC and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Opens the flows.','view','data-v="flow"')}
@@ -4079,7 +4131,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto">${officeChips()}</span></h2><div class="pkgrow" data-tip="${tipQ(`New plants need the annual ${billN()}. Orders wait in the request until it passes. To start one sooner, choose Start now on the award screen: a reprogramming that costs Political Capital.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress decides ~${fmtDate(pkgWhen())}<span class="r">${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Active Programs</span> <span class="r" style="margin-left:auto">${officeChips()}</span></h2><div class="pkgrow" data-tip="${tipQ(`New plants need the annual ${billN()}. Orders wait in the request until it passes. To start one sooner, choose Start now on the award screen: a reprogramming that costs Political Capital.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress decides ~${fmtDate(pkgWhen())}<span class="r"><button class="btn sm" data-a="bill">🏛 Work the bill</button>${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
   const PSu=poolState();pr+=`<div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
@@ -4090,7 +4142,7 @@ function renderGame(){
     pr+=`<div class="pcard trc ${def.ally?'ally':''} ${p.inh?'inh':''}" data-tn="${def.t.node||'L:'+def.t.line}" data-pu="${p.uid}"><div class="ph"><b class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${def.ally?'🤝 ':p.inh?'📜 ':''}${projName(p)}</b><span class="dim">${def.ally?'allied ':''}${tgt}${p.inh?' · begun before 2027':''}${p.ct?` · ${CONTRACTS[p.ct.k].ic}${BUILDERS[p.ct.b].ic}`:''} · at least ${yrs(remain)} to go</span></div>
       <div class="pipe">${STAGES.map((s,i)=>`<div class="${p.dur[i]===0?'skip':i<p.stage?'done':i===p.stage?'cur':''}">${STAGE_N[s]}</div>`).join('')}</div><div class="prog"><i style="width:${Math.min(100,p.prog/D*100)}%"></i></div>`;
     if(p.obs.length){pr+=obsBlock(OD[p.obs[0].id],p.obs[0],'opt',p.uid);if(p.obs.length>1)pr+=`<div class="queued">+${p.obs.length-1} more queued</div>`}
-    else if(p.pkg)pr+=`<div class="queued">🏛 In the FY${FYOF(p.pkg)} request · Congress decides ~${fmtDate(pkgWhen())} · ${money(p.req)}</div>`;
+    else if(p.pkg)pr+=`<div class="queued">🏛 In the FY${FYOF(p.pkg)} request${p.upl?' (unfunded priorities list)':''} · Congress decides ~${fmtDate(pkgWhen())} · ${money(p.req)} <button class="btn sm" data-a="bill">Work the bill</button></div>`;
     else{const crBlock=st==='approp'&&S.cr>0;const slow=S.gmods.filter(g=>g.stages.includes(st)&&!(g.dom&&def.ally));pr+=`<div class="queued">${STAGE_L[st]}: week ${fmt(p.prog,0)} of ${D}${crBlock?` <span class="red">· frozen by a continuing resolution</span>`:''}${slow.map(g=>` <span class="amber">· ${g.mult===0?'halted':'slowed'} by ${g.label.toLowerCase()}</span>`).join('')}${p.qf<1?` <span class="amber">· waiting its turn for ${POOLS[p.qk].ic} ${POOLS[p.qk].n.toLowerCase()}</span>`:''}${p.adv>0?` · <span class="red">${pct(p.adv)} PRC upstream</span>`:''}</div>`}
     pr+=`</div>`;
   }
@@ -4217,6 +4269,7 @@ function renderModal(){
      <div class="map">${[1,2,3,4].map(t=>`<div class="col"><h4>T${t} · ${TIERS[t]}</h4>${NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<span class="npill np-${st==='idle'?'ok':st}" data-a="node" data-n="${n.id}"><span>${n.ic} ${n.n}</span><span>${P[n.id].need>1e-6?pct(Math.min(P[n.id].cover,9.99)):'—'}</span></span>`}).join('')}</div>`).join('')}
       <div class="col"><h4>T5 · End Items</h4>${S.order.map(l=>{const o=S._R.out[l];const r=o.n/Math.max(o.cap,1e-9);return `<span class="npill np-${r>=.999?'ok':r>=.8?'tight':'short'}" data-a="tab" data-t="5"><span>${LINES[l].n}</span><span>${pct(r)}</span></span><div style="font:11px 'Segoe UI';color:#6b5a35;margin:-1px 0 4px 6px">${LINES[l].in.map(i=>ND[i].n).join(' · ')}</div>`}).join('')}</div></div>
      <div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
+  } else if(S.modal==='bill'){html=billHTML()
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
     const list=S.ptab==5?ok.filter(d=>d.t.line):ok.filter(d=>d.t.node&&ND[d.t.node].t==S.ptab).sort((a,b)=>P[a.t.node].cover-P[b.t.node].cover);
@@ -4320,6 +4373,12 @@ document.addEventListener('pointerdown',e=>{
     case 'home':if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}S.view='cmd';break;
     case 'ovjump':S._ovScroll=b.dataset.s;break;
     case 'supp':suppAsk();break;
+    case 'bill':S.modal='bill';S.speed=0;break;
+    case 'bmv':billAct('mv',b.dataset.u,b.dataset.d);break;
+    case 'bch':billAct('champ',b.dataset.u);break;
+    case 'bupl':billAct('upl',b.dataset.u);break;
+    case 'bwd':billAct('wd',b.dataset.u);break;
+    case 'bnow':billAct('now',b.dataset.u);break;
     case 'aotog':S.aoShut=!S.aoShut;break;
     case 'fcf':S.fcF=b.dataset.v;break;
     case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;break;
