@@ -548,6 +548,7 @@ body{background:
 .dlim{margin-top:2px}
 .flfocus{display:flex;align-items:center;gap:10px;margin:6px 0 0;padding:7px 12px;background:#f3ebd6;border:1px solid #c8b48a;box-shadow:inset 4px 0 0 #b8860b}.flfocus .ffi{font-size:22px;display:flex}.flfocus b{font:400 19px var(--sten);letter-spacing:.03em;margin-right:10px}.flfocus .ffk{font:600 10.5px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a7440}
 .dbg{margin-top:14px;padding-top:6px;border-top:2px solid #8a7850}.dbgh{font:400 15px var(--sten);letter-spacing:.06em;color:#6b5a35;margin-bottom:2px}.dbg .dsec h4{font-size:12px}
+.orhd{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;font-size:13px;margin:2px 0 4px}.orhd b{font:600 15px var(--disp)}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3009,6 +3010,19 @@ function supplyWeb(id,P){
 /* ---------- in service: your stock and output next to China's and Russia's, then and projected ---------- */
 const RIV_C={pac:'#b0453a',eu:'#7a5a8c'};
 function allyAdd(c){const r=retRate(c),m={};let a=0;for(let w=PLAY0;w<=END_W+60;w++){m[w]=a;a=a*(1-r/52)+allyOut(c,w)/52}return w=>w<PLAY0?null:m[Math.min(Math.round(w),END_W+60)]}
+function outRaceHTML(l,o,lp){const rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#4fa894',hasA=!!AL().lines[l];
+  const H=S.hist.filter(h=>h.prod),util=o.yr/Math.max(lp.name,1e-9),fc=forecastSeries(l,lp).b.map(([w,v])=>[w,v*Math.min(1,util)]);
+  const usH=H.map(h=>[h.w,h.prod[l]]),usF=[[S.w,o.yr],...fc],al=w=>hasA?allyOut(l,w):0;
+  const fut=[];for(let w=S.w;w<=END_W;w+=8)fut.push(w);const hw=H.map(h=>h.w);
+  const ser=[{pts:hw.map(w=>[w,cnOut(l,w)]),c:rc,wd:2.2,n:R.n},{pts:fut.map(w=>[w,cnOut(l,w)]),c:rc,wd:1.4,dash:'4 3',n:R.n+' (projected)'},
+    {pts:fut.map(w=>[w,reqOut(l,w)]),c:'#b8860b',wd:1.6,dash:'6 4',n:'Requirement (you + allies)'}];
+  if(hasA)ser.push({pts:usH.map(([w,v])=>[w,v+al(w)]),c:AC,wd:2,n:'You + allies'},{pts:usF.map(([w,v])=>[w,v+al(w)]),c:AC,wd:1.4,dash:'4 3',n:'You + allies (projected)'});
+  ser.push({pts:usH,c:'#2f62a0',wd:2.4,n:'You'},{pts:usF,c:'#2f62a0',wd:1.6,dash:'4 3',n:'You (projected)'});
+  const yMax=Math.max(...ser.flatMap(x=>x.pts.map(p=>p[1])),1e-9)*1.06,now=o.yr+al(S.w),rq=reqOut(l),gap=rq-now;
+  const end=usF.at(-1)[1]+al(END_W),cnE=cnOut(l,END_W);
+  return `<div class="orhd"><span><b>${fmtN(o.yr)}</b>/yr you${hasA?` + <b style="color:#2e8a74">${fmtN(al(S.w))}</b> allies`:''} vs <b class="red">~${fmtN(cnOut(l))}</b> ${R.n} · requirement <b>${fmtN(rq)}</b>/yr</span><span class="${gap>0?'redt':'okt'}">${gap>0?`short ${fmtN(gap)}/yr`:'requirement met'}</span><span class="mini">2037, with today’s orders: ${fmtN(end)}/yr vs ~${fmtN(cnE)}</span></div>
+    ${lineChart({W:900,H:180,yMax,yFmt:fmtN,vf:v=>fmtN(v)+'/yr',series:ser,unit:'⟳ Output per year (flow)'})}
+    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span>${hasA?`<span><i style="background:${AC}"></i>You + allies</span>`:''}<span><i style="background:${rc}"></i>${R.n}</span><span><i class="dsh" style="border-color:#b8860b"></i>Requirement</span><span class="mini">Dashed: your plants on order at your track record so far, held to today’s input limits; ${R.n} keeps growing. ${R.n}'s figures are intelligence estimates.</span></div>`}
 function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#4fa894',al=allyOut(l),A=AL();
   const st=estInv(S.enemy[rv],l),pr=estProd(S.enemy[rv],l,S.w);
   const row=(B,fl,nm,v,c,lab)=>`<div class="pvsr"><span>${fl} ${nm}</span><div class="nb"><i style="width:${B(v)}%;background:${c}"></i></div><span class="v">${lab}</span></div>`;
@@ -3059,7 +3073,7 @@ function dossierHTML(id,P){
   if(id.startsWith('L:')){const l=id.slice(2),L=LINES[l],o=S._R.out[l],f=F();
     const projs=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint');const lp=linePipe(l),pj0=project(Object.fromEntries(Object.keys(LINES).map(c=>[c,S._R.out[c].yr]))),rq=reqRate(l,pj0);
     main=`${crumb()}<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span><div class="jtabs"><span class="jl">See</span><button data-a="ovjump" data-s="#makers">🏭 Producers</button><button data-a="flow" data-f="L:${l}">⇶ Flows</button><button data-a="arsenal">📈 Stocks</button></div></div>
-     <div class="dsec dlim"><h4>What limits output</h4>${ladder(l,S._R,6)}</div>${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
+     <div class="dsec dlim"><h4>What limits output</h4>${ladder(l,S._R,6)}</div><div class="dsec"><h4>The race: output per year</h4>${outRaceHTML(l,o,lp)}</div>${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
      <div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
      <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
      <!--AO--><div class="dsec" id="allopts"><h4>All ways to raise output</h4>${constraintStrip(Math.min(...projs.filter(d=>!d.req||passed(d.req)).map(projCost)))}<table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`).join('')}
