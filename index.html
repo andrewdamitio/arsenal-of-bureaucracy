@@ -4419,7 +4419,7 @@ function renderModal(){
     else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in Conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
-      html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}${q.due!=null&&!q.read?`<button class="pbtn" data-a="evlater">Later · ⏱ ${dLeft(q.due)} wk left</button>`:''}</div></div>`}
+      html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}</div></div>`}
   } else if(S.modal==='scenPick'){
     html=scenPickHTML();
   } else if(S.modal==='scenEnd'&&S.scenRes){
@@ -4591,7 +4591,6 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'rule':toggleRule(b.dataset.r);break;
     case 'fw':framework(b.dataset.l);break;
     case 'evdo':{const it=(S.inbox||[]).find(x=>x.ev===b.dataset.e);S.inbox=(S.inbox||[]).filter(x=>x.ev!==b.dataset.e);S.queue.unshift({ev:b.dataset.e,fxDone:1,due:it?.due});S.speed=0;break}
-    case 'evlater':{const q=S.queue.shift();if(q?.ev)(S.inbox=S.inbox||[]).push({ev:q.ev,due:q.due??S.w+DECIDE_WK,w:S.w});break}
     case 'recgo':S.view='rec';S.modal=null;S._vdirty=true;break;
     case 'scen':chooseScen(b.dataset.s);break;
     case 'scenskip':S.scenSkip=true;if(S.modal==='scenPick')S.modal=null;break;
