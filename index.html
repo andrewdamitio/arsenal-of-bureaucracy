@@ -346,7 +346,7 @@ body.hasdec #main{height:calc(100vh - 56px - 128px - 34px - 44px)}
 .rc-rrow{background:var(--panel2);border:1px solid var(--line);padding:7px 9px 6px;margin:6px}
 .rc-rh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:3px}.rc-rh>b{font:600 14px Georgia;color:var(--ink)}.rc-rh>span{font-size:11.5px}
 .rc-rgrid{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:10px;align-items:center}
-.rc-rb{display:grid;grid-template-columns:62px minmax(0,1fr) 128px;gap:6px;align-items:center;font-size:11px;margin:3px 0}.rc-rb .nb{height:10px;margin:0}.rc-rb .v{text-align:right;white-space:nowrap;color:#a8a48e}.rc-rb .v b{color:var(--ink)}
+.rc-rb{display:grid;grid-template-columns:96px minmax(0,1fr) 150px;gap:6px;align-items:center;font-size:11px;margin:3px 0}.rc-rb .nb{height:10px;margin:0}.rc-rb .v{text-align:right;white-space:nowrap;color:#a8a48e}.rc-rb .v b{color:var(--ink)}
 .rc-rlim{font-size:11.5px;margin-top:4px;color:#cfc6ad;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}.rc-rlim .linkn{color:#e8b8a8}.rc-rlim .btn{margin-left:auto}
 .rc-rwork{font-size:11px;color:#a8a48e;margin-top:3px}.rc-rwork .linkn{color:#cfc6ad}.rc-rclr{color:#8fb87a;margin-left:6px}
 /* defense needs */
@@ -454,7 +454,7 @@ body{background:
 .rc-rh>span{font:600 13px var(--disp);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}.rc-rh>span b{font-size:21px;vertical-align:-1px}
 .rc-rb .nb{height:13px;background:#0b0c09}
 .rc-rb .nb::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 11px,rgba(0,0,0,.5) 11px 12px);pointer-events:none}
-.rc-rb>span:first-child{font:600 12.5px var(--disp);letter-spacing:.07em;text-transform:uppercase}
+.rc-rb>span:first-child{font:600 12.5px var(--disp);letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
 .rc-rb .v{font-family:var(--disp);font-size:13px}.rc-rb .v b{font:700 16px var(--disp)}
 .rc-loss{font-family:var(--disp);letter-spacing:.05em;text-transform:uppercase;font-size:12.5px}
 .rc-rlim .btn{text-transform:uppercase}
@@ -523,6 +523,8 @@ body{background:
 .rcpt-t{font:700 21px var(--disp);letter-spacing:.02em;line-height:1.1;margin-bottom:4px}.rcpt-l{font-size:13px;margin-top:2px}.rcpt-l .amb{color:#8a5a10;font-weight:600}.rcpt-l .okt{font-weight:600}
 .rcpt-b{display:flex;gap:6px;margin-top:8px}
 @keyframes rcin{0%{opacity:0;transform:translateY(-14px) scale(.97)}100%{opacity:1;transform:none}}
+/* sufficiency */
+.rc-rb .nb .rc-req{position:absolute;top:-4px;bottom:-4px;width:3px;background:#e8c14a;box-shadow:0 0 0 1px #000a;z-index:1}.rc-al{color:#a9c7e6}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2039,7 +2041,7 @@ function endHistory(quiet){ // quiet: the instant run at game start, no handover
   for(const k in S.ledger)S.ledger[k]={n:0,wk:0};
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
   log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
-  S.spendBy={};S.incBy={};S.lawLog=[];S.decN={you:0,auto:0};{const o=production(false).out;S.rec0={budget:S.budget,expo:S.exposure,out:Object.fromEntries(Object.keys(LINES).map(c=>[c,o[c].yr])),inv:{...S.inv}}}
+  S.spendBy={};S.incBy={};S.lawLog=[];S.decN={you:0,auto:0};{const R0=production(false),o=R0.out;S.rec0={budget:S.budget,expo:S.exposure,out:Object.fromEntries(Object.keys(LINES).map(c=>[c,o[c].yr])),inv:{...S.inv},ally:Object.fromEntries(ORDER.map(id=>[id,R0.P[id].ally]))}}
   if(!S.scen&&S.fac==='US')S.modal='scenPick';
   S.resH=[];S._handT0=quiet?0:performance.now();S._flW=null;for(const k in FL)delete FL[k]; // handover starts from a clean slate, no flashes
 }
@@ -3217,6 +3219,13 @@ const CITES=[
  {id:'ucaig',g:'US rulebook',t:'Audit of the Army’s management of undefinitized contract actions awarded to provide Ukraine assistance (DODIG-2025-059)',pub:'DoD Inspector General',d:'Jan 2025',url:'https://www.dodig.mil/reports.html/Article/4034904/audit-of-the-armys-management-of-undefinitized-contract-actions-awarded-to-prov/',use:'UCAs let work start before terms and price are agreed; the government carries nearly all the risk until definitization; 7 of 13 did not adjust profit, totaling $1.2B.'},
  {id:'jpac3',g:'Missiles, motors & engines',t:'Japan sends first PAC-3 interceptors to U.S. to support Patriot stockpile rebuild',pub:'The Defense Post',d:'Nov 2025',url:'https://thedefensepost.com/2025/11/25/japan-patriot-interceptors-us/amp/',use:'Export rules eased December 2023; first delivery November 2025; MHI builds about 30 a year, limited by Boeing seekers.'},
  {id:'euronaval26',g:'Ships, submarines & readiness',t:'China built more than twice naval tonnage of US in 2024-25: Euronaval',pub:'Defense News',d:'Oct 2026',url:'https://www.defensenews.com/naval/2026/10/20/china-built-more-than-twice-naval-tonnage-of-us-in-2024-25-euronaval/',use:'Combat ships built 2024–25: China 636,208 t, US 270,509 t; China took delivery of 9 nuclear attack submarines and 10 destroyers, the US 3 and 4. In 2022–23 the US had built more tonnage.'},
+ {id:'usaf72',g:'Ships, submarines & readiness',t:'US Air Force plans to request 72 fighters every year',pub:'Defense News',d:'Apr 2023',url:'https://defensenews.com/air/2023/04/06/us-air-force-plans-to-request-72-fighters-every-year',use:'Air Force leaders: at least 72 new fighters a year to modernize and stop the fleet aging.'},
+ {id:'eushells',g:'Munitions & energetics',t:'EU to produce 2 million artillery shells in 2025, new defense commissioner tells media',pub:'Kyiv Independent',d:'Dec 2024',url:'https://kyivindependent.com/eu-to-produce-2-million-artillery-shells-in-2025-new-defense-commissioner-tells-media/amp',use:'European capacity grew from 300,000 shells a year to an expected 2 million in 2025; actual output is not published.'},
+ {id:'irist',g:'Missiles, motors & engines',t:'IRIS-T SLM emerges as Europe’s fastest-growing air defense system',pub:'Norsk Luftvern',d:'Dec 2025',url:'https://norskluftvern.com/2025/12/11/iris-t-slm-emerges-as-europes-fastest-growing-air-defense-system/',use:'IRIS-T missile output rose from about 150–200 in 2023 to 800–1,000 a year by end-2025, with a plant planned for about 2,000 a year.'},
+ {id:'aster26',g:'Missiles, motors & engines',t:'MBDA to double Aster air defense missile output in 2026',pub:'Defense News',d:'Mar 2026',url:'https://www.defensenews.com/global/europe/2026/03/26/mbda-to-double-aster-air-defense-missile-output-in-2026/',use:'MBDA doubling Aster interceptor output in 2026 and raising overall production by 40%.'},
+ {id:'rafale25',g:'Ships, submarines & readiness',t:'Dassault delivers 26 Rafale fighters in 2025',pub:'StratPost',d:'Jan 2026',url:'https://stratpost.com/dassault-delivers-26-rafale-fighters-in-2025/',use:'26 Rafales delivered in 2025 (15 export, 11 France), up from 21 in 2024.'},
+ {id:'krshells',g:'Munitions & energetics',t:'AUSA 2025: Hanwha try to revive munitions production across the West',pub:'Army Technology',d:'Oct 2025',url:'https://www.army-technology.com/news/ausa-2025-hanwha-try-to-revive-munitions-production-across-the-west/',use:'Hanwha projects 300,000 155mm rounds a year at full capacity, with a new modular charge plant in Korea in 2027; Poongsan expanded to about 100,000 a year.'},
+ {id:'twdrones',g:'Munitions & energetics',t:'Taiwan seeks domestic drones for 2026–2027',pub:'The Defense Post',d:'Jul 2025',url:'https://thedefensepost.com/2025/07/24/taiwan-domestic-drones-2027/amp/',use:'Tender for 48,750 drones from domestic makers: 11,270 in 2026 and 37,480 in 2027.'},
  {id:'yard8679',g:'US rulebook',t:'10 U.S.C. 8679: Construction of combatant and escort vessels and assignment of vessel projects',pub:'U.S. Code (govinfo)',d:'2024 ed.',url:'https://www.govinfo.gov/content/pkg/USCODE-2024-title10/pdf/USCODE-2024-title10-subtitleC-partIV-chap863-sec8679.pdf',use:'No Navy vessel, or major component of its hull or superstructure, may be built in a foreign shipyard; the President may authorize exceptions.'},
  {id:'s406',g:'US rulebook',t:'S. 406, Ensuring Naval Readiness Act (119th Congress)',pub:'Congress.gov',d:'Feb 2025',url:'https://www.congress.gov/119/bills/s406/BILLS-119s406is.htm',use:'Would allow Navy ships and major hull components to be built in NATO and Indo-Pacific treaty-ally shipyards when cheaper than a US yard.'},
  {id:'sasc27',g:'US rulebook',t:'Congress seeks to limit US Navy vessels built in foreign shipyards',pub:'Defense News',d:'Jun 2026',url:'https://www.defensenews.com/news/pentagon-congress/2026/06/17/congress-seeks-to-limit-us-navy-vessels-built-in-foreign-shipyards/',use:'The Senate Armed Services FY2027 NDAA markup would strip the presidential waiver in 10 U.S.C. 8679 and cap foreign construction at two vessels per class.'},
@@ -3351,7 +3360,7 @@ const ASSUMPTIONS=[
  ['Allied sourcing limits','The bars themselves are statutory: Navy ships only from US yards (10 U.S.C. 8679)[c:yard8679] and bearings only from the US or Canada (DFARS 225.7009).[c:dfarsbr] Their game effect is a simplification: no allied supply or emergency buys for shipyards, submarine yards or bearings until a bill, waiver or presidential exception lifts them. The capacity the Ensuring Naval Readiness Act adds (+0.5 of base shipyard capacity, +3 surface ships a year)[c:s406] is an estimate. Specialty metals are limited to about 28 qualifying countries; that bar is not modeled item by item.'],
  ['Air-to-air and Army fires','US output: AMRAAM ~1,200 a year in 2025 (recent lots 1,160–1,200), GMLRS and PrSM ~12,000 a year retained by the US out of ~14,000 capacity (sourced capacity; the US share is an estimate). US stocks (12,000 air-to-air missiles, 25,000 rockets) are estimates: neither is public. Chinese and Russian output and stocks are game estimates with wide ranges; for the PL-15 the only public figures are open-source speculation (1,000–3,000 a year). Neither line is scored in the campaign scenarios yet.'],
  ['Emergency purchases','A spot purchase is offered only for raw materials, materials and components that also sell to civilian customers. Defense-only items that allied plants make can be bought from those producers at half again the price, as Poland and South Korea have sold TNT and shells. Items built to order by a few US defense suppliers (submarine and surface shipyards, solid rocket motors, seekers, warheads, thermal batteries, AESA radars, fighter engines) have no emergency purchase: only new capacity helps. Which items fall in each group, and the premiums, are game estimates.'],
- ['The race','Your share of your rival’s output is the average, over the nine end-item lines, of your output divided by the rival’s estimated output, each capped at 100%. You choose the rival: China or Russia. China’s output grows each year at game-estimated rates (see Enemy growth). A bottleneck counts as cleared when a line’s limit changes for at least six weeks and its output rises at least 3%. The game ends in late 2037 and is judged on the race: Arsenal Restored at 100% of the rival’s output, Within Reach at 75%, Gained Ground if you rose at least 5 points from January 2027, otherwise Out-Built. These thresholds are design choices.'],
+ ['Sufficiency','The headline compares your output plus allied output with what the plan requires, line by line, capped at 100% and averaged over the nine lines. The requirement is the US public target (cited on each line) plus the allies’ own 2030 level, raised in proportion as the rival out-builds its own January 2027 level. You choose the rival, and with it the allies counted: Japan, South Korea and Taiwan against China; European allies against Russia (Ukraine excluded, since its output goes to its own war). Allied output rises from its 2027 level to its 2030 plan over three years. Buying beyond your 2027 share from allied suppliers takes the extra out of the allies’ own lines that use those inputs (assumed to supply a third of their output to you; at most half their output). The game ends in late 2037 and is judged on sufficiency: Arsenal Restored at 100%, Within Reach at 75%, Gained Ground if you rose at least 5 points from January 2027, otherwise Out-Built.'],
  ['Permits','Statutory terms are from the statutes: Title V and NPDES permits run five years, RCRA permits up to ten, ATF explosives licenses three, ITAR registration one; ESA formal consultation is 135 days; NEPA assessments and impact statements have one- and two-year deadlines (2023). Which permits each project type needs, their review times relative to each other, and the odds that a renewal is contested are game estimates.'],
  ['US rulebook','Each rule’s status, date and scope is sourced. How much it changes obstacle odds, waits and costs (the ×multipliers shown on each rule), and the Political Capital needed to adopt, finalize or reverse executive actions, are game assumptions.'],
  ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
@@ -3600,8 +3609,6 @@ function needsHTML(R){const pj=needsProj(R);return `<div class="ngrid">${Object.
 // the rival you race: China (the Indo-Pacific model) or Russia (the European one)
 const RIVALS={pac:{n:'China',f:FLAGS.cn},eu:{n:'Russia',f:FLAGS.ru}},RV=()=>RIVALS[S.rival||'pac'];
 const cnOut=(c,w=S.w)=>estProd(S.enemy[S.rival||'pac'],c,w);
-// the average over the end-item lines of your output ÷ ${RV().n}'s, each capped at 100%
-function raceIdx(out,w=S.w,get=c=>out[c].yr){const cs=Object.keys(LINES);return cs.reduce((a,c)=>a+Math.min(1,get(c)/Math.max(cnOut(c,w),1e-9)),0)/cs.length}
 const limOf=(o,c)=>o.bott?o.chain.at(-1):'L:'+c;
 const limName=id=>id.startsWith('L:')?'line capacity':ND[id].n;
 // what limits each line; a new limit has to hold for six weeks before it counts, and it counts as cleared only if output rose
@@ -3651,7 +3658,7 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   const d=(a,b,f,good=1)=>{const x=b-a;return Math.abs(x)<1e-9?'<span class="dim">no change</span>':`<span class="${(x>0)===(good>0)?'okt':'redt'}">${x>0?'▲':'▼'} ${f(Math.abs(x))}</span>`};
   const tile=(ic,v,l,sub)=>`<div class="rec-t"><span class="rec-ic">${ic}</span><b>${v}</b><span class="rec-l">${l}</span><span class="rec-s">${sub}</span></div>`;
   let h=(S.scen?`<div class="sc-rec">${scenCard()}</div>`:'')+`<div class="rec-tiles">
-    ${tile('🎯',pct(idx),`of ${RV().n}'s output`,`from ${pct(idx0)} in Jan 2027 · ${d(idx0*100,idx*100,v=>fmt(v,0)+' pt')}`)}
+    ${tile('🎯',pct(idx),`of what the plan requires`,`from ${pct(idx0)} in Jan 2027 · ${d(idx0*100,idx*100,v=>fmt(v,0)+' pt')}`)}
     ${tile('💵',money(spent),'spent since Jan 2027',`of ${money(inc+r0.budget)} available · ${money(S.budget)} unspent`)}
     ${tile('👷',`~${fmtN(Math.round(J.j/100)*100)}`,'industrial jobs at new plants',`~${fmtN(Math.round(J.more/100)*100)} more as plants ramp and finish (estimate)`)}
     ${tile(FLAGS.cn,pct(S.exposure),'PRC / Russian content',`from ${pct(r0.expo)} · ${d(r0.expo*100,S.exposure*100,v=>fmt(v,0)+' pt',-1)}`)}
@@ -3663,7 +3670,7 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   const hs=S.hist.filter(x=>x.prod),ser=hs.map(x=>[x.w,raceIdx(null,x.w,c=>x.prod[c]??0)]);ser.push([S.w,idx]);
   const ex=S.hist.filter(x=>x.expo!=null).map(x=>[x.w,x.expo]);ex.push([S.w,S.exposure]);
   const sp=S.hist.filter(x=>x.spent!=null).map(x=>[x.w,x.spent]);sp.push([S.w,spent]);
-  h+=`<div class="rec-charts"><div class="acard"><div class="ah"><b>Share of ${RV().n}'s output</b></div>${lineChart({unit:'⟳ Output (flow), share of rival',W:440,H:150,yMax:Math.max(1,...ser.map(x=>x[1]))*1.05,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1,c:'#5f9e4a',n:'Parity'}],series:[{pts:ser,c:'#2f62a0',wd:2.2,n:'Share of rival'}]})}</div>
+  h+=`<div class="rec-charts"><div class="acard"><div class="ah"><b>Share of the requirement · you + ${AL().short}</b></div>${lineChart({unit:'⟳ Output (flow), share of requirement',W:440,H:150,yMax:Math.max(1,...ser.map(x=>x[1]))*1.05,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1,c:'#5f9e4a',n:'Sufficient'}],series:[{pts:ser,c:'#2f62a0',wd:2.2,n:'Share of requirement'}]})}</div>
     <div class="acard"><div class="ah"><b>PRC and Russian content in what you build</b></div>${lineChart({unit:'Share of inputs',W:440,H:150,yMax:Math.max(.05,...ex.map(x=>x[1]))*1.1,yFmt:v=>pct(v),vf:v=>pct(v),series:[{pts:ex,c:'#b0453a',wd:2.2,n:'PRC / Russian content'}]})}</div>
     <div class="acard"><div class="ah"><b>Money spent since January 2027</b></div>${lineChart({unit:'Cumulative spending',W:440,H:150,yMax:Math.max(1,...sp.map(x=>x[1]))*1.08,yFmt:v=>'$'+fmt(v,0)+'B',vf:v=>money(v),series:[{pts:sp,c:'#8a6a1f',wd:2.2,n:'Spent'}]})}</div></div>`;
   // line by line
@@ -3754,11 +3761,7 @@ function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
     <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
     <p><i>${sc.lesson}</i></p></div>
     <div class="ft"><button class="pbtn primary" data-a="scenon">Keep building to 2037</button><button class="pbtn" data-a="scenstop">End here and see the record</button></div></div>`}
-function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c],cnOut(c,h.w)]);pts.push([S.w,S._R?.out[c].yr??0,cnOut(c)]);
-  if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
-  const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
-  return `<div class="rc-spw"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Output per year since 2025: you (blue) and ${RV().n} (red)</title><polyline points="${pl(2)}" fill="none" stroke="#b0453a" stroke-width="1.5"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span>⟳ output per year since 2025</span></div>`}
-// what is being done about a limit: fixes under way anywhere along its chain, or short-term measures
+
 function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   if(id.startsWith('L:')){const ps=S.projects.filter(q=>PD[q.def].t.line===c),pl=S.plants.filter(p=>p.kind==='line'&&p.target===c&&!p.full);
     if(ps.length)return {cls:'ok',t:`🏗 ${yr(Math.min(...ps.map(q=>Math.round(S.w+remW(q)*sl))))}`,tip:ps.map(projName).join(', ')};
@@ -3783,30 +3786,80 @@ function ladder(c,R,max=4){const o=R.out[c],steps=[...(o.lims||[]),{id:'L:'+c,f:
   const shown=steps.filter((x,k)=>x.f<=1+1e-9||k===steps.findIndex(y=>y.f>1+1e-9)).slice(0,max);
   return `<div class="lad"><span class="lad-h" data-tip="How much of the line’s rated capacity each input (and the line itself) allows, lowest first. Output stops at the first one; fixing it lifts output only to the next.">Limits, lowest first</span>${shown.map((x,k)=>{const isL=x.id.startsWith('L:'),st0=fixStat(x.id,c,R),st=x.f>1+1e-9&&st0.cls==='none'?{cls:'okish',t:'✓ enough'}:st0,ch=isL?[]:chainOf(R.P,x.id);
     return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?'Line capacity':ND[x.id].n}</b><br>Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?'Line capacity':ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em>${(()=>{const w=x.f<1-1e-9||(isL&&k===0)?limWhy(x.id,c,R):null;return w?`<span class="lad-w">${w.ic} ${w.t}</span>`:''})()}</span>`}).join('')}</div>`}
-function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
+// ---------- sufficiency: the coalition's output against what the plan requires, not parity with the rival ----------
+// US requirement per line (a year): public targets
+const REQ_US={
+ interceptors:{v:1800,src:'PAC-3 MSE to 2,000 a year (about half for the US), THAAD to 400, SM-6 past 500.[c:lmpac3,thaad,rtxfw]'},
+ strike:{v:1800,src:'JASSM/LRASM toward 1,100 a year plus a Tomahawk framework past 1,000.[c:jassm,tlam26]'},
+ subs:{v:2,src:'Two Virginia-class boats a year (2.33 with AUKUS).[c:crsva]'},
+ surface:{v:9,src:'About 11 battle-force ships a year to grow the fleet, roughly 9 of them surface ships.[c:crsnavy]'},
+ shells:{v:1.2e6,src:'The Army’s goal of 100,000 shells a month.[c:dodig]'},
+ fires:{v:16000,src:'The US share of the Army’s planned 19,002 rockets a year.[c:gmlrs19k]'},
+ drones:{v:330000,src:'A million drones over two to three years.[c:army1m]'},
+ a2a:{v:1900,src:'The AMRAAM framework of at least 1,900 a year.[c:amraam]'},
+ aircraft:{v:120,src:'The Air Force says it needs at least 72 fighters a year;[c:usaf72] about 48 for the Navy and Marine Corps is an estimate.'}};
+// allied output in January 2027 (out) and where their own plans take it by 2030 (tgt); est = no published figure
+const ALLY_PROD={
+ eu:{n:'European allies',short:'European allies',lines:{
+  shells:{out:1.6e6,tgt:2e6,src:'EU officials claim capacity of about 2 million a year; actual output is not published, and one estimate puts 2 million in 2027.[c:eushells]'},
+  interceptors:{out:1200,tgt:2600,src:'IRIS-T SLM at about 800–1,000 a year by end-2025 with a plant for about 2,000 more; MBDA doubling Aster output in 2026.[c:irist,aster26]'},
+  strike:{out:300,tgt:500,est:1,src:'Storm Shadow/SCALP, Taurus and NSM: no published rates.'},
+  a2a:{out:800,tgt:1200,est:1,src:'Meteor, IRIS-T and ASRAAM: no published rates.'},
+  fires:{out:300,tgt:1500,est:1,src:'European GMLRS-class rocket lines are just starting.'},
+  drones:{out:1e5,tgt:3e5,est:1,src:'Excludes Ukraine, which builds about 4 million a year for its own war.[c:uadrone]'},
+  aircraft:{out:50,tgt:60,src:'Dassault delivered 26 Rafales in 2025;[c:rafale25] about 12 Typhoons and 10 Gripens are estimates.'},
+  surface:{out:8,tgt:9,est:1,src:'European frigate and destroyer deliveries: estimate.'},
+  subs:{out:3,tgt:3.5,est:1,src:'Astute, Suffren, Type 212 and A26: estimate.'}}},
+ pac:{n:'Japan, South Korea & Taiwan',short:'Japan, Korea & Taiwan',lines:{
+  shells:{out:2.5e5,tgt:4.5e5,src:'Poongsan about 100,000 a year; Hanwha aims for 300,000 at full capacity with a new plant in 2027.[c:krshells]'},
+  interceptors:{out:250,tgt:400,src:'Japan builds about 30 PAC-3 a year and can reach 60;[c:jpac3] Korean and Taiwanese interceptors are estimates.'},
+  strike:{out:200,tgt:500,est:1,src:'Type 12 upgrades, Hyunmoo and Hsiung Feng: estimate.'},
+  a2a:{out:150,tgt:300,est:1,src:'Japan’s AAM-4/5 and planned AMRAAM co-production: estimate.'},
+  fires:{out:2000,tgt:3000,est:1,src:'Korea’s Chunmoo rockets: estimate.'},
+  drones:{out:3e4,tgt:1e5,src:'Taiwan’s tender: 11,270 drones in 2026 and 37,480 in 2027;[c:twdrones] Japan and Korea are estimates.'},
+  aircraft:{out:25,tgt:45,est:1,src:'KF-21 production from 2026 and Japan’s F-35 final assembly: estimate.'},
+  surface:{out:6,tgt:7,est:1,src:'Japan and Korea each commission about three major surface ships a year: estimate.'},
+  subs:{out:2,tgt:2.5,est:1,src:'Japan’s one Taigei-class boat a year plus Korea’s KSS-III: estimate.'}}}};
+const AL=()=>ALLY_PROD[S.rival||'pac'];
+// buying beyond your 2027 share from allied suppliers comes out of the allies' own lines (up to half)
+function allyDivert(c){const r0=S.rec0?.ally,R=S._R;if(!r0||!R)return 0;let m=0;
+  for(const id of upOf('L:'+c)){const a0=r0[id]||0,P=R.P[id];if(a0<=1e-9||!P)continue;
+    const sp=spotKind(id)==='ally'?S.spot.filter(x=>x.id===id).reduce((a,x)=>a+x.amt,0):0;m=Math.max(m,Math.min(.5,Math.max(0,P.ally+sp-a0)/(2*a0)))}return m}
+function allyOut(c,w=S.w){const a=AL().lines[c];if(!a)return 0;const f=Math.min(1,Math.max(0,(w-PLAY0)/156));return (a.out+(a.tgt-a.out)*f)*(w>=S.w-1?1-allyDivert(c):1)}
+// the requirement grows as the rival out-builds its own 2027 level
+function reqOut(c,w=S.w){const a=AL().lines[c],base=REQ_US[c].v+(a?.tgt||0);return base*Math.max(1,cnOut(c,w)/Math.max(cnOut(c,PLAY0),1e-9))}
+const suffLine=(c,us,w=S.w)=>Math.min(1,(us+allyOut(c,w))/Math.max(reqOut(c,w),1e-9));
+// the headline: (your output + allied output) ÷ requirement, line by line, capped at 100%, averaged
+function raceIdx(out,w=S.w,get=c=>out[c].yr){const cs=Object.keys(LINES);return cs.reduce((a,c)=>a+suffLine(c,get(c),w),0)/cs.length}
+function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c]+allyOut(c,h.w),reqOut(c,h.w)]);pts.push([S.w,(S._R?.out[c].yr??0)+allyOut(c),reqOut(c)]);
+  if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
+  const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
+  return `<div class="rc-spw"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Since 2025: you plus allies (blue) against the requirement (gold)</title><polyline points="${pl(2)}" fill="none" stroke="#d9a441" stroke-width="1.5" stroke-dasharray="3 2"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span>⟳ you + allies vs. requirement</span></div>`}
+function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f,A=AL();
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
-  const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
+  const enough=cs.filter(c=>suffLine(c,out[c].yr)>=.999).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Your output as a share of ${RV().n}'s</b><br>Line by line, each capped at 100%, averaged across the end-item lines. ${RV().n}'s figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of ${RV().n}'s output, across ${Object.keys(LINES).length} lines</span></div></div>
+  let h=scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Sufficiency</b><br>Line by line: (your output + ${A.n}) ÷ what the plan requires, capped at 100%, averaged. The requirement is the US targets plus the allies’ own, and it rises as ${RV().n}’s output grows. Rival figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of what the plan requires · you + ${A.short}</span></div></div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
-   <div><b>${matched}/${cs.length}</b><span>lines matching ${RV().n}</span></div>
-   <div data-tip="Average growth in ${RV().n}'s output over the last year, across the end-item lines."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth this year</span></div>
+   <div><b>${enough}/${cs.length}</b><span>lines sufficient</span></div>
+   <div data-tip="Average growth in ${RV().n}'s output over the last year. As it grows, so does what the plan requires."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth · raises the bar</span></div>
    <div data-tip="Each time a line's limit stopped binding, output rose, and the next limit took over."><b>${cleared}</b><span>bottlenecks cleared</span></div></div>`;
-  h+=S.order.map(c=>{const o=out[c],L=LINES[c],cn=cnOut(c),r=cn/Math.max(o.yr,1e-9),mx=Math.max(o.capYr,o.yr,cn,1e-9),B=v=>Math.min(100,v/mx*100);
+  h+=S.order.map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOut(c),suf=Math.min(1,(us+al)/Math.max(rq,1e-9)),cn=cnOut(c),dv=allyDivert(c),a=A.lines[c];
+    const mx=Math.max(rq,us+al,cn,1e-9)*1.04,B=v=>Math.min(100,v/mx*100);
     const lim=limOf(o,c),isL=lim.startsWith('L:'),cur=S.lim?.[c];
     const fx=S.projects.filter(q=>isL?PD[q.def].t.line===c:PD[q.def].t.node===lim),rp=S.plants.filter(pl=>!pl.full&&(isL?pl.kind==='line'&&pl.target===c:pl.target===lim));
-    const gap=o.yr<1e-9?'<span class="red">You build none</span>':r>=1.1?`<span class="red">${RV().n} builds <b>${r>=10?Math.round(r):fmt(r,1)}×</b> as many</span>`:r<=.9?`<span class="green">You out-build ${RV().n} <b>${fmt(1/r,1)}×</b></span>`:'<span class="gold">At parity</span>';
+    const gap=`<span class="${suf>=.999?'green':suf>=.6?'gold':'red'}" data-tip="${tipQ(`<b>Requirement ${fmtN(rq)}/yr</b><br>US: ${REQ_US[c].src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${a?`<br>${A.n}: ${fmtN(a.tgt)}/yr by 2030${a.est?' (estimate)':''}`:''}${rq>REQ_US[c].v+(a?.tgt||0)+1e-6?`<br>Raised ${pct(rq/(REQ_US[c].v+(a?.tgt||0))-1)} as ${RV().n} out-builds its 2027 level`:''}`)}"><b>${pct(suf)}</b> of requirement</span>`;
     const g=cn/Math.max(cnOut(c,S.w-52),1e-9)-1;
     const Pl=isL?null:R.P[lim],cutF=Pl&&Pl.need>1e-6?Math.min(1,Pl.lost/Pl.need):0,cutWhy=isL?null:S.fac==='US'&&icBars(lim)?['US import controls','source']:S.fac==='US'&&S.dfars&&DFARS_NODES.includes(lim)&&!carveOn('cvDfars')?['the DFARS ban on Chinese and Russian content','source']:["China's export controls",'export'],
       cutT=cutF>.1?` <span class="linkn rc-cut" data-a="rbgo" data-d="${cutWhy[1]}" data-tip="How this rule works, and who can change it">✂ ${pct(cutF)} of its supply cut off by ${cutWhy[0]}</span>`:'';
-    const held=isL?`⚙ Limited by <span class="linkn" data-a="node" data-n="L:${c}">line capacity</span>`:`⛓ Short of ${o.chain.map(i=>`<span class="linkn" data-a="bngo" data-n="${i}">${ND[i].n}</span>`).join('<span class="ar">←</span>')}`;
     const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].join(' · ')}`:`<span class="red">No fix under way.</span>`;
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
     const loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.05+.75*loss).toFixed(2)}),rgba(176,69,58,${(.02+.35*loss).toFixed(2)}));border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
+    const alTip=a?tipQ(`<b>${A.n}</b><br>${fmtN(a.out)}/yr in Jan 2027, ${fmtN(a.tgt)}/yr planned by 2030${a.est?' (estimate)':''}<br>${a.src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${dv>.005?`<br><span style='color:#e8a090'>−${pct(dv)}: you are buying from their suppliers</span>`:''}`):'';
     return `<div class="rc-rrow trc" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b></span>${gap}</div>
       <div class="rc-rgrid"><div>
-       <div class="rc-rb"><span>${F().flag} You</span><div class="nb"><i style="width:${B(o.capYr)}%;background:#34404c"></i><i style="width:${B(o.yr)}%;background:#5f8fc4"></i></div><span class="v"><b>${fmtN(o.yr)}</b>/yr${o.capYr>o.yr*1.02?` <span class="dim">of ${fmtN(o.capYr)}</span>`:''}</span></div>
+       <div class="rc-rb"><span>${F().flag} You + allies</span><div class="nb"><i style="width:${B(us)}%;background:#5f8fc4"></i><i style="left:${B(us)}%;width:${B(al)}%;background:#a9c7e6" data-tip="${alTip}"></i><span class="mk rc-req" style="left:${B(rq).toFixed(1)}%" data-tip="Requirement: ${fmtN(rq)}/yr"></span></div><span class="v"><b>${fmtN(us)}</b> + <span data-tip="${alTip}" class="rc-al">${fmtN(al)}</span>${dv>.005?` <span class="red" data-tip="${alTip}">−${pct(dv)}</span>`:''} <span class="dim">/ ${fmtN(rq)}</span></span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
        ${raceSpark(c)}</div>
       <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${ladder(c,R)}${cutT}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
@@ -3817,7 +3870,7 @@ function renderGame(){
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
-    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'vs. '+RV().n,`<b>Your output as a share of ${RV().n}'s</b><br>Across the seven end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
+    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
     ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${res(`${slotsUsed()}/${S.slots}`,'Offices busy','<b>Program offices</b><br>One program each. Full offices block new launches.','rtab','data-t="prog"',slotsUsed()>=S.slots?'rwarn':'')}
@@ -3917,7 +3970,7 @@ function renderGame(){
   pr+=`<h2>Barrier Ledger <span class="r dim">Weeks lost</span></h2><div style="padding:6px 0">`+L.map(([k,v])=>`<div class="lg"><span class="sw" style="background:${LAYERS[k].c}"></span><span>${LAYERS[k].n}</span><b style="text-align:right">${fmt(v.wk,0)}</b><span class="dim" style="text-align:right">×${v.n}</span><div class="lgbar"><i style="width:${v.wk/mx*100}%;background:${LAYERS[k].c}"></i></div></div>`).join('')+`</div>`;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog',`🏗 Programs${dp?` <span class="vbadge">${dp}</span>`:''}`],['fac','🏭 Factories'],['home','🏛 Home'],['agenda',`📜 ${S.fac==='US'?'Congress':'Council'}${S.bill?` <span class="sub">${S.bill.left}w</span>`:''}`]].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='agenda'?ag:rtab==='fac'?fc:pr);
-  const nd=`<h2>The Race with <span class="rc-pick">${Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
+  const nd=`<h2>Arming against <span class="rc-pick">${Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2>Timeline${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
@@ -3957,7 +4010,7 @@ function renderModal(){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
     html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
       <div class="stamp" style="font-size:24px">${S.verdict}</div>${S.overWhy?`<p>${S.overWhy}</p>`:''}
-      ${S.scenRes?`<p><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} at the deadline (${S.scenRes.met} of ${S.scenRes.ms.length} mandates; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}<p>You build <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of ${RV().n}'s output across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
+      ${S.scenRes?`<p><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} at the deadline (${S.scenRes.met} of ${S.scenRes.ms.length} mandates; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}<p>With ${AL().n}, you meet <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of what the plan requires across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
       <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}'s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
       <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Pages: <b>${S.pages.toLocaleString()}</b>. Exceptions: <b>${S.waivers}</b>.</p>
