@@ -3005,6 +3005,7 @@ function supplyWeb(id,P){
     <div class="sleg swleg">${leg}<span class="mini">Band width: how well each input is covered. Hover for sources.</span></div>`}
 /* ---------- in service: your stock and output next to China's and Russia's, then and projected ---------- */
 const RIV_C={pac:'#b0453a',eu:'#7a5a8c'};
+function allyAdd(c){const r=retRate(c),m={};let a=0;for(let w=PLAY0;w<=END_W+60;w++){m[w]=a;a=a*(1-r/52)+allyOut(c,w)/52}return w=>w<PLAY0?null:m[Math.min(Math.round(w),END_W+60)]}
 function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#4fa894',al=allyOut(l),A=AL();
   const st=estInv(S.enemy[rv],l),pr=estProd(S.enemy[rv],l,S.w);
   const row=(B,fl,nm,v,c,lab)=>`<div class="pvsr"><span>${fl} ${nm}</span><div class="nb"><i style="width:${B(v)}%;background:${c}"></i></div><span class="v">${lab}</span></div>`;
@@ -3013,12 +3014,14 @@ function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],rv=S.rival||'pac',R=
   const g1=`<div><div class="isgt">In service</div>${row(B1,F().flag,'You',us,'#2f62a0',`<b>${fmtN(us)}</b>`)}${row(B1,R.f,R.n,st,rc,`~${fmtN(st)}`)}${verdict(us,st,'yours')}<div class="mini">Allied stocks are not tracked.</div></div>`;
   const g2=`<div><div class="isgt">Built per year</div>${row(B2,F().flag,'You',o.yr,'#2f62a0',`<b>${fmtN(o.yr)}</b>/yr`)}${row(B2,'🤝',`<span data-tip="${tipQ(A.n)}">Allies</span>`,al,AC,`${fmtN(al)}/yr`)}${row(B2,R.f,R.n,pr,rc,`~${fmtN(pr)}/yr`)}${verdict(o.yr+al,pr,'you and your allies combined')}</div>`;
   const hs=S.hist.filter(h=>h.en),pts=k=>hs.map(h=>[h.w,k==='us'?h.inv[l]:h.en[k][l]]),fut=k=>[[S.w,k==='us'?us:st],...pj.map(r=>[r.w,k==='us'?r.inv[l]:r.en[k][l]])];
-  const all=[...pts('us'),...pts(rv),...fut('us'),...fut(rv)].map(p=>p[1]),yMax=Math.max(...all,1e-9)*1.05;
+  const all=[...pts('us'),...pts(rv),...fut('us'),...fut(rv)].map(p=>p[1]);
   const ser=[];for(const [k,c,n] of [[rv,rc,R.n],['us','#2f62a0','You']]){ser.push({pts:pts(k),c,wd:2.2,n});ser.push({pts:fut(k),c,wd:1.4,dash:'4 3',n:n+' (projected)'})}
+  if(AL().lines[l]){const ad=allyAdd(l),ah=pts('us').filter(p=>p[0]>=PLAY0).map(p=>[p[0],p[1]+ad(p[0])]),af=fut('us').map(p=>[p[0],p[1]+ad(p[0])]);
+    ser.splice(2,0,{pts:ah,c:AC,wd:2,n:'You + allied output since 2027'},{pts:af,c:AC,wd:1.4,dash:'4 3',n:'You + allied output since 2027 (projected)'});all.push(...af.map(p=>p[1]))}
   return `<div class="isg">${g1}${g2}</div>
     <div class="isgt" style="margin-top:8px">In service since 2025, and where today's output leads by 2037</div>
-    ${lineChart({W:900,H:170,yMax,yFmt:fmtN,vf:fmtN,series:ser,unit:'📦 In service (stock)'})}
-    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span><span><i style="background:${rc}"></i>${R.n}</span><span class="mini">Solid: history · dashed: today's output held constant, ${R.n} keeps growing. Retiring ~${fmtN(us*retRate(l))} ${L.u}/yr. ${R.n}'s figures are intelligence estimates.${S.scen?'':' Switch the rival on Command to compare the other.'}</span></div>`}
+    ${lineChart({W:900,H:170,yMax:Math.max(...all,1e-9)*1.05,yFmt:fmtN,vf:fmtN,series:ser,unit:'📦 In service (stock)'})}
+    <div class="sleg"><span><i style="background:#2f62a0"></i>You</span>${AL().lines[l]?`<span><i style="background:${AC}"></i>You + allied output since 2027</span>`:''}<span><i style="background:${rc}"></i>${R.n}</span><span class="mini">Solid: history · dashed: today's output held constant, ${R.n} keeps growing. Retiring ~${fmtN(us*retRate(l))} ${L.u}/yr. ${R.n}'s figures are intelligence estimates.${AL().lines[l]?' Allied stockpiles from before 2027 are not counted.':''}${S.scen?'':' Switch the rival on Command to compare the other.'}</span></div>`}
 // the main US producers of each end item
 const LINE_MAKERS={interceptors:'Lockheed Martin, Camden AR and Grand Prairie TX (PAC-3 MSE); Lockheed Martin, Troy AL (THAAD); RTX, Tucson AZ and Huntsville AL (SM-6, SM-3)',
  strike:'Lockheed Martin, Troy AL (JASSM, LRASM); RTX, Tucson AZ (Tomahawk)',a2a:'RTX, Tucson AZ (AMRAAM)',fires:'Lockheed Martin, Camden AR (GMLRS, PrSM)',
