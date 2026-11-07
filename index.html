@@ -4158,10 +4158,9 @@ function renderGame(){
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
     <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
-    <button class="btn sm" data-a="map" title="Supply chain map">🗺</button>
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
-  let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button> <button class="btn sm" data-a="map">🗺 Map</button></span></h2>
+  let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button></span></h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
    <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
   if(S.tab==='bott'){
