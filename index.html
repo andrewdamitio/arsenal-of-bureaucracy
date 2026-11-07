@@ -539,6 +539,7 @@ body{background:
 .jtabs{display:flex;align-items:stretch;border:1px solid #8a7850;background:#efe5ca}.jtabs .jl{font:600 10.5px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#f3ead2;background:#6b5a35;padding:0 8px;display:flex;align-items:center}
 .jtabs button{background:none;border:0;border-left:1px solid #c8b48a;padding:5px 11px;font:600 13px var(--disp);letter-spacing:.03em;color:#3a3020;cursor:pointer}.jtabs button:hover{background:#e2d5b4;color:#000}
 .mkt tr.mkg td{background:#e2d5b4;font:600 12px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#3a3020;padding:4px 8px}.mkt tr.mkg td span{font:400 12px var(--body,inherit);letter-spacing:0;text-transform:none;color:#5a4e38;margin-left:6px}
+.dtop{position:sticky;top:-12px;z-index:5;margin:-12px -18px 8px;padding:12px 18px 0;background:linear-gradient(#efe6cf,#ebe1c6);box-shadow:0 6px 8px -6px rgba(60,45,20,.35)}.dtop .dhead{margin-bottom:0}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2590,10 +2591,10 @@ function timelineSVG(v){const W=330,H=34,x0=S.w,X=w=>Math.min(W,Math.max(0,(w-x0
    ${v.wOn<END_W?`<text class="tlo" x="${Math.min(W-70,X(v.wOn))}" y="7" fill="#dcc78e" font-size="9">${v.isPlant?'Output':'Online'} ${yr(v.wOn)}</text>`:`<text class="tlct" x="${W}" y="7" fill="#e8a090" font-size="9" text-anchor="end">Not before 2037</text>`}
    ${v.isPlant&&v.wFull<END_W&&X(v.wFull)-X(v.wOn)>60?`<text class="tlf" x="${W}" y="7" fill="#a8d48e" font-size="9" text-anchor="end">Full rate ${yr(v.wFull)}</text>`:''}</svg>`}
 function previewHTML(def,ct,wOn0){
-  const v=previewOf(def,ct,wOn0),yr=w=>dateOf(w).getFullYear(),gap=(h,by)=>!h?'<span class="red">never</span>':h.w<=S.w?'<span class="green">now</span>':`<span class="${h.w<=by[1]?'gold':'red'}">${yr(h.w)}</span>`;
+  const v=previewOf(def,ct,wOn0),yr=w=>dateOf(w).getFullYear(),gap=(h,by)=>!h?'<span class="red">not by 2037</span>':h.w<=S.w?'<span class="green">now</span>':`<span class="${h.w<=by[1]?'gold':'red'}">${yr(h.w)}</span>`;
   const rows=v.rows.slice().sort((a,b)=>b.d/LINES[b.c].k-a.d/LINES[a.c].k).slice(0,4);
   let h=`<div class="pvbox"><div class="th">${def.n}</div>${timelineSVG(v)}`;
-  if(rows.length)h+=`<div class="pvr pvhd"><span></span><span>output</span><span>gap closes</span></div>`+rows.map(r=>{const moved=r.d>LINES[r.c].k*.002;
+  if(rows.length)h+=`<div class="pvr pvhd"><span></span><span>Output</span><span>Gap closes</span></div>`+rows.map(r=>{const moved=r.d>LINES[r.c].k*.002;
     return `<div class="pvr"><span>${LINES[r.c].n}</span><span>${moved?`<b class="green">+${fmtN(r.d)}</b>/yr`:'<span class="dim">No change</span>'}</span><span>${gap(r.h0,r.by)} → ${gap(r.h1,r.by)}</span></div>${!moved&&r.chain?`<div class="pvc">⛓ Held back by ${r.chain.map(i=>ND[i].n).join(' ← ')}</div>`:''}`}).join('');
   else if(def.t.node&&def.kind)h+=`<div class="pvc">${leverEffect(def,v.R0.P)}</div>`;
   if(v.ins.length)h+=`<div class="pvc red">⚠ Inputs short now: ${v.ins.map(i=>`${ND[i].n} ${pct(Math.min(v.R0.P[i].cover,9.99))}`).join(', ')}</div>`;
@@ -2642,6 +2643,9 @@ function progGantt(p,live){
    ${obs.length?'':`<text x="${G+6}" y="87" font-size="10" fill="#8a7850" font-style="italic">None yet</text>`}
    ${cr}<line x1="${X(S.w)}" x2="${X(S.w)}" y1="16" y2="104" stroke="#2b241a" stroke-width="2"/>${lbl(X(S.w),22,'Today','#2b241a')}</svg>
    <div class="sleg">${STAGES.map((s,i)=>p.dur[i]?`<span><i style="background:${STAGE_C[i]}"></i>${STAGE_L[s]}</span>`:'').join('')}<span><i style="background:repeating-linear-gradient(45deg,#8a785088 0 2px,transparent 2px 4px);border:1px dashed #8a7850"></i>Projected</span>${[...new Set(obs.map(o=>OD[o[0]].layer))].map(l=>`<span><i style="background:${LAYERS[l].c}"></i>${LAYERS[l].n}</span>`).join('')}</div>`}
+function pinTop(h){const i0=h.indexOf('<div class="dhead">');if(i0<0)return h;const c=h.lastIndexOf('<div class="crumb">',i0),i=c>=0&&h.slice(c,i0).split('<div').length===2?c:i0;
+  let d=0,k=i0;const re=/<div\b|<\/div>/g;re.lastIndex=i0;let m;while((m=re.exec(h))){d+=m[0]==='</div>'?-1:1;if(d===0){k=m.index+6;break}}
+  return h.slice(0,i)+'<div class="dtop">'+h.slice(i,k)+'</div>'+h.slice(k)}
 function progHTML(uid){
   const R=progRec(uid);if(!R)return '';const {p,live}=R,def=PD[p.def],nm=p.nm||def.n,pl=S.plants.find(x=>x.uid==uid),[stT,stC]=progStatus(p,live);
   const tgt=def.t.node?`<span class="linkn" data-a="node" data-n="${def.t.node}">${ND[def.t.node].n}</span>`:`<span class="linkn" data-a="node" data-n="L:${def.t.line}">${LINES[def.t.line].n}</span>`;
@@ -2666,7 +2670,7 @@ function progHTML(uid){
   h+=`<div class="dsec"><h4>Money</h4><div class="kv"><b>Committed</b><span>${money(p.spent||0)}</span>${live?`<b>Spent so far</b><span>${money((p.spent||0)*billedFrac(p))} (${pct(billedFrac(p))})</span>`:''}</div></div>`;
   const lg=S.log.filter(l=>l.m.includes(nm)).slice(0,24);
   if(lg.length)h+=`<div class="dsec"><h4>Record</h4>${lg.map(l=>`<div class="mini" style="padding:2px 0;border-bottom:1px dotted #cbbd95"><b>${fmtDate(l.w)}</b> · ${l.m}</div>`).join('')}</div>`;
-  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${h}</div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`}
+  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(h)}</div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`}
 /* ---------- bottlenecks: where output is lost, why, what's being done, what's in the way ---------- */
 const CAUSES=[['cut','Cut off or barred','#8a1f15'],['starved','Waiting on an input','#d07a3a'],['issue','Plant problems','#a06030'],['ramp','Plants still ramping','#c9a227'],['cap','Not enough capacity','#5a4e38']];
 // split a node's shortfall into causes, in the order a planner would check them
@@ -2766,26 +2770,26 @@ function raisePanel(id,P){
   const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>w>=END_W?'after 2037':dateOf(w).getFullYear();
   let head,status,pool;
   if(isL){const o=S._R.out[l];head=`Raise output of ${LINES[l].n}`;
-    status=o.bott?`<span class="redt">Running at ${pct(o.n/Math.max(o.cap,1e-9))} of capacity: ${ND[o.bott].n} is short</span>`:`<span class="okt">Running at capacity</span>: more output needs more line capacity`;
+    status=o.bott?`<span class="redt">Running at ${pct(o.n/Math.max(o.cap,1e-9))} of capacity. ${ND[o.bott].n} is short.</span>`:`<span class="okt">Running at capacity.</span> More output needs more line capacity.`;
     pool=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint')}
   else{const n=ND[id],p=P[id],short=Math.max(0,p.need-p.avail0);head=`Increase supply of ${n.n}`;
-    status=p.need<1e-6?'Nothing you build uses it right now':short>1e-9?`<span class="redt">Short by ${pct(short/p.need)} of what your lines need</span>`:`<span class="okt">Covered (${pct(Math.min(p.cover,9.99))} of need)</span>: more supply is margin against cuts`;
+    status=p.need<1e-6?'Nothing you build uses it right now.':short>1e-9?`<span class="redt">Short by ${pct(short/p.need)} of what your lines need.</span>`:`<span class="okt">Covered (${pct(Math.min(p.cover,9.99))} of need).</span> More supply adds margin against cuts.`;
     pool=leversFor(id).filter(d=>!d.kind||d.kind==='cap'||d.kind==='mod'||d.ally)}
   const under=S.projects.filter(q=>isL?PD[q.def].t.line===l:PD[q.def].t.node===id);
   const opts=pool.filter(d=>!under.some(q=>q.def===d.id)&&!leverDone(d)).sort((a,b)=>projGain(b)-projGain(a)).slice(0,3);
-  const gapT=(h,by)=>!h?'never':h.w<=S.w?'now':`${dateOf(h.w).getFullYear()}`;
+  const Y=h=>dateOf(h.w).getFullYear(),gapS=(h0,h1)=>!h1?'Not enough on its own to close the gap by 2037.':h1.w<=S.w?'The gap is already closed.':!h0?`Closes the gap in <b>${Y(h1)}</b>; without it, not by 2037.`:h1.w<h0.w-26?`Closes the gap in <b>${Y(h1)}</b> instead of ${Y(h0)}.`:`The gap still closes in ${Y(h0)}.`;
   const card=d=>{const v=previewOf(d,ctDefault(d)),best=v.rows.filter(r=>r.d>LINES[r.c].k*.002).sort((a,b)=>b.d/LINES[b.c].k-a.d/LINES[a.c].k)[0],held=v.rows.find(r=>r.chain);
     const gain=isL?`+${fmtN(d.gain*LINES[l].k)} ${LINES[l].u}/yr`:leverEffect(d,P);
-    const impact=best?`<span class="okt">${LINES[best.c].n} +${fmtN(best.d)}/yr</span> · gap ${gapT(best.h0)} → <b>${gapT(best.h1)}</b>`:held?`<span class="redt">No end-item gain yet: ${held.chain.map(i=>ND[i].n).join(' ← ')} holds it back</span>`:'<span class="mini">No end-item gain yet</span>';
+    const impact=best?`${isL?'':`<span class="okt">${LINES[best.c].n} +${fmtN(best.d)}/yr.</span> `}${gapS(best.h0,best.h1)}`:held?`<span class="redt">No end-item gain yet: ${held.chain.map(i=>ND[i].n).join(' ← ')} holds it back.</span>`:'<span class="mini">No end-item gain yet.</span>';
     return `<div class="rcard"><div class="rk">${d.ally?'🤝 Allied supply':KIND_L[d.kind||'cap']}</div><b>${d.n}</b><div>${gain}</div><div class="mini">${impact}</div>
-      <div class="rmeta">${money(projCost(d))} · ${v.isPlant?'output':'online'} ${yr(v.wOn)}${v.isPlant&&v.wFull<END_W?`, full rate ${yr(v.wFull)}`:''}</div>
+      <div class="rmeta">${money(projCost(d))} · ${v.isPlant?'First output':'Online'} ${yr(v.wOn)}${v.isPlant&&v.wFull<END_W?`, full rate ${yr(v.wFull)}`:''}</div>
       ${d.req&&!passed(d.req)?`<span class="mini redt">🔒 Needs ${rname(RD[d.req])}</span>`:`<button class="pbtn primary" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch →</button>`}</div>`};
   const quick=isL?`<button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'⏩ Stop extra shifts':`⏩ Fund extra shifts · ${money(SHIFT_C)}/yr`}</button>`
-    :`${S.nodes[id].base>0?`<button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':`⏩ Supplier shifts · ${money(NSHIFT_C)}/yr`}</button>`:''}${spotKind(id)?`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?`Buy more (${Math.max(...spotAct(id).map(x=>x.left))} wk left)`:SPOT_L[spotKind(id)][1]} · ${money(spotCost(id))}</button>`:`<span class="mini">No quick fix: nothing to buy, only capacity to build.</span>`}${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'🏭 Release DPA priority':'🏭 DPA priority · 5 PC'}</button>`:''}`;
+    :`${S.nodes[id].base>0?`<button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':`⏩ Supplier shifts · ${money(NSHIFT_C)}/yr`}</button>`:''}${spotKind(id)?`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?`Buy more (${Math.max(...spotAct(id).map(x=>x.left))} wk left)`:SPOT_L[spotKind(id)][1]} · ${money(spotCost(id))}</button>`:`<span class="mini">Nothing to buy on the market; capacity has to be built.</span>`}${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'🏭 Release DPA priority':'🏭 DPA priority · 5 PC'}</button>`:''}`;
   return `<div class="raise"><div class="raiseh"><b>⬆ ${head}</b><span class="dsp"></span><span class="mini">${status}</span></div>
     ${under.length?`<div class="mini" style="margin:2px 0 4px">Under way: ${under.map(q=>{const [t,c]=progStatus(q,true);return `<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t.replace(/^\S+\s/,'')}</span>`}).join(' · ')}</div>`:''}
     ${opts.length?`<div class="rcards">${opts.map(card).join('')}</div>`:'<p class="mini">Every build option is already under way or done.</p>'}
-    <div class="rquick"><span class="mini">Now:</span>${quick}<span class="dsp"></span><span class="linkn mini" data-a="aotog">${S.aoOpen?'Hide options ▴':'All options ▾'}</span></div></div>`}
+    <div class="rquick"><span class="mini">Quick fixes:</span>${quick}<span class="dsp"></span><span class="linkn mini" data-a="aotog">${S.aoOpen?'Hide options ▴':'All options ▾'}</span></div></div>`}
 /* ---------- permits: the docket a program has to clear, and the ones a plant has to keep ---------- */
 // ph 'b' = before construction (the Siting & Permitting stage); 'o' = to operate, renewed for the life of the plant
 const PERMITS=[
@@ -2872,9 +2876,9 @@ function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.le
 function leversFor(id){return PROJECTS.filter(d=>facOk(d)&&d.t.node===id)}
 const KIND_L={cap:'Build capacity',mod:'Strengthen existing plants',power:'Strengthen existing plants',test:'Qualification & testing',know:'Workforce',ally:'Allied supply'};
 function leverEffect(d,P){const id=d.t.node,p=P[id],s=S.nodes[id],den=Math.max(p.need,s.scale*.5);
-  if(d.ally)return `+${pct(projGain(d)/den)} of need from allies${d.adv>.05?` · ${pct(d.adv)} PRC upstream`:''}`;
-  if(!d.kind||d.kind==='cap')return `+${pct(projGain(d)/den)} of need, domestic (then ramp-up)`;
-  return {mod:'+15% existing domestic capacity · +5 know-how',know:'+20 know-how · labor obstacles −40% · plant issues −30%',power:'Immune to grid curtailment · power obstacles −70% · +5% capacity',test:'Qualification obstacles −50% for this node\'s projects · +5 know-how'}[d.kind]}
+  if(d.ally)return `+${pct(projGain(d)/den)} of need from allies${d.adv>.05?`, ${pct(d.adv)} of it still Chinese upstream`:''}`;
+  if(!d.kind||d.kind==='cap')return `+${pct(projGain(d)/den)} of need from a new domestic plant, once ramped up`;
+  return {mod:'+15% on existing domestic capacity, +5 know-how',know:'+20 know-how; labor obstacles −40%, plant issues −30%',power:'Immune to grid curtailment; power obstacles −70%, +5% capacity',test:'Qualification obstacles −50% for projects here, +5 know-how'}[d.kind]}
 function leverDone(d){const f=S.nflags[d.t.node]||{};return d.kind&&d.kind!=='cap'&&f[d.kind]}
 /* ---------- supply web: one item's inputs, where each comes from, and what the item feeds; a local slice of the Flows diagram ---------- */
 const SRC_C={dom:'#5f9e4a',ally:'#5f8fc4',spot:'#8a7cc0',prc:'#b0453a'},ST_C={ok:'#6a8f5a',idle:'#9a8f70',tight:'#c9a227',short:'#c0503f',cut:'#8a1f15'};
@@ -3013,7 +3017,7 @@ function dossierHTML(id,P){
   }
   {const i=main.indexOf('<!--AO-->'),j=main.indexOf('<!--/AO-->');if(i>=0&&j>i){const sec=main.slice(i+9,j),n=(sec.match(/data-a="launch"/g)||[]).length,open=!!S.aoOpen;
     main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',makersHTML(id,S._R.P)+`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} programs`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
-  return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${main}</div></div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
+  return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${pinTop(main)}</div></div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
 }
 
 /* =====================================================================
