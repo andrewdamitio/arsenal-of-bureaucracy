@@ -507,6 +507,13 @@ body{background:
 .paper .sc-opt{background:#f3ebd6;border:1px solid #b8a57a;color:#2b241a;padding:12px 14px;gap:5px;box-shadow:inset 0 3px 0 #8a6a1f}.paper .sc-opt:hover{background:#fbf6e8;border-color:#6b5a35}
 .paper .sc-opt b{font:400 19px var(--sten);letter-spacing:.03em;text-transform:none;color:#2b241a}.paper .sc-ic{font-size:26px}.paper .sc-dl{color:#8a6a1f}.paper .sc-th{font-size:12px;color:#4a3d22;line-height:1.4}.paper .sc-m{color:#3a3020;font-size:12.5px;border-top:1px dotted #b8a57a;padding-top:5px;width:100%}
 @media(max-width:1000px){.sc-modal .sc-opts{grid-template-columns:1fr}}.sc-why td{font-size:11.5px;color:#7a4a10;padding-top:0;border-top:0}.sc-ph .mini{max-width:62%}
+/* limit ladder */
+.lad{display:flex;flex-wrap:wrap;align-items:center;gap:4px 3px;font-size:11.5px}.lad-h{font:600 11px var(--disp);letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-right:4px}
+.lad-s{display:inline-flex;align-items:baseline;gap:6px;padding:2px 8px;border:1px solid #4a4532;background:#1b1d16;cursor:pointer;border-radius:2px}.lad-s:hover{border-color:#c9a227}
+.lad-s.bind{border-color:#d0503f;background:#3a1d18;box-shadow:inset 3px 0 0 #d0503f}.lad-s b{font:600 13.5px var(--disp);color:var(--ink);letter-spacing:.02em}.lad-s i{font:700 13.5px var(--disp);font-style:normal;color:#d9a441}.lad-s.bind i{color:#ff9a86}
+.lad-s em{font:600 12px var(--disp);font-style:normal;letter-spacing:.03em}.lad em.ok{color:#8fd07a}.lad em.okish{color:#8a8672}.paper .lad em.okish{color:#6b5a35}.lad em.tmp{color:#c9b98f}.lad em.none{color:#e0604c}.lad .ar{color:#6b5a35;font-size:13px}
+.paper .lad-s,.vpaper .lad-s{background:#f3ebd6;border-color:#b8a57a}.paper .lad-s b{color:#2b241a}.paper .lad-s i{color:#8a6a1f}.paper .lad-s.bind{background:#f6dcd4;border-color:#b0453a}.paper .lad-s.bind i{color:#a3261c}
+.paper .lad em.ok{color:#2f6a24}.paper .lad em.tmp{color:#6b5a35}.paper .lad em.none{color:#a3261c}.paper .lad-h{color:#6b5a35}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1844,9 +1851,9 @@ function production(commit){
     p.starvedBy=(li&&lim<p.dom-1e-6&&p.cover<.999)?li:null}
   const out={};
   for(const lid of S.order){const L=LINES[lid],capL=lineCap(lid);let n=capL,bott=null;const memo={};
-    for(const i of L.in){const v=avail(i,memo);if(v<n-1e-9){n=v;bott=i}}n=Math.max(0,n);
+    const vs={};for(const i of L.in){const v=avail(i,memo);vs[i]=v;if(v<n-1e-9){n=v;bott=i}}n=Math.max(0,n);
     for(const i of L.in)take(i,n);
-    out[lid]={n,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[]}}
+    out[lid]={n,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[],lims:L.in.map(i=>({id:i,f:capL>1e-9?vs[i]/capL:0}))}}
   // PRC exposure (bottom-up)
   const expo={};
   for(const id of ORDER){const p=P[id];let inE=0;const ins=ND[id].in;if(ins.length)inE=ins.reduce((a,i)=>a+expo[i],0)/ins.length;
@@ -2127,6 +2134,13 @@ const slotsUsed=()=>S.projects.filter(p=>!p.inh).length;
 function canStart(def,cost=projCost(def)){if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&slotsUsed()<S.slots&&S.budget>=cost-1e-9}
 function projName(p){return p.nm||PD[p.def].n}
 function projGain(def,gm=1){return def.t.node?def.gain*S.nodes[def.t.node].scale*gm:def.gain*gm}
+// which lines a fix to this target would lift now, and which are held by something else first
+function launchVerdict(def){const R=S._R||production(false),tgt=def.t.node||'L:'+def.t.line,hits=[],later=[];
+  for(const c of S.order){const o=R.out[c],uses=def.t.line?def.t.line===c:(o.lims||[]).some(x=>chainOf(R.P,x.id).includes(tgt));if(!uses)continue;
+    const lim=limOf(o,c),binds=def.t.line?lim==='L:'+c:o.bott&&o.chain.includes(tgt);(binds?hits:later).push({c,lim})}
+  if(hits.length)return {ok:1,t:`✓ Aims at the current limit on ${hits.map(x=>LINES[x.c].n).join(', ')}`};
+  if(later.length){const x=later[0];return {ok:0,t:`Not the limit yet: ${LINES[x.c].n} ${later.length>1?`and ${later.length-1} more `:''}held by ${limName(x.lim)} first`}}
+  return def.t.node&&endItemsOf(def.t.node).length?{ok:0,t:'Not limiting any line right now: this adds margin against future cuts'}:null}
 function startProject(id,ct){
   const def=PD[id],c=ct?ctCost(def,ct):projCost(def);if(!canStart(def,c))return;
   spendB(c,'Programs');S.built[id]=(S.built[id]||0)+1;
@@ -2134,6 +2148,7 @@ function startProject(id,ct){
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
   log(`Program office stood up: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
+  if(!S.histMode){const v=launchVerdict(def);if(v)toast(`🏗 <b>Launched: ${def.n}</b><br><span class="dim">${v.t}</span>`,v.ok?'good':'')}
 }
 const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x};
 // start work before the price is settled: contracting ends in ~4 weeks, the government carries the cost risk
@@ -2896,7 +2911,7 @@ function dossierHTML(id,P){
     const projs=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint');const lp=linePipe(l),pj0=project(Object.fromEntries(Object.keys(LINES).map(c=>[c,S._R.out[c].yr]))),rq=reqRate(l,pj0);
     main=`<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span>${back}<button class="pbtn sm" data-a="flow" data-f="L:${l}">⇶ Flows</button><button class="pbtn sm" data-a="arsenal">📈 Arsenal</button></div>
      ${raisePanel(id,P)}<div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
-     <div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
+     <div class="dsec"><h4>What limits output</h4>${ladder(l,S._R,6)}</div><div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
      <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
      <div class="dsec" id="allopts"><h4>All ways to raise output</h4>${constraintStrip(Math.min(...projs.filter(d=>!d.req||passed(d.req)).map(projCost)))}<table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`).join('')}
       ${S.ready[l]!=null?`<tr><td><b>🔧 Spare-parts priority</b><div class="mini">See Readiness below.</div></td><td>−15% new output, + readiness</td><td>—</td><td>now</td><td>${S.spares[l]?'on':'off'}</td></tr>`:''}
@@ -3729,6 +3744,19 @@ function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=
   if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
   const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
   return `<div class="rc-spw"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Output per year since 2025: you (blue) and ${RV().n} (red)</title><polyline points="${pl(2)}" fill="none" stroke="#b0453a" stroke-width="1.5"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span>⟳ output per year since 2025</span></div>`}
+// what is being done about a limit: fixes under way anywhere along its chain, or short-term measures
+function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
+  if(id.startsWith('L:')){const ps=S.projects.filter(q=>PD[q.def].t.line===c),pl=S.plants.filter(p=>p.kind==='line'&&p.target===c&&!p.full);
+    if(ps.length)return {cls:'ok',t:`🏗 ${yr(Math.min(...ps.map(q=>Math.round(S.w+remW(q)*sl))))}`,tip:ps.map(projName).join(', ')};
+    if(pl.length)return {cls:'ok',t:`🏭 ramping`,tip:pl.map(p=>p.nm).join(', ')};return S.shifts[c]?{cls:'tmp',t:'⏩ shifts'}:{cls:'none',t:'✗ no fix'}}
+  const ch=chainOf(R.P,id),ps=S.projects.filter(q=>ch.includes(PD[q.def].t.node)&&(projGain(PD[q.def])>0||!PD[q.def].kind||PD[q.def].kind==='cap')),pl=S.plants.filter(p=>ch.includes(p.target)&&!p.full);
+  if(ps.length)return {cls:'ok',t:`🏗 ${yr(Math.min(...ps.map(q=>Math.round(S.w+remW(q)*sl))))}`,tip:ps.map(projName).join(', ')};
+  if(pl.length)return {cls:'ok',t:'🏭 ramping',tip:pl.map(p=>p.nm).join(', ')};
+  const tmp=[ch.some(n=>S.spot.some(x=>x.id===n))?'💸':'',ch.some(n=>nshiftOn(n))?'⏩':''].join('');return tmp?{cls:'tmp',t:tmp+' short-term'}:{cls:'none',t:'✗ no fix'}}
+function ladder(c,R,max=4){const o=R.out[c],steps=[...(o.lims||[]),{id:'L:'+c,f:1}].sort((a,b)=>a.f-b.f);
+  const shown=steps.filter((x,k)=>x.f<=1+1e-9||k===steps.findIndex(y=>y.f>1+1e-9)).slice(0,max);
+  return `<div class="lad"><span class="lad-h" data-tip="How much of the line's capacity each input allows, lowest first. Output stops at the first one; fixing it lifts output only to the next.">Limits, lowest first</span>${shown.map((x,k)=>{const isL=x.id.startsWith('L:'),st0=fixStat(x.id,c,R),st=x.f>1+1e-9&&st0.cls==='none'?{cls:'okish',t:'✓ enough'}:st0,ch=isL?[]:chainOf(R.P,x.id);
+    return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?'Line capacity':ND[x.id].n}</b><br>Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?'Line capacity':ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em></span>`}).join('')}</div>`}
 function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
   const matched=cs.filter(c=>out[c].yr>=cnOut(c)*.995).length;
@@ -3755,7 +3783,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
        <div class="rc-rb"><span>${F().flag} You</span><div class="nb"><i style="width:${B(o.capYr)}%;background:#34404c"></i><i style="width:${B(o.yr)}%;background:#5f8fc4"></i></div><span class="v"><b>${fmtN(o.yr)}</b>/yr${o.capYr>o.yr*1.02?` <span class="dim">of ${fmtN(o.capYr)}</span>`:''}</span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
        ${raceSpark(c)}</div>
-      <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${held}${cutT}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
+      <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${ladder(c,R)}${cutT}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
       <div class="rc-rwork">${work}${past.length?` <span class="rc-rclr">${past.map(x=>`✓ ${limName(x.id)} ${yr(x.w1)}`).join(' · ')}</span>`:''}</div></div>`}).join('');
   return h}
 function renderGame(){
