@@ -524,7 +524,8 @@ body{background:
 .rcpt-b{display:flex;gap:6px;margin-top:8px}
 @keyframes rcin{0%{opacity:0;transform:translateY(-14px) scale(.97)}100%{opacity:1;transform:none}}
 /* sufficiency */
-.rc-rb .nb .rc-req{position:absolute;top:-4px;bottom:-4px;width:3px;background:#e8c14a;box-shadow:0 0 0 1px #000a;z-index:1}.rc-al{color:#a9c7e6}
+.rc-rb .nb .rc-req{position:absolute;top:-4px;bottom:-4px;width:3px;background:#e8c14a;box-shadow:0 0 0 1px #000a;z-index:1}.rc-al{color:#6fc4ae}.nb i.rc-up,.rc-leg i.rc-up{background:repeating-linear-gradient(135deg,#a9c7e6 0 3px,#7fa3c8 3px 5px);opacity:.85}
+.rc-leg{display:flex;flex-wrap:wrap;gap:14px;margin:2px 8px 4px;font:600 11px var(--disp);letter-spacing:.06em;text-transform:uppercase;color:#a8a48e}.rc-leg span{display:flex;align-items:center;gap:5px}.rc-leg i{display:inline-block;width:14px;height:9px}
 /* streamlining */
 .chain .ch1{display:flex;align-items:center;gap:6px}.chain .ch1 b{font:600 14.5px var(--disp);color:var(--ink);letter-spacing:.02em}.chain .chp{margin-left:auto;font:700 14px var(--disp);color:#e0604c}
 .chain .ch2{font-size:11.5px;color:#a8a48e;margin:1px 0 0 22px}.chain .ch2 .linkn{color:#e8b8a8}
@@ -3881,10 +3882,12 @@ function reqOut(c,w=S.w){const a=AL().lines[c],base=REQ_US[c].v+(a?.tgt||0);retu
 const suffLine=(c,us,w=S.w)=>Math.min(1,(us+allyOut(c,w))/Math.max(reqOut(c,w),1e-9));
 // the headline: (your output + allied output) ÷ requirement, line by line, capped at 100%, averaged
 function raceIdx(out,w=S.w,get=c=>out[c].yr){const cs=Object.keys(LINES);return cs.reduce((a,c)=>a+suffLine(c,get(c),w),0)/cs.length}
+function onOrder(c){const k=LINES[c].k;let v=0;for(const q of S.projects){const d=PD[q.def];if(!d.ally&&d.t.line===c)v+=projGain(d,q.gm)*k}
+  for(const pl of S.plants)if(pl.kind==='line'&&pl.target===c)v+=pl.gain*Math.max(0,1-pl.yield)*k;return v}
 function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c]+allyOut(c,h.w),reqOut(c,h.w)]);pts.push([S.w,(S._R?.out[c].yr??0)+allyOut(c),reqOut(c)]);
   if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
   const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
-  return `<div class="rc-spw"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Since 2025: you plus allies (blue) against the requirement (gold)</title><polyline points="${pl(2)}" fill="none" stroke="#d9a441" stroke-width="1.5" stroke-dasharray="3 2"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span>⟳ you + allies vs. requirement</span></div>`}
+  return `<div class="rc-spw"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Since 2025: you plus allies against the requirement (gold)</title><polyline points="${pl(2)}" fill="none" stroke="#d9a441" stroke-width="1.5" stroke-dasharray="3 2"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span>⟳ you + allies vs. requirement</span></div>`}
 function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f,A=AL();
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
   const enough=cs.filter(c=>suffLine(c,out[c].yr)>=.999).length;
@@ -3895,8 +3898,9 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
    <div><b>${enough}/${cs.length}</b><span>lines sufficient</span></div>
    <div data-tip="Average growth in ${RV().n}'s output over the last year. As it grows, so does what the plan requires."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth · raises the bar</span></div>
    <div data-tip="Each time a line's limit stopped binding, output rose, and the next limit took over."><b>${cleared}</b><span>bottlenecks cleared</span></div></div>`;
-  h+=S.order.map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOut(c),suf=Math.min(1,(us+al)/Math.max(rq,1e-9)),cn=cnOut(c),dv=allyDivert(c),a=A.lines[c];
-    const mx=Math.max(rq,us+al,cn,1e-9)*1.04,B=v=>Math.min(100,v/mx*100);
+  h+=`<div class="rc-leg"><span><i style="background:#5f8fc4"></i>You</span><span><i class="rc-up"></i>Yours on order</span><span><i style="background:#4fa894"></i>${A.short||'Allies'}</span><span><i style="background:#b0453a"></i>${RV().n}</span><span><i style="background:#e8c14a;width:3px"></i>Requirement</span></div>`;
+h+=S.order.map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOut(c),suf=Math.min(1,(us+al)/Math.max(rq,1e-9)),cn=cnOut(c),dv=allyDivert(c),a=A.lines[c],up=onOrder(c);
+    const mx=Math.max(rq,us+al+up,cn,1e-9)*1.04,B=v=>Math.min(100,v/mx*100);
     const lim=limOf(o,c),isL=lim.startsWith('L:'),cur=S.lim?.[c];
     const fx=S.projects.filter(q=>isL?PD[q.def].t.line===c:PD[q.def].t.node===lim),rp=S.plants.filter(pl=>!pl.full&&(isL?pl.kind==='line'&&pl.target===c:pl.target===lim));
     const gap=`<span class="${suf>=.999?'green':suf>=.6?'gold':'red'}" data-tip="${tipQ(`<b>Requirement ${fmtN(rq)}/yr</b><br>US: ${REQ_US[c].src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${a?`<br>${A.n}: ${fmtN(a.tgt)}/yr by 2030${a.est?' (estimate)':''}`:''}${rq>REQ_US[c].v+(a?.tgt||0)+1e-6?`<br>Raised ${pct(rq/(REQ_US[c].v+(a?.tgt||0))-1)} as ${RV().n} out-builds its 2027 level`:''}`)}"><b>${pct(suf)}</b> of requirement</span>`;
@@ -3909,7 +3913,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
     const alTip=a?tipQ(`<b>${A.n}</b><br>${fmtN(a.out)}/yr in Jan 2027, ${fmtN(a.tgt)}/yr planned by 2030${a.est?' (estimate)':''}<br>${a.src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${dv>.005?`<br><span style='color:#e8a090'>−${pct(dv)}: your emergency buys outrun their suppliers’ spare capacity</span>`:''}${upOf('L:'+c).size&&[...upOf('L:'+c)].some(id=>allyGrowth(id)>.01)?`<br><span style='color:#a8d48e'>Their suppliers are expanding: up to ${pct(Math.max(...[...upOf('L:'+c)].map(allyGrowth)))} of the squeeze closed</span>`:''}`):'';
     return `<div class="rc-rrow trc" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b></span>${gap}</div>
       <div class="rc-rgrid"><div>
-       <div class="rc-rb"><span>${F().flag} You + allies</span><div class="nb"><i style="width:${B(us)}%;background:#5f8fc4"></i><i style="left:${B(us)}%;width:${B(al)}%;background:#a9c7e6" data-tip="${alTip}"></i><span class="mk rc-req" style="left:${B(rq).toFixed(1)}%" data-tip="Requirement: ${fmtN(rq)}/yr"></span></div><span class="v"><b>${fmtN(us)}</b> + <span data-tip="${alTip}" class="rc-al">${fmtN(al)}</span>${dv>.005?` <span class="red" data-tip="${alTip}">−${pct(dv)}</span>`:''} <span class="dim">/ ${fmtN(rq)}</span></span></div>
+       <div class="rc-rb"><span>${F().flag} You + allies</span><div class="nb"><i style="width:${B(us)}%;background:#5f8fc4" data-tip="You: ${fmtN(us)}/yr"></i><i style="left:${B(us)}%;width:${B(al)}%;background:#4fa894" data-tip="${alTip}"></i>${up>.5?`<i class="rc-up" style="left:${B(us+al)}%;width:${B(up)}%" data-tip="${tipQ(`<b>Yours on order: +${fmtN(up)}/yr</b><br>Line capacity from plants under construction and plants still ramping up. Upstream limits can still hold it back.`)}"></i>`:''}<span class="mk rc-req" style="left:${B(rq).toFixed(1)}%" data-tip="Requirement: ${fmtN(rq)}/yr"></span></div><span class="v"><b>${fmtN(us)}</b> + <span data-tip="${alTip}" class="rc-al">${fmtN(al)}</span>${dv>.005?` <span class="red" data-tip="${alTip}">−${pct(dv)}</span>`:''} <span class="dim">/ ${fmtN(rq)}</span></span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
        ${raceSpark(c)}</div>
       <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${ladder(c,R,3)}${cutT}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
