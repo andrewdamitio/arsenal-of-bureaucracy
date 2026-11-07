@@ -486,6 +486,7 @@ body{background:
 .rec-lines td{font-size:13px}.rec-lines tr.sub th{font-size:10.5px}
 .rec-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:10px}
 .rec-bar{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;font-size:12px;margin:3px 0}.rec-bar .nb{height:10px;margin:0;background:#e6dbbd;border-color:#cbbd95}.rec-bar b{text-align:right;font-family:var(--disp);font-size:14px}
+.ucab{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:8px 10px;background:#f7f0dd;border:1px solid #c8b48a;box-shadow:inset 4px 0 0 #b8860b}.ucab .pbtn{flex:none}
 .rec-law{font-size:12px;padding:3px 0;border-bottom:1px dotted #cbbd95}
 @media(max-width:1300px){.rec-tiles{grid-template-columns:repeat(2,1fr)}.rec-charts,.rec-cols{grid-template-columns:1fr}}
 /* scenarios */
@@ -1531,6 +1532,12 @@ const CD=Object.fromEntries(CARVES.map(x=>[x.id,x]));
 const MOB=[{n:'Normal operations',d:'',line:1,dom:1,upkeep:0,strain:0,urg:0}]; // baseline only; surge is bought line by line (SHIFT)
 // funded extra shifts: overtime and a second or third shift at an existing line, paid from the budget
 const SHIFT_M=1.15,SHIFT_C=.15;
+// overtime and another shift at existing supplier plants: +15% of existing domestic capacity, phased in over ~13 weeks of hiring
+const NSHIFT_M=.15,NSHIFT_C=.08,NSHIFT_RAMP=13;
+const nshiftOn=id=>!!S.nshift?.[id],nshiftF=id=>nshiftOn(id)?1+NSHIFT_M*Math.min(1,(S.w-S.nshift[id].since)/NSHIFT_RAMP):1;
+function toggleNShift(id){S.nshift=S.nshift||{};if(S.nshift[id]){delete S.nshift[id];log(`⏩ Extra shifts end at ${ND[id].n.toLowerCase()} suppliers.`);toast(`⏩ <b>Supplier shifts ended</b><br><span class="dim">${ND[id].n}</span>`);return}
+  if(!(S.nodes[id].base>0)||S.budget<NSHIFT_C/4)return;S.nshift[id]={since:S.w};log(`⏩ Overtime and extra shifts funded at ${ND[id].n.toLowerCase()} suppliers (${money(NSHIFT_C)}/yr).`,'ev');
+  toast(`⏩ <b>Supplier shifts funded: ${ND[id].n}</b><br><span class="dim">${money(NSHIFT_C)}/yr · +15% of existing capacity as workers are hired (~3 months)</span>`,'good')}
 function toggleShift(lid){if(S.shifts[lid]){S.shifts[lid]=false;log(`⏩ Extra shifts end at the ${LINES[lid].n.toLowerCase()} lines.`);toast(`⏩ <b>Extra shifts ended</b><br><span class="dim">${LINES[lid].n}</span>`);return}
   if(S.budget<SHIFT_C/4)return;S.shifts[lid]=true;log(`⏩ Extra shifts funded at the ${LINES[lid].n.toLowerCase()} lines (${money(SHIFT_C)}/yr).`,'ev');toast(`⏩ <b>Extra shifts funded: ${LINES[lid].n}</b><br><span class="dim">${money(SHIFT_C)}/yr from the budget · +${Math.round((SHIFT_M-1)*100)}% line capacity</span>`,'good')}
 const DFARS_NODES=['ndpr','hree','magnets','tungsten','wha','tantalum','tantcap','bearings'];
@@ -1806,7 +1813,7 @@ function nodeSupply(id){
   const s=S.nodes[id],c=NO_PRC?0:cutOf(id),mob=MOB[S.mob];
   const nm=tm('node',id);
   const onsh=S.fac==='US'&&DRONE_PARTS.includes(id)?1+.2*(S.icOnshore||0):1; // onshored drone supply chain: more US motors, cells, boards
-  let dom=s.base*tm('cap',id)*nm*mob.dom*onsh,domPrc=0,name=s.base,ramp=0;
+  let dom=s.base*tm('cap',id)*nm*mob.dom*onsh*nshiftF(id),domPrc=0,name=s.base,ramp=0;
   for(const pl of plantsFor('node',id)){const raw=pl.gain*pl.yield*plantMult(pl)*mob.dom*nm;dom+=raw*(1-pl.adv*(1-c));domPrc+=raw*pl.adv*c;name+=pl.gain;if(!pl.full)ramp+=pl.gain*(1-pl.yield)}
   let allyMult=tm('ally',id);if(id==='shipyard'&&carveOn('cvJones'))allyMult*=1;
   let allyAmt=s.ally.amt+(id==='shipyard'&&carveOn('cvJones')?s.scale*.25:0);
@@ -2129,10 +2136,18 @@ function startProject(id,ct){
   log(`Program office stood up: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
 }
 const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x};
+// start work before the price is settled: contracting ends in ~4 weeks, the government carries the cost risk
+const ucaCost=p=>projCost(PD[p.def])*.1;
+function ucaOK(p){const def=PD[p.def];return !def.ally&&STAGES[p.stage]==='contract'&&!p.uca&&p.dur[1]-p.prog>6&&!p.obs.length}
+function doUCA(uid){const p=S.projects.find(x=>x.uid==uid);if(!p||!ucaOK(p))return;const c=ucaCost(p);if(S.budget<c)return;
+  const was=Math.round(p.dur[1]-p.prog);p.uca=1;p.dur[1]=Math.min(p.dur[1],Math.ceil(p.prog)+4);spendB(c,'Contract premiums');S.pages+=40;spent('$',c);
+  log(`⚡ Undefinitized contract action: ${projName(p)} starts work now; the price is settled later (${money(c)}).`,'ev');
+  toast(`⚡ <b>Work starts now: ${projName(p)}</b><br><span class="dim">Contracting ends in ~4 weeks instead of ${was} · −${money(c)}</span>`,'good')}
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
   pmark(p,{st:p.stage});
+  if(p.uca&&STAGES[p.stage]==='build'&&!S.histMode&&rand()<.25)spawnObs(p,'costOverrun',true);
   p.prog=0;p.sched=[];const st=STAGES[p.stage],D=p.dur[p.stage],def=PD[p.def];
   if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(c>0&&rand()<c)p.sched.push({id:o.id,at:Math.floor(rand()*D)})}
   p.sched.sort((a,b)=>a.at-b.at);
@@ -2246,7 +2261,7 @@ function plantsTick(){
     pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*RAMP(kn)*(pl.rampM||1));
     S.know[k]=Math.min(95,kn+(pl.full?.01:.05));
     if(!pl.full&&pl.yield>=.9){pl.full=true;log(`🏭 ${pl.nm} reaches full-rate production after ${yrs(S.w-pl.start)} of ramp-up.`,'good')}
-    let ch=.013*(1.3-kn/100)*(pl.full?.35:1);if((S.nflags[k]||{}).know)ch*=.7;if(pl.kind==='line'&&S.shifts?.[k])ch*=1.3;if(passed('workforce')||carveOn('cvHire'))ch*=.85;
+    let ch=.013*(1.3-kn/100)*(pl.full?.35:1);if((S.nflags[k]||{}).know)ch*=.7;if((pl.kind==='line'&&S.shifts?.[k])||S.nshift?.[k])ch*=1.3;if(passed('workforce')||carveOn('cvHire'))ch*=.85;
     if(!S.histMode&&rand()<ch){let pool=OPS.filter(o=>opsMatch(o,pl));if(carveOn('cvQual'))pool=pool.concat(pool.filter(o=>o.id==='quality'));if(pl.full)pool=pool.filter(o=>o.id!=='zero');
       if(pool.length){const o=pool[Math.floor(rand()*pool.length)];pl.issue={id:o.id,wait:0};S.ledger[o.layer].n++;log(`⚠ ${pl.nm}: ${o.n}`,'bad');notify(`⚠ <b>${o.n}</b><br><span class="dim">${pl.nm}</span>`,'',{a:'prog',u:pl.uid})}}
   }
@@ -2347,6 +2362,7 @@ function homeTick(lastOut){
   if(S.strain>=80&&!S.strainHit){S.strainHit=true;queueEvent('strainCrisis')}if(S.strain<60)S.strainHit=false;
   icTick();
   if(S.ne&&(S.w-S.ne.since)%52===0&&S.w>S.ne.since){if(S.pc>=NE_RENEW){S.pc-=NE_RENEW;log(`🚨 National emergency continued for another year (${NE_RENEW} PC).`)}else endNE('lapses: no political capital to continue it')}
+  for(const id in S.nshift||{}){if(S.budget>=NSHIFT_C/52)spendB(NSHIFT_C/52,'Extra shifts');else{delete S.nshift[id];log(`⏩ Extra shifts at ${ND[id].n.toLowerCase()} suppliers end: the budget ran out.`,'bad')}}
   for(const lid in S.shifts)if(S.shifts[lid]){if(S.budget>=SHIFT_C/52)spendB(SHIFT_C/52,'Extra shifts');else{S.shifts[lid]=false;log(`⏩ Extra shifts at the ${LINES[lid].n.toLowerCase()} lines end: the budget ran out.`,'bad')}}
   S.spot.forEach(x=>x.left--);S.spot=S.spot.filter(x=>x.left>0);
   for(const lid in S.fw){const f=S.fw[lid];if(S.w>=f.due){const got=lastOut[lid]?.n||0,r=got/f.target;S.queue.push({sys:'fw',lid,r});S.pc+=r>=.7?10:-20;if(r<.7)S.pc+=0;delete S.fw[lid]}}
@@ -2589,6 +2605,7 @@ function progHTML(uid){
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}</div>
    <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
    <div class="dsec"><h4>Permits <span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
+  if(live&&ucaOK(p)){const rem=Math.round(p.dur[1]-p.prog);h=h.replace('<div class="dsec"><h4>Plan vs. actual</h4>',`<div class="dsec"><h4>Speed up contracting</h4><div class="ucab"><div><b>⚡ Undefinitized contract action</b><div class="mini">Let the contractor start now and settle the price later, as the Army did to replenish GMLRS and NASAMS. Contracting ends in about 4 weeks instead of ${rem}. Until the price is set the government carries the cost risk: the DoD Inspector General found $1.2 billion in profit never adjusted down.[c:ucaig]</div><div class="mini" style="margin-top:3px">Costs 10% of the price now, with a 1-in-4 chance of a cost overrun when construction starts.</div></div><button class="pbtn primary" data-a="uca" data-u="${p.uid}">Issue · ${money(ucaCost(p))}</button></div></div>`+'<div class="dsec"><h4>Plan vs. actual</h4>')}
   if(live&&p.obs.length){const o=p.obs[0];h=h.replace('<div class="dsec"><h4>Plan vs. actual</h4>',`<div class="dsec"><h4>Why it's stuck</h4>${obsBlock(OD[o.id],o,'opt',p.uid)}${p.obs.length>1?`<p class="mini">${p.obs.length-1} more waiting behind it: ${p.obs.slice(1).map(x=>V(OD[x.id].n)).join(', ')}</p>`:''}</div>`+'<div class="dsec"><h4>Plan vs. actual</h4>')}
   else if(live&&p.qf<1){const st=poolState()[p.qk];h+=`<div class="dsec"><h4>Why it's slow</h4><p>${POOLS[p.qk].ic} <b>${POOLS[p.qk].n}</b>: ${st.d} projects in ${STAGE_L[POOLS[p.qk].stage].toLowerCase()} want room for ${fmt(st.cap,1)}. Everyone in the queue moves at ×${fmt(st.f,2)}.</p></div>`}
   if(live){const ahead=[...new Set(OBSTACLES.filter(o=>STAGES.indexOf(o.stage)>p.stage&&p.dur[STAGES.indexOf(o.stage)]&&obsChance(o,def)*(p.lm?.[o.layer]??1)>=.3).map(o=>o.layer))];
@@ -2641,6 +2658,7 @@ function bnBody(){
       <div><h5>Fixes under way</h5>${projs.length||ramping.length?projs.map(q=>{const [t,c]=progStatus(q,true);return `<div class="bnc"><span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t}</span> <span class="mini">· ~${yr(Math.round(S.w+remW(q)*sl))}</span></div>`}).join('')+ramping.map(pl=>`<div class="bnc"><span class="linkn" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</span> <span class="mini">ramping, ${pct(pl.yield)} of nameplate</span></div>`).join(''):'<p class="mini redt">Nothing under way.</p>'}
        ${way.length?`<h5 style="margin-top:6px">What's in the way</h5>${way.map(([l,w])=>{const D=LAYER_DOM(l);return `<div class="bnc"><span class="sw" style="background:${LAYERS[l].c}"></span>${LAYERS[l].n} <b>${w>=1?fmt(w,0)+' wk':'now'}</b>${D?` — <span class="linkn" data-a="rbgo" data-d="${D.id}">⚖ ${D.n}</span>`:''}</div>`}).join('')}`:''}</div>
       <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(d.dur.reduce((a,b)=>a+b,0))}</span></div>`).join('')}
+       ${S.nodes[id].base>0?`<div class="bnc"><button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':'⏩ Supplier shifts'}</button> <span class="mini">${money(NSHIFT_C)}/yr · +15% in ~3 mo</span></div>`:''}
        ${spotKind(id)?`<div class="bnc"><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?'Buy more':SPOT_L[spotKind(id)][1]}</button> <span class="mini">${money(spotCost(id))} · 26 wk</span>${spotLine(id)}</div>`:`<div class="bnc mini">${spotNone(id)}</div>`}
        ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
   return h}
@@ -2712,7 +2730,7 @@ function raisePanel(id,P){
       <div class="rmeta">${money(projCost(d))} · ${v.isPlant?'output':'online'} ${yr(v.wOn)}${v.isPlant&&v.wFull<END_W?`, full rate ${yr(v.wFull)}`:''}</div>
       ${d.req&&!passed(d.req)?`<span class="mini redt">🔒 Needs ${rname(RD[d.req])}</span>`:`<button class="pbtn primary" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch →</button>`}</div>`};
   const quick=isL?`<button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'⏩ Stop extra shifts':`⏩ Fund extra shifts · ${money(SHIFT_C)}/yr`}</button>`
-    :`${spotKind(id)?`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?`Buy more (${Math.max(...spotAct(id).map(x=>x.left))} wk left)`:SPOT_L[spotKind(id)][1]} · ${money(spotCost(id))}</button>`:`<span class="mini">No quick fix: nothing to buy, only capacity to build.</span>`}${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'🏭 Release DPA priority':'🏭 DPA priority · 5 PC'}</button>`:''}`;
+    :`${S.nodes[id].base>0?`<button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':`⏩ Supplier shifts · ${money(NSHIFT_C)}/yr`}</button>`:''}${spotKind(id)?`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?`Buy more (${Math.max(...spotAct(id).map(x=>x.left))} wk left)`:SPOT_L[spotKind(id)][1]} · ${money(spotCost(id))}</button>`:`<span class="mini">No quick fix: nothing to buy, only capacity to build.</span>`}${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'🏭 Release DPA priority':'🏭 DPA priority · 5 PC'}</button>`:''}`;
   return `<div class="raise"><div class="raiseh"><b>⬆ ${head}</b><span class="dsp"></span><span class="mini">${status}</span></div>
     ${under.length?`<div class="mini" style="margin:2px 0 4px">Under way: ${under.map(q=>{const [t,c]=progStatus(q,true);return `<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t.replace(/^\S+\s/,'')}</span>`}).join(' · ')}</div>`:''}
     ${opts.length?`<div class="rcards">${opts.map(card).join('')}</div>`:'<p class="mini">Every build option is already under way or done.</p>'}
@@ -2909,6 +2927,7 @@ function dossierHTML(id,P){
      <div class="dsec" id="allopts"><h4>All ways to increase supply</h4>${constraintStrip(Math.min(spotKind(id)?spotCost(id):Infinity,...levs.filter(d=>!d.req||passed(d.req)).map(projCost)))}
       <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${Object.entries(groups).map(([g,ds])=>`<tr class="grp"><td colspan="5">${g}</td></tr>${ds.map(d=>{const done=leverDone(d),running=S.projects.some(q=>q.def===d.id);return `<tr class="${d.ally?'al':''}"><td><b>${d.ally?'🤝 ':''}${d.n}</b><div class="mini">${d.d===n.d?'':d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>${leverEffect(d,P)}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${done?'<span class="okt">✓ done</span>':running?`<span class="linkn mini" data-a="prog" data-u="${S.projects.find(q=>q.def===d.id).uid}">Under way →</span>`:d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`<button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>Launch</button>`}</td></tr>`}).join('')}`).join('')}
       <tr class="grp"><td colspan="5">Short-term measures</td></tr>
+       <tr><td><b>⏩ Overtime and extra shifts at suppliers</b><div class="mini">Weekend overtime and another shift at existing US plants, as the Scranton shell plant did on its way from 24,000 to 36,000 rounds a month. About three months to hire and train. Shifts only go so far, and worn equipment breaks more often.</div></td><td>${S.nodes[id].base>0?`+15% of existing domestic capacity${nshiftOn(id)?` · <span class="okt">on, ${pct(Math.min(1,(S.w-S.nshift[id].since)/NSHIFT_RAMP))} staffed</span>`:''}`:'<span class="mini">No US plant to run longer</span>'}</td><td>${money(NSHIFT_C)}/yr</td><td>~3 mo</td><td><button class="pbtn sm" data-a="nshift" data-n="${id}" ${S.nodes[id].base>0||nshiftOn(id)?'':'disabled'}>${nshiftOn(id)?'Stop':'Fund'}</button></td></tr>
        ${spotKind(id)==='market'?`<tr><td><b>💸 Emergency spot purchase</b><div class="mini">Bought on the commercial market. Non-Chinese prices run several times higher when PRC supply is cut (game estimate: 1.6–7×).</div></td><td>+25% of normal supply for 26 weeks${spotLine(id)}</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${spotAct(id).length?'Buy more':'Buy'}</button></td></tr>`
         :spotKind(id)==='ally'?`<tr><td><b>🤝 Emergency buy from allied producers</b><div class="mini">No civilian market, but allied defense plants make it. They sell from their own orders at a premium, as Poland and Korea have with TNT and shells.${S.nodes[id].ally.src?' '+S.nodes[id].ally.src+'.':''}</div></td><td>+25% of normal supply for 26 weeks${spotLine(id)}</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${spotAct(id).length?'Buy more':'Buy'}</button></td></tr>`
         :`<tr><td><b>🚫 No emergency purchase</b><div class="mini">${spotNone(id)}</div></td><td>—</td><td>—</td><td>—</td><td></td></tr>`}
@@ -3165,6 +3184,9 @@ const CITES=[
  {id:'mp10x',g:'Critical minerals',t:'MP Materials lands multi-billion Pentagon deal',pub:'Mining.com',d:'Jul 2025',url:'https://www.mining.com/mp-materials-lands-multi-billion-pentagon-deal/',use:'Pentagon stake, an NdPr price floor of $110/kg, and a 10-year offtake for MP’s 10X magnet plant, due to start commissioning in 2028 at ~10,000 t a year.'},
  {id:'hellscape',g:'Wars of 2025–26',t:'Indo-Pacific commander plans ‘hellscape’ for China’s military if it invades Taiwan',pub:'Washington Times',d:'Jun 2024',url:'https://m.washingtontimes.com/news/2024/jun/14/indo-pacific-commander-plans-hellscape-chinas-mili/',use:'Adm. Paparo: thousands of uncrewed submarines, surface vessels and aerial drones would engage an invasion force in the Strait, buying about a month.'},
  {id:'crsnavy',g:'Ships, submarines & readiness',t:'Navy Force Structure and Shipbuilding Plans: Background and Issues for Congress (RL32665)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/files/2026-01-20_RL32665_56fe7a4e3f7660d51984a2058aa270cb1973b2c4.html',use:'291 battle force ships; about 11 ships a year sustained to grow toward 381; the 381 goal is being replaced by a Golden Fleet goal.'},
+ {id:'scranton24',g:'Munitions & energetics',t:'US Army ammo plant boosts artillery shell production for Ukraine',pub:'Defense News (AP)',d:'Aug 2024',url:'https://www.defensenews.com/global/the-americas/2024/08/28/us-army-ammo-plant-boosts-artillery-shell-production-for-ukraine/',use:'Scranton went from about 24,000 to 36,000 155mm rounds a month with weekend overtime and a $400M modernization; RAND notes shifts and overtime can only go so far.'},
+ {id:'ucaig',g:'US rulebook',t:'Audit of the Army’s management of undefinitized contract actions awarded to provide Ukraine assistance (DODIG-2025-059)',pub:'DoD Inspector General',d:'Jan 2025',url:'https://www.dodig.mil/reports.html/Article/4034904/audit-of-the-armys-management-of-undefinitized-contract-actions-awarded-to-prov/',use:'UCAs let work start before terms and price are agreed; the government carries nearly all the risk until definitization; 7 of 13 did not adjust profit, totaling $1.2B.'},
+ {id:'jpac3',g:'Missiles, motors & engines',t:'Japan sends first PAC-3 interceptors to U.S. to support Patriot stockpile rebuild',pub:'The Defense Post',d:'Nov 2025',url:'https://thedefensepost.com/2025/11/25/japan-patriot-interceptors-us/amp/',use:'Export rules eased December 2023; first delivery November 2025; MHI builds about 30 a year, limited by Boeing seekers.'},
  {id:'yard8679',g:'US rulebook',t:'10 U.S.C. 8679: Construction of combatant and escort vessels and assignment of vessel projects',pub:'U.S. Code (govinfo)',d:'2024 ed.',url:'https://www.govinfo.gov/content/pkg/USCODE-2024-title10/pdf/USCODE-2024-title10-subtitleC-partIV-chap863-sec8679.pdf',use:'No Navy vessel, or major component of its hull or superstructure, may be built in a foreign shipyard; the President may authorize exceptions.'},
  {id:'s406',g:'US rulebook',t:'S. 406, Ensuring Naval Readiness Act (119th Congress)',pub:'Congress.gov',d:'Feb 2025',url:'https://www.congress.gov/119/bills/s406/BILLS-119s406is.htm',use:'Would allow Navy ships and major hull components to be built in NATO and Indo-Pacific treaty-ally shipyards when cheaper than a US yard.'},
  {id:'sasc27',g:'US rulebook',t:'Congress seeks to limit US Navy vessels built in foreign shipyards',pub:'Defense News',d:'Jun 2026',url:'https://www.defensenews.com/news/pentagon-congress/2026/06/17/congress-seeks-to-limit-us-navy-vessels-built-in-foreign-shipyards/',use:'The Senate Armed Services FY2027 NDAA markup would strip the presidential waiver in 10 U.S.C. 8679 and cap foreign construction at two vessels per class.'},
@@ -3291,6 +3313,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Mid-length fixes','Supplier shifts add 15% of existing domestic capacity over a 13-week hiring ramp for $0.08B a year each and raise equipment-problem odds by 30% (estimates, set against Scranton’s rise, which also needed a $400M modernization).[c:scranton24] An undefinitized contract action ends contracting in about 4 weeks for 10% of the price, with a 25% chance of a cost overrun at construction (estimates; the risk itself is documented by the DoD IG).[c:ucaig] Not offered as fast fixes because they were not fast in practice: buying an ally’s production (Japan’s PAC-3 export took about two years from the December 2023 rule change to first delivery)[c:jpac3] and restarting closed lines.'],
  ['Hyperscale drone plant','Modeled on Anduril’s Arsenal-1 (about $1B and 4,000 jobs);[c:arsenal1] its output of 80,000 small drones a year once ramped is a game estimate.'],
  ['Mandates','Each mandate has a floor halfway from the January 2027 level to the real target (for the magnet target, 60% of it; content cut by a quarter; output held at 90%). Each scenario’s targets come from public goals (cited on the mandate card); the deadline of January 2030 reflects the threat windows cited. The US shares (1,800 interceptors and 1,800 strike missiles a year, 9 surface ships out of CRS’s 11 battle-force ships a year, 16,000 rockets of the planned 19,002, 330,000 drones a year from the Army’s million-in-three-years plan) are game estimates. The tests reuse the campaign model on the true hidden values (pass at 85% coverage), or remove all Chinese supply at once (pass if you keep 80% of output). The verdict names are design choices.'],
  ['The Record','Spending, laws, decisions and paperwork are counted from January 2027. Industrial jobs are estimated at 1,500 direct manufacturing jobs per $1B of plant investment at full output, scaled by each plant’s yield. Anduril’s Arsenal-1 (about 4,000 direct jobs for $1B) is the labor-heavy end;[c:arsenal1] mines, chemical plants and refineries employ far fewer people per dollar. Construction and indirect jobs are not counted.'],
@@ -3940,6 +3963,8 @@ function whyOff(b){
     case 'ops':{const pl=S.plants.find(x=>x.uid==d.u),o=pl?.issue&&OPSD[pl.issue.id].o[d.k];if(o)return optWhy(o);break}
     case 'evopt':{const q=S.queue[0],o=q?.ev&&(V(ED[q.ev].o)||[])[d.k];if(o)return optWhy(o);break}
     case 'shift':return needM(SHIFT_C/4);
+    case 'nshift':if(!(S.nodes[d.n]?.base>0))return 'No US plant makes this yet: there is nothing to run longer.';return needM(NSHIFT_C/4);
+    case 'uca':{const p=S.projects.find(x=>x.uid==d.u);return p?needM(ucaCost(p)):'';}
     case 'aid':return `Cutting aid costs ${Math.round(10*(S.aidLvl-d.v)/.5)} Political Capital — you have ${Math.floor(S.pc)}.`;
     case 'carve':{const C=CD[d.c];return carveNeed(C)||needPC(carveCost(C))}
     case 'ne':return needPC(NE_COST);
@@ -4026,6 +4051,8 @@ document.addEventListener('pointerdown',e=>{
     case 'whip':whip();break;
     case 'carve':startCarve(b.dataset.c);break;
     case 'shift':toggleShift(b.dataset.l);break;
+    case 'nshift':toggleNShift(b.dataset.n);break;
+    case 'uca':doUCA(b.dataset.u);break;
     case 'ne':declareNE();break;
     case 'aid':setAid(+b.dataset.v);break;
     case 'prio':togglePrio(b.dataset.n);break;
