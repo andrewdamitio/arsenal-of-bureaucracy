@@ -558,11 +558,19 @@ body{background:
 .cseg{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 14px 0}.cseg-h td{background:#e9dfc4;border-top:2px solid #8a7850;padding:7px 8px 5px}.cseg-h b{font:400 15px var(--sten);letter-spacing:.04em;margin-right:8px}.cs-ally td{background:#d9e2ea;border-top-color:#6d8396}
 .bl-alert{margin:0 0 10px;padding:12px 16px;background:#3a2f1c;color:#f3ead2;border:2px solid #d9a441;box-shadow:inset 6px 0 0 #d9a441;font-size:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}.bl-ah{font:400 22px var(--sten);letter-spacing:.04em;color:#f1c96a}
 .bl-cp{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:14px}.bl-cp b{display:block;margin-bottom:2px}
-.wmwrap{display:grid;grid-template-columns:210px 1fr;gap:12px;margin-top:8px}.wmlist{display:flex;flex-direction:column;gap:3px;max-height:70vh;overflow:auto}.wmi{display:flex;justify-content:space-between;align-items:center;gap:6px;background:none;border:1px solid transparent;padding:3px 5px;cursor:pointer;text-align:left}.wmi.on{border-color:#8a7850;background:#efe6cf}.wmi .npill{font-size:12px}
-.wmsvg{width:100%;height:auto;display:block;border:1px solid #c8b48a;background:#e9e1cc}.wml{font:600 11.5px var(--disp);fill:#2a2418;paint-order:stroke;stroke:#f7f2e6;stroke-width:3px;stroke-linejoin:round}
-.wmsum{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;margin-bottom:6px;align-items:center}.wmsum i{display:inline-block;width:11px;height:11px;margin-right:4px;vertical-align:-1px}.wmsum b{font:600 15px var(--disp)}
-.wmsrc{font-size:13px;margin-top:6px}.wmg{font-size:13px;margin-top:6px;padding:6px 10px;background:#f3ebd6;border-left:3px solid #b8860b}.wmload{height:300px;display:flex;align-items:center;justify-content:center;color:#6b5a35;border:1px dashed #c8b48a}
-@media(max-width:900px){.wmwrap{grid-template-columns:1fr}.wmlist{flex-direction:row;flex-wrap:wrap;max-height:none}}
+.wmhd{display:flex;align-items:center;gap:22px;padding:8px 0 10px}.wmnir{display:flex;flex-direction:column;min-width:120px}.wmnir b{font:600 30px/1 var(--disp)}.wmnir span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6b5a35;margin-top:3px}
+.wmshare{flex:1;min-width:0}.wmbar{display:flex;height:12px;border:1px solid #a39678;background:#efe7d3}.wmbar i{display:block;height:100%}.wmbar i+i{border-left:1px solid #fff}
+.wmleg{display:flex;flex-wrap:wrap;gap:3px 16px;margin-top:6px;font-size:12.5px;color:#3d3426}.wmleg i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}.wmleg b{font:600 14px var(--disp);margin-left:2px}
+.wmwrap{display:grid;grid-template-columns:230px 1fr;gap:16px;margin-top:4px}
+.wmlist{display:flex;flex-direction:column;align-self:start;border:1px solid #c8b48a;background:#f5efe0}.wmlh{display:flex;justify-content:space-between;padding:6px 10px;font:600 10.5px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#6b5a35;border-bottom:1px solid #c8b48a;background:#ebe1c6}
+.wmi{display:grid;grid-template-columns:1fr 54px 30px;align-items:center;gap:8px;background:none;border:0;border-left:3px solid transparent;padding:4px 10px 4px 7px;cursor:pointer;text-align:left;font:500 13px "Segoe UI",system-ui,sans-serif;color:#2a2418}
+.wmi+.wmi{border-top:1px solid #e3d8bd}.wmi:hover{background:#efe6cf}.wmi.on{background:#e6d9b5;border-left-color:#8a6d2e;font-weight:600}
+.wmc{height:6px;background:#e3d8bd;position:relative}.wmc i{position:absolute;left:0;top:0;bottom:0;background:#b23a2c}.wmp{font:600 12.5px var(--disp);text-align:right;color:#6b5a35}
+.wmsvg{width:100%;height:auto;display:block;border:1px solid #c8b48a}.wml{font:600 12px var(--disp);letter-spacing:.02em;fill:#2a2418;paint-order:stroke;stroke:#faf7ef;stroke-width:3.5px;stroke-linejoin:round}.wmv{font:700 12.5px var(--disp);paint-order:stroke;stroke:#faf7ef;stroke-width:3.5px;stroke-linejoin:round}
+.wmsrc{font-size:13px;margin-top:10px;line-height:1.45}.wmk{font:600 10.5px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#6b5a35;margin-right:8px}.wmnote{font-size:12px;color:#5a4e38;margin-top:2px}
+.wmg{margin-top:10px;padding:8px 12px;background:#f3ebd6;border:1px solid #d8c9a2;border-left:3px solid #b8860b}.wmgh{font:600 10.5px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#6b5a35;margin-bottom:3px}.wmgs{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;font-size:13px}.wmgs b{font:600 15px var(--disp)}
+.wmfoot{font-size:11.5px;color:#6b5a35;margin:8px 0 0;line-height:1.45}.wmload{height:340px;display:flex;align-items:center;justify-content:center;color:#6b5a35;border:1px dashed #c8b48a;font-size:13px}
+@media(max-width:900px){.wmwrap{grid-template-columns:1fr}.wmhd{flex-direction:column;align-items:stretch}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3178,7 +3186,7 @@ const WMC={'China':[105,34],'Russia':[45,56],'Canada':[-96,54],'Chile':[-71,-30]
 const US_LL=[-96,38.5];
 // treaty allies (NATO, Japan, South Korea, Australia) and close partners named in the data
 const WM_AL=['Canada','Germany','Poland','Japan','Belgium','Estonia','Turkey','Czechia','Norway','Finland','South Korea','Australia','Latvia','Israel'],WM_ADV=['China','Russia'];
-const wmGrp=c=>WM_ADV.includes(c)?'adv':WM_AL.includes(c)?'al':'oth',WM_COL={adv:'#c0392b',al:'#2f62a0',oth:'#8a7440'};
+const WM_FILL={adv:'#efc9bf',al:'#d3dfec',oth:'#ece0bd'},wmGrp=c=>WM_ADV.includes(c)?'adv':WM_AL.includes(c)?'al':'oth',WM_COL={adv:'#b23a2c',al:'#2d5f99',oth:'#8c7442'};
 const WM_NAME={'South Korea':['South Korea','S. Korea','Korea'],'United Arab Emirates':['United Arab Emirates'],'Czechia':['Czechia','Czech Rep.','Czech Republic'],'Turkey':['Turkey','Türkiye'],'United States':['United States of America']};
 // the base map: Natural Earth 1:110m countries (world-atlas), drawn once with d3-geo
 let WM=null,WMload=null;
@@ -3190,32 +3198,43 @@ function wmLoad(){if(WM||WMload)return;const add=src=>new Promise((ok,no)=>{cons
     const byN={};for(const f of land)byN[f.properties.name]=path(f);
     WM={W,H,proj,path,byN,grat:path(d3.geoGraticule10()),sph:path({type:'Sphere'})};render()}).catch(()=>{WM={err:1};render()})}
 function wmCPath(c){const ns=WM_NAME[c]||[c];for(const n of ns)if(WM.byN[n])return WM.byN[n];return null}
-function wmSVG(d){const {W,H,path,proj}=WM,P=S._R?.P||production(false).P,cut=S.fac==='US'?(cutOf(d.node)||0):0;
-  let g=`<path d="${WM.sph}" fill="#e9e1cc"/><path d="${WM.grat}" fill="none" stroke="#d6cbb0" stroke-width=".5"/>`;
+function wmSVG(d){const {W,H,proj}=WM,cut=S.fac==='US'?(cutOf(d.node)||0):0;
+  let g=`<path d="${WM.sph}" fill="#ece5d3"/><path d="${WM.grat}" fill="none" stroke="#ddd3bc" stroke-width=".4"/>`;
   const src=new Set(d.src.map(x=>x[0]));
   for(const n in WM.byN){const us=n==='United States of America',hit=[...src].find(c=>(WM_NAME[c]||[c]).includes(n));
-    g+=`<path d="${WM.byN[n]}" fill="${us?'#cfdcea':hit?(wmGrp(hit)==='adv'?'#f0c8c0':wmGrp(hit)==='al'?'#d6e0ee':'#eadfb8'):'#f7f2e6'}" stroke="#b9ad8c" stroke-width=".5"/>`}
-  const [ux,uy]=proj(US_LL);let arcs='',labs='';
-  for(const [c,v] of d.src.slice().sort((a,b)=>a[1]-b[1])){const ll=WMC[c];if(!ll)continue;const gp=wmGrp(c),col=WM_COL[gp],off=gp==='adv'&&cut>.01,w=(1.2+v*.16).toFixed(1);
-    const [x,y]=proj(ll),dx=ux-x,dy=uy-y,L=Math.hypot(dx,dy)||1,bend=Math.min(.32,90/L+.12),cx=(x+ux)/2+dy/L*L*bend*(dx>0?1:-1),cy=(y+uy)/2-Math.abs(dx/L)*L*bend,
-      ex=ux-(ux-cx)/Math.hypot(ux-cx,uy-cy)*8,ey=uy-(uy-cy)/Math.hypot(ux-cx,uy-cy)*8,dd=`M${x.toFixed(1)},${y.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}`;
-    arcs+=`<path d="${dd}" fill="none" stroke="${col}" stroke-width="${w}" stroke-opacity="${off?.35:.8}" ${off?'stroke-dasharray="5 4"':''} stroke-linecap="round" marker-end="url(#wmah-${gp})"><title>${c}: ${v}% of US imports${off?` · ${pct(cut)} cut by export controls in the game now`:''}</title></path>`;
-    labs+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(2.5+v*.06).toFixed(1)}" fill="${col}" stroke="#fff" stroke-width="1"/><text x="${(x+6).toFixed(1)}" y="${(y-5).toFixed(1)}" class="wml">${c} ${v}%${off?` <tspan fill="${col}">· ${pct(cut)} cut</tspan>`:''}</text>`}
-  labs+=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.5"/><text x="${(ux-8).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text>`;
-  const mk=k=>`<marker id="wmah-${k}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="${WM_COL[k]}"/></marker>`;
-  return `<svg viewBox="0 0 ${W} ${H}" class="wmsvg" role="img" aria-label="Map of US import sources for ${d.n}"><defs>${mk('adv')}${mk('al')}${mk('oth')}</defs>${g}${arcs}${labs}</svg>`}
+    g+=`<path d="${WM.byN[n]}" fill="${us?'#c9d6e3':hit?WM_FILL[wmGrp(hit)]:'#faf7ef'}" stroke="${us||hit?'#a39678':'#cbc0a6'}" stroke-width="${us||hit?.7:.45}"/>`}
+  const [ux,uy]=proj(US_LL);let arcs='',dots='';const boxes=[[ux-92,uy+4,ux+4,uy+20]];
+  const fits=b=>b[0]>4&&b[2]<W-4&&b[1]>4&&b[3]<H-4&&!boxes.some(o=>b[0]<o[2]&&b[2]>o[0]&&b[1]<o[3]&&b[3]>o[1]);
+  const rows=d.src.slice().sort((a,b)=>b[1]-a[1]);const labs=[];
+  for(const [c,v] of rows){const ll=WMC[c];if(!ll)continue;const gp=wmGrp(c),col=WM_COL[gp],off=gp==='adv'&&cut>.01,w=Math.min(7,1.4+v*.075).toFixed(1);
+    const [x,y]=proj(ll),dx=ux-x,dy=uy-y,L=Math.hypot(dx,dy)||1,bend=Math.min(.3,60/L+.1),cx=(x+ux)/2+dy*bend*(dx>0?1:-1),cy=(y+uy)/2-Math.abs(dx)*bend,
+      k=Math.hypot(ux-cx,uy-cy)||1,ex=ux-(ux-cx)/k*9,ey=uy-(uy-cy)/k*9;
+    arcs=`<path d="M${x.toFixed(1)},${y.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-opacity="${off?.45:.85}" ${off?'stroke-dasharray="6 5"':''} stroke-linecap="round" marker-end="url(#wmah-${gp})"><title>${c}: ${v}% of US imports${off?` · ${pct(cut)} cut by export controls in the game now`:''}</title></path>`+arcs;
+    dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.6" fill="${col}" stroke="#fff" stroke-width="1.2"/>`;
+    const t1=c,t2=`${v}%`+(off?` · ${pct(cut)} cut`:''),tw=Math.max(t1.length,t2.length)*6.1+6;
+    const cand=[[x+8,y-17],[x-8-tw,y-17],[x+8,y+3],[x-8-tw,y+3],[x-tw/2,y-34],[x-tw/2,y+8],[x+8,y+22],[x-8-tw,y+22],[x+8,y-36],[x-8-tw,y-36]];
+    let p=cand.find(([a,b])=>fits([a,b,a+tw,b+28]))||cand[0];boxes.push([p[0],p[1],p[0]+tw,p[1]+28]);
+    const lead=Math.hypot(p[0]+(p[0]<x?tw:0)-x,p[1]+14-y)>26?`<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(p[0]<x?p[0]+tw:p[0]).toFixed(1)}" y2="${(p[1]+12).toFixed(1)}" stroke="#7d7058" stroke-width=".6"/>`:'';
+    labs.push(`${lead}<text x="${p[0].toFixed(1)}" y="${(p[1]+11).toFixed(1)}" class="wml">${t1}</text><text x="${p[0].toFixed(1)}" y="${(p[1]+25).toFixed(1)}" class="wmv" fill="${col}">${t2}</text>`)}
+  dots+=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.6"/><text x="${(ux-10).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text>`;
+  const mk=k=>`<marker id="wmah-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="${WM_COL[k]}"/></marker>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="wmsvg" role="img" aria-label="Map of US import sources for ${d.n}"><defs>${mk('adv')}${mk('al')}${mk('oth')}</defs>${g}${arcs}${dots}${labs.join('')}</svg>`}
 function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?(cutOf(d.node)||0):0;
   if(!WM)wmLoad();
-  const sh=k=>d.src.filter(x=>wmGrp(x[0])===k).reduce((a,x)=>a+x[1],0);
-  const list=WMD.map(x=>{const pp=P[x.node],st=pp?nodeStatus(pp):'ok';return `<button class="wmi ${x.k===d.k?'on':''}" data-a="map" data-m="${x.k}"><span class="npill np-${st==='idle'?'ok':st}" style="pointer-events:none">${x.n}</span><span class="mini">${x.src[0][0]} ${x.src[0][1]}%</span></button>`}).join('');
-  const gm=p?(()=>{const n=Math.max(p.need,1e-9),dom=Math.min(1,p.dom/n);return `<div class="wmg"><b>In the game now</b> (${ND[d.node].n}): domestic ${pct(dom)} of need · allied ${pct(Math.min(1,p.ally/n))} · Chinese ${pct(Math.min(1,p.prc/n))}${cut>.01?` · <span class="redt">${pct(cut)} of Chinese supply cut by export controls</span>`:''}. <span class="linkn" data-a="node" data-n="${d.node}">Open its page →</span></div>`})():'';
-  const body=WM?.err?`<p class="redt">The world map could not load (it needs an internet connection for the Natural Earth outlines). The figures are below.</p>`:WM?wmSVG(d):'<div class="wmload">Loading the world map…</div>';
-  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(`<div class="dtop"><div class="dhd"><span class="ic">🌍</span><div><div class="dkind">Where US imports come from</div><h2 class="dttl">${d.n}</h2></div></div></div>`)}
-    <div class="wmwrap"><div class="wmlist">${list}</div><div class="wmmain">
-      <div class="wmsum"><span>Net import reliance <b>${d.nir}</b> <span class="mini">(2025, USGS)</span></span><span><i style="background:${WM_COL.adv}"></i>China / Russia <b>${sh('adv')}%</b></span><span><i style="background:${WM_COL.al}"></i>Allies and close partners <b>${sh('al')}%</b></span><span><i style="background:${WM_COL.oth}"></i>Other named countries <b>${sh('oth')}%</b></span><span>Other, unnamed <b>${d.oth}%</b></span></div>
+  const shOf=(x,k)=>x.src.filter(y=>wmGrp(y[0])===k).reduce((a,y)=>a+y[1],0);
+  const segs=[['adv','China and Russia',shOf(d,'adv'),WM_COL.adv],['al','Allies and close partners',shOf(d,'al'),WM_COL.al],['oth','Other named countries',shOf(d,'oth'),WM_COL.oth],['un','Not named by USGS',d.oth,'#cfc5ad']];
+  const bar=`<div class="wmbar">${segs.filter(x=>x[2]>0).map(([k,n,v,c])=>`<i style="width:${v}%;background:${c}" data-tip="<b>${n}</b><br>${v}% of US imports"></i>`).join('')}</div>
+    <div class="wmleg">${segs.map(([k,n,v,c])=>`<span><i style="background:${c}"></i>${n} <b>${v}%</b></span>`).join('')}</div>`;
+  const list=WMD.map(x=>{const a=shOf(x,'adv');return `<button class="wmi ${x.k===d.k?'on':''}" data-a="map" data-m="${x.k}"><span class="wmn">${x.n.replace(' (terbium)','')}</span><span class="wmc" data-tip="Share of US imports from China and Russia"><i style="width:${a}%"></i></span><span class="wmp">${a?a+'%':'—'}</span></button>`}).join('');
+  const gm=p?(()=>{const n=Math.max(p.need,1e-9);return `<div class="wmg"><div class="wmgh">In the game now · ${ND[d.node].n} · supply as a share of need</div><div class="wmgs"><span>Domestic <b>${pct(Math.min(1,p.dom/n))}</b></span><span>Allied <b>${pct(Math.min(1,p.ally/n))}</b></span><span>Chinese <b>${pct(Math.min(1,p.prc/n))}</b></span>${cut>.01?`<span class="redt">Export controls cut <b>${pct(cut)}</b> of Chinese supply</span>`:''}<span class="dsp"></span><button class="btn sm" data-a="node" data-n="${d.node}">Open its page →</button></div></div>`})():'';
+  const body=WM?.err?`<div class="wmload">The map outlines could not load; they need an internet connection. The figures are listed below.</div>`:WM?wmSVG(d):'<div class="wmload">Loading map…</div>';
+  const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Where US imports come from · shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
+    <div class="wmhd"><div class="wmnir"><b>${d.nir}</b><span>net import reliance, 2025</span></div><div class="wmshare">${bar}</div></div></div>`;
+  return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(top)}
+    <div class="wmwrap"><div class="wmlist"><div class="wmlh"><span>Raw material</span><span>From China / Russia</span></div>${list}</div><div class="wmmain">
       ${body}
-      <div class="wmsrc"><b>USGS, import sources 2021–24:</b> ${d.ln}${d.note?` <span class="mini">${d.note}</span>`:''}</div>${gm}
-      <p class="mini" style="margin:4px 0 0">Shares of US imports by country of shipment, from the USGS Mineral Commodity Summaries 2026, not of world production: material refined in one country may have been mined in another. Arrow width shows the share; arrows show where shipments come from, not shipping routes. ${cut>.01?'Dashed: supply that export controls have cut in the game now.':''} Outlines: Natural Earth, 1:110m.</p>
+      <div class="wmsrc"><span class="wmk">Source</span>USGS, import sources 2021–24: “${d.ln}”${d.note?`<div class="wmnote">${d.note}</div>`:''}</div>${gm}
+      <p class="wmfoot">Shares of US imports by the country that shipped them, not of world production; material refined in one country may have been mined in another. Line width shows the share; lines mark origins, not shipping routes.${cut>.01?' Dashed: supply cut by export controls in the game now.':''} Allies: NATO, Japan, South Korea, Australia and Israel. Map: Natural Earth.</p>
     </div></div></div></div>`}
 function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const pls=S.plants.filter(p=>isL?(p.kind==='line'&&p.target===l):p.target===id),prs=S.projects.filter(q=>{const d=PD[q.def];return q.dur[3]>0&&(isL?d.t.line===l:d.t.node===id)}),ald=isL?[]:S.done.filter(x=>PD[x.def].ally&&PD[x.def].t.node===id);
