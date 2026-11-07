@@ -533,6 +533,7 @@ body{background:
 .rc-rrow{margin:6px 6px 8px;padding:8px 10px 7px}.rc-rlim{margin-top:6px}.rc-rwork{margin-top:4px}
 .bngrid>div:nth-child(3) .bnc{display:grid;grid-template-columns:minmax(0,1fr) 128px;align-items:center;gap:8px;margin:3px 0}.bngrid>div:nth-child(3) .bnc .pbtn{width:100%;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bngrid>div:nth-child(3) .bnc .mini{text-align:right;white-space:nowrap}
 .aopts{margin:-4px 0 12px;border:1px solid #c8b48a;border-top:0;background:#f3ebd6}.aotog{display:block;width:100%;text-align:left;padding:6px 12px;background:linear-gradient(#ece2c6,#e2d5b4);border:0;border-bottom:1px solid #c8b48a;font:600 13px var(--disp);letter-spacing:.06em;text-transform:uppercase;color:#4a3d22;cursor:pointer}.aotog:hover{color:#000}.aopts.open .aotog{background:#e2d5b4}.aopts>.dsec{margin:0;padding:8px 12px 10px}
+.mkt td{font-size:12.5px;vertical-align:top}.mkt td:nth-child(2){white-space:nowrap;font-weight:600}.mkt td:nth-child(3){font-size:12px}.mkt .mini{max-width:520px}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2927,6 +2928,26 @@ function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],st={pac:estInv(S.ene
     <div class="isgt" style="margin-top:8px">In service since 2025, and where today's output leads by 2037</div>
     ${lineChart({W:900,H:170,yMax,yFmt:fmtN,vf:fmtN,series:ser,unit:'📦 In service (stock)'})}
     <div class="sleg"><span><i style="background:#2f62a0"></i>You</span><span><i style="background:${RIV_C.pac}"></i>China</span><span><i style="background:${RIV_C.eu}"></i>Russia</span><span class="mini">Solid: history · dashed: today's output held constant, rivals keep growing. Retiring ~${fmtN(us*retRate(l))} ${L.u}/yr. Rival figures are intelligence estimates.</span></div>`}
+// the main US producers of each end item
+const LINE_MAKERS={interceptors:'Lockheed Martin, Camden AR and Grand Prairie TX (PAC-3 MSE); Lockheed Martin, Troy AL (THAAD); RTX, Tucson AZ and Huntsville AL (SM-6, SM-3)',
+ strike:'Lockheed Martin, Troy AL (JASSM, LRASM); RTX, Tucson AZ (Tomahawk)',a2a:'RTX, Tucson AZ (AMRAAM)',fires:'Lockheed Martin, Camden AR (GMLRS, PrSM)',
+ aircraft:'Lockheed Martin, Fort Worth TX (F-35); Boeing, St. Louis MO (F-15EX, F/A-18)',surface:'HII Ingalls, Pascagoula MS; General Dynamics Bath Iron Works, ME (destroyers); Fincantieri Marinette, WI (frigates)',
+ subs:'General Dynamics Electric Boat, Groton CT and Quonset RI; HII Newport News, VA',shells:'Army plants at Scranton and Wilkes-Barre PA (bodies), Mesquite TX (GD-OTS), Iowa AAP (load and pack); Holston TN and Radford VA (explosives and propellant)',
+ drones:'AeroVironment, Skydio, Anduril, Shield AI and Red Cat, among others'};
+// everyone who makes this item: existing US producers, plants you built, plants under construction, allies, and China or Russia
+function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
+  const pls=S.plants.filter(p=>isL?(p.kind==='line'&&p.target===l):p.target===id),prs=S.projects.filter(q=>{const d=PD[q.def];return !d.ally&&q.dur[3]>0&&(isL?d.t.line===l:d.t.node===id)});
+  const I=isL?null:INFO[id]||{},who=isL?LINE_MAKERS[l]:I.who?(I.who[S.fac]||I.who.US||I.who):'',p=P[id];
+  const share=v=>isL?`${fmtN(v*LINES[l].k)}/yr`:p.need>1e-6?`${pct(v/p.need)} of need`:'—';
+  const idle=S.tmods.filter(m=>(isL?m.kind==='line'&&m.id===l:(m.kind==='node'||m.kind==='cap')&&m.id===id)&&m.mult<1);
+  const base=isL?S.lines[l].base:S.nodes[id].base,rows=[];
+  rows.push(`<tr><td><b>${F().flag} Existing US plants</b><div class="mini">${who||'None of note'}</div></td><td>${base>1e-9?share(base):'—'}</td><td>${idle.length?`<span class="redt">🚧 ${idle[0].label.toLowerCase()}, ${idle[0].left} wk left</span>`:base>1e-9?`<span class="okt">Running</span>${!isL&&nshiftOn(id)?' · ⏩ extra shifts':isL&&S.shifts[l]?' · ⏩ extra shifts':''}`:'<span class="mini">No US plant</span>'}</td></tr>`);
+  for(const pl of pls){const out=pl.gain*pl.yield*plantMult(pl);rows.push(`<tr><td><b>🏭 <span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span></b><div class="mini">Built ${yr(pl.start)}</div></td><td>${share(out)}</td><td>${pl.issue?`<span class="redt">⚠ ${OPSD[pl.issue.id].n}</span>`:pl.full?'<span class="okt">Full rate</span>':`Ramping · ${pct(pl.yield)} of nameplate`}</td></tr>`)}
+  for(const q of prs){const [t,cl]=progStatus(q,true);rows.push(`<tr><td><b>🏗 <span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span></b><div class="mini">${STAGE_L[STAGES[q.stage]]}</div></td><td>+${share(projGain(PD[q.def]))} <span class="mini">when done</span></td><td><span class="${cl}">${t}</span> · output ~${yr(Math.round(S.w+remW(q)*sl))}</td></tr>`)}
+  if(isL){const al=allyOut(l);if(al>0)rows.push(`<tr><td><b>🤝 ${AL().n}</b><div class="mini">Their own lines, counted toward sufficiency</div></td><td>${fmtN(al)}/yr</td><td>${allyDivert(l)>.005?`<span class="redt">−${pct(allyDivert(l))} from your purchases</span>`:'<span class="okt">Running</span>'}</td></tr>`)}
+  else{if(p.ally>1e-9)rows.push(`<tr><td><b>🤝 Allied suppliers</b><div class="mini">${S.nodes[id].ally.src||'Allied producers'}</div></td><td>${share(p.ally)}</td><td>${allyBar(id)?'<span class="redt">⚖ barred by law for defense work</span>':'<span class="okt">Supplying</span>'}</td></tr>`);
+    if(p.prc+p.lost>1e-9)rows.push(`<tr><td><b>${FLAGS.cn} China / ${FLAGS.ru} Russia</b></td><td>${share(p.prc)}</td><td>${p.lost>.005?`<span class="redt">✂ ${share(p.lost)} cut off</span>`:'Supplying'}</td></tr>`)}
+  return `<div class="dsec" id="makers"><h4>🏭 Who makes it <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· ${pls.length} plant${pls.length===1?'':'s'} you built · ${prs.length} under construction</span></h4><table class="ctable mkt"><tr><th>Producer</th><th>${isL?'Output':'Supply'}</th><th>Status</th></tr>${rows.join('')}</table></div>`}
 function dossierHTML(id,P){
   const sb=`<div class="dsb">${[1,2,3,4].map(t=>`<div class="dsbt">T${t} · ${TIERS[t]}</div>`+NODES.filter(n=>n.t===t).map(n=>{const st=nodeStatus(P[n.id]);return `<div class="dsbi ${n.id===id?'on':''}" data-a="node" data-n="${n.id}"><i class="dot st-${st}"></i>${n.n}</div>`}).join('')).join('')}
     <div class="dsbt">T5 · ${TIERS[5]}</div>${S.order.map(l=>{const o=S._R.out[l],r=o.n/Math.max(o.cap,1e-9);return `<div class="dsbi ${id==='L:'+l?'on':''}" data-a="node" data-n="L:${l}"><i class="dot st-${r>=.999?'ok':r>=.8?'tight':'short'}"></i>${LINES[l].n}</div>`}).join('')}</div>`;
@@ -2934,7 +2955,7 @@ function dossierHTML(id,P){
   let main='';
   if(id.startsWith('L:')){const l=id.slice(2),L=LINES[l],o=S._R.out[l],f=F();
     const projs=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint');const lp=linePipe(l),pj0=project(Object.fromEntries(Object.keys(LINES).map(c=>[c,S._R.out[c].yr]))),rq=reqRate(l,pj0);
-    main=`<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span>${back}<button class="pbtn sm" data-a="flow" data-f="L:${l}">⇶ Flows</button><button class="pbtn sm" data-a="arsenal">📈 Arsenal</button></div>
+    main=`<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span>${back}<button class="pbtn sm" data-a="ovjump" data-s="#makers">🏭 Producers</button><button class="pbtn sm" data-a="flow" data-f="L:${l}">⇶ Flows</button><button class="pbtn sm" data-a="arsenal">📈 Arsenal</button></div>
      ${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
      <div class="dsec"><h4>What limits output</h4>${ladder(l,S._R,6)}</div><div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
      <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
@@ -2954,7 +2975,7 @@ function dossierHTML(id,P){
     const act=S.projects.filter(q=>PD[q.def].t.node===id),plants=S.plants.filter(q=>q.target===id),fl=S.nflags[id]||{};
     const sameTier=NODES.filter(x=>x.t===n.t),ix=sameTier.findIndex(x=>x.id===id);
     main=`<div class="dhead"><span class="dic">${n.ic}</span><div><h3>${n.n}</h3><div class="sub2">Tier ${n.t} · ${TIERS[n.t]} · <b class="st-t-${st}">${st.toUpperCase()}</b> · cover ${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'} · PRC exposure ${pct(p.expo)} · know-how ${Math.round(S.know[id])}</div></div><span class="dsp"></span>${back}
-      <button class="pbtn sm" data-a="node" data-n="${sameTier[(ix-1+sameTier.length)%sameTier.length].id}">‹</button><button class="pbtn sm" data-a="node" data-n="${sameTier[(ix+1)%sameTier.length].id}">›</button><button class="pbtn sm" data-a="flow" data-f="${id}">⇶ Flows</button></div>
+      <button class="pbtn sm" data-a="node" data-n="${sameTier[(ix-1+sameTier.length)%sameTier.length].id}">‹</button><button class="pbtn sm" data-a="node" data-n="${sameTier[(ix+1)%sameTier.length].id}">›</button><button class="pbtn sm" data-a="ovjump" data-s="#makers">🏭 Producers</button><button class="pbtn sm" data-a="flow" data-f="${id}">⇶ Flows</button></div>
      ${nodeLinks(id)}${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>${n.in.length?'Made from, and what it feeds':'Where it goes'}</h4>${supplyWeb(id,P)}</div><div class="dsec"><h4>Why it matters</h4><p>${n.d}</p>${I.why?`<p>${I.why}</p>`:''}${n.ss?`<p class="warnp">⚠ ${n.ss}.</p>`:''}
       <div class="kv"><b>Feeds</b><span class="chipsP">${CONSUMERS[id].map(c=>c.startsWith('L:')?`<span class="npill np-ok" data-a="node" data-n="${c}">${LINES[c.slice(2)].n}</span>`:pill(c,P)).join('')}</span><b>Ends up in</b><span>${ends.map(l=>`<span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span>`).join(' · ')}</span></div></div>
      <div class="dsec"><h4>Where it comes from</h4>${I.world?`<p><b>World:</b> ${I.world}</p>`:''}${who?`<p><b>${S.fac==='US'?'United States':'Europe'}:</b> ${who}</p>`:''}
@@ -2978,7 +2999,7 @@ function dossierHTML(id,P){
      ${Object.keys(fl).length?`<div class="dsec"><h4>Improvements in place</h4><p>${Object.keys(fl).map(k=>({mod:'Modernized',know:'Workforce trained',power:'Firm power secured',test:'Qualification capacity'}[k])).join(' · ')}</p></div>`:''}`;
   }
   {const i=main.indexOf('<!--AO-->'),j=main.indexOf('<!--/AO-->');if(i>=0&&j>i){const sec=main.slice(i+9,j),n=(sec.match(/data-a="launch"/g)||[]).length,open=!!S.aoOpen;
-    main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} programs`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
+    main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',makersHTML(id,S._R.P)+`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} programs`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
   return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${main}</div></div><div class="ft"><button class="pbtn" data-a="close">Close</button></div></div>`;
 }
 
