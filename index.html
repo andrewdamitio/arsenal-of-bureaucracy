@@ -569,6 +569,7 @@ body{background:
 .wmsvg{width:100%;height:auto;display:block;border:1px solid #c8b48a}.wml{font:600 12px var(--disp);letter-spacing:.02em;fill:#2a2418;paint-order:stroke;stroke:#faf7ef;stroke-width:3.5px;stroke-linejoin:round}.wmv{font:700 12.5px var(--disp);paint-order:stroke;stroke:#faf7ef;stroke-width:3.5px;stroke-linejoin:round}
 .wmsrc{font-size:13px;margin-top:10px;line-height:1.45}.wmk{font:600 10.5px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#6b5a35;margin-right:8px}.wmnote{font-size:12px;color:#5a4e38;margin-top:2px}
 .wmg{margin-top:10px;padding:8px 12px;background:#f3ebd6;border:1px solid #d8c9a2;border-left:3px solid #b8860b}.wmgh{font:600 10.5px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#6b5a35;margin-bottom:3px}.wmgs{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;font-size:13px}.wmgs b{font:600 15px var(--disp)}
+.wmacts{margin-top:8px;font-size:13px;display:flex;flex-direction:column;gap:2px}.wmg .wmbar{margin-top:4px}
 .wmfoot{font-size:11.5px;color:#6b5a35;margin:8px 0 0;line-height:1.45}.wmload{height:340px;display:flex;align-items:center;justify-content:center;color:#6b5a35;border:1px dashed #c8b48a;font-size:13px}
 @media(max-width:900px){.wmwrap{grid-template-columns:1fr}.wmhd{flex-direction:column;align-items:stretch}}
 /* scrollbars */
@@ -3198,7 +3199,7 @@ function wmLoad(){if(WM||WMload)return;const add=src=>new Promise((ok,no)=>{cons
     const byN={};for(const f of land)byN[f.properties.name]=path(f);
     WM={W,H,proj,path,byN,grat:path(d3.geoGraticule10()),sph:path({type:'Sphere'})};render()}).catch(()=>{WM={err:1};render()})}
 function wmCPath(c){const ns=WM_NAME[c]||[c];for(const n of ns)if(WM.byN[n])return WM.byN[n];return null}
-function wmSVG(d){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
+function wmSVG(d,dsh=0){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
   let g=`<path d="${WM.sph}" fill="#ece5d3"/><path d="${WM.grat}" fill="none" stroke="#ddd3bc" stroke-width=".4"/>`;
   const src=new Set(d.src.map(x=>x[0]));
   for(const n in WM.byN){const us=n==='United States of America',hit=[...src].find(c=>(WM_NAME[c]||[c]).includes(n));
@@ -3216,7 +3217,7 @@ function wmSVG(d){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
     let p=cand.find(([a,b])=>fits([a,b,a+tw,b+28]))||cand[0];boxes.push([p[0],p[1],p[0]+tw,p[1]+28]);
     const lead=Math.hypot(p[0]+(p[0]<x?tw:0)-x,p[1]+14-y)>26?`<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(p[0]<x?p[0]+tw:p[0]).toFixed(1)}" y2="${(p[1]+12).toFixed(1)}" stroke="#7d7058" stroke-width=".6"/>`:'';
     labs.push(`${lead}<text x="${p[0].toFixed(1)}" y="${(p[1]+11).toFixed(1)}" class="wml">${t1}</text><text x="${p[0].toFixed(1)}" y="${(p[1]+25).toFixed(1)}" class="wmv" fill="${col}">${t2}</text>`)}
-  dots+=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.6"/><text x="${(ux-10).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text>`;
+  dots=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="${(6+26*Math.sqrt(dsh)).toFixed(1)}" fill="#2d5f99" fill-opacity=".18" stroke="#2d5f99" stroke-width="1.2" stroke-dasharray="3 2"><title>US production: ${pct(dsh)} of supply in the game now</title></circle>`+dots+`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.6"/><text x="${(ux-10).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text><text x="${(ux-10).toFixed(1)}" y="${(uy+30).toFixed(1)}" class="wmv" fill="#2d5f99" text-anchor="end">US plants: ${pct(dsh)} of supply now</text>`;
   const mk=k=>`<marker id="wmah-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="${WM_COL[k]}"/></marker>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="wmsvg" role="img" aria-label="Map of US import sources for ${d.n}"><defs>${mk('adv')}${mk('al')}${mk('oth')}</defs>${g}${arcs}${dots}${labs.join('')}</svg>`}
 function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
@@ -3226,15 +3227,26 @@ function wmHTML(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||productio
   const bar=`<div class="wmbar">${segs.filter(x=>x[2]>0).map(([k,n,v,c])=>`<i style="width:${v}%;background:${c}" data-tip="<b>${n}</b><br>${v}% of US imports"></i>`).join('')}</div>
     <div class="wmleg">${segs.map(([k,n,v,c])=>`<span><i style="background:${c}"></i>${n} <b>${v}%</b></span>`).join('')}</div>`;
   const list=WMD.map(x=>{const a=shOf(x,'adv');return `<button class="wmi ${x.k===d.k?'on':''}" data-a="map" data-m="${x.k}"><span class="wmn">${x.n.replace(' (terbium)','')}</span><span class="wmc" data-tip="Share of US imports from China and Russia"><i style="width:${a}%"></i></span><span class="wmp">${a?a+'%':'—'}</span></button>`}).join('');
-  const gm=p?(()=>{const n=Math.max(p.dom+p.ally+p.prc,1e-9);return `<div class="wmg"><div class="wmgh">In the game now · ${ND[d.node].n} · where supply comes from</div><div class="wmgs"><span>Domestic <b>${pct(p.dom/n)}</b></span><span>Allied <b>${pct(p.ally/n)}</b></span><span>Chinese <b>${pct(p.prc/n)}</b></span><span class="mini">covers <b>${pct(Math.min(1,p.cover??1))}</b> of need</span>${cut>.01?`<span class="redt">Export controls cut <b>${pct(cut)}</b> of Chinese supply</span>`:''}<span class="dsp"></span><button class="btn sm" data-a="node" data-n="${d.node}">Open its page →</button></div></div>`})():'';
-  const body=WM?.err?`<div class="wmload">The map outlines could not load; they need an internet connection. The figures are listed below.</div>`:WM?wmSVG(d):'<div class="wmload">Loading map…</div>';
-  const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Where US imports come from · shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
+  const sup=p?(()=>{const mk=p.spot+p.div,st=p.usedStock||0,n=Math.max(p.dom+p.ally+p.prc+mk+st,1e-9);return {n,seg:[['US plants',p.dom/n,'#2d5f99'],['Allied',p.ally/n,'#6f9bc8'],['Chinese',p.prc/n,WM_COL.adv],['Spot buys and diverted civilian supply',mk/n,'#8c7442'],['Stockpile drawdown',st/n,'#b8a040']]}})():null,dsh=sup?sup.seg[0][1]:0;
+  const acts=p?(()=>{const yr=w=>dateOf(w).getFullYear(),r=[];
+    for(const pl of S.plants.filter(x=>x.target===d.node))r.push(`🏭 <b>${pl.nm}</b> · ${pl.full?'at full rate':'ramping up'}`);
+    for(const q of S.projects.filter(x=>PD[x.def].t.node===d.node))r.push(`${PD[q.def].ally?'🤝':q.pkg?'🏛':'🏗'} <b class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</b> · ${q.pkg?`requested in the FY${FYOF(q.pkg)} NDAA`:`online ~${yr(S.w+remW(q))}`}`);
+    for(const x of S.done.filter(x=>PD[x.def].ally&&PD[x.def].t.node===d.node))r.push(`🤝 <b>${x.nm||PD[x.def].n}</b> · delivering`);
+    for(const x of ndsReqs().filter(x=>x.id===d.node))r.push(`📦 <b>Stockpile buy</b> · requested in the FY${FYOF(x.pkg)} NDAA`);
+    if((S.stock[d.node]||0)>0)r.push(`📦 <b>Stockpile</b> · ${fmt(S.stock[d.node]/Math.max(S.nodes[d.node].scale,1e-9),0)} weeks of demand held`);return r})():[];
+  const gm=p?`<div class="wmg"><div class="wmgh">Your supply now · ${ND[d.node].n} · changes as you act</div>
+    <div class="wmbar">${sup.seg.filter(x=>x[1]>.001).map(([n,v,c])=>`<i style="width:${v*100}%;background:${c}" data-tip="<b>${n}</b><br>${pct(v)} of supply"></i>`).join('')}</div>
+    <div class="wmleg">${sup.seg.filter(x=>x[1]>.001).map(([n,v,c])=>`<span><i style="background:${c}"></i>${n} <b>${pct(v)}</b></span>`).join('')}<span>Covers <b>${pct(Math.min(1,p.cover??1))}</b> of need</span>${cut>.01?`<span class="redt">Export controls cut <b>${pct(cut)}</b> of Chinese supply</span>`:''}</div>
+    <div class="wmacts">${acts.length?acts.map(x=>`<div>${x}</div>`).join(''):'<div class="mini">Nothing under way for this material yet: build a plant, sign an allied deal, or request a stockpile buy from its page.</div>'}</div>
+    <div style="margin-top:6px"><button class="btn sm" data-a="node" data-n="${d.node}">Open its page to act →</button></div></div>`:'';
+  const body=WM?.err?`<div class="wmload">The map outlines could not load; they need an internet connection. The figures are listed below.</div>`:WM?wmSVG(d,dsh):'<div class="wmload">Loading map…</div>';
+  const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Raw material imports: where they come from · shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
     <div class="wmhd"><div class="wmnir"><b>${d.nir}</b><span>net import reliance, 2025</span></div><div class="wmshare">${bar}</div></div></div>`;
   return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(top)}
     <div class="wmwrap"><div class="wmlist"><div class="wmlh"><span>Raw material</span><span>From China / Russia</span></div>${list}</div><div class="wmmain">
       ${body}
       <div class="wmsrc"><span class="wmk">Source</span>USGS, import sources 2021–24: “${d.ln}”${d.note?`<div class="wmnote">${d.note}</div>`:''}</div>${gm}
-      <p class="wmfoot">Shares of US imports by the country that shipped them, not of world production; material refined in one country may have been mined in another. Line width shows the share; lines mark origins, not shipping routes.${cut>.01?' Dashed: supply cut by export controls in the game now.':''} Allies: NATO, Japan, South Korea, Australia and Israel. Map: Natural Earth.</p>
+      <p class="wmfoot">Shares of US imports by the country that shipped them, not of world production; material refined in one country may have been mined in another. Line width shows the share; lines mark origins, not shipping routes. The arrows are the USGS record; the blue circle on the United States and the panel below are your supply in the game, and change with what you do.${cut>.01?' Dashed: supply cut by export controls in the game now.':''} Allies: NATO, Japan, South Korea, Australia and Israel. Map: Natural Earth.</p>
     </div></div></div></div>`}
 function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   const pls=S.plants.filter(p=>isL?(p.kind==='line'&&p.target===l):p.target===id),prs=S.projects.filter(q=>{const d=PD[q.def];return q.dur[3]>0&&(isL?d.t.line===l:d.t.node===id)}),ald=isL?[]:S.done.filter(x=>PD[x.def].ally&&PD[x.def].t.node===id);
@@ -4254,7 +4266,7 @@ function renderGame(){
     <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
-  let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button> <button class="btn sm" data-a="map" data-tip="Where US imports of each raw material come from: a world map, from USGS data">🌍 Imports</button></span></h2>
+  let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button> <button class="btn sm" data-a="map" data-tip="Where US imports of 18 raw materials come from: a world map, from USGS data">🌍 Raw material imports</button></span></h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
    <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
   if(S.tab==='bott'){
