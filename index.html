@@ -116,7 +116,7 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .ctable .nm{font:600 13px Georgia}
 .kv{display:grid;grid-template-columns:150px 1fr;gap:3px 10px;font:12.5px "Segoe UI",system-ui,sans-serif;margin:8px 0}
 .kv b{font-weight:600}
-.linkn{color:#5a3a10;text-decoration:underline;cursor:pointer}
+.linkn{color:#5a3a10;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,currentColor 30%,transparent);cursor:pointer}.linkn:hover{text-decoration-color:currentColor}
 .chipsP{display:flex;flex-wrap:wrap;gap:4px}
 .npill{display:inline-block;padding:1px 7px;border-radius:9px;font:11.5px "Segoe UI",system-ui,sans-serif;cursor:pointer;border:1px solid #8a7850}
 .np-ok{background:#d6e8c8}.np-tight{background:#f2dca0}.np-short{background:#f0b3a8}.np-cut{background:#c0392b;color:#fff}
@@ -525,6 +525,13 @@ body{background:
 @keyframes rcin{0%{opacity:0;transform:translateY(-14px) scale(.97)}100%{opacity:1;transform:none}}
 /* sufficiency */
 .rc-rb .nb .rc-req{position:absolute;top:-4px;bottom:-4px;width:3px;background:#e8c14a;box-shadow:0 0 0 1px #000a;z-index:1}.rc-al{color:#a9c7e6}
+/* streamlining */
+.chain .ch1{display:flex;align-items:center;gap:6px}.chain .ch1 b{font:600 14.5px var(--disp);color:var(--ink);letter-spacing:.02em}.chain .chp{margin-left:auto;font:700 14px var(--disp);color:#e0604c}
+.chain .ch2{font-size:11.5px;color:#a8a48e;margin:1px 0 0 22px}.chain .ch2 .linkn{color:#e8b8a8}
+.tabs{flex-wrap:nowrap}.tabs .btn{flex:1;text-align:center;padding:2px 4px}
+.lad-more{font:600 12px var(--disp);color:var(--dim);cursor:pointer;padding:2px 6px}.lad-more:hover{color:var(--ink)}
+.rc-rrow{margin:6px 6px 8px;padding:8px 10px 7px}.rc-rlim{margin-top:6px}.rc-rwork{margin-top:4px}
+.bngrid>div:nth-child(3) .bnc{display:grid;grid-template-columns:minmax(0,1fr) 128px;align-items:center;gap:8px;margin:3px 0}.bngrid>div:nth-child(3) .bnc .pbtn{width:100%;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bngrid>div:nth-child(3) .bnc .mini{text-align:right;white-space:nowrap}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3784,9 +3791,9 @@ function limWhy(id,c,R){const idle=ms=>{const m=ms.sort((a,b)=>a.mult-b.mult)[0]
   if(k==='cut')return {ic:'✂',t:'cut off by bans or controls'};if(k==='ramp')return {ic:'⏳',t:'new plants still ramping'};
   return {ic:'⚙',t:p.dom<1e-6?'no US plant: all imported':'not enough capacity'}}
 function ladder(c,R,max=4){const o=R.out[c],steps=[...(o.lims||[]),{id:'L:'+c,f:o.capF??1}].sort((a,b)=>a.f-b.f);
-  const shown=steps.filter((x,k)=>x.f<=1+1e-9||k===steps.findIndex(y=>y.f>1+1e-9)).slice(0,max);
+  const shown0=steps.filter((x,k)=>x.f<=1+1e-9||k===steps.findIndex(y=>y.f>1+1e-9)),shown=shown0.slice(0,max),more=shown0.length-shown.length;
   return `<div class="lad"><span class="lad-h" data-tip="How much of the line’s rated capacity each input (and the line itself) allows, lowest first. Output stops at the first one; fixing it lifts output only to the next.">Limits, lowest first</span>${shown.map((x,k)=>{const isL=x.id.startsWith('L:'),st0=fixStat(x.id,c,R),st=x.f>1+1e-9&&st0.cls==='none'?{cls:'okish',t:'✓ enough'}:st0,ch=isL?[]:chainOf(R.P,x.id);
-    return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?'Line capacity':ND[x.id].n}</b><br>Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?'Line capacity':ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em>${(()=>{const w=x.f<1-1e-9||(isL&&k===0)?limWhy(x.id,c,R):null;return w?`<span class="lad-w">${w.ic} ${w.t}</span>`:''})()}</span>`}).join('')}</div>`}
+    return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?'Line capacity':ND[x.id].n}</b><br>Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?'Line capacity':ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em>${(()=>{const w=k===0&&(x.f<1-1e-9||isL)?limWhy(x.id,c,R):null;return w?`<span class="lad-w">${w.ic} ${w.t}</span>`:''})()}</span>`}).join('')}${more>0?`<span class="lad-more" data-a="node" data-n="L:${c}" data-tip="See every limit on the line’s page">+${more} more</span>`:''}</div>`}
 // ---------- sufficiency: the coalition's output against what the plan requires, not parity with the rival ----------
 // US requirement per line (a year): public targets
 const REQ_US={
@@ -3846,7 +3853,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
   const enough=cs.filter(c=>suffLine(c,out[c].yr)>=.999).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Sufficiency</b><br>Line by line: (your output + ${A.n}) ÷ what the plan requires, capped at 100%, averaged. The requirement is the US targets plus the allies’ own, and it rises as ${RV().n}’s output grows. Rival figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of what the plan requires · you + ${A.short}</span></div></div>
+  let h=scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Sufficiency</b><br>Line by line: (your output + ${A.n}) ÷ what the plan requires, capped at 100%, averaged. The requirement is the US targets plus the allies’ own, and it rises as ${RV().n}’s output grows. Rival figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of the requirement<br>you + allies</span></div></div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
    <div><b>${enough}/${cs.length}</b><span>lines sufficient</span></div>
    <div data-tip="Average growth in ${RV().n}'s output over the last year. As it grows, so does what the plan requires."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth · raises the bar</span></div>
@@ -3859,16 +3866,16 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
     const g=cn/Math.max(cnOut(c,S.w-52),1e-9)-1;
     const Pl=isL?null:R.P[lim],cutF=Pl&&Pl.need>1e-6?Math.min(1,Pl.lost/Pl.need):0,cutWhy=isL?null:S.fac==='US'&&icBars(lim)?['US import controls','source']:S.fac==='US'&&S.dfars&&DFARS_NODES.includes(lim)&&!carveOn('cvDfars')?['the DFARS ban on Chinese and Russian content','source']:["China's export controls",'export'],
       cutT=cutF>.1?` <span class="linkn rc-cut" data-a="rbgo" data-d="${cutWhy[1]}" data-tip="How this rule works, and who can change it">✂ ${pct(cutF)} of its supply cut off by ${cutWhy[0]}</span>`:'';
-    const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].join(' · ')}`:`<span class="red">No fix under way.</span>`;
+    const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].reduce((a,x,i,arr)=>i<2?a.concat(x):i===2?a.concat(`<span class="dim">+${arr.length-2} more</span>`):a,[]).join(' · ')}`:`<span class="red">No fix under way.</span>`;
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
-    const loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.05+.75*loss).toFixed(2)}),rgba(176,69,58,${(.02+.35*loss).toFixed(2)}));border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
+    const loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.04+.22*loss).toFixed(2)}),rgba(176,69,58,0) 70%),linear-gradient(180deg,#252922,#1d201a);border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
     const alTip=a?tipQ(`<b>${A.n}</b><br>${fmtN(a.out)}/yr in Jan 2027, ${fmtN(a.tgt)}/yr planned by 2030${a.est?' (estimate)':''}<br>${a.src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${dv>.005?`<br><span style='color:#e8a090'>−${pct(dv)}: your emergency buys outrun their suppliers’ spare capacity</span>`:''}${upOf('L:'+c).size&&[...upOf('L:'+c)].some(id=>allyGrowth(id)>.01)?`<br><span style='color:#a8d48e'>Their suppliers are expanding: up to ${pct(Math.max(...[...upOf('L:'+c)].map(allyGrowth)))} of the squeeze closed</span>`:''}`):'';
     return `<div class="rc-rrow trc" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b></span>${gap}</div>
       <div class="rc-rgrid"><div>
        <div class="rc-rb"><span>${F().flag} You + allies</span><div class="nb"><i style="width:${B(us)}%;background:#5f8fc4"></i><i style="left:${B(us)}%;width:${B(al)}%;background:#a9c7e6" data-tip="${alTip}"></i><span class="mk rc-req" style="left:${B(rq).toFixed(1)}%" data-tip="Requirement: ${fmtN(rq)}/yr"></span></div><span class="v"><b>${fmtN(us)}</b> + <span data-tip="${alTip}" class="rc-al">${fmtN(al)}</span>${dv>.005?` <span class="red" data-tip="${alTip}">−${pct(dv)}</span>`:''} <span class="dim">/ ${fmtN(rq)}</span></span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
        ${raceSpark(c)}</div>
-      <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${ladder(c,R)}${cutT}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
+      <div class="rc-rlim">${loss>.005?`<b class="rc-loss">−${pct(loss)} of capacity idle</b> `:''}${ladder(c,R,3)}${cutT}${cur&&cur.id===lim&&cur.w>=PLAY0?` <span class="dim">since ${yr(cur.w)}</span>`:''} <button class="btn sm" data-a="node" data-n="${lim}">Increase supply →</button></div>
       <div class="rc-rwork">${work}${past.length?` <span class="rc-rclr">${past.map(x=>`✓ ${limName(x.id)} ${yr(x.w1)}`).join(' · ')}</span>`:''}</div></div>`}).join('');
   return h}
 function renderGame(){
@@ -3891,13 +3898,13 @@ function renderGame(){
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
   let sup=`<h2>Supply Chain <span class="r"><button class="btn sm" data-a="flow" data-f="all">⇶ Flows</button> <button class="btn sm" data-a="map">🗺 Map</button></span></h2>
-   <div class="tabs">${[['bott','⚠ Bottlenecks'],[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']].map(([k,l])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}">${l}</button>`).join('')}</div>
+   <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
    <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
   if(S.tab==='bott'){
     const shortL=S.order.filter(l=>R.out[l].bott);
     sup+=`<div class="sect"><span>Short lines → root cause</span><span class="linkn" data-a="view" data-v="bn" style="color:#dcc78e">Full analysis →</span></div>`;
     if(!shortL.length)sup+=`<div class="empty" style="padding:10px">Every line is running at capacity.</div>`;
-    for(const l of shortL){const o=R.out[l],ls=Math.max(0,1-o.n/Math.max(o.cap,1e-9));sup+=`<div class="chain trc" data-n="L:${l}" style="background:rgba(176,69,58,${(.04+.7*ls).toFixed(2)});box-shadow:inset 3px 0 0 rgba(208,80,63,${(.5+.5*ls).toFixed(2)})">${lineIcon(l,16,'lic sm')}<b class="linkn" style="color:#fff" data-a="flow" data-f="L:${l}" title="Trace in the flow diagram">${LINES[l].n} ⇶</b> <span class="dim">${pct(o.n/Math.max(o.cap,1e-9))}</span><br>${o.chain.map(id=>`<span class="linkn" style="color:#e8b8a8" data-a="node" data-n="${id}">${ND[id].n}</span>`).join('<span class="ar">←</span>')}</div>`}
+    for(const l of shortL){const o=R.out[l],ls=Math.max(0,1-o.n/Math.max(o.cap,1e-9)),root=o.chain.at(-1);sup+=`<div class="chain trc" data-n="L:${l}" style="box-shadow:inset 3px 0 0 rgba(208,80,63,${(.35+.65*ls).toFixed(2)})"><div class="ch1">${lineIcon(l,15,'lic sm')}<b class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</b><span class="chp" data-tip="Running at this share of capacity">${pct(o.n/Math.max(o.cap,1e-9))}</span></div><div class="ch2">short of <span class="linkn" data-a="bngo" data-n="${root}">${ND[root].n}</span>${o.chain.length>1?` <span class="dim" data-tip="${tipQ(o.chain.map(i=>ND[i].n).join(' ← '))}">via ${o.chain.length-1}</span>`:''}</div></div>`}
     const bad=ORDER.filter(id=>['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover);
     sup+=`<div class="sect"><span>Nodes below 100% cover (${bad.length})</span><span></span></div>`+bad.map(id=>nodeRow(id,P)).join('');
   } else if(S.tab==5){
