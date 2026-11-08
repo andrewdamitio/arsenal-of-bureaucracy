@@ -638,6 +638,7 @@ body{background:
  .agrid,.ogrid{grid-template-columns:minmax(0,1fr)}.acard{min-width:0}.srcgrid{columns:1}.mtab{display:block;overflow-x:auto}
  .rc-rhead{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-rhead>*:first-child{grid-column:1/-1}.icrow{grid-template-columns:34px minmax(0,1fr)}.icrow>*{min-width:0}.fx span{white-space:normal}
 }
+.aptog{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font:600 11px var(--disp);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px}.aptog i{width:9px;height:9px;border-radius:50%;border:1px solid var(--brass);background:#141611}.aptog.on i{background:#e8c14a;box-shadow:0 0 5px #e8c14a}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -4726,7 +4727,7 @@ function renderGame(){
     <div class="spacer"></div>
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
-    <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
+    <button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>On: the clock stops whenever a new problem appears.<br>Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken.`)}"><i></i>Pause on problems</button>
     ${res(S._svAt?'Saved':'Not saved',S._svAt?fmtDate(S._svW):'game file',`<b>Saved game</b><br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}<br>Download or load a save file, or start a new game.`,'savem','',S._svErr?'rwarn':'rquiet')}
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
