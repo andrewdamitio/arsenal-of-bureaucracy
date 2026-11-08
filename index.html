@@ -4361,6 +4361,7 @@ function renderGame(){
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
     <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
+    <button class="btn sm" data-a="savem" data-tip="${tipQ(`<b>Saved game</b><br>${S._svAt?'Saved automatically, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'} Download or load a save file, or start a new game.`)}">💾</button>
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
   let sup=`<h2>Supply Chain</h2>
@@ -4513,6 +4514,7 @@ function renderModal(){
     html=contractHTML();
   } else if(S.modal==='node'&&S.sel){
     html=dossierHTML(S.sel,P);
+  } else if(S.modal==='save'){html=saveHTML()
   } else if(S.modal==='bill'){html=billHTML()
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
@@ -4588,6 +4590,36 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function render(){if(!S)newGame(PLAYABLE[0]);renderGame();renderModal();rehover();renderReceipt()}
 
+/* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
+const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
+const saveable=()=>S&&!S.replay&&!S.histMode&&!S.over&&!(S.w===PLAY0&&S.modal==='scenPick');
+function saveData(){const o={};for(const k in S)if(!SAVE_SKIP.has(k))o[k]=S[k];return JSON.stringify({v:1,at:Date.now(),uidN,S:o})}
+function saveGame(){if(!saveable())return false;try{localStorage.setItem(SAVE_K,saveData());S._svW=S.w;S._svAt=Date.now();return true}catch(e){S._svErr=String(e.message||e);return false}}
+function clearSave(){try{localStorage.removeItem(SAVE_K)}catch(e){}}
+function savedInfo(){try{const t=localStorage.getItem(SAVE_K);if(!t)return null;const d=JSON.parse(t);return {at:d.at,w:d.S.w,fac:d.S.fac,scen:d.S.scen}}catch(e){return null}}
+function loadData(txt){const d=JSON.parse(txt);if(!d||d.v!==1||!d.S||d.S.w==null)throw new Error('Not an Arsenal of Bureaucracy save file.');
+  const cur=d.S;newGame(cur.fac);const tm=S; // fields added to the game since the save was made start from a fresh game's values
+  for(const k in tm)if(!(k in cur)&&!SAVE_SKIP.has(k))cur[k]=tm[k];
+  S=cur;uidN=Math.max(uidN,d.uidN||1);S.speed=0;S.replay=false;S.histMode=false;S.sim=false;S.queue=S.queue||[];if(S.modal==='save')S.modal=null;
+  PJC.clear();viewKey='';S._vdirty=true;S._svW=S.w;S._svAt=d.at;scenUpdate();S._R=production(false)}
+function resumeSave(){let t=null;try{t=localStorage.getItem(SAVE_K)}catch(e){}if(!t)return false;
+  try{loadData(t);render();toast(`💾 <b>Resumed your game</b><br><span class="dim">${fmtDate(S.w)}${S.scen?' · '+SCD[S.scen].n:''}. The 💾 button in the top bar starts a new one.</span>`,'good');return true}
+  catch(e){console.error(e);S=null;clearSave();return false}}
+function saveDownload(){const t=saveData(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));
+  const d=dateOf(S.w);a.download=`arsenal-${S.fac.toLowerCase()}-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function saveUpload(){const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
+  i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{const old=S;try{loadData(t);S.modal=null;saveGame();render();toast(`💾 <b>Save loaded</b><br><span class="dim">${fmtDate(S.w)}</span>`,'good')}catch(e){S=old;S._svMsg=e.message||'That file could not be read.';render()}})};i.click()}
+function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S._svAt)/60000)):null;
+  return `<div class="paper"><div class="hd"><span class="ic">💾</span>Saved game</div><div class="bd">
+   <p>The game saves itself in this browser every four game weeks and whenever you close the tab, and picks up where you left off when you come back.</p>
+   <p class="mini">${ok?`Last saved ${ago<1?'just now':ago===1?'a minute ago':ago<60?ago+' minutes ago':'over an hour ago'}, at ${fmtDate(S._svW)}.`:'Not saved yet: saving starts once you are past the scenario choice.'}${S._svErr?` <span class="redt">The browser refused the last save (${S._svErr}). Download a file to keep your game.</span>`:''}</p>
+   <p class="mini">A browser save lives only in this browser on this computer, and clearing site data erases it. Download a file to keep a copy or move the game to another computer.</p>
+   ${S._svMsg?`<p class="redt">${S._svMsg}</p>`:''}
+   ${S._newc?`<p class="redt"><b>Start over?</b> This game and its browser save are erased. Download a file first if you want to keep it.</p>`:''}</div>
+   <div class="ft">${S._newc?`<button class="pbtn" data-a="savenew2">Erase and start a new game</button><button class="pbtn" data-a="savenewx">Keep playing</button>`:`<button class="pbtn primary" data-a="savedl" ${saveable()||S.over?'':'disabled'}>Download save file</button><button class="pbtn" data-a="saveul">Load a save file</button><button class="pbtn" data-a="savenew">New game…</button>`}</div></div>`}
+window.addEventListener('pagehide',()=>saveGame());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame()});
+let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
 document.addEventListener('pointerdown',e=>{
   if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
@@ -4685,9 +4717,15 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'rcptx':if(S._rcpt)S._rcpt.gone=true;renderReceipt();return;
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
-    case 'restart':S=null;break;
+    case 'restart':S=null;clearSave();break;
+    case 'savem':saveGame();S.modal='save';S._newc=false;S._svMsg='';S.speed=0;break;
+    case 'savedl':saveGame();saveDownload();break;
+    case 'saveul':saveUpload();break;
+    case 'savenew':S._newc=true;break;
+    case 'savenewx':S._newc=false;break;
+    case 'savenew2':clearSave();S=null;break;
   }
-  render();
+  render();if(S)saveSoon();
 });
 document.addEventListener('keydown',e=>{
   if(!S||S.over||QJ||e.target.tagName==='INPUT')return;
@@ -4710,13 +4748,13 @@ function loop(now){
     requestAnimationFrame(loop);return}
   if(S&&!S.over&&S.speed>0&&!S.queue.length&&!S.modal){acc+=Math.min(dt,500);let ticked=false;
     while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over){acc-=MS[S.speed];tick();ticked=true}
-    if(ticked)dirtyR=true;
+    if(ticked){dirtyR=true;if(S.w-(S._svW??-99)>=4)saveGame()}
     if(dirtyR&&(S.queue.length||S.over||!S.speed||now-lastR>=RENDER_MS[S.speed])){render();lastR=now;dirtyR=false}}
   else{acc=0;if(dirtyR&&S){render();lastR=now;dirtyR=false}}
   requestAnimationFrame(loop);
 }
 window.addEventListener('resize',()=>{if(S&&S.modal)renderModal()});
-render();requestAnimationFrame(loop);
+if(!resumeSave())render();requestAnimationFrame(loop);
 </script>
 </body>
 </html>
