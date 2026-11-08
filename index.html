@@ -639,6 +639,7 @@ body{background:
  .rc-rhead{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-rhead>*:first-child{grid-column:1/-1}.icrow{grid-template-columns:34px minmax(0,1fr)}.icrow>*{min-width:0}.fx span{white-space:normal}
 }
 .aptog{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font:600 11px var(--disp);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px}.aptog i{width:9px;height:9px;border-radius:50%;border:1px solid var(--brass);background:#141611}.aptog.on i{background:#e8c14a;box-shadow:0 0 5px #e8c14a}
+.civp{padding:6px 10px 10px}.civt{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}.civt div{display:flex;flex-direction:column;border:1px solid #3a382c;background:#141611;padding:4px 6px}.civt b{font:700 16px var(--disp);color:var(--brass2)}.civt span{font-size:10.5px;color:var(--dim)}.civr{display:flex;justify-content:space-between;gap:8px;font-size:12px;border-bottom:1px dotted #3a382c;padding:2px 0}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1231,6 +1232,8 @@ const IC=[
   up:['US drone makers keep the home market','onshoring builds'],dn:['allied drone parts barred too','farmers, police & utilities lose new models']},
  {id:'icAllyEx',n:'Exempt allied drone makers',who:'DoW national-security determinations',offTxt:'not granted',req:'icDrones',pc:[10,6],strain:-4,c:'fccuasx',
   up:['allied parts flow again'],dn:['hidden PRC content slips in more often']},
+ {id:'icStates',n:'State and local agencies barred from Chinese drones, with replacement grants',who:'States, with federal grants',offTxt:'only some states, Florida since 2023',pc:[10,6],strain:3,c:'flban',
+  up:['police, fire and utilities buy US drones','US makers’ civilian share +5 pts'],dn:['agencies pay about twice as much per drone','fewer public-safety drones in the air for a while']},
  {id:'ic232',n:'Section 232 tariffs on drones & drone parts',who:'President · Commerce',since:'3 Sep 2026 · parts 9 Feb 2027',pc:[10,15],strain:5,c:'dr232',
   up:['duty-free equipment for new US drone plants (−15% cost)','onshoring 1.5× faster'],dn:['tariffed parts trim drone output until onshore']},
  {id:'icParts',n:'Covered parts inside other devices',who:'FCC',since:'2026 · FCC 26-50',pc:[10,15],strain:2,c:'fccparts',
@@ -1256,16 +1259,36 @@ function icObsMult(o,def){if(S.fac!=='US')return 1;let m=1;const dr=droneRel(def
   if(o.id==='hidden'){if(icOn('icLabs'))m*=.6;if(dr&&icOn('icAllyEx'))m*=1.5}
   if(o.layer==='GRID'&&icOn('icGrid'))m*=1.15;
   return Math.max(0,m)}
-function icTick(){if(S.fac!=='US')return;const o=S.icOnshore||0;
-  S.icOnshore=icOn('icDrones')?Math.min(1,o+(1/208)*(icOn('ic232')?1.5:1)*(icOn('icRevoke')?2:1)):Math.max(0,o-1/156);
+const CIVD={m0:4e5,g:.06,full:2.5e5,s0:.1};
+const civM=(w=S.w)=>CIVD.m0*Math.pow(1+CIVD.g,(w-PLAY0)/52);
+function civParts(){const r=[['US makers’ share before any ban',.12]];
+  if(icOn('icDrones'))r.push(['No new foreign drone models (FCC Covered List)',.3]);
+  if(icOn('icAllyEx'))r.push(['Allied makers exempted: they win part of the gap',-.1]);
+  if(icOn('ic232'))r.push(['Section 232 tariffs on drones and parts',.06]);
+  if(icOn('icParts'))r.push(['Chinese parts barred inside other devices',.03]);
+  if(icOn('icRevoke'))r.push(['Existing foreign authorizations pulled: fleets must be replaced',.18]);
+  if(ruleOn('rASDA')&&S.w>=weekOf(2025,11,22))r.push(['Federal agencies barred from Chinese drones',.03]);
+  if(icOn('icStates'))r.push(['State and local agencies barred, with replacement grants',.05]);
+  return r}
+const civTarget=()=>clamp(civParts().reduce((a,x)=>a+x[1],0),.05,.85);
+const civS=()=>S.civ||(S.civ={share:CIVD.s0});
+// the military drone base reaches full scale once US makers sell about 250,000 civilian drones a year (game estimate)
+function icTick(){if(S.fac!=='US')return;const c=civS();c.share+=(civTarget()-c.share)/104;
+  const o=S.icOnshore||0,ot=Math.min(1,civM()*c.share/CIVD.full);S.icOnshore=o+(ot-o)/52;
   if(icOn('icRevoke')&&S.w-(S.icSince.icRevokeW||0)<26)S.strain=clamp(S.strain+.6,0,100); // grounded fleets keep complaining
   S.know.drones=Math.min(95,S.know.drones+.02*S.icOnshore)}
 function toggleIC(id){const c=ICD[id],on=icOn(id),cost=c.pc[on?1:0];if(S.pc<cost||(!on&&c.req&&!icOn(c.req)))return;
   S.pc-=cost;S.ic[id]=!on;S.pages+=on?60:150;lawRec(on?'Control lifted':'Import control',c.n);if(!on){S.waivers++;S.strain=clamp(S.strain+c.strain,0,100);S.icSince[id]=fmtDate(S.w);if(id==='icRevoke')S.icSince.icRevokeW=S.w}
   if(on)for(const x of IC)if(x.req===id&&icOn(x.id)){S.ic[x.id]=false;log(`🛂 ${x.n}: lapses with it.`)}
   log(`🛂 ${c.who}: ${on?'lifted':'imposed'} — ${c.n} (${cost} PC).`,'ev');flash('ic:'+id,on?'bad':'good')}
+function civPanel(){const c=civS(),t=civTarget(),o=S.icOnshore||0,v=civM()*c.share;
+  return `<div class="sect"><span>US civilian drone market</span><span>game estimate</span></div><div class="civp">
+   <div class="civt"><div><b>${fmtN(civM())}</b><span>civilian drones sold a year</span></div><div><b>${pct(c.share)}</b><span>made by US firms, heading to ${pct(t)}</span></div><div><b>${fmtN(v)}</b><span>US-made a year</span></div></div>
+   <div class="mini"><b>What sets the US share</b></div>${civParts().map(([n,x])=>`<div class="civr"><span>${n}</span><b class="${x>=0?'green':'red'}">${x>=0?'+':'−'}${Math.round(Math.abs(x)*100)} pts</b></div>`).join('')}
+   <div class="mini" style="margin-top:6px"><b>What it does for the military.</b> US makers are at <b>${pct(o)}</b> of the scale that makes military drones cheap: drone line capacity +${pct(.25*o)}, drone and drone-part plants −${pct(.2*o)} in cost, fewer “no demand signal” stalls, and faster know-how. Bans that raise the share cost civilian strain and, at first, drone output while barred parts are replaced.</div>
+   <div class="mini" style="margin-top:4px">In 2021 DJI made about 54% of US commercial drones and 94% of consumer ones.[c:djishare] Market size and shares are game estimates.</div></div>`}
 function icPanel(){if(S.fac!=='US')return '';
-  return `<div class="sect"><span>Import controls · FCC & trade powers</span><span>${IC.filter(c=>icOn(c.id)).length} of ${IC.length} in force</span></div>`+IC.map(c=>{const on=icOn(c.id),cost=c.pc[on?1:0];
+  return civPanel()+`<div class="sect"><span>Import controls · FCC & trade powers</span><span>${IC.filter(c=>icOn(c.id)).length} of ${IC.length} in force</span></div>`+IC.map(c=>{const on=icOn(c.id),cost=c.pc[on?1:0];
     return `<div class="icrow ${on?'on':''}" data-fk="ic:${c.id}"><button class="tog ${on?'on':''}" data-a="ic" data-c="${c.id}" ${S.pc>=cost&&(on||!c.req||icOn(c.req))?'':'disabled'} data-tip="${on?'Lift':'Impose'}: ${cost} Political Capital${!on&&c.strain>0?` · civilian strain +${c.strain}`:''}"><i></i></button>
      <div><div class="nm">${c.n} [c:${c.c}]</div><div class="mini">${c.who} · ${on?'in force since '+(S.icSince[c.id]||c.since):(S.icSince[c.id]?'lifted':c.offTxt||'lifted')}</div>${fxChips(c.up,c.dn)}</div></div>`}).join('')}
 /* ---------- the US rulebook: who can change what, where it stands, and what it does to programs ---------- */
@@ -1317,6 +1340,10 @@ const RULES=[
   eff:{},up:['domestic or qualifying-country metal only'],dn:['shapes the titanium and steel supply shown in the chain']},
  {id:'rShipyard',dom:'source',kind:'law',n:'Navy ships built only in US shipyards',since:'Byrnes-Tollefson · 10 U.S.C. 8679',c:'yard8679',on0:1,
   eff:{},up:['protects US yards'],dn:['allied yards can’t build Navy hulls or major hull components','presidential exceptions only (the Senate FY27 NDAA markup would strip even that)']},
+ {id:'rASDA',dom:'source',kind:'law',n:'American Security Drone Act: no Chinese drones for federal agencies',since:'FY2024 NDAA, Dec 2023 · flying banned from Dec 2025',c:'asda',on0:1,
+  eff:{},up:['federal agencies buy US or allied drones','no federal grants for Chinese drones in states'],dn:['agencies replace fleets at higher prices']},
+ {id:'r1709',dom:'source',kind:'law',n:'FY2025 NDAA §1709: DJI and Autel listed unless audited within a year',since:'Dec 2024 · listed by default Dec 2025',c:'s1709',on0:1,
+  eff:{},up:['forced the FCC listing'],dn:['no agency ran the audit: the listing came by default, and is in court']},
  {id:'rBearings',dom:'source',kind:'law',n:'Ball and roller bearings from the US or Canada only',since:'annual appropriations · DFARS 225.7009',c:'dfarsbr',on0:1,
   eff:{},up:['protects the domestic bearing base'],dn:['Japanese and European bearings barred from defense work']},
  {id:'rJones',dom:'source',kind:'law',n:'Jones Act (with short emergency waivers)',since:'1920 · 60-day waiver Mar 2026',c:'jonesmap',on0:1,
@@ -2229,7 +2256,8 @@ const HIST=[
  {fac:['US'],w0:weekOf(2025,10,10)+1,t:'Under the truce, the US suspends the Affiliates Rule for a year (Nov 2025)',fx:()=>setRule('rAffil',false),c:'affil'},
  {fac:['US'],w0:weekOf(2025,11,18)+1,t:'COINS Act (in the FY2026 NDAA) writes outbound investment screening into law (Dec 2025)',fx:()=>setRule('rCOINS',true),c:'coins'},
  {fac:['US'],w0:weekOf(2025,4,22),t:'FCC bars test labs controlled by foreign adversaries from certifying devices (May 2025)',fx:()=>{S.ic.icLabs=true},c:'badlabs'},
- {fac:['US'],w0:weekOf(2025,11,22),t:'FCC adds all foreign-made drones and critical drone components to the Covered List (22 Dec 2025)',fx:()=>{S.ic.icDrones=true},c:'fccuas'},
+ {fac:['US'],w0:weekOf(2025,11,22),t:'No security agency ran the audit the FY2025 NDAA required (§1709), so the FCC adds DJI, Autel and all foreign-made drones and critical drone parts to the Covered List (22 Dec 2025)',fx:()=>{S.ic.icDrones=true},c:'s1709'},
+ {fac:['US'],w0:weekOf(2025,11,22)+1,t:'American Security Drone Act: federal agencies must stop flying Chinese-made drones (Dec 2025)',fx:()=>{S.strain=clamp(S.strain+2,0,100)},c:'asda'},
  {fac:['US'],w0:weekOf(2026,6,15),t:'FCC closes the component loophole: devices with parts from Covered List firms are barred too (2026)',fx:()=>{S.ic.icParts=true},c:'fccparts'},
  {fac:['US'],w0:weekOf(2026,6,28),t:'FCC adds foreign-made power inverters and advanced robots to the Covered List (Jul 2026)',fx:()=>{S.ic.icGrid=true},c:'fccinv'},
  {fac:['US'],w0:weekOf(2026,8,3),t:'Section 232 tariffs on imported drones take effect (3 Sep 2026); drone parts follow on 9 Feb 2027',fx:()=>{S.ic.ic232=true},c:'dr232'},
@@ -2367,6 +2395,7 @@ function projCost(def){
   for(const m of S.costMods)c*=m.mult;
   c*=ruleCost(def);
   if(icOn('ic232')&&droneRel(def))c*=.85; // onshoring program: duty-free equipment for new US drone plants
+  if(S.fac==='US'&&droneRel(def))c*=1-.2*(S.icOnshore||0); // civilian scale makes drone parts and tooling cheaper
   if(icOn('icGrid')&&['mod','power'].includes(def.kind))c*=1.1;
   return c;
 }
@@ -3861,6 +3890,10 @@ const CITES=[
  {id:'hellscape',g:'Wars of 2025–26',t:'Indo-Pacific commander plans ‘hellscape’ for China’s military if it invades Taiwan',pub:'Washington Times',d:'Jun 2024',url:'https://m.washingtontimes.com/news/2024/jun/14/indo-pacific-commander-plans-hellscape-chinas-mili/',use:'Adm. Paparo: thousands of uncrewed submarines, surface vessels and aerial drones would engage an invasion force in the Strait, buying about a month.'},
  {id:'crsnavy',g:'Ships, submarines & readiness',t:'Navy Force Structure and Shipbuilding Plans: Background and Issues for Congress (RL32665)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/files/2026-01-20_RL32665_56fe7a4e3f7660d51984a2058aa270cb1973b2c4.html',use:'291 battle force ships; about 11 ships a year sustained to grow toward 381; the 381 goal is being replaced by a Golden Fleet goal.'},
  {id:'scranton24',g:'Munitions & energetics',t:'US Army ammo plant boosts artillery shell production for Ukraine',pub:'Defense News (AP)',d:'Aug 2024',url:'https://www.defensenews.com/global/the-americas/2024/08/28/us-army-ammo-plant-boosts-artillery-shell-production-for-ukraine/',use:'Scranton went from about 24,000 to 36,000 155mm rounds a month with weekend overtime and a $400M modernization; RAND notes shifts and overtime can only go so far.'},
+ {id:'asda',g:'Import controls',t:'FY24 National Defense Authorization Act includes American Security Drone Act, limiting Chinese-made drone use',pub:'DroneLife',d:'Dec 2023',url:'https://dronelife.com/2023/12/14/fy-24-national-defense-authorization-act-includes-american-security-drone-act-limiting-chinese-made-drone-use/',use:'Federal agencies barred from buying, and later flying, drones from covered foreign makers; no federal funds for them in states.'},
+ {id:'s1709',g:'Import controls',t:'DJI urges federal agencies to initiate NDAA-mandated security review ahead of December deadline',pub:'DroneLife',d:'Dec 2025',url:'https://dronelife.com/2025/12/04/dji-urges-federal-agencies-to-initiate-ndaa-mandated-security-review-ahead-of-december-deadline/',use:'FY2025 NDAA §1709: DJI and Autel go on the Covered List by default unless audited by 23 Dec 2025.'},
+ {id:'flban',g:'Import controls',t:'Florida’s ban on Chinese drone tech comes with a $25M price tag',pub:'GovTech',d:'2023',url:'https://www.govtech.com/public-safety/floridas-ban-on-chinese-drone-tech-comes-with-a-25m-price-tag',use:'State and local agencies grounded Chinese drones; $25M to replace fleets that cost about $200M; US drones about twice the price.'},
+ {id:'djishare',g:'Import controls',t:'DJI loses big share of commercial drone market, DroneAnalyst report finds',pub:'UAV Coach',d:'2021',url:'https://uavcoach.com/dji-commercial-market-drop/',use:'DJI about 54% of US commercial drones in 2021 (69% in 2020) and about 94% of consumer drones.'},
  {id:'dicas',g:'Allies & sabotage',t:'The 3rd Defense Industrial Cooperation, Acquisition, and Sustainment (DICAS) Forum',pub:'Japan Ministry of Defense',d:'Dec 2024',url:'https://www.mod.go.jp/en/article/2024/12/a0445c34b97e53baf2a2b704366e0613cfbeb056.html',use:'Action plans approved for AMRAAM and PAC-3 MSE co-production, following the July 2024 2+2.'},
  {id:'jpxfer',g:'Allies & sabotage',t:'Japan to ease arms export controls allowing PAC-3 sale to US',pub:'AFP via The Defense Post',d:'Dec 2023',url:'https://thedefensepost.com/2023/12/22/japan-ease-arms-export',use:'Licence-built Patriot missiles may be sent back to the United States.'},
  {id:'krloan',g:'Allies & sabotage',t:'South Korea to lend 500,000 rounds of artillery shells to US, report says',pub:'Stars and Stripes',d:'Apr 2023',url:'https://www.stripes.com/theaters/asia_pacific/2023-04-12/south-korea-ammo-loan-ukraine-9778630.html',use:'About 500,000 155mm shells lent (Yonhap: at least 330,000), after US purchases of 100,000.'},
@@ -4055,6 +4088,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Civilian drone market','US civilian drone sales start at about 400,000 a year and grow 6% a year. US makers’ share moves over about two years toward a level set by the bans in force (shown in the Rulebook under Sourcing). At about 250,000 US-made civilian drones a year, the military drone base reaches full scale: drone line capacity +25%, drone plants 20% cheaper.'],
  ['New starts and offices','A new plant is paid for one of two ways: from your budget, starting now, or by requesting it in the next NDAA with Political Capital (about 2 PC plus 2.5 per $1B), in which case Congress pays if it funds it, from money it sets aside for requests (about $8B in an ordinary year, more or less with its appetite). The bill passes (the game passes it every 18 December, when recent NDAAs have been signed). Markup cuts fall hardest on plants that fix nothing holding output back and lightest on the worst bottlenecks, never absolutely, and Congress’s appetite swings from year to year (game estimates); money is charged only if funded. The bill also brings your annual industrial-base budget. Since the November 2025 overhaul, a portfolio acquisition executive runs each sector, not one office per plant; each office in the game staffs about three orders at full speed, and beyond that all its orders slow together (game estimate). Upgrades, workforce measures and allied deals are funded from existing accounts and start at once. After a shock (Chinese export bans, or a disaster at a plant), you can ask for an emergency supplemental: 30 PC, one a fiscal year, a vote in two to five months with a 75% chance of passing (game estimates); it adds $4B and funds every waiting new plant at once.[c:pl11850]'],
  ['Shared shortages','When an input is short, lines share it: each gets up to half its capacity first, then up to 80%, then the rest, with the priority order deciding who picks first in each round. A shortage slows several lines instead of shutting the last one in line (a game simplification of how allocation and DPA ratings work).'],
  ['Mid-length fixes','Supplier shifts add 15% of existing domestic capacity over a 13-week hiring ramp for $0.08B a year each and raise equipment-problem odds at new plants by 30%. While any shifts run, each line or supplier faces about a 0.25% weekly chance of an outage, rising to 0.75% after a year of wear: worn equipment (−30% for 4–8 weeks), an injury and safety stand-down (−40% for 2–4 weeks), or, where explosives are handled, a fire (−65% for 10–20 weeks). Repairs reset some of the wear. Overtime is linked to a 61% higher injury rate[c:dembe05] (estimates, set against Scranton’s rise, which also needed a $400M modernization).[c:scranton24] An undefinitized contract action ends contracting in about 4 weeks for 10% of the price, with a 25% chance of a cost overrun at construction (estimates; the risk itself is documented by the DoD IG).[c:ucaig] Not offered as fast fixes because they were not fast in practice: buying an ally’s production (Japan’s PAC-3 export took about two years from the December 2023 rule change to first delivery)[c:jpac3] and restarting closed lines.'],
