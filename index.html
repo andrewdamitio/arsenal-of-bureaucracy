@@ -598,6 +598,9 @@ body{background:
 @media(max-width:900px){.yrts{grid-template-columns:repeat(2,1fr)}.yrl{grid-template-columns:1fr}}
 .rbtabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
+.svp{width:min(720px,94vw)}.svft{flex-direction:row!important;flex-wrap:wrap}.svft .pbtn{flex:1;text-align:center;min-width:150px}
+.pbtn.danger{background:#efe2cc;border-color:#a3261c;color:#8a1f15}.pbtn.danger:hover:not(:disabled){background:#a3261c;color:#fff}
+.svwarn{display:flex;align-items:center;gap:16px;border:1px solid #c8a090;background:#f3e3d6;padding:6px 14px;margin-top:8px}.svwarn .stamp{margin:6px 0;font-size:16px;flex:none}.svwarn p{margin:0;color:#5a2a1e;font-size:13.5px}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -4542,7 +4545,7 @@ function renderGame(){
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
     <label class="dim" style="font-size:11px;white-space:nowrap" data-tip="Pause whenever a new problem appears. Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken."><input type="checkbox" data-a="ap" ${S.autoPause?'checked':''}> Pause on problems</label>
-    <button class="btn sm" data-a="savem" data-tip="${tipQ(`<b>Saved game</b><br>${S._svAt?'Saved automatically, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'} Download or load a save file, or start a new game.`)}">💾</button>
+    ${res(S._svAt?'Saved':'Not saved',S._svAt?fmtDate(S._svW):'game file',`<b>Saved game</b><br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}<br>Download or load a save file, or start a new game.`,'savem','',S._svErr?'rwarn':'rquiet')}
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
   let sup=`<h2>Supply Chain</h2>
@@ -4804,14 +4807,15 @@ function saveDownload(){const t=saveData(),a=document.createElement('a');a.href=
   const d=dateOf(S.w);a.download=`arsenal-${S.fac.toLowerCase()}-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function saveUpload(){const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
   i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{const old=S;try{loadData(t);S.modal=null;saveGame();render();toast(`💾 <b>Save loaded</b><br><span class="dim">${fmtDate(S.w)}</span>`,'good')}catch(e){S=old;S._svMsg=e.message||'That file could not be read.';render()}})};i.click()}
-function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S._svAt)/60000)):null;
-  return `<div class="paper"><div class="hd"><span class="ic">💾</span>Saved game</div><div class="bd">
-   <p>The game saves itself in this browser every four game weeks and whenever you close the tab, and picks up where you left off when you come back.</p>
-   <p class="mini">${ok?`Last saved ${ago<1?'just now':ago===1?'a minute ago':ago<60?ago+' minutes ago':'over an hour ago'}, at ${fmtDate(S._svW)}.`:'Not saved yet: saving starts once you are past the scenario choice.'}${S._svErr?` <span class="redt">The browser refused the last save (${S._svErr}). Download a file to keep your game.</span>`:''}</p>
-   <p class="mini">A browser save lives only in this browser on this computer, and clearing site data erases it. Download a file to keep a copy or move the game to another computer.</p>
-   ${S._svMsg?`<p class="redt">${S._svMsg}</p>`:''}
-   ${S._newc?`<p class="redt"><b>Start over?</b> This game and its browser save are erased. Download a file first if you want to keep it.</p>`:''}</div>
-   <div class="ft">${S._newc?`<button class="pbtn" data-a="savenew2">Erase and start a new game</button><button class="pbtn" data-a="savenewx">Keep playing</button>`:`<button class="pbtn primary" data-a="savedl" ${saveable()||S.over?'':'disabled'}>Download save file</button><button class="pbtn" data-a="saveul">Load a save file</button><button class="pbtn" data-a="savenew">New game…</button>`}</div></div>`}
+function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S._svAt)/60000)):null,can=saveable()||S.over;
+  const t=(v,l)=>`<div class="yrt"><b>${v}</b><span>${l}</span></div>`;
+  const when=!ok?'Not yet':ago<1?'Just now':ago<60?ago+' min ago':'Over an hour ago';
+  return `<div class="paper svp"><div class="hd"><span class="ic">💾</span>Saved game</div><div class="bd">
+   <div class="yrts">${t(fmtDate(S.w),'game date')}${t(when,ok?'last saved, at '+fmtDate(S._svW):'saving starts once play begins')}${t(S.scen?SCD[S.scen].n:'Open race','mandate')}${t('This browser','where it is kept')}</div>
+   <p class="mini">The game saves itself every four game weeks and whenever you close the tab, and picks up where you left off. A browser save lives only on this computer, and clearing site data erases it: download a file to keep a copy or to move the game.</p>
+   ${S._svErr?`<p class="redt mini">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="redt mini">${S._svMsg}</p>`:''}
+   ${S._newc?`<div class="svwarn"><div class="stamp">START OVER?</div><p>This game and its browser save will be erased. Download a file first if you want to keep it.</p></div>`:''}</div>
+   <div class="ft svft">${S._newc?`<button class="pbtn danger" data-a="savenew2">Erase and start a new game</button><button class="pbtn primary" data-a="savenewx">Keep playing</button>`:`<button class="pbtn primary" data-a="savedl" ${can?'':'disabled'}>⬇ Download save file</button><button class="pbtn" data-a="saveul">⬆ Load a save file</button><button class="pbtn danger" data-a="savenew">New game…</button>`}</div></div>`}
 window.addEventListener('pagehide',()=>saveGame());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame()});
 let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
