@@ -596,6 +596,7 @@ body{background:
 .yrtab td,.yrtab th{padding:3px 8px}.yrtab .num{text-align:right}.yrh{font:600 12px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a6d2e;margin:12px 0 4px;border-bottom:1px solid #c8b48a;padding-bottom:2px}
 .yrl{display:grid;grid-template-columns:190px 1fr;gap:10px;font-size:13px;padding:3px 0;border-bottom:1px dotted #d8c9a4}.yrl b{font-weight:600;color:#2a2418}
 @media(max-width:900px){.yrts{grid-template-columns:repeat(2,1fr)}.yrl{grid-template-columns:1fr}}
+.rbtabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}.rbtabs .mini{flex:1;min-width:240px}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1320,8 +1321,11 @@ function toggleRule(id){const r=RD2[id],on=ruleOn(id),cost=r.pc[on?1:0];if(!['ex
 function domRef(D){return PROJECTS.find(d=>facOk(d)&&D.ref(d))||PROJECTS.find(d=>facOk(d)&&!d.ally)}
 function oddsMax(o){const k=bnKey()+JSON.stringify([S.reforms,Object.keys(S.carve).filter(carveOn),Math.round(S.lev),S.nflags]);if(S._rbo?.k!==k)S._rbo={k,m:{}};
   return S._rbo.m[o.id]??=(()=>{let c=0,who=null;for(const d of PROJECTS)if(facOk(d)){const x=obsChance(o,d);if(x>c){c=x;who=d}}return {o,c,who}})()}
-function rulesBody(){
-  if(S.fac!=='US')return '<p class="mini">The rulebook covers the US regime.</p>';
+function rulesBody(){const all=allPermits(),open=all.filter(i=>i.st==='review').length,stuck=all.filter(i=>i.st==='stalled'||i.st==='contested').length,dk=S.rbTab==='docket';
+  const tabs=`<div class="rbtabs"><button class="pbtn ${dk?'':'on'}" data-a="rbtab" data-t="rules">⚖ Rules & reforms</button><button class="pbtn ${dk?'on':''}" data-a="rbtab" data-t="docket">📋 Permit docket${open?` · ${open} in review`:''}${stuck?` · <b class="redt">${stuck} stuck</b>`:''}</button><span class="mini">Every plant needs permits to build and to operate for as long as it runs. The rules set how long they take; the docket tracks each one.</span></div>`;
+  return tabs+(dk?permitsBody():rulesBody0())}
+function rulesBody0(){
+  if(S.fac!=='US')return '<p class="mini">The rulebook covers the US regime. The permit docket covers your plants.</p>';
   const key=`<div class="rbkey"><div><b>🔘 Executive rules</b><span>Switch on or off for Political Capital. Fast, but the next administration can reverse them.</span></div><div><b>🖋 Emergency carve-outs</b><span>Fast and temporary; courts can strike them down.</span></div><div><b>📜 Laws</b><span>Permanent. Defense law and money rides the annual NDAA, decided every 18 December. Other committees’ reforms are stand-alone bills, one at a time, or a long-shot rider on the NDAA. <span class="linkn" data-a="view" data-v="ndaa">NDAA & Congress →</span></span></div></div>`;
   return key+DOMAINS.map(D=>{const lost=D.layers.reduce((a,l)=>a+(S.ledger[l]?.wk||0),0);
     const stalled=S.projects.filter(p=>p.obs.length&&D.layers.includes(OD[p.obs[0].id].layer));
@@ -1332,7 +1336,7 @@ function rulesBody(){
       return `<div class="rstep ${mx>=.4?'hot':mx>=.2?'warm':''}" data-tip="${os.length?odds.map(x=>`<b>${V(x.o.n)}</b>: up to ${pct(x.c)}${x.who?` (${x.who.n})`:''}`).join('<br>'):t}"><b>${nm}</b><span class="mini">${t}</span>${os.length?`<span class="odds">${pct(mx)}</span>`:cr?`<span class="odds">${S.cr>0?S.cr+' wk left':'none now'}</span>`:bj?`<span class="odds">${S.truce?'suspended':'in force'}</span>`:''}</div>`}).join('<span class="sarr">→</span>');
     const rows=RULES.filter(r=>r.dom===D.id).map(r=>{const on=r.kind==='foreign'?!S.truce:ruleOn(r.id),k=KIND[r.kind],sw=['exec','proposed'].includes(r.kind),cost=sw?r.pc[on?1:0]:0;
       const ctl=sw?`<button class="tog ${on?'on':''}" data-a="rule" data-r="${r.id}" ${S.pc>=cost?'':'disabled'} data-tip="${on?'Reverse':r.kind==='proposed'?'Finalize':'Adopt'}: ${cost} Political Capital. ${k[1]}"><i></i></button>`:`<span class="lock" data-tip="${k[1]}">🔒</span>`;
-      return `<tr class="${on?'rlon':''}" id="rl-${r.id}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td>${r.dyn?(S.truce?fxChips([r.dyn()[0]],[r.dyn()[1]]):fxChips([],r.dyn())):fxChips(r.up,r.dn)}</td></tr>`}).join('');
+      return `<tr class="${on?'rlon':''}" id="rl-${r.id}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${k[0]} · ${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}</div></td><td>${r.dyn?(()=>{const d=r.dyn();return S.truce?fxChips([d[1]],[d[2],d[0]]):fxChips([],d)})():fxChips(r.up,r.dn)}</td></tr>`}).join('');
     const links=(RLINKS[D.id]||[]).filter(([id])=>(RD[id]&&facOk(RD[id]))||(CD[id]&&facOk(CD[id]))).map(([id,why])=>{const R=RD[id],C=CD[id],on=R?passed(id):carveOn(id);
       if(!R)return `<tr class="${on?'rlon':''}"><td>${on?'✓':'🖋'}</td><td><b>${cname(C)}</b><div class="mini">${on?'Emergency carve-out in force':'Emergency carve-out · fast, temporary, can be struck down'}</div></td><td><span class="mini">${why}</span> ${on?'':`<span class="linkn" data-a="remedy" data-r="${id}">Use it →</span>`}</td></tr>`;
       return `<tr class="${on?'rlon':''}"><td>${on?'✓':'📜'}</td><td><b>${rname(R)}</b><div class="mini">${refStatus(R)}</div></td><td><span class="mini">${why}</span> ${on?'':refAct(R)}</td></tr>`}).join('');
@@ -1667,6 +1671,11 @@ const EVENTS=[
   fx:()=>{const p=.15+cnS().heat/120;S._tr=rand()>=p;if(!S._tr){S.truce=false;applyChinaBan()}},
   body:()=>S._tr?"The truce is extended another year. Markets exhale. Your procurement officials do not.":"Talks break down. Beijing reimposes its mineral export bans. Spot prices outside China jump several-fold overnight.",
   o:[{l:'Noted.',fx:()=>{S.pc+=S._tr?0:12}}]},
+ {id:'siteRenew',manual:1,once:false,ic:'📋',t:()=>'Permit Renewal Contested: '+siteName(S._site.k),pre:'September 2024: EPA and the operator of the Radford Army Ammunition Plant, the Army’s main propellant source, signed a Clean Air Act compliance order on consent.[c:raapepa]',
+  body:()=>{const x=PMD[S._site.permit];return `<p>The <b>${x.n}</b> for ${siteName(S._site.k).toLowerCase()} is up for renewal (${x.ag}, ${x.law}). The agency wants new monitoring, a tighter limit or another public hearing before it renews. Until it does, the plants run under restrictions.</p><p class="mini">Existing plants renew their operating permits for as long as they run; the Permit docket in the Rulebook lists every one.</p>`},
+  o:()=>[{l:'Accept the new conditions and retrofit (−$0.05B; output −15% for 10 weeks)',$:.05,fx:()=>siteHit(.85,10)},
+   {l:'Negotiate a consent order (−6 PC; output −15% for 4 weeks)',pc:6,fx:()=>siteHit(.85,4)},
+   {dflt:1,l:'Run reduced until the hearing (output −40% for 20 weeks)',fx:()=>siteHit(.6,20)}]},
  {id:'cnRung',manual:1,once:false,ic:FLAGS.cn,t:()=>'Beijing Escalates: '+CN_RUNGS[S._cnR].n,pre:()=>CN_RUNGS[S._cnR].pre,
   body:()=>{const r=CN_RUNGS[S._cnR],c=cnS(),top=cnDrivers().filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];return `<p>${r.d}</p><p><b>What it hits:</b> ${cnHits(r)}.</p><p class="mini">Step ${S._cnR+1} of ${CN_RUNGS.length} on Beijing’s ladder. Pressure is ${Math.round(c.heat)}/100${top?`; the biggest push: ${top[0]} (+${top[1]} a year)`:''}. The Imports tab shows the ladder.</p>`},
   o:()=>[{dflt:1,l:'Absorb it and keep building',fx:()=>cnApply(S._cnR,1,'absorbed')},
@@ -2597,7 +2606,26 @@ function projectsTick(){
   }
 }
 function opsMatch(o,pl){const def=PD[pl.def];if(o.manual)return false;if(o.icOff&&icOn(o.icOff))return false;if(o.kind&&o.kind!==pl.kind)return false;return !o.tags||o.tags.some(t=>def.tags.includes(t)||t===pl.target)}
-function plantsTick(){
+/* existing plants and lines hold operating permits; each renewal can be contested like a new plant's */
+const SITE_F=.35;
+function siteTags(k){if(k.startsWith('L:')){const l=k.slice(2);return ['line','assembly',...(['shells','fires'].includes(l)?['energetic']:[]),...(['surface','subs'].includes(l)?['shipyard']:[])]}
+  return [...new Set([...(ARCH[ND[k].arch]?.tags||[]),...(ND[k].tags||[]),k])]}
+const siteName=k=>k.startsWith('L:')?`Existing ${LINES[k.slice(2)].n.toLowerCase()} lines`:`Existing ${ND[k].n.toLowerCase()} plants`;
+function sitesInit(){S.sites={};const keys=[...ORDER.filter(id=>S.nodes[id].base>.02*S.nodes[id].scale),...Object.keys(LINES).filter(l=>S.lines[l].base>0).map(l=>'L:'+l)];
+  for(const k of keys){const tg=siteTags(k),ops=PERMITS.filter(x=>(x.f||'US')===S.fac&&x.ph==='o'&&(x.all||x.tags.some(t=>tg.includes(t))));
+    S.sites[k]={ops:ops.map(x=>({id:x.id,next:S.w+1+Math.floor(rand()*x.yrs*52),last:null})),contest:null}}}
+function sitesTick(){if(S.histMode)return;if(!S.sites)sitesInit();const busy=S.queue.some(q=>q.ev==='siteRenew')||(S.inbox||[]).some(x=>x.ev==='siteRenew');
+  for(const k in S.sites){const st=S.sites[k],kn=S.know[k.startsWith('L:')?k.slice(2):k]??40;if(st.contest&&st.contest.until<=S.w)st.contest=null;
+    for(const o of st.ops)if(S.w>=o.next){const x=PMD[o.id];o.next=S.w+x.yrs*52;o.last=S.w;
+      if(!busy&&!st.contest&&rand()<renewRisk(x,kn)*SITE_F){st.contest={permit:x.id,until:S.w+DECIDE_WK+1};S._site={k,permit:x.id};S.ledger.PERMIT.n++;queueEvent('siteRenew');return}}}}
+function siteHit(m,wk){const {k,permit}=S._site||{};if(!k)return;const st=S.sites?.[k];if(st)st.contest={permit,until:S.w+wk};
+  if(k.startsWith('L:'))tmod('line',k.slice(2),m,wk,'Permit renewal contested');else tmod('cap',k,m,wk,'Permit renewal contested');S.ledger.PERMIT.wk+=wk}
+function siteItems(){const out=[];for(const k in S.sites||{}){const st=S.sites[k],kn=S.know[k.startsWith('L:')?k.slice(2):k]??40;
+  for(const o of st.ops){const x=PMD[o.id];if(!x)continue;const it={x,ph:'o',site:k,nm:siteName(k),risk:renewRisk(x,kn)*SITE_F,r:o,due:o.next};
+    if(st.contest&&st.contest.permit===x.id)Object.assign(it,{st:'contested',t:'Renewal contested',cls:'redt'});
+    else Object.assign(it,{st:o.next-S.w<=52?'due':'valid',t:`Valid · renews ${MON[dateOf(o.next).getMonth()]} ${dateOf(o.next).getFullYear()}`,cls:o.next-S.w<=52?'st-t-tight':'okt'});
+    out.push(it)}}return out}
+function plantsTick(){sitesTick();
   for(const pl of S.plants){
     const k=pl.target,kn=S.know[k];
     for(const o of pl.ops||[])if(S.w>=o.next){const x=PMD[o.id];o.next=S.w+x.yrs*52;o.last=S.w;
@@ -3165,7 +3193,9 @@ function raisePanel(id,P){
 // ph 'b' = before construction (the Siting & Permitting stage); 'o' = to operate, renewed for the life of the plant
 const PERMITS=[
  {id:'nepa',ph:'b',n:'NEPA environmental review',ag:'Lead federal agency',law:'NEPA',w:52,all:1,ob:['ea','eis','lawsuit']},
- {id:'psd',ph:'b',n:'Clean Air Act preconstruction permit',ag:'State air agency / EPA',law:'CAA (NSR/PSD)',w:40,tags:['energetic','smelter','refine','metal'],ob:['caa']},
+ {id:'psd',ph:'b',n:'Clean Air Act preconstruction permit',ag:'State air agency / EPA',law:'CAA (NSR/PSD)',w:40,tags:['energetic','smelter','refine','metal','heavy','shipyard'],ob:['caa']},
+ {id:'rha10',ph:'b',n:'Waterfront work permit (dredging, piers, dry docks)',ag:'Army Corps of Engineers',law:'Rivers & Harbors Act §10',w:30,tags:['shipyard'],ob:['cwa']},
+ {id:'cgp',ph:'b',n:'Construction stormwater permit',ag:'State water agency / EPA',law:'CWA §402 (Construction General Permit)',w:4,all:1,ob:[]},
  {id:'s404',ph:'b',n:'Clean Water Act §404 permit',ag:'Army Corps of Engineers',law:'CWA §404',w:30,tags:['greenfield','mine'],ob:['cwa']},
  {id:'npdes',ph:'b',n:'Wastewater discharge permit',ag:'State water agency / EPA',law:'CWA §402 (NPDES)',w:26,tags:['energetic','refine','smelter','mine','electronics','metal'],ob:[]},
  {id:'esa',ph:'b',n:'Endangered Species Act consultation',ag:'Fish & Wildlife Service',law:'ESA §7 (135 days)',w:19,tags:['greenfield','mine'],ob:['esa']},
@@ -3175,19 +3205,37 @@ const PERMITS=[
  {id:'esp',ph:'b',n:'Explosives safety site plan',ag:'DoD Explosives Safety Board',law:'DoDM 6055.09',w:26,tags:['energetic'],ob:['qd']},
  {id:'grid',ph:'b',n:'Grid interconnection agreement',ag:'Utility / grid operator',law:'FERC tariffs',w:40,tags:['power','smelter'],ob:['queue']},
  {id:'local',ph:'b',n:'Zoning & building permits',ag:'County / city',law:'Local codes',w:12,all:1,ob:['local']},
- {id:'titlev',ph:'o',n:'Title V operating permit',ag:'State air agency / EPA',law:'CAA Title V',yrs:5,risk:.12,tags:['energetic','smelter','refine','metal']},
- {id:'npdesR',ph:'o',n:'Wastewater permit renewal',ag:'State water agency / EPA',law:'CWA §402',yrs:5,risk:.08,tags:['energetic','refine','smelter','mine','electronics','metal']},
+ {id:'titlev',ph:'o',n:'Title V operating permit',ag:'State air agency / EPA',law:'CAA Title V',yrs:5,risk:.12,tags:['energetic','smelter','refine','metal','heavy','shipyard']},
+ {id:'npdesR',ph:'o',n:'Wastewater permit renewal',ag:'State water agency / EPA',law:'CWA §402',yrs:5,risk:.08,tags:['energetic','refine','smelter','mine','electronics','metal','heavy','shipyard']},
+ {id:'msgp',ph:'o',n:'Industrial stormwater permit',ag:'State water agency / EPA',law:'CWA §402 (Multi-Sector General Permit)',yrs:5,risk:.03,all:1},
  {id:'rcraR',ph:'o',n:'Hazardous-waste permit renewal',ag:'EPA / state',law:'RCRA',yrs:10,risk:.15,tags:['energetic']},
  {id:'atf',ph:'o',n:'Explosives manufacturer license',ag:'ATF',law:'27 CFR 555',yrs:3,risk:.05,tags:['energetic','srm']},
  {id:'psm',ph:'o',n:'Process-safety & risk-management audit',ag:'OSHA / EPA',law:'PSM / RMP',yrs:3,risk:.08,tags:['energetic','refine','smelter']},
  {id:'msha',ph:'o',n:'Mine safety inspections',ag:'MSHA',law:'Mine Act',yrs:1,risk:.04,tags:['mine']},
  {id:'itarReg',ph:'o',n:'ITAR registration',ag:'State Department (DDTC)',law:'ITAR',yrs:1,risk:.01,tags:['line','assembly','electronics']},
  {id:'fcl',ph:'o',n:'Facility security clearance',ag:'DCSA',law:'NISPOM',yrs:3,risk:.04,tags:['line','assembly','electronics','srm']},
+ // Europe: the same jobs under EU directives, issued by national and regional authorities
+ {f:'EU',id:'eiaP',ph:'b',n:'Environmental impact assessment',ag:'National environment authority',law:'EIA Directive',w:52,all:1,ob:['eia','lawsuit']},
+ {f:'EU',id:'iedP',ph:'b',n:'Industrial emissions permit',ag:'Regional environment authority',law:'Industrial Emissions Directive',w:40,tags:['energetic','smelter','refine','metal','heavy'],ob:['ied']},
+ {f:'EU',id:'naturaP',ph:'b',n:'Natura 2000 appropriate assessment',ag:'Nature conservation authority',law:'Habitats Directive Art. 6',w:26,tags:['greenfield','mine'],ob:['natura']},
+ {f:'EU',id:'mineEU',ph:'b',n:'Mining permit',ag:'National mining authority',law:'National mining codes',w:78,tags:['mine'],ob:['minepermit']},
+ {f:'EU',id:'reachP',ph:'b',n:'REACH authorisation for listed substances',ag:'European Chemicals Agency',law:'REACH',w:52,tags:['energetic'],ob:['reach']},
+ {f:'EU',id:'sevesoP',ph:'b',n:'Major-hazard safety report',ag:'Regional safety authority',law:'Seveso III Directive',w:26,tags:['energetic','refine'],ob:['qd']},
+ {f:'EU',id:'waterP',ph:'b',n:'Water abstraction & discharge permit',ag:'River basin authority',law:'Water Framework Directive',w:26,tags:['energetic','refine','smelter','mine','electronics','metal','shipyard'],ob:[]},
+ {f:'EU',id:'gridEU',ph:'b',n:'Grid connection agreement',ag:'Transmission system operator',law:'National grid codes',w:52,tags:['power','smelter'],ob:['queue']},
+ {f:'EU',id:'buildEU',ph:'b',n:'Building & land-use permit',ag:'Municipality',law:'Local planning law',w:16,all:1,ob:['local']},
+ {f:'EU',id:'iedR',ph:'o',n:'Industrial emissions permit review',ag:'Regional environment authority',law:'IED (new BAT conclusions)',yrs:4,risk:.1,tags:['energetic','smelter','refine','metal','heavy']},
+ {f:'EU',id:'waterR',ph:'o',n:'Discharge permit renewal',ag:'River basin authority',law:'Water Framework Directive',yrs:6,risk:.06,all:1},
+ {f:'EU',id:'sevesoI',ph:'o',n:'Major-hazard site inspection',ag:'Regional safety authority',law:'Seveso III Art. 20',yrs:1,risk:.04,tags:['energetic','refine']},
+ {f:'EU',id:'explEU',ph:'o',n:'Explosives manufacturing licence',ag:'National interior ministry',law:'Explosives Directive (national law)',yrs:5,risk:.05,tags:['energetic','srm']},
+ {f:'EU',id:'secEU',ph:'o',n:'Facility security clearance',ag:'National security authority',law:'National security law',yrs:5,risk:.03,tags:['line','assembly','electronics','srm']},
 ];
 const PMD=Object.fromEntries(PERMITS.map(x=>[x.id,x]));
-function permitsFor(def,ph){if(def.ally||def.kind==='maint'||(def.kind&&!['cap','mod'].includes(def.kind)))return [];
-  const brown=def.tags.includes('brownfield')||def.kind==='mod';
-  return PERMITS.filter(x=>x.ph===ph&&(x.all||x.tags.some(t=>def.tags.includes(t)))&&!(ph==='b'&&brown&&['s404','esa','nhpa','mine'].includes(x.id)))}
+// every physical project needs permits: plants, upgrades inside existing plants, test cells, dry docks and depot lines.
+// Training programs, power contracts, planning offices and allied plants (permitted by the host country) need none.
+function permitsFor(def,ph){if(def.ally||['know','power'].includes(def.kind)||def.tags.includes('program')&&def.kind!=='test'||(def.kind==='test'&&['shipyard','sub_yard'].includes(def.t.node)))return [];
+  const brown=def.tags.includes('brownfield')||def.kind==='mod',fac=S?.fac||'US';
+  return PERMITS.filter(x=>(x.f||'US')===fac&&x.ph===ph&&(x.all||x.tags.some(t=>def.tags.includes(t)))&&!(ph==='b'&&brown&&['s404','esa','nhpa','mine','naturaP','mineEU'].includes(x.id)))}
 const permitOdds=(x,def,lm)=>Math.max(0,...x.ob.map(o=>OD[o]&&facOk(OD[o])?obsChance(OD[o],def)*(lm?.[OD[o].layer]??1):0));
 const renewRisk=(x,kn)=>x.risk*(1.3-(kn??40)/100);
 // every permit a program needs, with its live status; shared by the program page and the Permits view
@@ -3205,7 +3253,8 @@ function permitItems(p,live,pl){
     out.push(it)});
   const kn=S.know[def.t.node||def.t.line];
   O.forEach(x=>{const r=pl?.ops?.find(o=>o.id===x.id),it={x,ph:'o',uid:p.uid,risk:renewRisk(x,kn),r};
-    if(!pl)Object.assign(it,{st:'needed',t:'Needed before operating',cls:'mini'});
+    if(!pl&&!live&&def.kind)Object.assign(it,{st:'site',t:'Held by the existing site',cls:'okt'});
+    else if(!pl)Object.assign(it,{st:'needed',t:'Needed before operating',cls:'mini'});
     else if(pl.issue?.permit===x.id)Object.assign(it,{st:'contested',t:'Renewal contested',cls:'redt'});
     else Object.assign(it,{st:r&&r.next-S.w<=52?'due':'valid',t:r?`Valid · renews ${MON[dateOf(r.next).getMonth()]} ${dateOf(r.next).getFullYear()}`:'Valid',cls:r&&r.next-S.w<=52?'st-t-tight':'okt',due:r?.next});
     out.push(it)});
@@ -3220,10 +3269,11 @@ function permitDocket(p,live,pl){
     return `<div class="pdrow"><span class="pdn">${n}</span><div><b>${x.n}</b><div class="mini">${sub}</div></div><span class="${i.cls}">${i.t}</span><span class="pdw ${i.extra?'redt':''}">${wk}</span></div>`};
   return `${B.length?`<div class="pdg">Before construction · ${B.length} permit${B.length>1?'s':''}${D?` · ${D} wk planned`:''}</div>${B.map((i,k)=>row(k+1,i)).join('')}`:''}${O.length?`<div class="pdg">To operate · ${O.length} permit${O.length>1?'s':''}, renewed for the life of the plant</div>${O.map((i,k)=>row(B.length+k+1,i)).join('')}`:''}`}
 /* ---------- the Permits view: every permit across every program, by agency and status ---------- */
-const PST=[['stalled','Stalled'],['contested','Renewal contested'],['review','In review'],['due','Renewal due within a year'],['notstarted','Not started'],['issued','Issued'],['valid','Valid'],['needed','Needed to operate']];
+const PST=[['stalled','Stalled'],['site','Held by the site'],['contested','Renewal contested'],['review','In review'],['due','Renewal due within a year'],['notstarted','Not started'],['issued','Issued'],['valid','Valid'],['needed','Needed to operate']];
 function allPermits(){const all=[];
   for(const p of S.projects)for(const i of permitItems(p,true,null))all.push({...i,nm:projName(p)});
   for(const d of S.done)if(d.uid&&d.h){const pl=S.plants.find(x=>x.uid==d.uid);for(const i of permitItems(d,false,pl))all.push({...i,nm:d.nm})}
+  for(const i of siteItems())all.push(i);
   return all.filter(i=>i.st!=='covered')}
 function permitsBody(){
   const all=allPermits(),f=S.pmF||(S.pmF={ag:'all',st:'open',ph:'all'});
@@ -3240,7 +3290,7 @@ function permitsBody(){
     <div class="sleg" style="margin-top:6px"><span><i style="background:#b0453a"></i>Stalled or contested</span><span><i style="background:#c9a227"></i>In review or renewal due</span></div>
     <div class="mini" style="margin-top:8px"><span class="linkn" data-a="rbgo" data-d="permit">⚖ The permitting rules →</span></div></div>
    <div><div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('st','open','Open')}${btn('st','all','All')}<span class="lab">Phase</span>${btn('ph','all','Both')}${btn('ph','b','To build')}${btn('ph','o','To operate')}${f.ag!=='all'?`<span class="lab">Agency</span><button class="pbtn sm on" data-a="pmf" data-k="ag" data-v="all">${f.ag} ✕</button>`:''}</div>
-    ${rows.length?`<table class="ctable pmt"><tr><th>Permit</th><th>Program</th><th>Agency</th><th>Status</th><th style="text-align:right">Weeks</th></tr>${rows.map(i=>`<tr class="pmr" data-a="prog" data-u="${i.uid}"><td><b>${i.x.n}</b><div class="mini">${i.x.law}${i.ph==='b'?(i.odds>0?` · ${pct(i.odds)} odds of trouble`:''):` · every ${i.x.yrs===1?'year':i.x.yrs+' yr'} · ${pct(i.risk)} contested`}</div></td><td><span class="linkn">${i.nm}</span></td><td>${i.x.ag}</td><td class="${i.cls}">${i.t}</td><td style="text-align:right" class="${i.extra?'redt':''}">${i.ph==='b'?`${i.weeks}${i.extra?` (+${i.extra})`:''}`:`${i.x.yrs} yr`}</td></tr>`).join('')}</table>`:`<p class="mini">${all.length?'Nothing matches these filters.':'Order a new plant to start a permit docket.'}</p>`}</div></div>`;
+    ${rows.length?`<table class="ctable pmt"><tr><th>Permit</th><th>Program or site</th><th>Agency</th><th>Status</th><th style="text-align:right">Weeks</th></tr>${rows.map(i=>`<tr class="pmr" ${i.site?`data-a="node" data-n="${i.site}"`:`data-a="prog" data-u="${i.uid}"`}><td><b>${i.x.n}</b><div class="mini">${i.x.law}${i.ph==='b'?(i.odds>0?` · ${pct(i.odds)} odds of trouble`:''):` · every ${i.x.yrs===1?'year':i.x.yrs+' yr'} · ${pct(i.risk)} contested`}</div></td><td><span class="linkn">${i.nm}</span></td><td>${i.x.ag}</td><td class="${i.cls}">${i.t}</td><td style="text-align:right" class="${i.extra?'redt':''}">${i.ph==='b'?`${i.weeks}${i.extra?` (+${i.extra})`:''}`:`${i.x.yrs} yr`}</td></tr>`).join('')}</table>`:`<p class="mini">${all.length?'Nothing matches these filters.':'Order a new plant to start a permit docket.'}</p>`}</div></div>`;
   return h}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
@@ -4012,7 +4062,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['permits','📋 Permits'],['flow','⇶ Flows'],['imports','🌍 Imports'],['ndaa','🏛 NDAA & Congress'],['arsenal','📈 Stocks & needs'],['rec','📊 Record'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['flow','⇶ Flows'],['imports','🌍 Imports'],['ndaa','🏛 NDAA & Congress'],['arsenal','📈 Stocks & needs'],['rec','📊 Record'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
@@ -4044,8 +4094,8 @@ function flowBody(){
 `;
 }
 function viewHTML(){
-  const T={imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','The US Rulebook','who can change what, and what each rule does to your programs'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
-  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?permitsBody():S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
+  const T={imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','Rulebook & permits','who can change what, what each rule does to your programs, and every permit your plants hold'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?(S.view='rules',S.rbTab='docket',rulesBody()):S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
   return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa','imports'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
@@ -4788,12 +4838,13 @@ document.addEventListener('pointerdown',e=>{
     case 'bnow':billAct('now',b.dataset.u);break;
     case 'aotog':S.aoShut=!S.aoShut;break;
     case 'fcf':S.fcF=b.dataset.v;break;
-    case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;break;
-    case 'pmgo':S.view='permits';S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;S._vdirty=true;break;
+    case 'rbtab':S.rbTab=b.dataset.t;S._vdirty=true;break;
+    case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'qj':setTimeout(qjOpen,0);break;
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'rbgo':S.view='rules';S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'rbgo':S.view='rules';S.rbTab='rules';S._vdirty=true;S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rtab':if(b.dataset.t==='agenda'){S.view='ndaa';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break}S.rtab=b.dataset.t;S._rtTop=true;break;
     case 'rival':if(!S.scen&&S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
     case 'remedy':if(S.modal==='prog')S.modal=null;if(CD[b.dataset.r])S.rtab='home';else{S.view='ndaa';S.modal=null;S.navBack=[]}S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
