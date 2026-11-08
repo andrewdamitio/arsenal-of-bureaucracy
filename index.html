@@ -4814,8 +4814,8 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
    <div class="yrts">${t(fmtDate(S.w),'game date')}${t(when,ok?'last saved, at '+fmtDate(S._svW):'saving starts once play begins')}${t(S.scen?SCD[S.scen].n:'Open race','mandate')}${t('This browser','where it is kept')}</div>
    <p class="mini">The game saves itself every four game weeks and whenever you close the tab, and picks up where you left off. A browser save lives only on this computer, and clearing site data erases it: download a file to keep a copy or to move the game.</p>
    ${S._svErr?`<p class="redt mini">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="redt mini">${S._svMsg}</p>`:''}
-   ${S._newc?`<div class="svwarn"><div class="stamp">START OVER?</div><p>This game and its browser save will be erased. Download a file first if you want to keep it.</p></div>`:''}</div>
-   <div class="ft svft">${S._newc?`<button class="pbtn danger" data-a="savenew2">Erase and start a new game</button><button class="pbtn primary" data-a="savenewx">Keep playing</button>`:`<button class="pbtn primary" data-a="savedl" ${can?'':'disabled'}>⬇ Download save file</button><button class="pbtn" data-a="saveul">⬆ Load a save file</button><button class="pbtn danger" data-a="savenew">New game…</button>`}</div></div>`}
+</div>
+   <div class="ft svft"><button class="pbtn primary" data-a="savedl" ${can?'':'disabled'}>⬇ Download save file</button><button class="pbtn" data-a="saveul">⬆ Load a save file</button><button class="pbtn danger" data-a="savenew" data-tip="Starts over now. This game's browser save is replaced; download a file first to keep it.">New game</button></div></div>`}
 window.addEventListener('pagehide',()=>saveGame());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame()});
 let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
@@ -4920,12 +4920,10 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'restart':S=null;clearSave();break;
     case 'cntalk':cnTalk();break;
     case 'yrrec':S.modal=null;S.view='rec';break;
-    case 'savem':saveGame();S.modal='save';S._newc=false;S._svMsg='';S.speed=0;break;
+    case 'savem':saveGame();S.modal='save';S._svMsg='';S.speed=0;break;
     case 'savedl':saveGame();saveDownload();break;
     case 'saveul':saveUpload();break;
-    case 'savenew':S._newc=true;break;
-    case 'savenewx':S._newc=false;break;
-    case 'savenew2':clearSave();S=null;break;
+    case 'savenew':clearSave();S=null;break;
   }
   render();if(S)saveSoon();
 });
