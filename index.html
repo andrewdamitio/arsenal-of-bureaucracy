@@ -2245,7 +2245,7 @@ const REFCLASS=[
 
 const PC_FADE=120,PC_PLANT=.03,PC_PLANT_MAX=.6;
 const fullPlants=()=>S.plants.filter(p=>p.full&&p.nm).length;
-function pcParts(){const n=fullPlants(),r=[['Baseline support for rearmament',F().pcRate*.85,'Congress and the public back rearmament in general. This is the floor.']];
+function pcParts(){const n=fullPlants(),r=[['Baseline support for rearmament',F().pcRate*.75,'Congress and the public back rearmament in general. This is the floor.']];
   if(n)r.push([`Plants at full rate in members’ districts (${n})`,Math.min(PC_PLANT_MAX,n*PC_PLANT),`Each plant running at full rate brings payrolls and ribbon cuttings to a member’s district: +${fmt(PC_PLANT*52,1)} a year each, up to +${fmt(PC_PLANT_MAX*52,0)}.`]);
   if(S.strain>.5)r.push(['Civilian strain',-S.strain/60,'Shortages and diverted civilian supply cost support. Strain recovers on its own when the pressure eases.']);
   if(S.pc>PC_FADE)r.push([`Unused capital fades (above ${PC_FADE})`,-(S.pc-PC_FADE)*.01,'Goodwill not spent is forgotten: 1% of anything above '+PC_FADE+' fades each week.']);
