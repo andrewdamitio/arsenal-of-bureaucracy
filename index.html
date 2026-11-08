@@ -586,6 +586,12 @@ body{background:
 .rbkey{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 12px}.rbkey div{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid #c8b48a;background:#f3ebd6;font-size:12.5px;color:#3d3426}.rbkey b{font:600 13.5px var(--disp);letter-spacing:.03em;color:#2a2418}@media(max-width:900px){.rbkey{grid-template-columns:1fr}}
 .wmv{max-width:none}.wmv .dtop{position:static;margin:0 0 6px;padding:0;background:none;box-shadow:none}
 .sbmore{padding:6px 10px 8px;font-size:12px}.bnlink{cursor:pointer}.bnlink:hover{filter:brightness(1.1);text-decoration:underline}
+.cnp{border:1px solid #c8b48a;background:#f3ebd6;padding:10px 12px 12px;margin:0 0 12px;color:#3d3426}.cnph{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.cnph b{font:600 15px var(--disp);letter-spacing:.03em;color:#2a2418}.cnph span{font-size:12.5px;color:#5a4e38;flex:1}
+.cnbar{position:relative;height:12px;background:#e2d6b8;border:1px solid #c8b48a;margin:22px 4px 10px}.cnbar>i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#d9a05a,#b0453a)}
+.cnt{position:absolute;top:-20px;bottom:-4px;width:0}.cnt i{position:absolute;left:-1px;top:14px;bottom:0;width:2px;background:#6b5a35}.cnt em{position:absolute;top:0;left:-8px;width:16px;height:16px;border-radius:50%;font:700 10px/16px var(--disp);font-style:normal;text-align:center;background:#f3ebd6;border:1px solid #8a7850;color:#5a4e38;cursor:help}
+.cnt.done em{background:#b0453a;border-color:#8a1f15;color:#fff}.cnt.next em{border:2px solid #b0453a;line-height:14px;color:#8a1f15}
+.cnrow{display:grid;grid-template-columns:1fr 1fr;gap:16px}.cnhs{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px}.cnh{font-size:11.5px;color:#8a1f15}.cndr div{display:flex;justify-content:space-between;gap:10px;font-size:12px;border-bottom:1px dotted #c8b48a;padding:2px 0}
+@media(max-width:900px){.cnrow{grid-template-columns:1fr}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1278,7 +1284,7 @@ const RULES=[
  {id:'rAffil',dom:'export',kind:'exec',n:'BIS Affiliates Rule: controls reach firms 50%-owned by listed entities',since:'29 Sep 2025 · suspended under the truce',c:'affil',pc:[10,15],
   eff:{chance:{hidden:.7}},up:['PRC-owned affiliates can’t launder supply (×0.7)'],dn:['reinstating it ends the truce: Beijing’s controls snap back'],onOn:()=>affilOn(),onOff:()=>affilOff()},
  {id:'rChina',dom:'export',kind:'foreign',n:'China’s mineral & rare-earth export controls',since:'Apr 2025 heavy rare earths in force · Oct 2025 package suspended',c:'cnsusp',
-  eff:{},dyn:()=>S.truce?['Suspended under the truce: gallium, germanium, antimony, graphite, the Oct 2025 rare-earth rules','Heavy rare-earth licensing (Apr 2025) still in force']:['In force: gallium, germanium, antimony, graphite and the 0.1% rare-earth rule','Heavy rare-earth licensing (Apr 2025) in force']},
+  eff:{},dyn:()=>[`Beijing’s ladder: step ${cnS().rung} of ${CN_RUNGS.length}, pressure ${Math.round(cnS().heat)}/100 (Imports tab)`,...(S.truce?['Suspended under the truce: gallium, germanium, antimony, graphite, the Oct 2025 rare-earth rules','Heavy rare-earth licensing (Apr 2025) still in force']:['In force: gallium, germanium, antimony, graphite and the 0.1% rare-earth rule','Heavy rare-earth licensing (Apr 2025) in force'])]},
  {id:'rCOINS',dom:'export',kind:'law',n:'COINS Act: outbound investment screening in law',since:'Dec 2025 · final rule due Mar 2027',c:'coins',
   eff:{},up:['US capital kept out of PRC chips, AI and quantum'],dn:['no direct effect on your plants']},
  {id:'rKnown',dom:'export',kind:'exec',n:'CFIUS Known Investor fast track for allied capital',since:'pilot · launch expected early 2027',c:'known',pc:[8,6],
@@ -1654,16 +1660,18 @@ const EVENTS=[
   body:()=>S._tr?"The November 2026 deadlines pass with a quiet one-year extension of the gallium, germanium, antimony, graphite, and rare-earth suspensions. The heavy rare-earth licensing regime from April 2025 stays in force. Everyone knows it can be switched back on.":"Beijing lets the suspensions lapse. Exports of gallium, germanium, and antimony to you are halted again; graphite and battery materials face end-user checks. Heavy rare-earth licensing continues.",
   o:[{l:'Understood.',fx:()=>{S.pc+=S._tr?3:12}}]},
  {id:'truceReview',pre:"November 2025: under the Busan truce, Beijing suspended its mineral export bans for a year, so every renewal is a fresh decision.[c:truce][c:truce26]",once:false,when:()=>{const d=dateOf(S.w);return S.truce&&d.getMonth()===10&&d.getDate()<=7},ic:FLAGS.cn,t:'Annual Review of the Trade Truce',
-  fx:()=>{const p=.35+(S.tension||0);S._tr=rand()>=p;if(!S._tr){S.truce=false;applyChinaBan()}},
+  fx:()=>{const p=.15+cnS().heat/120;S._tr=rand()>=p;if(!S._tr){S.truce=false;applyChinaBan()}},
   body:()=>S._tr?"The truce is extended another year. Markets exhale. Your procurement officials do not.":"Talks break down. Beijing reimposes its mineral export bans. Spot prices outside China jump several-fold overnight.",
   o:[{l:'Noted.',fx:()=>{S.pc+=S._tr?0:12}}]},
- {id:'tungstenCtl',pre:"February 2025: China put tungsten, tellurium, bismuth, molybdenum and indium products under export licensing.[c:cnfeb25]",at:[30,120],ic:'⛏',t:'Tungsten Export Controls Tighten',body:"Beijing tightens licensing on tungsten, ammonium paratungstate, and related products. Penetrators and carbide tooling feel it first.",fx:()=>cutAll(['tungsten'],.45),o:[{l:'Noted. (+6 PC)',fx:()=>{S.pc+=6}}]},
+ {id:'cnRung',manual:1,once:false,ic:FLAGS.cn,t:()=>'Beijing Escalates: '+CN_RUNGS[S._cnR].n,pre:()=>CN_RUNGS[S._cnR].pre,
+  body:()=>{const r=CN_RUNGS[S._cnR],c=cnS(),top=cnDrivers().filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];return `<p>${r.d}</p><p><b>What it hits:</b> ${cnHits(r)}.</p><p class="mini">Step ${S._cnR+1} of ${CN_RUNGS.length} on Beijing’s ladder. Pressure is ${Math.round(c.heat)}/100${top?`; the biggest push: ${top[0]} (+${top[1]} a year)`:''}. The Imports tab shows the ladder.</p>`},
+  o:()=>[{dflt:1,l:'Absorb it and keep building',fx:()=>cnApply(S._cnR,1,'absorbed')},
+   {l:'Negotiate licences for defense buyers (−12 PC: the cuts are halved, pressure −6)',pc:12,fx:()=>{cnApply(S._cnR,.5,'eased by talks');cnS().heat=Math.max(0,cnS().heat-6)}},
+   {l:'Answer with US controls of your own (+8 PC from the hawks; pressure +10)',fx:()=>{cnApply(S._cnR,1,'answered');S.pc+=8;cnS().heat=Math.min(100,cnS().heat+10)}}]},
  {id:'magCtl',pre:"Autumn 2021: power curbs in Shaanxi halved China's magnesium output, and European Aluminium warned that Europe's stocks would run out within weeks.[c:mg21]",at:[60,180],ic:'⛏',t:'Magnesium Supply Squeeze',body:"Power curbs or export licensing in China, which makes ~88% of primary magnesium, cut supply. Aluminum alloyers and the few titanium-sponge makers scramble.",fx:()=>cutAll(['magnesium'],.5),o:[{l:'Noted. (+5 PC)',fx:()=>{S.pc+=5}}]},
- {id:'reeTech',pre:"October 2025: China extended its rare-earth controls to processing technology and to products containing Chinese rare earths, before suspending them under the truce.[c:cnsusp]",at:[80,200],ic:'🧲',t:'Rare-Earth Technology Controls Expanded',body:"A new package restricts rare-earth processing technology, magnet exports, and products containing Chinese rare earths — modeled on the October 2025 package.",fx:()=>cutAll(['ndpr','magnets'],.5),o:[{l:'Noted. (+10 PC)',fx:()=>{S.pc+=10}}]},
- {id:'indiumCtl',pre:"February 2025: China put indium under export licensing.[c:cnfeb25]",p:.002,ic:'⛏',t:'Indium Licensing',body:"Beijing slows indium export licences. IR detector makers check their stockpiles.",fx:()=>cutAll(['indium'],.5),o:[{l:'Noted.',fx:()=>{S.pc+=4}}]},
 
  {id:'thaw',pre:"November 2025: Beijing suspended its mineral bans as part of a trade deal.[c:truce]",p:.0025,once:false,cond:()=>Object.values(S.cut).some(v=>v<.7),ic:'🤝',t:'Partial Thaw',
-  fx:()=>{const ids=Object.keys(S.cut).filter(k=>S.cut[k]<.7);const id=ids[Math.floor(rand()*ids.length)];S.cut[id]=Math.min(1,S.cut[id]+.35);S._thaw=id},
+  fx:()=>{const ids=Object.keys(S.cut).filter(k=>S.cut[k]<.7);const id=ids[Math.floor(rand()*ids.length)];S.cut[id]=Math.min(1,S.cut[id]+.35);S._thaw=id;cnS().heat=Math.max(0,cnS().heat-5)},
   body:()=>`Beijing quietly grants a batch of export licenses for ${ND[S._thaw].n.toLowerCase()}. Supply partly resumes — at prices that remind everyone who holds the switch.`,o:[{l:'Take what we can get.'}]},
  {id:'pcbDisrupt',pre:"August 2022: PLA drills around Taiwan forced ships to reroute, adding up to three days to voyages.[c:tw22]",p:.004,once:false,cond:()=>!S.tmods.some(m=>m.id==='pcb'),ic:'▦',t:'Strait Tensions Delay Board Shipments',
   body:"PLA exercises around Taiwan close sea lanes and reroute shipping. Chinese and Taiwanese board deliveries fall 30% for six weeks.",
@@ -1853,7 +1861,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
      know:{},inv:{...X.inv},q:{...X.q},allied:{...X.allied},theaters:[...X.theaters],
      enemy:{pac:mkEnemy('pac'),eu:mkEnemy('eu')},scT:{pac:sampleScen('pac'),eu:sampleScen('eu')},mc:null,aidLvl:1,q0:{...X.q},btRec:{},ready:{...READY0[fac]},ready0:{...READY0[fac]},mxAdd:{aircraft:0,surface:0,subs:0},mxDone:{},spares:{},atab:'stock',view:'cmd',range:'all',hide:{},
      cut:Object.fromEntries(NODES.map(n=>[n.id,1])),stock:{},tmods:[],gmods:[],costMods:[],nflags:{},navBack:[],spot:[],prio:{},carve:{},fw:{},
-     projects:[],plants:[],built:{},done:[],reforms:{},bill:null,cr:0,dfars:false,truce:false,tension:0,
+     cn:cnInit(),projects:[],plants:[],built:{},done:[],reforms:{},bill:null,cr:0,dfars:false,truce:false,tension:0,
      ledger:Object.fromEntries(Object.keys(LAYERS).map(k=>[k,{n:0,wk:0}])),
      pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},ic:{},icOnshore:0,icSince:{},gone:[],rules:{},rulesSince:{},shifts:{},ne:null,
      over:false,overWhy:'',modal:null,autoPause:false,exposure:0,tab:'bott',ptab:1,sel:null};
@@ -1881,14 +1889,78 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
 }
 // the 50% Affiliates Rule and Beijing's suspended controls are two halves of one bargain
 const BAN_NODES=['gallium','germanium','antimony','graphite','li_cells','magnets'];
-function affilOn(){setRule('rAffil',true);S.rulesSince.rAffil=fmtDate(S.w);if(S.truce){S.truce=false;applyChinaBan();cutAll(['magnets'],.75);S.tension=(S.tension||0)+.1;
+function affilOn(){setRule('rAffil',true);S.rulesSince.rAffil=fmtDate(S.w);if(S.truce){S.truce=false;applyChinaBan();cutAll(['magnets'],.75);cnS().heat=Math.min(100,cnS().heat+15);
   log(`${FLAGS.cn} Beijing answers the Affiliates Rule: its mineral bans and the 0.1% rare-earth rule are back in force.`,'bad');for(const id of BAN_NODES)flash(id,'bad')}}
-function affilOff(){setRule('rAffil',false);if(!S.truce){if(rand()<.5){S.truce=true;for(const id of BAN_NODES)S.cut[id]=1;log(`${FLAGS.cn} Beijing matches the suspension: the truce is back.`,'good');for(const id of BAN_NODES)flash(id,'good')}
+function affilOff(){setRule('rAffil',false);if(!S.truce){if(rand()<.5){S.truce=true;for(const id of BAN_NODES)S.cut[id]=1;cnReapply();log(`${FLAGS.cn} Beijing matches the suspension: the truce is back.`,'good');for(const id of BAN_NODES)flash(id,'good')}
   else log(`${FLAGS.cn} Beijing pockets the suspension and keeps its controls in force.`,'bad')}}
 function applyChinaBan(){
   if(S.fac==='US'){cutAll(['gallium','germanium','antimony'],.35);cutAll(['graphite','li_cells'],.5)} // leakage through third countries and stocks (assumption; 2025's ban did not halt US production)
   else{cutAll(['gallium','germanium','antimony'],.5);cutAll(['graphite'],.7)}
 }
+/* ---------- Beijing's export-control ladder: pressure builds from your moves, and Beijing climbs a step at a time ---------- */
+// Each step is a control Beijing has used (or, for the last, threatened). Pressure rises with rivalry, US controls aimed at China,
+// and your plants replacing Chinese supply; a truce freezes the ladder. Thresholds and rates are game estimates.
+const CN_RUNGS=[
+ {id:'ree',s:'Rare-earth licences',th:20,n:'Rare-Earth Licences Slow to a Trickle',nodes:[['magnets',.55],['hree',.5]],
+  d:'Licences for magnets and heavy rare earths stall for your buyers, defense-linked ones first. Nothing is banned on paper; the paperwork simply stops moving.',
+  pre:'April 2025: China put seven heavy rare earths and magnets under licensing, and its magnet exports fell about 70% year on year in May.[c:magmay25]'},
+ {id:'feb',s:'Tungsten & indium',th:30,n:'Tungsten and Indium Licences Tighten',nodes:[['tungsten',.5],['indium',.5]],
+  d:'Licensing on tungsten, ammonium paratungstate and indium tightens. Penetrators, carbide tooling and infrared detectors feel it first.',
+  pre:'February 2025: China put tungsten, tellurium, bismuth, molybdenum and indium under export licensing.[c:cnfeb25]'},
+ {id:'drone',s:'Drone parts',th:40,n:'Drone Parts and Batteries Cut Off From Defense Firms',nodes:[['li_cells',.6],['actuators',.7]],
+  d:'Beijing sanctions US drone and defense firms by name, and their Chinese cell and motor suppliers stop shipping.',
+  pre:'October 2024: Beijing sanctioned Skydio over its sales to Taiwan; its battery supplier stopped shipping and Skydio rationed one battery per drone.[c:skydio]'},
+ {id:'batt',s:'Batteries & graphite',th:50,n:'Battery and Graphite-Anode Controls',nodes:[['graphite',.5],['li_cells',.5]],
+  d:'High-energy lithium cells, cathode precursors, artificial graphite anodes and the machines that make them go under licence.',
+  pre:'October 2025: MOFCOM Announcement No. 58 put high-energy cells, cathode precursors, graphite anodes and their equipment under export licensing.[c:cnbatt25]'},
+ {id:'r01',s:'The 0.1% rule',th:60,n:'The 0.1% Rule: Chinese Rare Earths Inside Allied Products',nodes:[['ndpr',.5],['magnets',.45]],ally:[['magnets',.75],['ndpr',.8]],
+  d:'Any product made anywhere with 0.1% or more Chinese rare earths needs a Chinese licence. Allied magnet makers who buy Chinese oxide are caught too.',
+  pre:'October 2025: China extended its rare-earth controls to foreign-made products containing Chinese rare earths, then suspended them under the truce.[c:cnsusp]'},
+ {id:'mil',s:'Military end users',th:72,n:'Blanket Denial to Military End Users',all:.6,min:.15,
+  d:'Every dual-use export with a military end user is refused, and Beijing audits intermediaries that might resell to one.',
+  pre:'December 2024: a day after new US chip controls, Beijing banned gallium, germanium and antimony exports to the US and all dual-use exports to US military users.[c:cndec24]'},
+ {id:'emb',s:'Full embargo',th:86,n:'Critical-Mineral Embargo',all:.15,min:.02,tier:2,
+  d:'Shipments of critical minerals and processed materials stop without announcement. Beijing denies any embargo exists.',
+  pre:'No precedent at this scale. The closest: in September 2010 rare-earth shipments to Japan stopped after Japan detained a Chinese trawler captain, and resumed in late November; Beijing never admitted an embargo.[c:japan2010]'},
+];
+const CN_TALK=15;
+function cnInit(){return {heat:15,rung:0,hist:[],talkTo:0,next:PLAY0+13}}
+const cnS=()=>S.cn||(S.cn=cnInit());
+function cnNodes(r){if(!r.all)return r.nodes;const f=S.fac;return ORDER.filter(id=>ND[id][f].mix[2]>=r.min&&(!r.tier||ND[id].t<=r.tier)).map(id=>[id,r.all])}
+// plants of yours now replacing Chinese supply: Beijing reads them as lost leverage
+function cnReplaced(){const f=S.fac;return [...new Set(S.plants.filter(p=>p.kind==='node'&&p.yield>=.5&&ND[p.target]&&ND[p.target][f].mix[2]>=.3).map(p=>p.target))]}
+function cnDrivers(){const r=[],U=S.fac==='US',c=cnS();cnBase(c);
+  r.push(['Rivalry, and Beijing’s own plan to keep its lead in processing',3]);
+  if(S.scen==='taiwan')r.push(['Military pressure around Taiwan',5]);
+  if(U&&ruleOn('rAffil')&&!c.affil0)r.push(['The Affiliates Rule in force',12]);
+  const ic=U?IC.filter(x=>x.id!=='icAllyEx'&&icOn(x.id)&&!(c.ic0||[]).includes(x.id)):[];if(ic.length)r.push([`New US import controls on Chinese drones and electronics: ${ic.map(x=>x.n.toLowerCase()).join('; ')}`,3*ic.length]);
+  const rp=cnReplaced();if(rp.length)r.push([`Your plants replacing Chinese supply: ${rp.map(id=>ND[id].n).join(', ')}`,2*Math.min(rp.length,6)]);
+  if(S.truce)r.push(['The truce in force',-4]);
+  if(c.talkTo>S.w)r.push(['Talks under way',-10]);
+  return r}
+const cnRate=()=>cnDrivers().reduce((a,x)=>a+x[1],0);
+function cnBase(c){if(!c.ic0){c.ic0=IC.filter(x=>icOn(x.id)).map(x=>x.id);c.affil0=S.fac==='US'&&ruleOn('rAffil')}}
+function cnTick(){const c=cnS();cnBase(c);c.heat=clamp(c.heat+cnRate()/52,0,100);if(S.w>=c.next){c.next=S.w+13;cnReview()}}
+function cnReview(){const c=cnS();if(S.queue.some(q=>q.ev==='cnRung')||(S.inbox||[]).some(x=>x.ev==='cnRung'))return;
+  if(S.truce){if(S.fac==='US'&&c.heat>=55&&rand()<.15+(c.heat-55)/50){S.truce=false;applyChinaBan();c.heat=Math.max(0,c.heat-8);c.hist.push({w:S.w,k:-1});
+    log(`${FLAGS.cn} Beijing ends the truce early: its December 2024 bans on gallium, germanium and antimony are back in force.`,'bad');for(const id of BAN_NODES)flash(id,'bad')}return}
+  const k=c.rung;if(k>=CN_RUNGS.length)return;const r=CN_RUNGS[k];
+  if(c.heat>=r.th&&rand()<clamp(.2+(c.heat-r.th)/30,0,.8)){S._cnR=k;queueEvent('cnRung')}}
+function cnApply(k,f,how){const r=CN_RUNGS[k],c=cnS();for(const [id,v] of cnNodes(r)){S.cut[id]=Math.min(S.cut[id],1-(1-v)*f);flash(id,'bad')}
+  for(const [id,v] of r.ally||[])tmod('ally',id,1-(1-v)*f,99999,'Beijing’s 0.1% rule');
+  c.rung=Math.max(c.rung,k+1);c.heat=Math.max(0,c.heat-8);c.hist.push({w:S.w,k,f,how});log(`${FLAGS.cn} Beijing climbs a step: ${r.s.toLowerCase()} (${how}).`,'bad')}
+// a restored truce lifts the suspended bans, not the steps Beijing took outside it
+function cnReapply(){for(const h of cnS().hist)if(h.k>=0)for(const [id,v] of cnNodes(CN_RUNGS[h.k]))S.cut[id]=Math.min(S.cut[id],1-(1-v)*h.f)}
+function cnTalk(){const c=cnS();if(c.talkTo>S.w||S.pc<CN_TALK)return;S.pc-=CN_TALK;spent('pc',CN_TALK);c.talkTo=S.w+52;c.heat=Math.max(0,c.heat-8);log(`${FLAGS.cn} Talks open with Beijing on export licences (${CN_TALK} PC): pressure eases for a year.`,'ev')}
+function cnHits(r){const ns=cnNodes(r);return ns.length>4?`${ns.length} materials and parts where China supplies ${pct(r.min)} or more of yours, each cut to ${pct(r.all)} of Chinese supply`:ns.map(([id,v])=>`${ND[id].n} (Chinese supply cut ${pct(1-v)})`).join(', ')+(r.ally?'; allied magnet supply falls too':'')}
+function cnPanel(){const c=cnS(),rt=cnRate(),dr=cnDrivers(),nx=CN_RUNGS[c.rung],T=x=>`${Math.max(0,Math.min(100,x))}%`;
+  const ticks=CN_RUNGS.map((r,i)=>`<span class="cnt ${i<c.rung?'done':i===c.rung?'next':''}" style="left:${T(r.th)}" data-tip="${tipQ(`<b>Step ${i+1}: ${r.n}</b><br>${r.d}<br>Possible once pressure passes ${r.th}.${i<c.rung?`<br>Taken ${fmtDate(c.hist.find(h=>h.k===i)?.w??S.w)}.`:''}`)}"><i></i><em>${i+1}</em></span>`).join('');
+  const took=c.hist.map(h=>h.k<0?`<span class="cnh bad">${fmtDate(h.w)} · truce ended early</span>`:`<span class="cnh">${fmtDate(h.w)} · ${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`).join('');
+  return `<div class="cnp"><div class="cnph"><b>${FLAGS.cn} Beijing’s export controls</b><span>Step ${c.rung} of ${CN_RUNGS.length} · pressure ${Math.round(c.heat)}/100, ${rt>=0?'rising':'falling'} ${fmt(Math.abs(rt),0)} a year · next review ${fmtDate(c.next)}</span>
+    <button class="btn sm" data-a="cntalk" ${c.talkTo>S.w||S.pc<CN_TALK?'disabled':''} data-tip="${tipQ(c.talkTo>S.w?`Talks run to ${fmtDate(c.talkTo)}.`:`Open a year of talks on export licences: pressure −8 now and −10 a year while they run.`)}">${c.talkTo>S.w?'Talks under way':`Open talks · ${CN_TALK} PC`}</button></div>
+   <div class="cnbar"><i style="width:${T(c.heat)}"></i>${ticks}</div>
+   <div class="cnrow"><div class="mini">${S.truce?'<b>Truce in force.</b> Beijing’s December 2024 bans stay suspended and it takes no new steps, but pressure still builds; above 55 it may end the truce early. ':''}${nx?`Next step: <b>${nx.n}</b>, possible once pressure passes ${nx.th}. At each quarterly review Beijing may climb one step, likelier the further past the line; each step it takes releases 8 points.`:'Beijing has nothing left to escalate.'}${took?`<div class="cnhs">${took}</div>`:''}</div>
+    <div class="cndr"><div class="mini"><b>What moves the pressure, per year</b></div>${dr.map(([n,v])=>`<div><span>${n}</span><b class="${v>0?'redt':'okt'}">${v>0?'+':'−'}${Math.abs(v)}</b></div>`).join('')}</div></div></div>`}
 function doCeasefire(){const E=S.enemy.eu;E.war=false;E.pm*=.85;S.ceasefire=true} // output keeps flowing — into depots
 
 /* =====================================================================
@@ -2671,7 +2743,7 @@ function tick(){
   if(S.fac==='US'&&(S.histMode?fyStart():billNow())){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(F().fyBudget)}.`,'good')}
   if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good')}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
-  if(!S.histMode){enactPkg();suppTick();billAlertTick()}
+  if(!S.histMode){enactPkg();suppTick();billAlertTick();cnTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
@@ -3306,7 +3378,7 @@ function wmBody(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||productio
   const body=WM?.err?`<div class="wmload">The map outlines could not load; they need an internet connection. The figures are listed below.</div>`:WM?wmSVG(d,dsh):'<div class="wmload">Loading map…</div>';
   const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
     <div class="wmhd"><div class="wmnir"><b>${d.nir}</b><span>net import reliance, 2025</span></div><div class="wmshare">${bar}</div></div></div>`;
-  return `<div class="billv wmv">${top}
+  return `<div class="billv wmv">${cnPanel()}${top}
     <div class="wmwrap"><div class="wmlist"><div class="wmlh"><span>Raw material</span><span>From China / Russia</span></div>${list}</div><div class="wmmain">
       ${body}
       <div class="wmsrc"><span class="wmk">Source</span>USGS, import sources 2021–24: “${d.ln}”${d.note?`<div class="wmnote">${d.note}</div>`:''}</div>${gm}
@@ -3633,6 +3705,11 @@ const CITES=[
  {id:'hellscape',g:'Wars of 2025–26',t:'Indo-Pacific commander plans ‘hellscape’ for China’s military if it invades Taiwan',pub:'Washington Times',d:'Jun 2024',url:'https://m.washingtontimes.com/news/2024/jun/14/indo-pacific-commander-plans-hellscape-chinas-mili/',use:'Adm. Paparo: thousands of uncrewed submarines, surface vessels and aerial drones would engage an invasion force in the Strait, buying about a month.'},
  {id:'crsnavy',g:'Ships, submarines & readiness',t:'Navy Force Structure and Shipbuilding Plans: Background and Issues for Congress (RL32665)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/files/2026-01-20_RL32665_56fe7a4e3f7660d51984a2058aa270cb1973b2c4.html',use:'291 battle force ships; about 11 ships a year sustained to grow toward 381; the 381 goal is being replaced by a Golden Fleet goal.'},
  {id:'scranton24',g:'Munitions & energetics',t:'US Army ammo plant boosts artillery shell production for Ukraine',pub:'Defense News (AP)',d:'Aug 2024',url:'https://www.defensenews.com/global/the-americas/2024/08/28/us-army-ammo-plant-boosts-artillery-shell-production-for-ukraine/',use:'Scranton went from about 24,000 to 36,000 155mm rounds a month with weekend overtime and a $400M modernization; RAND notes shifts and overtime can only go so far.'},
+ {id:'magmay25',g:'Policy & trade',t:'Chinese exports of rare-earth magnets plummet in May',pub:'AFP via Free Malaysia Today',d:'Jun 2025',url:'https://fmtv5.freemalaysiatoday.com/category/business/2025/06/20/chinese-exports-of-rare-earth-magnets-plummet-in-may',use:'Magnet exports down about 70% year on year in May 2025, after April’s licensing rules.'},
+ {id:'skydio',g:'Policy & trade',t:'China sanctions Skydio, the largest US-based drone maker',pub:'PetaPixel',d:'Oct 2024',url:'https://petapixel.com/2024/10/31/china-sanctions-skydio-the-largest-us-based-drone-maker/',use:'Sanctions over Taiwan sales cut Skydio’s battery supply; batteries rationed to one per drone.'},
+ {id:'cnbatt25',g:'Policy & trade',t:'China export controls on lithium batteries and artificial graphite anode materials',pub:'Herbert Smith Freehills Kramer',d:'Oct 2025',url:'https://www.hsfkramer.com/insights/2025-10/china-export-controls-lithium-batteries-and-artificial-graphite-anode-materials',use:'MOFCOM/Customs Announcement No. 58 of 2025: cells, cathode precursors, graphite anodes and equipment under licence.'},
+ {id:'cndec24',g:'Policy & trade',t:'China bans exports of gallium and other key high-tech materials, hitting back at US chip sanctions',pub:'Associated Press via News4Jax',d:'Dec 2024',url:'https://www.news4jax.com/business/2024/12/03/china-bans-exports-of-gallium-and-other-key-high-tech-materials-hitting-back-at-us-chip-sanctions/',use:'3 Dec 2024 ban, a day after US chip controls; dual-use exports to US military users prohibited.'},
+ {id:'japan2010',g:'Policy & trade',t:'China restarts rare earth shipments to Japan',pub:'Associated Press via The Washington Times',d:'Nov 2010',url:'https://m.washingtontimes.com/news/2010/nov/23/china-restarts-rare-earth-shipments-to-japan/',use:'Shipments to Japan halted after the September 2010 trawler incident and restarted in late November.'},
  {id:'cnfeb25',g:'Policy & trade',t:'Decision to implement export controls on tungsten, tellurium, bismuth, molybdenum and indium related items',pub:'International Energy Agency (policy database)',d:'Feb 2025',url:'https://www.iea.org/policies/26795-decision-to-implement-export-controls-on-tungsten-tellurium-bismuth-molybdenum-and-indium-related-items',use:'MOFCOM and Customs Announcement No. 10 of 2025, 4 Feb 2025.'},
  {id:'mg21',g:'Critical minerals',t:'Impact of the imminent shortage of magnesium on the European aluminium industry',pub:'European Aluminium (position paper)',d:'Sep 2021',url:'https://european-aluminium.eu/wp-content/uploads/2022/08/2021-09-27-position-paper_impact-of-imminent-short-1.pdf',use:'Shaanxi power curbs halved Chinese magnesium output; Europe ~95% import-dependent.'},
  {id:'tw22',g:'Policy & trade',t:'China drills force ships to sail around Taiwan danger zones',pub:'Bloomberg',d:'Aug 2022',url:'https://www.bloomberg.com/news/articles/2022-08-04/china-drills-force-ships-to-circumnavigate-taiwan-danger-zones',use:'Ships rerouted during the 4–7 Aug 2022 drills.'},
@@ -4170,7 +4247,7 @@ const SCENS=[
   lesson:'A long war is won by volume: energetics, shell bodies, rocket motors and cheap drones, most of whose parts come from China.'},
  {id:'cutoff',n:'The Rare-Earth Cutoff',rival:'pac',ic:'🧲',dl:weekOf(2030,0,7),
   threat:'January 2027: the trade truce collapses. Beijing reimposes its export bans and tightens rare-earth licensing, the way it did in 2023 and 2025.[c:truce] You have until January 2030 to build a base that keeps running without China.',
-  setup:()=>{S.truce=false;S.fired.truce27=1;S.inbox=(S.inbox||[]).filter(x=>x.ev!=='truce27');applyChinaBan();cutAll(['ndpr','hree','magnets'],.4);log(`${FLAGS.cn} The truce collapses: export bans are back, and rare-earth licenses stop coming.`,'bad')},
+  setup:()=>{S.truce=false;cnS().heat=30;S.fired.truce27=1;S.inbox=(S.inbox||[]).filter(x=>x.ev!=='truce27');applyChinaBan();cutAll(['ndpr','hree','magnets'],.4);log(`${FLAGS.cn} The truce collapses: export bans are back, and rare-earth licenses stop coming.`,'bad')},
   mand:[{n:'Magnet demand met without China',kind:'magnets',tgt:.9,pct:1,src:'MP Materials’ 10X plant (2028) and the 2027 DFARS ban on Chinese magnets.[c:mp10x,dfars7018]'},
         {n:'PRC and Russian content cut in half',kind:'expo',tgt:.5,low:1,pct:1,src:'Measured against January 2027.'},
         {n:'Drone and aircraft output held',kind:'hold',lines:['drones','aircraft'],tgt:1,pct:1,src:'Both at least at their January 2027 level.'}],
@@ -4503,7 +4580,7 @@ function renderModal(){
     else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in Conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
-      html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${e.pre}</p>`:''}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}</div></div>`}
+      html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${V(e.pre)}</p>`:''}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}</div></div>`}
   } else if(S.modal==='scenPick'){
     html=scenPickHTML();
   } else if(S.modal==='scenEnd'&&S.scenRes){
@@ -4718,6 +4795,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
     case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;clearSave();break;
+    case 'cntalk':cnTalk();break;
     case 'savem':saveGame();S.modal='save';S._newc=false;S._svMsg='';S.speed=0;break;
     case 'savedl':saveGame();saveDownload();break;
     case 'saveul':saveUpload();break;
