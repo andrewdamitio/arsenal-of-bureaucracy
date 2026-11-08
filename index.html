@@ -665,6 +665,10 @@ body{background:
 .eor{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:6px 10px;margin:0 0 4px;background:#f1e8d0;border-left:3px solid #8a8672;font:13px "Segoe UI",system-ui,sans-serif}
 .eor.g{border-left-color:#3f7a34}.eor.b{border-left-color:#a3261c}.eor i{font:600 10px var(--disp);font-style:normal;letter-spacing:.1em;color:#6b5a35}.eor b{white-space:nowrap;min-width:84px;text-align:right}.eor.g b{color:#2f6a24}.eor.b b{color:#9a2a1c}
 .evcont{text-align:center!important;font-size:15px!important}
+.bnsort{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px}.bnsort>.mini:last-child{flex:1;min-width:260px;margin-left:6px}
+.bnsort .pbtn.sm.on{background:#3a3020;color:#f0dfae;border-color:#3a3020}
+.bnnow{font:600 10px var(--disp);letter-spacing:.06em;text-transform:uppercase;color:#7a6a48;border:1px solid #cdb98a;padding:1px 5px;margin-left:-4px;align-self:center}
+.bncov{font-size:12.5px;padding:4px 8px;margin:0 0 6px;border-left:3px solid #8a8672;background:#efe5cb}.bncov.ok{border-left-color:#3f7a34;color:#2f5a24}.bncov.part{border-left-color:#c9a227}.bncov.part b{color:#8a2a1c}.bncov.none{border-left-color:#a3261c;color:#8a2a1c}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3208,10 +3212,28 @@ function bnScan(){const key=bnKey();if(S._bnc?.key===key)return S._bnc.v;
     v.push({id,gain,score,causes:shortCauses(id,P),short:P[id].need-P[id].avail0})}
   v.sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));S._bnc={key,v:{rows:v,R0}};return S._bnc.v}
 const LAYER_DOM=l=>DOMAINS.find(D=>D.layers.includes(l));
+// supply each program or ramping plant will add once it lands, in the item's own units; training and test programs add know-how, not capacity
+function bnCover(r,P){const id=r.id,sl=slipF().f,s=S.nodes[id],it=[];
+  for(const q of S.projects){const d=PD[q.def];if(d.t.node!==id)continue;let u=0;
+    if(!d.kind||d.kind==='cap')u=projGain(d,q.gm);else if(d.kind==='mod')u=s.base>1e-6?s.base*.15:s.scale*.05;else if(d.kind==='power')u=s.base*.05;
+    if(u>0)it.push({u,w:Math.round(S.w+remW(q)*sl),pend:!!q.pkg})}
+  for(const pl of S.plants)if(pl.target===id&&!pl.full)it.push({u:pl.gain*(1-pl.yield),w:S.w+52,pend:false});
+  it.sort((a,b)=>a.w-b.w);const need=Math.max(P[id].need,1e-9),gap=Math.max(0,r.short);let c=0,byW=null;
+  for(const x of it){c+=x.u;if(byW==null&&c>=gap-1e-9)byW=x.w}
+  const lastW=it.length?it[it.length-1].w:null,rem=Math.max(0,gap-c);
+  return {gapP:gap/need*100,closedP:Math.min(c,gap)/need*100,remP:rem/need*100,byW,lastW,pend:it.filter(x=>x.pend).length,n:it.length,share:gap>0?rem/gap:0}}
+function bnCovLine(c,yr){const g=Math.max(1,Math.round(c.gapP)),pend=c.pend?` (${c.pend===1?'one is':c.pend+' are'} still in the NDAA request)`:'';
+  if(!c.n)return `<div class="bncov none">No fix under way: the whole ${g}-point gap is open.</div>`;
+  if(c.remP<.5)return `<div class="bncov ok">✓ Covers the whole ${g}-point gap by ~${yr(c.byW)}${pend}. Until then it still costs output.</div>`;
+  if(c.closedP<.5)return `<div class="bncov none">What is under way adds know-how, not capacity: the whole ${g}-point gap is open.</div>`;
+  return `<div class="bncov part">Closes ${Math.round(c.closedP)} of the ${g}-point gap by ~${yr(c.lastW)}${pend}; <b>${Math.max(1,Math.round(c.remP))} points have no fix yet.</b></div>`}
 function bnBody(){
-  const {rows,R0}=bnScan(),P=R0.P,sl=slipF().f,yr=w=>dateOf(w).getFullYear();
-  // the gaps against China and Russia live on Command (The Race); this page is the bottlenecks, ranked
-  let h=`<p class="mini" style="margin:0 0 6px">Ranked by the output each one costs you. Line-by-line gaps against ${RV().n}: <span class="linkn" data-a="home">🏛 The Race on Command →</span></p>`;
+  const {rows:rows0,R0}=bnScan(),P=R0.P,sl=slipF().f,yr=w=>dateOf(w).getFullYear(),open=S.bnSort==='open';
+  const cov={};for(const r of rows0)cov[r.id]=bnCover(r,P);const nowRank={};rows0.forEach((r,i)=>nowRank[r.id]=i+1);
+  // two orders: what costs output today, or what still costs it once everything under way has landed
+  const rows=open?rows0.slice().sort((a,b)=>(cov[b.id].remP>=.5)-(cov[a.id].remP>=.5)||b.score*cov[b.id].share-a.score*cov[a.id].share||b.score-a.score):rows0;
+  let h=`<div class="bnsort"><span class="mini">Rank by</span><button class="pbtn sm ${open?'':'on'}" data-a="bnsort" data-v="now">Today’s cost</button><button class="pbtn sm ${open?'on':''}" data-a="bnsort" data-v="open">What has no fix yet</button>
+   <span class="mini">${open?'The output each one would still cost once every program and plant under way has landed. Items fully covered sink to the bottom, though they still cost output until the fixes arrive.':`The output each one costs you today, whatever is under way. Line-by-line gaps against ${RV().n}: <span class="linkn" data-a="home">🏛 The Race on Command →</span>`}</span></div>`;
   if(!rows.length)return h+'<p>No material or component is short right now. Every line is limited by its own capacity: see <span class="linkn" data-a="home">The Race</span>.</p>';
   h+=`<div class="sleg" style="margin:8px 0 4px">${CAUSES.map(([k,n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')}</div>`;
   h+=rows.map((r,ix)=>{const id=r.id,n=ND[id],p=P[id],st=nodeStatus(p),tot=Object.values(r.causes).reduce((a,b)=>a+b,0)||1;
@@ -3221,12 +3243,12 @@ function bnBody(){
     const way=Object.entries(lost).filter(x=>x[1]>.005).sort((a,b)=>b[1]-a[1]);
     const levs=leversFor(id).filter(d=>!S.projects.some(q=>q.def===d.id)&&!leverDone(d)).sort((a,b)=>projGain(b)-projGain(a)).slice(0,3);
     const cutDom=r.causes.cut>1e-9?(S.fac==='US'?(icBars(id)||(S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars'))?'source':'export'):null):null;
-    return `<div class="bncard" id="bn-${id}"><div class="bnhd"><span class="bnrank">${ix+1}</span><span class="dic" style="font-size:20px">${n.ic}</span><div><b class="linkn" data-a="node" data-n="${id}" style="font:700 16px Georgia;color:inherit">${n.n}</b><div class="mini">Tier ${n.t} · <b class="st-t-${st}">${st.toUpperCase()}</b> · ${pct(Math.min(p.cover,9.99))} of need${n.ss?' · sole source':''}</div></div><span class="dsp"></span>
+    return `<div class="bncard" id="bn-${id}"><div class="bnhd"><span class="bnrank">${ix+1}</span>${open&&nowRank[id]!==ix+1?`<span class="bnnow" data-tip="Rank by today’s cost">#${nowRank[id]} today</span>`:''}<span class="dic" style="font-size:20px">${n.ic}</span><div><b class="linkn" data-a="node" data-n="${id}" style="font:700 16px Georgia;color:inherit">${n.n}</b><div class="mini">Tier ${n.t} · <b class="st-t-${st}">${st.toUpperCase()}</b> · ${pct(Math.min(p.cover,9.99))} of need${n.ss?' · sole source':''}</div></div><span class="dsp"></span>
       <div class="bngain">${gains.length?gains.map(([c,g])=>`<span class="bnlink" data-a="rcgo" data-c="${c}" data-tip="${tipQ(`Fully supplying ${n.n} would add this much ${LINES[c].u} output a year. Click to see ${LINES[c].n} in the Race on Command.`)}"><b>+${fmtN(g)}</b>/yr ${LINES[c].n} →</span>`).join(''):'<span class="mini">Another input binds first</span>'}</div></div>
      <div class="bngrid"><div><h5>Why it's short</h5><div class="bigbar" style="display:flex">${CAUSES.filter(([k])=>r.causes[k]>1e-9).map(([k,nm,c])=>`<i style="position:static;flex:${r.causes[k]};background:${c}" title="${nm}: ${pct(r.causes[k]/Math.max(p.need,1e-9))} of need"></i>`).join('')}</div>
        <div class="bnc mini">Supply now, as a share of need: domestic ${pct(Math.min(p.dom,p.need)/Math.max(p.need,1e-9))} · allied ${pct(p.ally/Math.max(p.need,1e-9))} · PRC ${pct(p.prc/Math.max(p.need,1e-9))} · know-how ${Math.round(S.know[id])}</div>
        ${CAUSES.filter(([k])=>r.causes[k]>1e-9).map(([k,nm,c])=>`<div class="bnc"><span class="sw" style="background:${c}"></span>${nm} <b>${pct(r.causes[k]/Math.max(p.need,1e-9))}</b>${k==='starved'&&p.starvedBy?` — <span class="linkn" data-a="bngo" data-n="${p.starvedBy}">${ND[p.starvedBy].n}</span>`:''}${k==='cut'&&cutDom?` — <span class="linkn" data-a="rbgo" data-d="${cutDom}">⚖ ${DOMAINS.find(D=>D.id===cutDom).n}</span>`:''}</div>`).join('')}</div>
-      <div><h5>Fixes under way</h5>${projs.length||ramping.length?projs.map(q=>{const [t,c]=progStatus(q,true);return `<div class="bnc"><span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t}</span> <span class="mini">· ~${yr(Math.round(S.w+remW(q)*sl))}</span></div>`}).join('')+ramping.map(pl=>`<div class="bnc"><span class="linkn" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</span> <span class="mini">ramping, ${pct(pl.yield)} of nameplate</span></div>`).join(''):'<p class="mini redt">Nothing under way.</p>'}
+      <div><h5>Fixes under way</h5>${bnCovLine(cov[id],yr)}${projs.length||ramping.length?projs.map(q=>{const [t,c]=progStatus(q,true);return `<div class="bnc"><span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t}</span> <span class="mini">· ~${yr(Math.round(S.w+remW(q)*sl))}</span></div>`}).join('')+ramping.map(pl=>`<div class="bnc"><span class="linkn" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</span> <span class="mini">ramping, ${pct(pl.yield)} of nameplate</span></div>`).join(''):''}
        ${way.length?`<h5 style="margin-top:6px">What's in the way</h5>${way.map(([l,w])=>{const D=LAYER_DOM(l);return `<div class="bnc"><span class="sw" style="background:${LAYERS[l].c}"></span>${LAYERS[l].n} <b>${w>=1?fmt(w,0)+' wk':'now'}</b>${D?` — <span class="linkn" data-a="rbgo" data-d="${D.id}">⚖ ${D.n}</span>`:''}</div>`}).join('')}`:''}</div>
       <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(d.dur.reduce((a,b)=>a+b,0))}</span></div>`).join('')}
        ${S.nodes[id].base>0?`<div class="bnc"><button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':'⏩ Supplier shifts'}</button> <span class="mini">${money(NSHIFT_C)}/yr · +15% in ~3 mo</span></div>`:''}
@@ -5191,6 +5213,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'evopt':{const q=S.queue[0];let out=null;if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);const a=outSnap();if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.();S.pc=Math.max(0,S.pc);const rows=outDiff(a);if(rows.length)out={sys:'outcome',ev:q.ev,ch:optSplit(V(o.l))[0],rows}}}S.queue.shift();if(out)S.queue.unshift(out);S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;clearSave();break;
     case 'cntalk':cnTalk();break;
+    case 'bnsort':S.bnSort=b.dataset.v;S._vdirty=true;break;
     case 'aldeal':alDeal(b.dataset.d);S._vdirty=true;break;
     case 'ruguard':ruGuard();S._vdirty=true;break;
     case 'yrrec':S.modal=null;S.view='rec';break;
