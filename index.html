@@ -607,6 +607,12 @@ body{background:
 .ndaaref .ref{border-color:#cdb98a}.ndaaref .ref .nm{color:#2a2418}.ndaaref .ref .d,.ndaaref .mini,.ndaaref p{color:#5a4e38}
 .ndaaref .btn{background:#3a3020;border-color:#3a3020;color:#f0dfae}.ndaaref .btn:hover:not(:disabled){background:#4d4029;color:#fff}.ndaaref .btn:disabled{opacity:.4}
 .ndaaref .sub,.ndaaref .dim{color:#5a4e38!important}.ndaaref h2 .dim,.ndaaref h2 .r{color:#cfc6ad!important}.ndaaref .green{color:#3f7a34}.ndaaref .red{color:#a3261c}.ndaaref .linkn{color:#7a4f12}
+.alzone{display:flex;gap:10px;align-items:flex-start;border:1px solid #c8a090;background:#f3e3d6;padding:8px 12px;margin:0 0 12px;font-size:13px;color:#4a2a1e}.alzone .flg{width:22px;margin-top:2px;flex:none}
+.alcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}.alc{border:1px solid #c8b48a;background:#f3ebd6;padding:10px 12px;color:#3d3426}
+.alch{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px}.alch .flg{width:22px;align-self:center}.alch b{font:600 17px var(--disp);letter-spacing:.03em;color:#2a2418}
+.alhit{font-size:12px;color:#8a1f15;background:#f6e2d8;border-left:3px solid #a3261c;padding:4px 8px;margin:0 0 6px}.alt td,.alt th{padding:2px 6px}.alt .num{text-align:right}
+.aldh{font:600 11px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a6d2e;margin:10px 0 4px;border-bottom:1px solid #c8b48a}
+.ald{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px dotted #c8b48a}.ald b{color:#2a2418}.ald .btn{white-space:nowrap;background:#3a3020;border-color:#3a3020;color:#f0dfae}.ald .btn:disabled{opacity:.4}.ald.on{opacity:.9}.alpre{margin-top:2px}.alpre b{font:600 10px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#8a6d2e}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1686,6 +1692,17 @@ const EVENTS=[
   o:()=>[{l:'Accept the new conditions and retrofit (−$0.05B; output −15% for 10 weeks)',$:.05,fx:()=>siteHit(.85,10)},
    {l:'Negotiate a consent order (−6 PC; output −15% for 4 weeks)',pc:6,fx:()=>siteHit(.85,4)},
    {dflt:1,l:'Run reduced until the hearing (output −40% for 20 weeks)',fx:()=>siteHit(.6,20)}]},
+ {id:'twBudget',fac:['US'],p:.0025,once:false,cond:()=>(S.rival||'pac')==='pac'&&!alS('tw').hit.length,ic:'🏛',t:'Taiwan’s Legislature Freezes Defense Funds',
+  body:'Taiwan’s opposition-led legislature freezes part of the defense budget and cuts drone and missile lines from a special package. Production contracts in Taiwan stall while the parties fight it out.',
+  pre:'January 2025: Taiwan’s legislature froze half the submarine budget and a third of a drone budget; in 2026 it passed a special defense budget with most drone funding cut.[c:twbud][c:twspec]',
+  o:[{l:'Press Taipei publicly (−10 PC; Taiwan’s output −10% for 26 weeks)',pc:10,fx:()=>alHit('tw','*',.9,26,'budget freeze')},
+   {l:'Offer Foreign Military Financing (−$0.4B; Taiwan’s output −10% for 26 weeks)',$:.4,fx:()=>alHit('tw','*',.9,26,'budget freeze')},
+   {dflt:1,l:'Let Taiwan’s politics run its course (Taiwan’s output −30% for a year)',fx:()=>alHit('tw','*',.7,52,'budget freeze')}]},
+ {id:'ruRung',manual:1,once:false,ic:FLAGS.ru,t:()=>RU_RUNGS[S._ruR].n,pre:()=>RU_RUNGS[S._ruR].pre,
+  body:()=>{const r=RU_RUNGS[S._ruR];return `<p>${r.d}</p><p><b>What it hits:</b> ${r.hits.map(([m,c,mm,wk])=>`${m==='*'?'every European ally':ALLY_MEM.eu.find(x=>x.k===m).n}, ${c==='*'?'all lines':LINES[c].n.toLowerCase()} −${pct(1-mm)} for ${wk} weeks`).join('; ')}. Less of their output counts toward your requirement while it lasts.</p><p class="mini">Step ${S._ruR+1} of ${RU_RUNGS.length} in Moscow’s campaign; pressure ${Math.round(ruS().heat)}/100. The Allies tab shows it.</p>`},
+  o:()=>[{dflt:1,l:'Absorb it',fx:()=>ruApply(S._ruR,1,'absorbed')},
+   {l:'Pay to harden plants and rail with the allies (−$0.3B: losses halved, pressure −4)',$:.3,fx:()=>{ruApply(S._ruR,.5,'hardened');ruS().heat=Math.max(0,ruS().heat-4)}},
+   {l:'Attribute it publicly and expel diplomats (+6 PC from the hawks; pressure +8)',fx:()=>{ruApply(S._ruR,1,'attributed');S.pc+=6;ruS().heat=Math.min(100,ruS().heat+8)}}]},
  {id:'cnRung',manual:1,once:false,ic:FLAGS.cn,t:()=>'Beijing Escalates: '+CN_RUNGS[S._cnR].n,pre:()=>CN_RUNGS[S._cnR].pre,
   body:()=>{const r=CN_RUNGS[S._cnR],c=cnS(),top=cnDrivers().filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];return `<p>${r.d}</p><p><b>What it hits:</b> ${cnHits(r)}.</p><p class="mini">Step ${S._cnR+1} of ${CN_RUNGS.length} on Beijing’s ladder. Pressure is ${Math.round(c.heat)}/100${top?`; the biggest push: ${top[0]} (+${top[1]} a year)`:''}. The Imports tab shows the ladder.</p>`},
   o:()=>[{dflt:1,l:'Absorb it and keep building',fx:()=>cnApply(S._cnR,1,'absorbed')},
@@ -2798,7 +2815,7 @@ function tick(){
   if(S.fac==='US'&&(S.histMode?fyStart():billNow())){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(F().fyBudget)}.`,'good');if(!S.histMode)S._yrDue=1}
   if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good');if(!S.histMode)S._yrDue=1}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
-  if(!S.histMode){enactPkg();suppTick();billAlertTick();cnTick()}
+  if(!S.histMode){enactPkg();suppTick();billAlertTick();cnTick();alTick();ruTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
@@ -3818,6 +3835,19 @@ const CITES=[
  {id:'hellscape',g:'Wars of 2025–26',t:'Indo-Pacific commander plans ‘hellscape’ for China’s military if it invades Taiwan',pub:'Washington Times',d:'Jun 2024',url:'https://m.washingtontimes.com/news/2024/jun/14/indo-pacific-commander-plans-hellscape-chinas-mili/',use:'Adm. Paparo: thousands of uncrewed submarines, surface vessels and aerial drones would engage an invasion force in the Strait, buying about a month.'},
  {id:'crsnavy',g:'Ships, submarines & readiness',t:'Navy Force Structure and Shipbuilding Plans: Background and Issues for Congress (RL32665)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/files/2026-01-20_RL32665_56fe7a4e3f7660d51984a2058aa270cb1973b2c4.html',use:'291 battle force ships; about 11 ships a year sustained to grow toward 381; the 381 goal is being replaced by a Golden Fleet goal.'},
  {id:'scranton24',g:'Munitions & energetics',t:'US Army ammo plant boosts artillery shell production for Ukraine',pub:'Defense News (AP)',d:'Aug 2024',url:'https://www.defensenews.com/global/the-americas/2024/08/28/us-army-ammo-plant-boosts-artillery-shell-production-for-ukraine/',use:'Scranton went from about 24,000 to 36,000 155mm rounds a month with weekend overtime and a $400M modernization; RAND notes shifts and overtime can only go so far.'},
+ {id:'dicas',g:'Allies & sabotage',t:'The 3rd Defense Industrial Cooperation, Acquisition, and Sustainment (DICAS) Forum',pub:'Japan Ministry of Defense',d:'Dec 2024',url:'https://www.mod.go.jp/en/article/2024/12/a0445c34b97e53baf2a2b704366e0613cfbeb056.html',use:'Action plans approved for AMRAAM and PAC-3 MSE co-production, following the July 2024 2+2.'},
+ {id:'jpxfer',g:'Allies & sabotage',t:'Japan to ease arms export controls allowing PAC-3 sale to US',pub:'AFP via The Defense Post',d:'Dec 2023',url:'https://thedefensepost.com/2023/12/22/japan-ease-arms-export',use:'Licence-built Patriot missiles may be sent back to the United States.'},
+ {id:'krloan',g:'Allies & sabotage',t:'South Korea to lend 500,000 rounds of artillery shells to US, report says',pub:'Stars and Stripes',d:'Apr 2023',url:'https://www.stripes.com/theaters/asia_pacific/2023-04-12/south-korea-ammo-loan-ukraine-9778630.html',use:'About 500,000 155mm shells lent (Yonhap: at least 330,000), after US purchases of 100,000.'},
+ {id:'masga',g:'Allies & sabotage',t:'Hanwha invests $5 billion in Philly Shipyard as part of “MASGA” push',pub:'Korea JoongAng Daily',d:'Aug 2025',url:'https://www.koreajoongangdaily.com/business/hanwha-invests-5-billion-in-philly-shipyard-as-part-of-masga-push/12398569',use:'$150B Korean shipbuilding pledge; Philly Shipyard from 1.5 to 20 vessels a year.'},
+ {id:'unterluss',g:'Allies & sabotage',t:'Factory opening in Unterlüß',pub:'Rheinmetall',d:'Sep 2025',url:'https://www.rheinmetall.com/en/media/news-watch/news/2025/09/2025-09-05-factory-opening-in-unterluess',use:'Opened 27 Aug 2025; up to 350,000 shells a year from 2027.'},
+ {id:'depac3',g:'Allies & sabotage',t:'Germany wants to manufacture American PAC-3 interceptors to help meet global demand',pub:'Defense News',d:'Sep 2026',url:'https://www.defensenews.com/global/europe/2026/09/23/germany-wants-to-manufacture-american-pac-3-interceptors-to-help-meet-global-demand/',use:'Germany lobbying to build PAC-3 MSE; Lockheed–Diehl memorandum of October 2025.'},
+ {id:'twbud',g:'Allies & sabotage',t:'Taiwan’s record budget cuts raise concerns over defense readiness',pub:'Radio Free Asia',d:'Jan 2025',url:'https://rfa.org/english/china/2025/01/22/china-taiwan-budget-cut-defense/',use:'Half the submarine budget and a third of a drone budget frozen.'},
+ {id:'twspec',g:'Allies & sabotage',t:'Taiwan’s special defense budget bill passes with drastic cuts',pub:'Jamestown Foundation',d:'2026',url:'https://jamestown.substack.com/p/taiwans-special-defense-budget-bill',use:'Special budget passed with most domestic drone funding cut.'},
+ {id:'diehl',g:'Allies & sabotage',t:'Russian saboteurs likely behind arson attack on German factory, security officials tell WSJ',pub:'Kyiv Independent',d:'Jun 2024',url:'https://kyivindependent.com/russian-saboteurs-likely-behind-arson-attack-on-german-factory-security-officials-tell-wsj',use:'May 2024 Diehl fire in Berlin; attribution unproven.'},
+ {id:'dhl',g:'Allies & sabotage',t:'Russia suspected in plot to send incendiary packages on cargo planes',pub:'Stars and Stripes',d:'Nov 2024',url:'https://www.stripes.com/theaters/europe/2024-11-05/russia-plot-incendiary-packages-cargo-planes-15745878.html',use:'July 2024 fires at DHL hubs in Leipzig and Birmingham linked to the GRU; Moscow denies it.'},
+ {id:'estlink',g:'Allies & sabotage',t:'What to know about Finland, Russia’s shadow fleet and a severed undersea cable',pub:'AP via GPB',d:'Dec 2024',url:'https://www.gpb.org/news/2024/12/31/what-know-about-finland-russias-shadow-fleet-and-severed-undersea-cable',use:'Eagle S seized after Estlink 2 and four data cables were cut.'},
+ {id:'papperger',g:'Allies & sabotage',t:'US, Germany disrupted Russian plot to assassinate Rheinmetall CEO, CNN reports',pub:'Kyiv Independent',d:'Jul 2024',url:'https://kyivindependent.com/us-germany-disrupted-russian-plot-to-assassinate-rheinmetall-ceo-cnn-reports',use:'US intelligence warned Germany; Moscow denies it.'},
+ {id:'pldrones',g:'Allies & sabotage',t:'Poland invokes NATO Article 4 over Russian drone incursion',pub:'Polskie Radio',d:'Sep 2025',url:'https://www.polskieradio.pl/395/9766/artykul/3577450,poland-invokes-nato-article-4-over-russian-drone-incursion-pm',use:'Drones over Poland on 9–10 September 2025; several shot down.'},
  {id:'magmay25',g:'Policy & trade',t:'Chinese exports of rare-earth magnets plummet in May',pub:'AFP via Free Malaysia Today',d:'Jun 2025',url:'https://fmtv5.freemalaysiatoday.com/category/business/2025/06/20/chinese-exports-of-rare-earth-magnets-plummet-in-may',use:'Magnet exports down about 70% year on year in May 2025, after April’s licensing rules.'},
  {id:'skydio',g:'Policy & trade',t:'China sanctions Skydio, the largest US-based drone maker',pub:'PetaPixel',d:'Oct 2024',url:'https://petapixel.com/2024/10/31/china-sanctions-skydio-the-largest-us-based-drone-maker/',use:'Sanctions over Taiwan sales cut Skydio’s battery supply; batteries rationed to one per drone.'},
  {id:'cnbatt25',g:'Policy & trade',t:'China export controls on lithium batteries and artificial graphite anode materials',pub:'Herbert Smith Freehills Kramer',d:'Oct 2025',url:'https://www.hsfkramer.com/insights/2025-10/china-export-controls-lithium-batteries-and-artificial-graphite-anode-materials',use:'MOFCOM/Customs Announcement No. 58 of 2025: cells, cathode precursors, graphite anodes and equipment under licence.'},
@@ -4086,7 +4116,7 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['flow','⇶ Flows'],['imports','🌍 Imports'],['ndaa','🏛 NDAA & Congress'],['arsenal','📈 Stocks & needs'],['rec','📊 Record'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['flow','⇶ Flows'],['imports','🌍 Imports'],['allies','🤝 Allies'],['ndaa','🏛 NDAA & Congress'],['arsenal','📈 Stocks & needs'],['rec','📊 Record'],['rules','⚖ Rulebook'],['src','📚 Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
@@ -4118,9 +4148,9 @@ function flowBody(){
 `;
 }
 function viewHTML(){
-  const T={imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','Rulebook & permits','who can change what, what each rule does to your programs, and every permit your plants hold'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
-  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?(S.view='rules',S.rbTab='docket',rulesBody()):S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
-  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa','imports'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  const T={allies:['🤝','Allies','who builds alongside you, what counts toward your requirement, the deals you can strike, and what hits them at home'],imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','Rulebook & permits','who can change what, what each rule does to your programs, and every permit your plants hold'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?(S.view='rules',S.rbTab='docket',rulesBody()):S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='allies'?alliesBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
+  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -4483,6 +4513,127 @@ const ALLY_PROD={
   surface:{out:6,tgt:7,est:1,src:'Japan and Korea each commission about three major surface ships a year: estimate.'},
   subs:{out:2,tgt:2.5,est:1,src:'Japan’s one Taigei-class boat a year plus Korea’s KSS-III: estimate.'}}}};
 const AL=()=>ALLY_PROD[S.rival||'pac'];
+/* =====================================================================
+   ALLIES AS ACTORS: each ally builds its own share of the allied lines, strikes co-production deals with you,
+   and can be hit at home (budget fights in Taipei, sabotage in Europe). Shares of each line are game estimates
+   from the producers named in the sources.
+   ===================================================================== */
+const AFLAG={
+ jp:"<svg class='flg' viewBox='0 0 15 10'><rect width='15' height='10' fill='#fff'/><circle cx='7.5' cy='5' r='3' fill='#bc002d'/></svg>",
+ kr:"<svg class='flg' viewBox='0 0 15 10'><rect width='15' height='10' fill='#fff'/><path d='M5.5 5a2 2 0 0 1 4 0z' fill='#cd2e3a'/><path d='M5.5 5a2 2 0 0 0 4 0z' fill='#0047a0'/><g stroke='#000' stroke-width='.6'><path d='M2 2.2l1.3-1M2.6 2.8l1.3-1M11.7 1.2l1.3 1M11.1 1.8l1.3 1M2 7.8l1.3 1M2.6 7.2l1.3 1M11.7 8.8l1.3-1M11.1 8.2l1.3-1'/></g></svg>",
+ tw:"<svg class='flg' viewBox='0 0 15 10'><rect width='15' height='10' fill='#fe0000'/><rect width='7.5' height='5' fill='#000095'/><circle cx='3.75' cy='2.5' r='1.3' fill='#fff'/></svg>",
+ de:"<svg class='flg' viewBox='0 0 15 9'><rect width='15' height='3' fill='#000'/><rect y='3' width='15' height='3' fill='#dd0000'/><rect y='6' width='15' height='3' fill='#ffce00'/></svg>",
+ fr:"<svg class='flg' viewBox='0 0 15 10'><rect width='5' height='10' fill='#0055a4'/><rect x='5' width='5' height='10' fill='#fff'/><rect x='10' width='5' height='10' fill='#ef4135'/></svg>",
+ uk:"<svg class='flg' viewBox='0 0 20 10'><rect width='20' height='10' fill='#012169'/><path d='M0 0l20 10M20 0L0 10' stroke='#fff' stroke-width='2'/><path d='M0 0l20 10M20 0L0 10' stroke='#c8102e' stroke-width='.7'/><path d='M10 0v10M0 5h20' stroke='#fff' stroke-width='3'/><path d='M10 0v10M0 5h20' stroke='#c8102e' stroke-width='1.8'/></svg>",
+ pl:"<svg class='flg' viewBox='0 0 16 10'><rect width='16' height='5' fill='#fff'/><rect y='5' width='16' height='5' fill='#dc143c'/></svg>",
+ oth:"<svg class='flg' viewBox='0 0 15 10'><rect width='15' height='10' fill='#004990'/><circle cx='7.5' cy='5' r='2.6' fill='none' stroke='#fff' stroke-width='.6'/><path d='M7.5 1.4v7.2M3.9 5h7.2' stroke='#fff' stroke-width='.6'/></svg>",
+};
+const ALLY_MEM={
+ pac:[
+  {k:'jp',n:'Japan',who:'Mitsubishi Heavy Industries, Kawasaki, Mitsubishi Electric',sh:{shells:.1,interceptors:.5,strike:.3,a2a:.6,fires:0,drones:.15,aircraft:.35,surface:.5,subs:.5}},
+  {k:'kr',n:'South Korea',who:'Hanwha, Poongsan, LIG Nex1, Korea Aerospace, HD Hyundai',sh:{shells:.9,interceptors:.3,strike:.35,a2a:.1,fires:1,drones:.25,aircraft:.65,surface:.5,subs:.5}},
+  {k:'tw',n:'Taiwan',who:'NCSIST, AIDC, a new drone industry',zone:1,sh:{shells:0,interceptors:.2,strike:.35,a2a:.3,fires:0,drones:.6,aircraft:0,surface:0,subs:0}}],
+ eu:[
+  {k:'de',n:'Germany',who:'Rheinmetall, Diehl, MBDA Germany, TKMS',sh:{shells:.35,interceptors:.55,strike:.15,a2a:.3,fires:.3,drones:.25,aircraft:.15,surface:.15,subs:.25}},
+  {k:'fr',n:'France',who:'Nexter (KNDS), MBDA, Dassault, Naval Group',sh:{shells:.1,interceptors:.3,strike:.35,a2a:.3,fires:0,drones:.15,aircraft:.5,surface:.25,subs:.25}},
+  {k:'uk',n:'United Kingdom',who:'BAE Systems, MBDA UK, Babcock',sh:{shells:.1,interceptors:.1,strike:.35,a2a:.3,fires:0,drones:.2,aircraft:.15,surface:.2,subs:.35}},
+  {k:'pl',n:'Poland',who:'PGZ, Mesko, Huta Stalowa Wola',sh:{shells:.1,interceptors:.05,strike:0,a2a:0,fires:.3,drones:.25,aircraft:0,surface:0,subs:0}},
+  {k:'oth',n:'Other European allies',who:'Norway, Sweden, Finland, Czechia, Italy and others: Nammo, Kongsberg, CSG, Leonardo, Saab',sh:{shells:.35,interceptors:0,strike:.15,a2a:.1,fires:.4,drones:.15,aircraft:.2,surface:.4,subs:.15}}]};
+const ALLY_DEALS=[
+ {id:'jpPac',t:'pac',m:'jp',c:'interceptors',add:60,$:1,pc:18,ramp:156,n:'PAC-3 MSE co-production in Japan',d:'Mitsubishi Heavy Industries already builds PAC-3 under licence; a second line doubles its output, and the extra goes to US stocks.',
+  pre:'July 2024: US and Japanese ministers agreed to pursue co-production of PAC-3 MSE and AMRAAM; in December 2024 they approved action plans for both.[c:dicas]'},
+ {id:'jpAmr',t:'pac',m:'jp',c:'a2a',add:300,$:1.2,pc:18,ramp:182,n:'AMRAAM final assembly in Japan',d:'A Japanese line assembles AIM-120s from US and Japanese parts, competing for the same rocket motors and seekers.',
+  pre:'July 2024: US and Japanese ministers agreed to pursue co-production of PAC-3 MSE and AMRAAM; in December 2024 they approved action plans for both.[c:dicas]'},
+ {id:'jpXfer',t:'pac',m:'jp',c:'interceptors',stock:80,pc:12,n:'Patriot interceptors from Japanese stocks',d:'Japan ships licence-built PAC-3s back to refill US stocks. A one-time transfer: +80 interceptors in service.',
+  pre:'December 2023: Japan eased its arms-export rules so it could send licence-built Patriot missiles to the United States.[c:jpxfer]'},
+ {id:'krShell',t:'pac',m:'kr',c:'shells',add:150000,$:.6,pc:12,ramp:104,n:'Korean shells for US stocks',d:'Poongsan and Hanwha add a line and shifts for US orders, under a multiyear contract.',
+  pre:'2023: South Korea agreed to lend the United States about 500,000 155mm shells, after earlier US purchases of 100,000.[c:krloan]'},
+ {id:'krShip',t:'pac',m:'kr',c:'surface',add:1,$:1.5,pc:24,ramp:260,n:'MASGA: Korean shipbuilders in US yards',d:'Korean yards invest in, run and train US yards. Ships come slowly: about one more a year after five years.',
+  pre:'July–August 2025: South Korea pledged $150B for US shipbuilding as part of its tariff deal, and Hanwha announced a $5B expansion of Philly Shipyard.[c:masga]'},
+ {id:'twDrone',t:'pac',m:'tw',c:'drones',add:40000,$:.4,pc:10,ramp:104,n:'Drones from Taiwan’s non-Chinese supply chain',d:'Co-fund Taiwanese drone makers building without Chinese parts, and buy part of their output.',
+  pre:'2026: Taiwan’s defense ministry tendered for 11,270 drones that year and 37,480 in 2027.[c:twdrones]'},
+ {id:'deShell',t:'eu',m:'de',c:'shells',add:200000,$:.8,pc:12,ramp:104,n:'Rheinmetall shells for US stocks',d:'Reserve part of Rheinmetall’s new capacity for US orders, with a take-or-pay contract.',
+  pre:'August 2025: Rheinmetall opened Europe’s largest shell plant at Unterlüß, planned for 350,000 rounds a year from 2027.[c:unterluss]'},
+ {id:'dePac',t:'eu',m:'de',c:'interceptors',add:150,$:1.2,pc:20,ramp:208,n:'PAC-3 MSE production in Germany',d:'License Lockheed’s interceptor to a German line. Washington has not agreed yet; this is that decision.',
+  pre:'October 2025: Lockheed Martin and Diehl signed a memorandum on the PAC-3 MSE supply chain; in September 2026 Germany was lobbying to build the missile itself.[c:depac3]'},
+];
+const ADD=Object.fromEntries(ALLY_DEALS.map(x=>[x.id,x]));
+const alMem=()=>ALLY_MEM[S.rival||'pac'];
+const alS=k=>{S.ally=S.ally||{};return S.ally[k]||(S.ally[k]={deals:{},hit:[]})};
+function alBase(c,w){const a=AL().lines[c];if(!a)return 0;const f=Math.min(1,Math.max(0,(w-PLAY0)/156));return a.out+(a.tgt-a.out)*f}
+function alHitM(k,c,w){if(w<S.w-1)return 1;let m=1;for(const h of alS(k).hit)if(h.left>0&&(h.c==='*'||h.c===c))m*=h.m;return m}
+function alMemOut(m,c,w=S.w){let v=alBase(c,w)*(m.sh[c]||0);
+  for(const id in alS(m.k).deals){const D=ADD[id],x=S.ally[m.k].deals[id];if(D.c===c&&D.add)v+=D.add*Math.min(1,Math.max(0,(w-x.w0)/D.ramp))}
+  return v*alHitM(m.k,c,w)}
+function alHit(k,c,m,wk,why){alS(k).hit.push({c,m,left:wk,why});const M=alMem().find(x=>x.k===k);log(`${AFLAG[k]||''} ${M?M.n:k}: ${why} (${c==='*'?'all lines':LINES[c].n.toLowerCase()} −${pct(1-m)} for ${wk} weeks).`,'bad')}
+function alTick(){for(const k in S.ally||{}){const s=S.ally[k];s.hit.forEach(h=>h.left--);s.hit=s.hit.filter(h=>h.left>0)}}
+function alDealOk(D){return S.fac==='US'&&D.t===(S.rival||'pac')&&!alS(D.m).deals[D.id]&&S.pc>=D.pc&&S.budget>=(D.$||0)}
+function alDeal(id){const D=ADD[id];if(!D||!alDealOk(D))return;S.pc-=D.pc;spent('pc',D.pc);if(D.$){spendB(D.$,'Allied deals');spent('$',D.$)}
+  alS(D.m).deals[id]={w0:S.w};if(D.stock)S.inv[D.c]+=D.stock;lawRec('Allied deal',D.n);
+  const M=alMem().find(x=>x.k===D.m);log(`🤝 ${AFLAG[D.m]} Deal with ${M.n}: ${D.n} (${D.pc} PC${D.$?`, ${money(D.$)}`:''}).`,'ev');
+  receipt({ic:'🤝',lab:'Allied deal signed',title:D.n,ok:1,act:'data-a="view" data-v="allies"',actL:'Open Allies →',lines:[D.stock?`+${fmtN(D.stock)} ${LINES[D.c].u} in service now.`:`+${fmtN(D.add)} ${LINES[D.c].u} a year from ${M.n}, ramping up over ${yrs(D.ramp)}. It counts toward your requirement.`,`${D.pc} Political Capital${D.$?` and ${money(D.$)}`:''} spent.`]})}
+// what Taiwan's lines are worth to you, since they sit inside the war zone
+function twShare(){const tw=ALLY_MEM.pac.find(m=>m.k==='tw'),cs=Object.keys(LINES),R=S._R||production(false);
+  const now=cs.reduce((a,c)=>a+suffLine(c,R.out[c].yr),0)/cs.length;
+  const wo=cs.reduce((a,c)=>a+Math.min(1,(R.out[c].yr+allyOut(c)-alMemOut(tw,c))/Math.max(reqOut(c),1e-9)),0)/cs.length;return {now,wo}}
+
+/* ---------- Moscow's campaign against Europe's arms makers: the Eastern Flank's counterpart to Beijing's ladder ---------- */
+const RU_RUNGS=[
+ {id:'fire',s:'Arson at an arms plant',th:20,hits:[['de','shells',.7,26]],n:'Fire at a German Arms Supplier',d:'A fire guts part of a German munitions supplier. The insurers find a technical fault; intelligence services suspect otherwise.',
+  pre:'May 2024: fire destroyed a Diehl metal-processing plant in Berlin; Western officials later suspected Russian saboteurs.[c:diehl]'},
+ {id:'parcel',s:'Incendiary parcels',th:30,hits:[['*','*',.92,13]],n:'Incendiary Parcels in the Air-Cargo System',d:'Devices hidden in parcels ignite at logistics hubs. Air freight of parts slows under new screening across Europe.',
+  pre:'July 2024: incendiary devices ignited at DHL hubs in Leipzig and Birmingham; investigators linked them to Russian military intelligence.[c:dhl]'},
+ {id:'cable',s:'Baltic cables cut',th:40,hits:[['pl','*',.85,26],['oth','*',.85,26]],n:'Baltic Power and Data Cables Cut',d:'A tanker drags its anchor across power and data cables. Plants on the Baltic ration power for months.',
+  pre:'December 2024: Finland seized the tanker Eagle S, suspected of dragging its anchor across the Estlink 2 power cable and four data cables.[c:estlink]'},
+ {id:'ceo',s:'Plots against arms chiefs',th:52,hits:[['de','*',.85,26],['fr','*',.9,26]],n:'Plot Against European Arms Executives',d:'Security services uncover plans to kill defense-industry chiefs. Executives move under guard, and expansions slip.',
+  pre:'July 2024: US intelligence warned Germany of a Russian plot to kill Rheinmetall’s chief executive, Armin Papperger.[c:papperger]'},
+ {id:'drones',s:'Drones over NATO',th:64,hits:[['pl','*',.75,26]],n:'Russian Drones Over Poland',d:'Drones cross into Polish airspace night after night; plants near the border stop during alerts.',
+  pre:'September 2025: Russian drones entered Polish airspace, NATO aircraft shot several down, and Poland invoked Article 4.[c:pldrones]'},
+ {id:'grid',s:'Attacks on the grid',th:78,hits:[['*','*',.8,26]],n:'Coordinated Attacks on European Energy',d:'Substations and pipelines near arms clusters are hit in the same week.',
+  pre:'No precedent at this scale. The nearest: the 2024–25 Baltic cable cuts and the arson attempts across Europe that Western services attributed to Russia.[c:estlink]'},
+];
+const RU_GUARD=12;
+const ruS=()=>S.ru||(S.ru={heat:15,rung:0,hist:[],guardTo:0,next:PLAY0+13});
+const ruOn=()=>S.fac==='US'&&(S.rival||'pac')==='eu';
+function ruDrivers(){const r=[['Russia’s campaign to slow Europe’s rearmament',3]],c=ruS();
+  if(aidOn())r.push([`Your aid to Ukraine (${S.aidLvl===1?'full':S.aidLvl>0?'half':'stopped'})`,5*S.aidLvl]);
+  if(S.scen==='flank')r.push(['Russia’s war economy at full stretch',4]);
+  const n=ALLY_DEALS.filter(D=>D.t==='eu'&&S.ally?.[D.m]?.deals?.[D.id]).length;if(n)r.push([`Your deals with European arms makers (${n})`,2*n]);
+  if(c.guardTo>S.w)r.push(['Joint counter-sabotage under way',-8]);
+  return r.filter(x=>x[1])}
+const ruRate=()=>ruDrivers().reduce((a,x)=>a+x[1],0);
+function ruTick(){if(!ruOn())return;const c=ruS();c.heat=clamp(c.heat+ruRate()/52,0,100);if(S.w>=c.next){c.next=S.w+13;
+  if(S.queue.some(q=>q.ev==='ruRung')||(S.inbox||[]).some(x=>x.ev==='ruRung')||c.rung>=RU_RUNGS.length)return;const r=RU_RUNGS[c.rung];
+  if(c.heat>=r.th&&rand()<clamp(.2+(c.heat-r.th)/30,0,.8)){S._ruR=c.rung;queueEvent('ruRung')}}}
+function ruApply(k,f,how){const r=RU_RUNGS[k],c=ruS();for(const [m,cc,mm,wk] of r.hits){const keys=m==='*'?ALLY_MEM.eu.map(x=>x.k):[m];for(const kk of keys)alHit(kk,cc,1-(1-mm)*f,wk,r.s.toLowerCase())}
+  c.rung=Math.max(c.rung,k+1);c.heat=Math.max(0,c.heat-8);c.hist.push({w:S.w,k,f,how})}
+function ruGuard(){const c=ruS();if(c.guardTo>S.w||S.pc<RU_GUARD)return;S.pc-=RU_GUARD;spent('pc',RU_GUARD);c.guardTo=S.w+52;c.heat=Math.max(0,c.heat-6);log(`🛡 Joint counter-sabotage with European services (${RU_GUARD} PC): pressure eases for a year.`,'ev')}
+function ruPanel(){const c=ruS(),rt=ruRate(),nx=RU_RUNGS[c.rung],T=x=>`${Math.max(0,Math.min(100,x))}%`;
+  const ticks=RU_RUNGS.map((r,i)=>`<span class="cnt ${i<c.rung?'done':i===c.rung?'next':''}" style="left:${T(r.th)}" data-tip="${tipQ(`<b>Step ${i+1}: ${r.n}</b><br>${r.d}<br>Possible once pressure passes ${r.th}.`)}"><i></i><em>${i+1}</em></span>`).join('');
+  const took=c.hist.map(h=>`<span class="cnh">${fmtDate(h.w)} · ${RU_RUNGS[h.k].s}${h.f<1?' (blunted)':''}</span>`).join('');
+  return `<div class="cnp"><div class="cnph"><b>${FLAGS.ru} Moscow’s campaign against Europe’s arms makers</b><span>Step ${c.rung} of ${RU_RUNGS.length} · pressure ${Math.round(c.heat)}/100, ${rt>=0?'rising':'falling'} ${fmt(Math.abs(rt),0)} a year · next review ${fmtDate(c.next)}</span>
+    <button class="btn sm" data-a="ruguard" ${c.guardTo>S.w||S.pc<RU_GUARD?'disabled':''} data-tip="${tipQ(c.guardTo>S.w?`Runs to ${fmtDate(c.guardTo)}.`:'A year of joint counter-sabotage with European security services: pressure −6 now and −8 a year while it runs.')}">${c.guardTo>S.w?'Counter-sabotage under way':`Counter-sabotage · ${RU_GUARD} PC`}</button></div>
+   <div class="cnbar"><i style="width:${T(c.heat)}"></i>${ticks}</div>
+   <div class="cnrow"><div class="mini">Each step hits European allies’ output for months, so less of their production counts toward your requirement. ${nx?`Next: <b>${nx.n}</b>, possible once pressure passes ${nx.th}.`:'Moscow has nothing left to escalate.'}${took?`<div class="cnhs">${took}</div>`:''}</div>
+    <div class="cndr"><div class="mini"><b>What moves the pressure, per year</b></div>${ruDrivers().map(([n,v])=>`<div><span>${n}</span><b class="${v>0?'redt':'okt'}">${v>0?'+':'−'}${fmt(Math.abs(v),1).replace(/\.0$/,'')}</b></div>`).join('')}</div></div></div>`}
+
+/* ---------- the Allies view ---------- */
+function alliesBody(){if(S.fac!=='US')return '<p class="mini">The allies view covers the US game: Europe’s own lines are yours in the European game.</p>';
+  const rv=S.rival||'pac',mem=alMem(),cs=Object.keys(LINES),R=S._R||production(false);
+  const tot=c=>mem.reduce((a,m)=>a+alMemOut(m,c),0);
+  let h=`<p class="mini" style="margin:0 0 10px">Against ${RV().n}, your allies are ${mem.map(m=>m.n).join(', ').replace(/, ([^,]*)$/,' and $1')}. What they build counts toward each line’s requirement alongside yours. Switch the rival on Command to see the other set.${rv==='pac'?'':' Shares of each line between countries are game estimates.'}</p>`;
+  if(rv==='eu')h+=ruPanel();
+  if(rv==='pac'){const t=twShare();h+=`<div class="alzone">${AFLAG.tw}<div><b>Taiwan is inside the war zone.</b> Its lines count in peacetime, but in a blockade they stop and nothing they build can reach you. Without Taiwan’s output you would meet <b>${pct(t.wo)}</b> of the requirement instead of ${pct(t.now)}.</div></div>`}
+  h+=`<div class="alcards">${mem.map(m=>{const s=alS(m.k),hits=s.hit.filter(x=>x.left>0),rows=cs.filter(c=>(m.sh[c]||0)>0||ALLY_DEALS.some(D=>D.m===m.k&&D.c===c&&s.deals[D.id]));
+    const deals=ALLY_DEALS.filter(D=>D.m===m.k&&D.t===rv);
+    return `<div class="alc"><div class="alch">${AFLAG[m.k]}<b>${m.n}</b><span class="mini">${m.who}</span></div>
+     ${hits.length?`<div class="alhit">${hits.map(x=>`⚠ ${x.why}: ${x.c==='*'?'all lines':LINES[x.c].n.toLowerCase()} −${pct(1-x.m)} · ${x.left} wk left`).join('<br>')}</div>`:''}
+     <table class="ctable alt"><tr><th>Line</th><th class="num">Builds now</th><th class="num">Share of allied</th></tr>${rows.map(c=>{const v=alMemOut(m,c),t=tot(c);return `<tr><td>${LINES[c].n}</td><td class="num"><b>${fmtN(v)}</b>/yr</td><td class="num">${t>0?pct(v/t):'—'}</td></tr>`}).join('')}</table>
+     ${deals.length?`<div class="aldh">Deals</div>${deals.map(D=>{const x=s.deals[D.id],r=x&&D.ramp?Math.min(1,(S.w-x.w0)/D.ramp):1;
+       return `<div class="ald ${x?'on':''}"><div><b>${D.n}</b><div class="mini">${D.d}</div><div class="mini alpre"><b>Precedent</b> ${D.pre}</div></div>
+        ${x?`<span class="okt mini">${D.stock?`Delivered ${fmtDate(x.w0)}`:`Signed ${fmtDate(x.w0)} · ${pct(r)} ramped · +${fmtN(D.add*r)}/yr`}</span>`:`<button class="btn sm" data-a="aldeal" data-d="${D.id}" ${alDealOk(D)?'':'disabled'} data-tip="${tipQ(D.stock?`+${fmtN(D.stock)} ${LINES[D.c].u} in service now.`:`+${fmtN(D.add)} ${LINES[D.c].u} a year at full rate, after ${yrs(D.ramp)}.`)}">${D.pc} PC${D.$?` · ${money(D.$)}`:''}</button>`}</div>`}).join('')}`:''}</div>`}).join('')}</div>`;
+  return h}
+
 // Allied deals build new capacity, so they take nothing from the allies. Emergency buys from existing allied output first use
 // spare capacity (~15% of it); only the rest squeezes the allies' own lines, and that squeeze shrinks as sustained demand makes
 // their suppliers expand (up to three-quarters closed after about two years; the expansion stays).
@@ -4492,7 +4643,7 @@ const allyGrowth=id=>Math.min(ALLY_GROW_MAX,(S.allyGrow?.[id]||0)/ALLY_GROW_WK*A
 function allyDivertOf(id){const a0=S.rec0?.ally?.[id]||0,x=allyBuy(id);if(a0<=1e-9||x<=0)return 0;const Q=3*a0;
   return Math.min(.5,Math.max(0,x-ALLY_SLACK*Q)*(1-allyGrowth(id))/(2*a0))}
 function allyDivert(c){let m=0;for(const id of upOf('L:'+c))m=Math.max(m,allyDivertOf(id));return m}
-function allyOut(c,w=S.w){const a=AL().lines[c];if(!a)return 0;const f=Math.min(1,Math.max(0,(w-PLAY0)/156));return (a.out+(a.tgt-a.out)*f)*(w>=S.w-1?1-allyDivert(c):1)}
+function allyOut(c,w=S.w){if(!AL().lines[c])return 0;const v=alMem().reduce((a,m)=>a+alMemOut(m,c,w),0);return v*(w>=S.w-1?1-allyDivert(c):1)}
 // the requirement grows as the rival out-builds its own 2027 level
 function reqOut(c,w=S.w){const a=AL().lines[c],base=REQ_US[c].v+(a?.tgt||0);return base*Math.max(1,cnOut(c,w)/Math.max(cnOut(c,PLAY0),1e-9))}
 const suffLine=(c,us,w=S.w)=>Math.min(1,(us+allyOut(c,w))/Math.max(reqOut(c,w),1e-9));
@@ -4526,7 +4677,7 @@ h+=S.order.map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOut(c),
     const work=fx.length||rp.length?`🏗 ${[...fx.map(q=>`<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="dim">~${yr(Math.round(S.w+remW(q)*sl))}</span>`),...rp.map(pl=>`<span class="linkn" data-a="prog" data-u="${pl.uid}">${pl.nm}</span> <span class="dim">ramping, ${pct(pl.yield)}</span>`)].reduce((a,x,i,arr)=>i<2?a.concat(x):i===2?a.concat(`<span class="dim">+${arr.length-2} more</span>`):a,[]).join(' · ')}`:`<span class="red">No fix under way.</span>`;
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
     const loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.04+.22*loss).toFixed(2)}),rgba(176,69,58,0) 70%),linear-gradient(180deg,#252922,#1d201a);border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
-    const alTip=a?tipQ(`<b>${A.n}</b><br>${fmtN(a.out)}/yr in Jan 2027, ${fmtN(a.tgt)}/yr planned by 2030${a.est?' (estimate)':''}<br>${a.src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${dv>.005?`<br><span style='color:#e8a090'>−${pct(dv)}: your emergency buys outrun their suppliers’ spare capacity</span>`:''}${upOf('L:'+c).size&&[...upOf('L:'+c)].some(id=>allyGrowth(id)>.01)?`<br><span style='color:#a8d48e'>Their suppliers are expanding: up to ${pct(Math.max(...[...upOf('L:'+c)].map(allyGrowth)))} of the squeeze closed</span>`:''}`):'';
+    const alTip=a?tipQ(`<b>${A.n}</b><br>${alMem().filter(m=>alMemOut(m,c)>0).map(m=>`${m.n} ${fmtN(alMemOut(m,c))}/yr`).join(' · ')}<br>${fmtN(a.out)}/yr in Jan 2027, ${fmtN(a.tgt)}/yr planned by 2030${a.est?' (estimate)':''}<br>${a.src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${dv>.005?`<br><span style='color:#e8a090'>−${pct(dv)}: your emergency buys outrun their suppliers’ spare capacity</span>`:''}${upOf('L:'+c).size&&[...upOf('L:'+c)].some(id=>allyGrowth(id)>.01)?`<br><span style='color:#a8d48e'>Their suppliers are expanding: up to ${pct(Math.max(...[...upOf('L:'+c)].map(allyGrowth)))} of the squeeze closed</span>`:''}`):'';
     return `<div class="rc-rrow trc" id="rc-${c}" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b></span>${gap}</div>
       <div class="rc-rgrid"><div>
        <div class="rc-rb"><span>${F().flag} You + allies</span><div class="nb"><i style="width:${B(us)}%;background:#5f8fc4" data-tip="You: ${fmtN(us)}/yr"></i><i style="left:${B(us)}%;width:${B(al)}%;background:#86b04f" data-tip="${alTip}"></i>${up>.5?`<i class="rc-up" style="left:${B(us+al)}%;width:${B(up)}%" data-tip="${tipQ(`<b>Yours on order: +${fmtN(up)}/yr</b><br>Line capacity from plants under construction and plants still ramping up. Upstream limits can still hold it back.`)}"></i>`:''}<span class="mk rc-req" style="left:${B(rq).toFixed(1)}%" data-tip="Requirement: ${fmtN(rq)}/yr"></span></div><span class="v"><b>${fmtN(us)}</b> + <span data-tip="${alTip}" class="rc-al">${fmtN(al)}</span>${dv>.005?` <span class="red" data-tip="${alTip}">−${pct(dv)}</span>`:''} <span class="dim">/ ${fmtN(rq)}</span></span></div>
@@ -4925,6 +5076,8 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;clearSave();break;
     case 'cntalk':cnTalk();break;
+    case 'aldeal':alDeal(b.dataset.d);S._vdirty=true;break;
+    case 'ruguard':ruGuard();S._vdirty=true;break;
     case 'yrrec':S.modal=null;S.view='rec';break;
     case 'savem':saveGame();S.modal='save';S._svMsg='';S.speed=0;break;
     case 'savedl':saveGame();saveDownload();break;
