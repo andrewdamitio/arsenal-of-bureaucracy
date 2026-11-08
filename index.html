@@ -592,6 +592,10 @@ body{background:
 .cnt.done em{background:#b0453a;border-color:#8a1f15;color:#fff}.cnt.next em{border:2px solid #b0453a;line-height:14px;color:#8a1f15}
 .cnrow{display:grid;grid-template-columns:1fr 1fr;gap:16px}.cnhs{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px}.cnh{font-size:11.5px;color:#8a1f15}.cndr div{display:flex;justify-content:space-between;gap:10px;font-size:12px;border-bottom:1px dotted #c8b48a;padding:2px 0}
 @media(max-width:900px){.cnrow{grid-template-columns:1fr}}
+.yrts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 10px}.yrt{border:1px solid #c8b48a;background:#f3ebd6;padding:8px 10px;display:flex;flex-direction:column}.yrt b{font:700 24px var(--disp);color:#2a2418;line-height:1}.yrt span{font-size:12px;color:#5a4e38}.yrt i{font-style:normal;font-size:12px;margin-top:2px}
+.yrtab td,.yrtab th{padding:3px 8px}.yrtab .num{text-align:right}.yrh{font:600 12px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a6d2e;margin:12px 0 4px;border-bottom:1px solid #c8b48a;padding-bottom:2px}
+.yrl{display:grid;grid-template-columns:190px 1fr;gap:10px;font-size:13px;padding:3px 0;border-bottom:1px dotted #d8c9a4}.yrl b{font-weight:600;color:#2a2418}
+@media(max-width:900px){.yrts{grid-template-columns:repeat(2,1fr)}.yrl{grid-template-columns:1fr}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1940,7 +1944,7 @@ function cnDrivers(){const r=[],U=S.fac==='US',c=cnS();cnBase(c);
   return r}
 const cnRate=()=>cnDrivers().reduce((a,x)=>a+x[1],0);
 function cnBase(c){if(!c.ic0){c.ic0=IC.filter(x=>icOn(x.id)).map(x=>x.id);c.affil0=S.fac==='US'&&ruleOn('rAffil')}}
-function cnTick(){const c=cnS();cnBase(c);c.heat=clamp(c.heat+cnRate()/52,0,100);if(S.w>=c.next){c.next=S.w+13;cnReview()}}
+function cnTick(){const c=cnS();cnBase(c);if(!S.yr0)S.yr0=yrSnap();c.heat=clamp(c.heat+cnRate()/52,0,100);if(S.w>=c.next){c.next=S.w+13;cnReview()}}
 function cnReview(){const c=cnS();if(S.queue.some(q=>q.ev==='cnRung')||(S.inbox||[]).some(x=>x.ev==='cnRung'))return;
   if(S.truce){if(S.fac==='US'&&c.heat>=55&&rand()<.15+(c.heat-55)/50){S.truce=false;applyChinaBan();c.heat=Math.max(0,c.heat-8);c.hist.push({w:S.w,k:-1});
     log(`${FLAGS.cn} Beijing ends the truce early: its December 2024 bans on gallium, germanium and antimony are back in force.`,'bad');for(const id of BAN_NODES)flash(id,'bad')}return}
@@ -2185,7 +2189,7 @@ function beginHistory(){
 function endHistory(quiet){ // quiet: the instant run at game start, no handover stamp
   const X=F();while(S.w<PLAY0)tick();
   S.histMode=false;S.sim=false;S.replay=false;S._reel=null;S.queue=[];
-  Object.assign(S,{pc:X.pc0,budget:X.budget0,strain:0,mob:0,mobLow:0,speed:0,cr:0});
+  Object.assign(S,{pc:X.pc0,budget:X.budget0,strain:0,mob:0,mobLow:0,speed:0,cr:0});S.yr0=null;S._yrDue=0;
   for(const k in S.ledger)S.ledger[k]={n:0,wk:0};
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
   log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
@@ -2601,7 +2605,7 @@ function plantsTick(){
     if(pl.issue){S.ledger[OPSD[pl.issue.id].layer].wk++;if(pl.issue.wait>0&&--pl.issue.wait<=0){log(`✔ Resolved: ${OPSD[pl.issue.id].n} (${pl.nm})`);pl.issue=null}continue}
     pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*RAMP(kn)*(pl.rampM||1));
     S.know[k]=Math.min(95,kn+(pl.full?.01:.05));
-    if(!pl.full&&pl.yield>=.9){pl.full=true;log(`🏭 ${pl.nm} reaches full-rate production after ${yrs(S.w-pl.start)} of ramp-up.`,'good')}
+    if(!pl.full&&pl.yield>=.9){pl.full=true;pl.fullW=S.w;log(`🏭 ${pl.nm} reaches full-rate production after ${yrs(S.w-pl.start)} of ramp-up.`,'good')}
     let ch=.013*(1.3-kn/100)*(pl.full?.35:1);if((S.nflags[k]||{}).know)ch*=.7;if((pl.kind==='line'&&S.shifts?.[k])||S.nshift?.[k])ch*=1.3;if(passed('workforce')||carveOn('cvHire'))ch*=.85;
     if(!S.histMode&&rand()<ch){let pool=OPS.filter(o=>opsMatch(o,pl));if(carveOn('cvQual'))pool=pool.concat(pool.filter(o=>o.id==='quality'));if(pl.full)pool=pool.filter(o=>o.id!=='zero');
       if(pool.length){const o=pool[Math.floor(rand()*pool.length)];pl.issue={id:o.id,wait:0};S.ledger[o.layer].n++;log(`⚠ ${pl.nm}: ${o.n}`,'bad');notify(`⚠ <b>${o.n}</b><br><span class="dim">${pl.nm}</span>`,'',{a:'prog',u:pl.uid})}}
@@ -2740,8 +2744,8 @@ function homeTick(lastOut){
 function tick(){
   if(S.over)return;
   S.w++;
-  if(S.fac==='US'&&(S.histMode?fyStart():billNow())){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(F().fyBudget)}.`,'good')}
-  if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good')}
+  if(S.fac==='US'&&(S.histMode?fyStart():billNow())){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(F().fyBudget)}.`,'good');if(!S.histMode)S._yrDue=1}
+  if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good');if(!S.histMode)S._yrDue=1}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
   if(!S.histMode){enactPkg();suppTick();billAlertTick();cnTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
@@ -2757,10 +2761,45 @@ function tick(){
   if(!S.histMode){eventsTick();drainInfo()}
   if(S.w%2===0)S.hist.push(snapshot());
   {const R0=S._R||production(false);(S.resH=S.resH||[]).push({race:raceIdx(R0.out)*100,budget:S.budget,short:S.order.filter(c=>R0.out[c].bott).length,expo:(S.exposure||0)*100,lev:S.lev,strain:S.strain});if(S.resH.length>4)S.resH.shift()}
+  if(S._yrDue){S._yrDue=0;yrOpen()}
   if(S.queue.length&&!S.sim)S.speed=0;
   if(S.scen&&!S.scenRes&&S.w>=SCD[S.scen].dl)scenJudge();
   if(S.w>=END_W)gameOver(null);
 }
+/* ---------- the year in review: the turn of each year, right after the annual bill ---------- */
+function yrSnap(){const out=(S._R||production(false)).out,o={};for(const c in LINES)o[c]=out[c].yr;
+  return {w:S.w,race:raceIdx(out),out:o,suff:Object.keys(LINES).filter(c=>suffLine(c,out[c].yr,S.w)>=1).length,
+    spend:sumV(S.spendBy||{}),inc:sumV(S.incBy||{}),laws:(S.lawLog||[]).length,cn:{heat:cnS().heat,rung:cnS().rung},pc:S.pc}}
+function yrOpen(){if(S.sim||S.histMode||S.replay||S.over)return;const a=S.yr0||yrSnap(),b=yrSnap(),w0=a.w,inW=w=>w>w0&&w<=S.w;
+  const cleared=[];for(const c in S.limH||{})for(const x of S.limH[c])if(x.up&&inW(x.w1))cleared.push({c,id:x.id});
+  const bill=(S.bills||[])[0],lim={};for(const c of S.order){const id=S.lim?.[c]?.id;if(id&&!id.startsWith('L:')&&S.lastOut?.[c]?.bott)(lim[id]=lim[id]||[]).push(c)}
+  S.yrRev={a,b,y:dateOf(S.w).getFullYear(),cleared,bill:bill&&inW(bill.w)?bill:null,laws:(S.lawLog||[]).filter(x=>inW(x.w)),
+    online:S.plants.filter(p=>p.start!=null&&inW(p.start)&&p.nm).map(p=>p.nm),full:S.plants.filter(p=>p.full&&p.nm&&p.fullW&&inW(p.fullW)).map(p=>p.nm),
+    cn:cnS().hist.filter(h=>inW(h.w)),truce:S.truce,lim:Object.entries(lim).sort((x,y)=>y[1].length-x[1].length).slice(0,3)};
+  S.yr0=b;S._rcpt=null;S.modal='year';S.speed=0;const tb=document.getElementById('toasts');if(tb)tb.innerHTML=''}
+function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<1e-9?'<span class="mini">no change</span>':`<span class="${(v>0)===(good>0)?'okt':'redt'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</span>`};
+  const tile=(v,l,dl)=>`<div class="yrt"><b>${v}</b><span>${l}</span>${dl?`<i>${dl}</i>`:''}</div>`;
+  const rows=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0,ch=x>0?y/x-1:0,rv=cnOut(c);
+    return `<tr><td>${LINES[c].n}</td><td class="num">${fmtN(x)}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num ${ch>.005?'okt':ch<-.005?'redt':'mini'}">${Math.abs(ch)<.005?'—':(ch>0?'+':'−')+pct(Math.abs(ch))}</td><td class="num">${fmtN(rv)}</td><td class="num ${y>=rv?'okt':'redt'}">${rv>0?pct(y/rv):'—'}</td></tr>`}).join('');
+  const li=(t,xs)=>xs.length?`<div class="yrl"><b>${t}</b><span>${xs.join(' · ')}</span></div>`:'';
+  const bl=r.bill,sc=S.scen&&SCD[S.scen],dlY=sc?yrs(sc.dl-S.w):null,nx=CN_RUNGS[cnS().rung],sp=b.spend-a.spend,inc=b.inc-a.inc;
+  const lim=r.lim.map(([id,cs])=>`${ND[id].n} hold${/s$/.test(ND[id].n.replace(/\s*\(.*\)$/,''))?'':'s'} back ${cs.map(c=>LINES[c].n.toLowerCase()).join(', ')}`);
+  return `<div class="paper wide yrp"><div class="hd"><span class="ic">📅</span>${r.y}: the year in review</div><div class="bd">
+   <div class="yrts">${tile(pct(b.race),'of the requirement, you + allies',d(a.race*100,b.race*100,v=>fmt(v,0)+' pt'))}${tile(`${b.suff}/${Object.keys(LINES).length}`,'lines sufficient',d(a.suff,b.suff,v=>String(v)))}${tile(r.cleared.length,`bottleneck${r.cleared.length===1?'':'s'} cleared this year`)}${tile(`${cnS().rung}/${CN_RUNGS.length}`,'Beijing’s escalation steps',d(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
+   <table class="ctable yrtab"><tr><th>Output per year</th><th class="num">A year ago</th><th class="num">Now</th><th class="num">Change</th><th class="num">${RV().n}</th><th class="num">You vs. ${RV().n}</th></tr>${rows}</table>
+   <h5 class="yrh">What changed</h5>
+   ${bl?li(`🏛 FY${bl.fy} ${billN()}`,[bl.got.length?`<span class="okt">Funded: ${bl.got.join(', ')}</span>`:'Nothing you requested was funded',...(bl.added.length?[`Added by Congress: ${bl.added.join(', ')}`]:[]),...(bl.lost.length?[`<span class="redt">Not funded: ${bl.lost.join(', ')}</span>`]:[])]):li('🏛 Congress',['No requests were in this year’s bill.'])}
+   ${li('📜 Laws, rules and carve-outs',r.laws.map(x=>`${x.kind}: ${x.n}`))}
+   ${li('🏭 Plants that started producing',r.online)}
+   ${li('⛓ Bottlenecks cleared',r.cleared.map(x=>`${LINES[x.c].n}: ${ND[x.id]?.n||'line capacity'}`))}
+   ${li(`${FLAGS.cn} Beijing`,[...r.cn.map(h=>h.k<0?'<span class="redt">ended the truce early</span>':`<span class="redt">${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`),`pressure ${Math.round(a.cn.heat)} → ${Math.round(b.cn.heat)} of 100`,r.truce?'the truce holds':'no truce'])}
+   ${li('💰 Money',[`${money(inc)} came in`,`${money(sp)} spent`,`${money(S.budget)} in hand`,`${Math.floor(S.pc)} Political Capital (${fmt(pcRate()*52,0)} a year)`])}
+   <h5 class="yrh">The year ahead</h5>
+   ${li('⏱ Deadline',sc?[`${sc.n}: ${dlY} to ${fmtDate(sc.dl)}`]:[`The race runs to ${fmtDate(END_W)}`])}
+   ${li('⛓ Biggest limits now',lim.length?lim:['No input holds a line back right now: line capacity is the limit.'])}
+   ${li(`${FLAGS.cn} Beijing next`,[nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year)`:'nothing left to escalate'])}
+   ${S.fac==='US'?li('🏛 Next bill',[`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}; request plants, stockpile buys and reforms before then on the NDAA & Congress tab`]):''}
+   </div><div class="ft"><button class="pbtn" data-a="yrrec">📊 The full record</button><button class="pbtn primary" data-a="close">Begin ${r.y+1} →</button></div></div>`}
 function gameOver(why){
   if(S.over)return;S.over=true;S.overWhy=why;S.speed=0;
   if(why)S.verdict='DEFEAT';else{const x=raceIdx(S.lastOut||production(false).out),h0=S.hist.find(h=>h.w>=PLAY0&&h.prod),x0=h0?raceIdx(null,h0.w,c=>h0.prod[c]):x;S.race0=x0;S.verdict=x>=1?'ARSENAL RESTORED':x>=.75?'WITHIN REACH':x>=x0+.05?'GAINED GROUND':'OUT-BUILT'}
@@ -4592,6 +4631,7 @@ function renderModal(){
   } else if(S.modal==='node'&&S.sel){
     html=dossierHTML(S.sel,P);
   } else if(S.modal==='save'){html=saveHTML()
+  } else if(S.modal==='year'){html=yrHTML()
   } else if(S.modal==='bill'){html=billHTML()
   } else if(S.modal==='cat'){
     const ok=PROJECTS.filter(facOk);const tabs=[[1,'T1 Raw'],[2,'T2 Materials'],[3,'T3 Components'],[4,'T4 Subsystems'],[5,'T5 Lines']];
@@ -4796,6 +4836,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;clearSave();break;
     case 'cntalk':cnTalk();break;
+    case 'yrrec':S.modal=null;S.view='rec';break;
     case 'savem':saveGame();S.modal='save';S._newc=false;S._svMsg='';S.speed=0;break;
     case 'savedl':saveGame();saveDownload();break;
     case 'saveul':saveUpload();break;
