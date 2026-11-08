@@ -640,6 +640,23 @@ body{background:
 }
 .aptog{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font:600 11px var(--disp);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px}.aptog i{width:9px;height:9px;border-radius:50%;border:1px solid var(--brass);background:#141611}.aptog.on i{background:#e8c14a;box-shadow:0 0 5px #e8c14a}
 .civp{padding:6px 10px 10px}.civt{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}.civt div{display:flex;flex-direction:column;border:1px solid #3a382c;background:#141611;padding:4px 6px}.civt b{font:700 16px var(--disp);color:var(--brass2)}.civt span{font-size:10.5px;color:var(--dim)}.civr{display:flex;justify-content:space-between;gap:8px;font-size:12px;border-bottom:1px dotted #3a382c;padding:2px 0}
+/* the award screen */
+.ctp .bd{counter-reset:ctstep;padding-top:12px}.ctp .dsec h4{display:flex;align-items:center;gap:8px;counter-increment:ctstep;border-bottom:1px solid #cdb98a;padding-bottom:4px}
+.ctp .dsec h4::before{content:counter(ctstep);display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#3a3020;color:#f0dfae;font:700 11px var(--disp);letter-spacing:0}
+.ctp .cttag{margin-left:auto;font:600 12px var(--disp);letter-spacing:.06em;text-transform:uppercase;color:#f0dfae;border:1px solid #a8925a;background:#4a3d27;padding:2px 9px;border-radius:2px}
+.ctp .ctgrid{gap:10px;margin:8px 0 10px}
+.ctp .ctopt{background:#f1e8d0;border:1px solid #cdb98a;border-radius:3px;padding:10px 12px;gap:7px;color:#4a3f2c;transition:transform .12s,box-shadow .12s,background .12s}
+.ctp .ctopt:hover:not(.on){background:#f7f0dc!important;border-color:#a8925a;transform:translateY(-1px);box-shadow:0 2px 6px #6b5a3533}
+.ctp .ctopt.on,.ctp .ctopt.on:hover{background:#fffbf0!important;border:1px solid #a8925a;box-shadow:inset 4px 0 0 #c9a227,0 3px 10px #6b5a3540;padding:10px 12px;color:#2b241a}
+.ctp .cth b{font:600 16px Georgia,serif}.ctp .ckr{width:15px;height:15px;border-radius:50%;border:2px solid #a8925a;background:#fffbf0;flex:none;align-self:center}
+.ctp .ctopt.on .ckr{border-color:#8a6d1f;background:radial-gradient(circle,#c9a227 0 3.5px,#fffbf0 4.5px)}
+.ctp .ctopt .fx{gap:4px 5px}.ctp .ctopt .fx span{font:11.5px "Segoe UI",system-ui,sans-serif;padding:1px 7px;border-radius:3px;white-space:nowrap}
+.ctp .ctopt .fx .up{background:#e2ecd6;color:#2f5a24!important;border:1px solid #c3d6ae}.ctp .ctopt .fx .dn{background:#f5e1da;color:#8a2a1c!important;border:1px solid #e6c2b6}
+.ctp .ft.ctft{display:grid;grid-template-columns:auto 1fr 1fr;gap:10px;padding:12px 18px 14px;border-top:1px solid #cdb98a;background:#e9dfc4;flex-direction:row}
+.ctp .ctft .pbtn{max-width:none;border-radius:3px;padding:9px 12px;justify-content:center}.ctp .ctft .pbtn b{font-size:15px}
+.ctp .ctft .ctback{background:transparent;border:1px solid #a8925a;color:#5a4a26;align-items:center;justify-content:center;font:600 13px var(--disp);letter-spacing:.06em;text-transform:uppercase}.ctp .ctft .ctback:hover{background:#efe3c4}
+.ctp .ctft .ctnow{background:#f3e7c4;border:1px solid #8a7440;color:#2b241a}.ctp .ctft .ctnow:hover:not(:disabled){background:#ead9a8}
+@media(max-width:760px){.ctp .ft.ctft{grid-template-columns:1fr}}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -3089,15 +3106,15 @@ function previewHTML(def,ct,wOn0){
   return h+`</div>`}
 function contractHTML(){
   const c=S.ct,def=PD[c.id],fixed=builderFixed(def),cost=ctCost(def,c),fx=a=>fxChips(a.filter(x=>x[1]).map(x=>x[0]),a.filter(x=>!x[1]).map(x=>x[0]));
-  const opt=(g,k,o,eff)=>`<button class="pbtn ctopt ${c[g]===k?'on':''}" data-a="ct" data-g="${g}" data-v="${k}"><span class="cth"><b>${o.ic} ${o.n}</b>${c[g]===k?'<span class="ck">✓ Selected</span>':''}</span>${fx(eff)}</button>`;
+  const opt=(g,k,o,eff)=>`<button class="pbtn ctopt ${c[g]===k?'on':''}" data-a="ct" data-g="${g}" data-v="${k}"><span class="cth"><b>${o.ic} ${o.n}</b><span class="ckr" aria-label="${c[g]===k?'Selected':'Not selected'}"></span></span>${fx(eff)}</button>`;
   const prem=Math.max(0,S.lev-50)/200;
   const bOpts=fixed?`<div class="mini">${BUILDERS[fixed].ic} ${BUILDERS[fixed].n} — this program is defined by who builds it.</div>`:`<div class="ctgrid">${opt('b','prime',BUILDERS.prime,[[`price +${pct(prem)}`,0],['qualification risk ×0.6',1],['prime leverage +3',0],['prime rent-seeking ×1.5',0]])}${opt('b','entrant',BUILDERS.entrant,[['price −20%',1],['builds 15% faster',1],['qualification 30% longer',0],['qualification risk ×1.6',0],['prime leverage −2',1]])}</div>`;
   const kOpts=`<div class="ctgrid">${opt('k','cp',CONTRACTS.cp,[['award 30% faster',1],['every obstacle bills you +6%',0]])}${opt('k','fp',CONTRACTS.fp,[['price −12%',1],['award 30% slower',0],['contractor may demand re-pricing',0]])}${opt('k','my',CONTRACTS.my,[['price +25%',0],['market risk ×0.25',1],['starts 15 pts higher',1],['ramps 1.5× faster',1]])}</div>`;
-  return `<div class="paper wide"><div class="hd"><span class="ic">🖋</span>Award: ${def.n}<span style="margin-left:auto;font-size:13px">${def.t.node?ND[def.t.node].n:LINES[def.t.line].n}</span></div>
+  return `<div class="paper wide ctp"><div class="hd"><span class="ic">🖋</span>Award: ${def.n}<span class="cttag">${def.t.node?ND[def.t.node].n:LINES[def.t.line].n}</span></div>
    <div class="bd" style="font-size:13px"><div class="dsec"><h4>Who builds it</h4>${bOpts}</div><div class="dsec"><h4>Terms</h4>${kOpts}</div>
    <div class="dsec"><h4>What you get</h4>${previewHTML(def,c)}</div></div>
-   <div class="ft ctft"><button class="pbtn primary" data-a="ctgo" data-m="pkg" ${S.pc>=REQ_PC(cost)?'':'disabled'}><b>🏛 Request it in the FY${pkgFY()} NDAA · ${REQ_PC(cost)} PC</b><span class="mini">If Congress funds it (~${fmtDate(pkgWhen())}), Congress pays the ${money(cost)}, not your budget; cut risk now ~${Math.round(clamp(moodOf(pkgFY()).f*(.03+.22*Math.pow(1-billSev(def).s,1.5)),.02,.75)*100)}% (${billSev(def).why.replace(/^./,c=>c.toLowerCase())}).</span></button>
-   <button class="pbtn" data-a="ctgo" data-m="now" ${S.budget>=cost-1e-9?'':'disabled'}><b>🏗 Build now · ${money(cost)} from your budget</b><span class="mini">Starts today${(()=>{const w=Math.max(0,pkgWhen()-S.w);return w>4?`, about ${Math.round(w/4.35)} months before the bill`:''})()}. Budget ${money(S.budget)}; next +${money(F().fyBudget)} with the bill.</span></button><button class="pbtn" data-a="ctback">Back</button></div></div>`}
+   <div class="ft ctft"><button class="pbtn ctback" data-a="ctback">← Back</button><button class="pbtn primary" data-a="ctgo" data-m="pkg" ${S.pc>=REQ_PC(cost)?'':'disabled'}><b>🏛 Request it in the FY${pkgFY()} NDAA · ${REQ_PC(cost)} PC</b><span class="mini">If Congress funds it (~${fmtDate(pkgWhen())}), Congress pays the ${money(cost)}, not your budget; cut risk now ~${Math.round(clamp(moodOf(pkgFY()).f*(.03+.22*Math.pow(1-billSev(def).s,1.5)),.02,.75)*100)}% (${billSev(def).why.replace(/^./,c=>c.toLowerCase())}).</span></button>
+   <button class="pbtn ctnow" data-a="ctgo" data-m="now" ${S.budget>=cost-1e-9?'':'disabled'}><b>🏗 Build now · ${money(cost)} from your budget</b><span class="mini">Starts today${(()=>{const w=Math.max(0,pkgWhen()-S.w);return w>4?`, about ${Math.round(w/4.35)} months before the bill`:''})()}. Budget ${money(S.budget)}; next +${money(F().fyBudget)} with the bill.</span></button></div></div>`}
 /* ---------- program page: one project's story — plan vs. actual, what's blocking it, where the time went, what it will do ---------- */
 const STAGE_C=['#b8923a','#4a78c8','#6aa84f','#a0703a','#4fb3b0','#9a84c4'];
 function progRec(uid){const p=S.projects.find(x=>x.uid==uid);if(p)return {p,live:true};
