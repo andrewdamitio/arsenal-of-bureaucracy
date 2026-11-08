@@ -597,6 +597,7 @@ body{background:
 .yrl{display:grid;grid-template-columns:190px 1fr;gap:10px;font-size:13px;padding:3px 0;border-bottom:1px dotted #d8c9a4}.yrl b{font-weight:600;color:#2a2418}
 @media(max-width:900px){.yrts{grid-template-columns:repeat(2,1fr)}.yrl{grid-template-columns:1fr}}
 .rbtabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}.rbtabs .mini{flex:1;min-width:240px}
+.hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -1726,7 +1727,7 @@ const EVENTS=[
   body:()=>S.cr>0?`Congress passes a continuing resolution through ${fmtDate(S.w+S.cr)}. Agencies are funded at last year's levels and may not begin "new starts." Every project still in the Appropriation stage is frozen.`:"Full-year defense appropriations pass before October 1. Staffers are confused. Nobody can find the confetti.",
   o:[{l:'Understood.'}]},
  {id:'elecUS',fac:['US'],once:false,when:()=>{const d=dateOf(S.w);return d.getMonth()===10&&d.getDate()<=7&&d.getFullYear()%2===0},ic:'🗳',t:()=>`Election Day ${dateOf(S.w).getFullYear()}`,
-  fx:()=>{const pres=dateOf(S.w).getFullYear()%4===0;const pen=S.strain>50?-10:0;S._e=(rand()<.5?(pres?25:15):(pres?-20:-15))+pen;S.pc+=S._e;if(S._e<0&&pres&&S.bill)S.bill.left+=8},
+  fx:()=>{const pres=dateOf(S.w).getFullYear()%4===0;const pen=S.strain>50?-10:0;S._e=(rand()<elecOdds()?(pres?25:15):(pres?-20:-15))+pen;S.pc+=S._e;if(S._e<0&&pres&&S.bill)S.bill.left+=8},
   body:()=>(S._e>0?`Rearmament polled well. The new Congress arrives eager to be seen building things. (${S._e>0?'+':''}${S._e} PC)`:`Divided government, or a new administration reviewing everything it inherited. (${S._e} PC)`)+(S.strain>50?' Voters punished civilian shortages.':''),o:[{l:'Onward.'}]},
  {id:'ep29',fac:['EU'],fixedW:weekOf(2029,5,7),ic:'🗳',t:'European Parliament Elections',fx:()=>{S._e=(rand()<.5?15:-15)-(S.strain>50?10:0);S.pc+=S._e},body:()=>S._e>0?"A pro-defence majority returns with a mandate to 'deliver.'":"A fragmented Parliament spends six months forming committees.",o:[{l:'Onward.'}]},
  {id:'ep34',fac:['EU'],fixedW:weekOf(2034,5,5),ic:'🗳',t:'European Parliament Elections',fx:()=>{S._e=(rand()<.5?15:-15)-(S.strain>50?10:0);S.pc+=S._e},body:()=>S._e>0?"Voters reward the parties that built factories.":"Voters punish the parties that raised taxes — and caused shortages — to build factories.",o:[{l:'Onward.'}]},
@@ -2242,7 +2243,20 @@ const REFCLASS=[
  {p:'Interceptor lead time (SM-3, SM-6, THAAD)',a:'—',real:'Deliveries 36–39 months after appropriation; about 52 months counting the lot',yrs:'~4.3',c:'csislast'},
 ];
 
-function pcRate(){return F().pcRate*.85-S.strain/60}
+const PC_FADE=120,PC_PLANT=.03,PC_PLANT_MAX=.6;
+const fullPlants=()=>S.plants.filter(p=>p.full&&p.nm).length;
+function pcParts(){const n=fullPlants(),r=[['Baseline support for rearmament',F().pcRate*.85,'Congress and the public back rearmament in general. This is the floor.']];
+  if(n)r.push([`Plants at full rate in members’ districts (${n})`,Math.min(PC_PLANT_MAX,n*PC_PLANT),`Each plant running at full rate brings payrolls and ribbon cuttings to a member’s district: +${fmt(PC_PLANT*52,1)} a year each, up to +${fmt(PC_PLANT_MAX*52,0)}.`]);
+  if(S.strain>.5)r.push(['Civilian strain',-S.strain/60,'Shortages and diverted civilian supply cost support. Strain recovers on its own when the pressure eases.']);
+  if(S.pc>PC_FADE)r.push([`Unused capital fades (above ${PC_FADE})`,-(S.pc-PC_FADE)*.01,'Goodwill not spent is forgotten: 1% of anything above '+PC_FADE+' fades each week.']);
+  return r}
+function pcRate(){return pcParts().reduce((a,x)=>a+x[1],0)}
+// where this year's capital went: income, what you spent between weeks, and what events gave or took
+function pcPre(){if(S.histMode)return;const y=S.pcY=S.pcY||{inc:0,sp:0,ev:0};if(S._pcL!=null){const d=S.pc-S._pcL;if(d<0)y.sp-=d;else y.ev+=d}S._pcT=S.pc;S._pcInc=0}
+function pcPost(){if(S.histMode||S._pcT==null)return;const y=S.pcY,inc=S._pcInc||0;y.inc+=inc;y.ev+=S.pc-S._pcT-inc;S._pcL=S.pc}
+// elections answer for what voters can see: plants running in their districts, and shortages at home
+function elecOdds(){return clamp(.45+Math.min(.2,fullPlants()*.02)-(S.strain>50?.15:S.strain>30?.05:0),.15,.8)}
+function nextElec(){for(let w=S.w;w<S.w+120;w++){const d=dateOf(w);if(d.getMonth()===10&&d.getDate()<=7&&d.getFullYear()%2===0)return w}return null}
 
 /* ---------- projects ---------- */
 function obsChance(o,def){
@@ -2755,7 +2769,7 @@ function framework(lid){if(S.fw[lid])return;const tgt=lineName(lid)*2;S.fw[lid]=
 function homeTick(lastOut){
   const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
   S.strain=clamp(S.strain+MOB[S.mob].strain+nPrio.reduce((a,k)=>a+(ND[k].civ||0)*.35,0)-.35,0,100);
-  S.pc=Math.min(250,Math.max(0,S.pc+pcRate()));
+  {const a=S.pc;S.pc=Math.min(250,Math.max(0,S.pc+pcRate()));S._pcInc=S.pc-a}
   if(nPrio.length&&rand()<.006*nPrio.length*(.5+S.strain/50)&&!S.queue.some(q=>q.ev==='diversion')){S._div=nPrio[Math.floor(rand()*nPrio.length)];queueEvent('diversion')}
   if(S.strain>=80&&!S.strainHit){S.strainHit=true;queueEvent('strainCrisis')}if(S.strain<60)S.strainHit=false;
   icTick();
@@ -2771,7 +2785,7 @@ function homeTick(lastOut){
 /* ---------- weekly tick ---------- */
 function tick(){
   if(S.over)return;
-  S.w++;
+  pcPre();S.w++;
   if(S.fac==='US'&&(S.histMode?fyStart():billNow())){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(F().fyBudget)}.`,'good');if(!S.histMode)S._yrDue=1}
   if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good');if(!S.histMode)S._yrDue=1}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
@@ -2789,6 +2803,7 @@ function tick(){
   if(!S.histMode){eventsTick();drainInfo()}
   if(S.w%2===0)S.hist.push(snapshot());
   {const R0=S._R||production(false);(S.resH=S.resH||[]).push({race:raceIdx(R0.out)*100,budget:S.budget,short:S.order.filter(c=>R0.out[c].bott).length,expo:(S.exposure||0)*100,lev:S.lev,strain:S.strain});if(S.resH.length>4)S.resH.shift()}
+  pcPost();
   if(S._yrDue){S._yrDue=0;yrOpen()}
   if(S.queue.length&&!S.sim)S.speed=0;
   if(S.scen&&!S.scenRes&&S.w>=SCD[S.scen].dl)scenJudge();
@@ -2803,8 +2818,8 @@ function yrOpen(){if(S.sim||S.histMode||S.replay||S.over)return;const a=S.yr0||y
   const bill=(S.bills||[])[0],lim={};for(const c of S.order){const id=S.lim?.[c]?.id;if(id&&!id.startsWith('L:')&&S.lastOut?.[c]?.bott)(lim[id]=lim[id]||[]).push(c)}
   S.yrRev={a,b,y:dateOf(S.w).getFullYear(),cleared,bill:bill&&inW(bill.w)?bill:null,laws:(S.lawLog||[]).filter(x=>inW(x.w)),
     online:S.plants.filter(p=>p.start!=null&&inW(p.start)&&p.nm).map(p=>p.nm),full:S.plants.filter(p=>p.full&&p.nm&&p.fullW&&inW(p.fullW)).map(p=>p.nm),
-    cn:cnS().hist.filter(h=>inW(h.w)),truce:S.truce,lim:Object.entries(lim).sort((x,y)=>y[1].length-x[1].length).slice(0,3)};
-  S.yr0=b;S._rcpt=null;S.modal='year';S.speed=0;const tb=document.getElementById('toasts');if(tb)tb.innerHTML=''}
+    cn:cnS().hist.filter(h=>inW(h.w)),truce:S.truce,pcY:{...(S.pcY||{inc:0,sp:0,ev:0})},lim:Object.entries(lim).sort((x,y)=>y[1].length-x[1].length).slice(0,3)};
+  S.pcY={inc:0,sp:0,ev:0};S.yr0=b;S._rcpt=null;S.modal='year';S.speed=0;const tb=document.getElementById('toasts');if(tb)tb.innerHTML=''}
 function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<1e-9?'<span class="mini">no change</span>':`<span class="${(v>0)===(good>0)?'okt':'redt'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</span>`};
   const tile=(v,l,dl)=>`<div class="yrt"><b>${v}</b><span>${l}</span>${dl?`<i>${dl}</i>`:''}</div>`;
   const rows=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0,ch=x>0?y/x-1:0,rv=cnOut(c);
@@ -2821,7 +2836,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)
    ${li('🏭 Plants that started producing',r.online)}
    ${li('⛓ Bottlenecks cleared',r.cleared.map(x=>`${LINES[x.c].n}: ${ND[x.id]?.n||'line capacity'}`))}
    ${li(`${FLAGS.cn} Beijing`,[...r.cn.map(h=>h.k<0?'<span class="redt">ended the truce early</span>':`<span class="redt">${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`),`pressure ${Math.round(a.cn.heat)} → ${Math.round(b.cn.heat)} of 100`,r.truce?'the truce holds':'no truce'])}
-   ${li('💰 Money',[`${money(inc)} came in`,`${money(sp)} spent`,`${money(S.budget)} in hand`,`${Math.floor(S.pc)} Political Capital (${fmt(pcRate()*52,0)} a year)`])}
+   ${li('💰 Money',[`${money(inc)} came in`,`${money(sp)} spent`,`${money(S.budget)} in hand`,`${Math.floor(S.pc)} Political Capital: +${fmt(r.pcY.inc,0)} earned, −${fmt(r.pcY.sp,0)} spent, ${r.pcY.ev>=0?'+':'−'}${fmt(Math.abs(r.pcY.ev),0)} from events`])}
    <h5 class="yrh">The year ahead</h5>
    ${li('⏱ Deadline',sc?[`${sc.n}: ${dlY} to ${fmtDate(sc.dl)}`]:[`The race runs to ${fmtDate(END_W)}`])}
    ${li('⛓ Biggest limits now',lim.length?lim:['No input holds a line back right now: line capacity is the limit.'])}
@@ -4517,7 +4532,7 @@ function renderGame(){
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
     ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
-    ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on bills, rules, carve-outs and workarounds.<br>Income ${fmt(F().pcRate*.85,2)}/wk${S.strain>0?` − strain ${fmt(S.strain/60,2)}`:''}`,'rtab','data-t="agenda"')}
+    ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Opens the Home tab.`,'rtab','data-t="home"')}
     ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,`FY${pkgFY()%100} request`,`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br>Click to work the bill.<br><br>${OFF_TIP}`,'bill','',over.length?'rwarn':'')})()}
     ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>Each takes its default after ${DECIDE_WK} weeks. Opens the first one.`:'Nothing is waiting on you.',S.inbox?.length?'evdo':firstStuck?'prog':'rtab',S.inbox?.length?`data-e="${S.inbox[0].ev}"`:firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
@@ -4594,8 +4609,21 @@ function renderGame(){
   // ---- right
   // home front
   const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
-  let home=`<h2>Home Front <span class="r dim">PC ${rate>=0?'+':''}${fmt(rate,2)}/wk</span></h2>
-   <div class="meter"><span>Civilian strain</span><div class="bar"><i style="left:0;width:${S.strain}%;background:${S.strain>60?'var(--red)':'#a07a40'}"></i></div><b>${Math.round(S.strain)}</b></div>
+  const pY=S.pcY||{inc:0,sp:0,ev:0},ew=nextElec(),eo=elecOdds(),nPr=Object.keys(S.prio).filter(k=>S.prio[k]);
+  const sParts=[...nPr.length?[[`DPA diversions from civilian customers (${nPr.length})`,nPr.reduce((a,k)=>a+(ND[k].civ||0)*.35,0)]]:[],...(icOn('icRevoke')&&S.w-(S.icSince?.icRevokeW||0)<26?[['Grounded drone fleets',.6]]:[]),['Recovery as supply returns to normal',-.35]];
+  const soon=[...(S.ne?[[`National emergency renewal (${NE_RENEW} PC)`,S.ne.since+52*Math.ceil((S.w-S.ne.since+1)/52)]]:[]),...CARVES.filter(C=>carveOn(C.id)&&S.carve[C.id].left<=13).map(C=>[`Carve-out expires: ${cname(C)}`,S.w+S.carve[C.id].left]),...(ew?[[`Election Day`,ew]]:[]),...(S.fac==='US'?[[`Congress votes on the FY${pkgFY()} ${billN()}`,billW()]]:[])].sort((x,y)=>x[1]-y[1]);
+  let home=`<h2>Home Front <span class="r dim">PC ${rate>=0?'+':''}${fmt(rate*52,0)}/yr</span></h2>
+   <div class="sect"><span>Political capital</span><span>${Math.floor(S.pc)} now</span></div>
+   <div class="hmrows">${pcParts().map(([n,v,t])=>`<div class="hmr" data-tip="${tipQ(t)}"><span>${n}</span><b class="${v>=0?'green':'red'}">${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr</b></div>`).join('')}
+    <div class="hmr tot"><span>This year so far</span><b>+${fmt(pY.inc,0)} earned · −${fmt(pY.sp,0)} spent · ${pY.ev>=0?'+':'−'}${fmt(Math.abs(pY.ev),0)} events</b></div></div>
+   <div class="sect"><span>Civilian strain</span><span>${Math.round(S.strain)} / 100</span></div>
+   <div class="meter"><span>Strain</span><div class="bar"><i style="left:0;width:${S.strain}%;background:${S.strain>60?'var(--red)':'#a07a40'}"></i><i style="left:50%;width:1px;background:#dcc78e"></i><i style="left:80%;width:1px;background:var(--red)"></i></div><b>${Math.round(S.strain)}</b></div>
+   <div class="hmrows">${sParts.map(([n,v])=>`<div class="hmr"><span>${n}</span><b class="${v>0?'red':'green'}">${v>0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr</b></div>`).join('')}</div>
+   <div class="mini hmnote">Above 50, voters punish shortages at the next election; at 80, a political crisis. Strikes, injunctions and import controls add strain once.</div>
+   ${ew?`<div class="sect"><span>🗳 Next election</span><span>${fmtDate(ew)}</span></div><div class="hmrows"><div class="hmr"><span>${dateOf(ew).getFullYear()%4===0?'Presidential':'Midterm'} · odds the result helps you</span><b class="${eo>=.5?'green':'red'}">${pct(eo)}</b></div></div>
+   <div class="mini hmnote">A good result brings +${dateOf(ew).getFullYear()%4===0?25:15} PC, a bad one ${dateOf(ew).getFullYear()%4===0?'−20':'−15'}. Plants at full rate raise the odds (now ${fullPlants()}); strain above 30 lowers them.</div>`:''}
+   ${soon.length?`<div class="sect"><span>Coming up</span><span></span></div><div class="hmrows">${soon.slice(0,5).map(([n,w])=>`<div class="hmr"><span>${n}</span><b>${fmtDate(w)}</b></div>`).join('')}</div>`:''}`;
+  home+=`
    ${F().aid&&!S.ceasefire?`<div class="sect"><span>Aid to Ukraine</span><span>${fmtN((F().aid.shells||0)*S.aidLvl)} shells/yr leave your stocks</span></div><div class="mob">${[[1,'Full'],[.5,'Half'],[0,'Stop']].map(([v,l])=>`<button class="btn ${S.aidLvl===v?'on':''}" data-a="aid" data-v="${v}" ${v<S.aidLvl&&S.pc<Math.round(10*(S.aidLvl-v)/.5)?'disabled':''} data-tip="${l} aid: ${fmtN(F().aid.shells*v)} shells and ${fmtN(F().aid.interceptors*v)} interceptors a year to Ukraine.${v<S.aidLvl?` Cutting costs ${Math.round(10*(S.aidLvl-v)/.5)} PC.`:''}">${l}</button>`).join('')}</div>`:''}
    ${S.fac==='US'?`<div class="sect"><span>Import controls & regulations</span><span class="linkn" data-a="view" data-v="rules" style="color:#dcc78e">⚖ Rulebook →</span></div>`:''}
    <div class="sect"><span>DPA priority diversions (${nPrio.length})</span><span>${nPrio.length?'':'click a node to divert'}</span></div>
