@@ -613,6 +613,31 @@ body{background:
 .alhit{font-size:12px;color:#8a1f15;background:#f6e2d8;border-left:3px solid #a3261c;padding:4px 8px;margin:0 0 6px}.alt td,.alt th{padding:2px 6px}.alt .num{text-align:right}
 .aldh{font:600 11px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a6d2e;margin:10px 0 4px;border-bottom:1px solid #c8b48a}
 .ald{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px dotted #c8b48a}.ald b{color:#2a2418}.ald .btn{white-space:nowrap;background:#3a3020;border-color:#3a3020;color:#f0dfae}.ald .btn:disabled{opacity:.4}.ald.on{opacity:.9}.alpre{margin-top:2px}.alpre b{font:600 10px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#8a6d2e}
+/* ---------- phones ---------- */
+@media(max-width:760px){
+ html,body{overflow-x:hidden;max-width:100vw}
+ #top{height:auto;flex-wrap:wrap;gap:4px;padding:6px 8px;overflow:visible}
+ #top .logo{font-size:17px;flex:1 0 100%;text-align:left;padding:0}
+ #top .res{flex:1 1 30%;min-width:0;height:40px;padding:2px 4px}#top .res b{font-size:13px}#top .res span{font-size:7.5px;letter-spacing:.03em}
+ #top .spacer{display:none}#top label{font-size:10px!important}#top .date{font-size:15px;padding:2px 8px;margin-left:auto}#top .crbadge,#top>.sub{display:none}
+ #views{height:auto;overflow-x:auto;flex-wrap:nowrap;padding:4px 6px 0;scrollbar-width:none}#views::-webkit-scrollbar{display:none}
+ #views .vbtn{font-size:12px;padding:3px 9px;white-space:nowrap;flex:none}
+ #decbar{height:auto;min-height:40px;overflow-x:auto;flex-wrap:nowrap}
+ #main>*,#viewslot,#viewslot>*{min-width:0;max-width:100%}
+ #main,#main.vmode,body.hasdec #main{grid-template-columns:minmax(0,1fr)!important;height:auto!important;padding:6px;gap:6px}
+ #main>.panel{max-height:none;overflow:visible}
+ #log{height:110px;margin:0 6px 6px}
+ #ov{inset:0;padding:0;z-index:58}#ov>*{max-height:100vh!important}.xclose{z-index:62}
+ .paper,.paper.wide,.paper.xl{width:100vw!important;max-width:100vw;max-height:100vh!important;border-width:2px}
+ .dwrap{grid-template-columns:1fr}.dsb{display:none}
+ .ctable{display:block;overflow-x:auto;max-width:100%}
+ .yrts,.rbkey,.pmtiles,.fctiles,.rec-tiles{grid-template-columns:repeat(2,1fr)!important}
+ .alcards{grid-template-columns:1fr}.cnph{flex-direction:column;align-items:flex-start;gap:4px}
+ .svft .pbtn{min-width:0;flex:1 1 100%}
+ .vhead{flex-wrap:wrap}.vhead .mini{flex:1 1 100%}
+ .agrid,.ogrid{grid-template-columns:minmax(0,1fr)}.acard{min-width:0}.srcgrid{columns:1}.mtab{display:block;overflow-x:auto}
+ .rc-rhead{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-rhead>*:first-child{grid-column:1/-1}.icrow{grid-template-columns:34px minmax(0,1fr)}.icrow>*{min-width:0}.fx span{white-space:normal}
+}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2846,7 +2871,7 @@ function yrOpen(){if(S.sim||S.histMode||S.replay||S.over)return;const a=S.yr0||y
     online:S.plants.filter(p=>p.start!=null&&inW(p.start)&&p.nm).map(p=>p.nm),full:S.plants.filter(p=>p.full&&p.nm&&p.fullW&&inW(p.fullW)).map(p=>p.nm),
     cn:cnS().hist.filter(h=>inW(h.w)),truce:S.truce,pcY:{...(S.pcY||{inc:0,sp:0,ev:0})},lim:Object.entries(lim).sort((x,y)=>y[1].length-x[1].length).slice(0,3)};
   S.pcY={inc:0,sp:0,ev:0};S.yr0=b;S._rcpt=null;S.modal='year';S.speed=0;const tb=document.getElementById('toasts');if(tb)tb.innerHTML=''}
-function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<1e-9?'<span class="mini">no change</span>':`<span class="${(v>0)===(good>0)?'okt':'redt'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</span>`};
+function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<.5?'<span class="mini">no change</span>':`<span class="${(v>0)===(good>0)?'okt':'redt'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</span>`};
   const tile=(v,l,dl)=>`<div class="yrt"><b>${v}</b><span>${l}</span>${dl?`<i>${dl}</i>`:''}</div>`;
   const rows=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0,ch=x>0?y/x-1:0,rv=cnOut(c);
     return `<tr><td>${LINES[c].n}</td><td class="num">${fmtN(x)}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num ${ch>.005?'okt':ch<-.005?'redt':'mini'}">${Math.abs(ch)<.005?'—':(ch>0?'+':'−')+pct(Math.abs(ch))}</td><td class="num">${fmtN(rv)}</td><td class="num ${y>=rv?'okt':'redt'}">${rv>0?pct(y/rv):'—'}</td></tr>`}).join('');
