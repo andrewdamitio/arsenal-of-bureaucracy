@@ -657,6 +657,14 @@ body{background:
 .ctp .ctft .ctback{background:transparent;border:1px solid #a8925a;color:#5a4a26;align-items:center;justify-content:center;font:600 13px var(--disp);letter-spacing:.06em;text-transform:uppercase}.ctp .ctft .ctback:hover{background:#efe3c4}
 .ctp .ctft .ctnow{background:#f3e7c4;border:1px solid #8a7440;color:#2b241a}.ctp .ctft .ctnow:hover:not(:disabled){background:#ead9a8}
 @media(max-width:760px){.ctp .ft.ctft{grid-template-columns:1fr}}
+.evp .hd{position:relative}.evq{margin-left:auto;white-space:nowrap;flex:none;align-self:center;font:600 11px var(--disp);letter-spacing:.08em;text-transform:uppercase;color:#f0dfae;background:#1a1610;border:1px solid #a8925a;padding:2px 8px}
+.evp .ft .pbtn.evo{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:3px;background:#f1e8d0;border:1px solid #cdb98a;transition:background .12s,border-color .12s}.evp .ft .pbtn.evo:hover:not(:disabled){background:#fffbf0;border-color:#8a7440;box-shadow:inset 4px 0 0 #c9a227}
+.evp .ft .pbtn.evo b{font:600 15px Georgia,serif;color:#2b241a}.evp .ft .pbtn.evo span{font:12.5px "Segoe UI",system-ui,sans-serif;color:#5a4e38}
+.evnote{font-style:italic;font-size:12px;color:#7a6a48;margin:4px 0 0}
+.evch{background:#e6dbbd;border:1px solid #cdb98a;padding:7px 12px;font-size:14px;margin:0 0 10px}.evsm{font:600 11px var(--disp);letter-spacing:.12em;text-transform:uppercase;color:#8a6d2e;margin:0 0 5px}
+.eor{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:6px 10px;margin:0 0 4px;background:#f1e8d0;border-left:3px solid #8a8672;font:13px "Segoe UI",system-ui,sans-serif}
+.eor.g{border-left-color:#3f7a34}.eor.b{border-left-color:#a3261c}.eor i{font:600 10px var(--disp);font-style:normal;letter-spacing:.1em;color:#6b5a35}.eor b{white-space:nowrap;min-width:84px;text-align:right}.eor.g b{color:#2f6a24}.eor.b b{color:#9a2a1c}
+.evcont{text-align:center!important;font-size:15px!important}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2809,8 +2817,8 @@ function carvesTick(){
     else if(CD[id].court&&!S.queue.some(q=>q.ev==='enjoin')&&rand()<CD[id].court){S._enj=id;queueEvent('enjoin')}}}
 }
 function queueEvent(id){S.queue.push({ev:id})}
-function infoOnly(q){if(q.read)return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
-function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(S.autoPause||q.read||!q.ev)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
+function infoOnly(q){if(q.read||q.sys==='outcome')return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
+function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(true)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
     const e=ED[q.ev];S.inbox.push({ev:q.ev,due:S.w+DECIDE_WK,w:S.w});return false}
   if(q.ev){const e=ED[q.ev],o=(V(e.o)||[])[0];o?.fx?.();const l=o?String(V(o.l)).trim():'';if(l&&/(.+)/.test(l))log(`   → ${l}`,'ev')} // news with no decision: no card; the timeline records it
   else if(q.sys==='fw')toast(`${q.r>=.7?'📈 Framework target met':'📉 Framework audit: far below goal'}<br><span class="dim">${LINES[q.lid].n} · ${q.r>=.7?'+10':'−20'} PC</span>`,'',{a:'node',n:'L:'+q.lid});
@@ -4407,6 +4415,34 @@ const JOBS_PER_B=1500; // direct manufacturing jobs per $1B of plant investment 
 function spendB(x,k){x=+x||0;if(!x)return;S.budget-=x;if(!S.histMode)(S.spendBy=S.spendBy||{})[k]=(S.spendBy[k]||0)+x}
 function gainB(x,k){x=+x||0;if(!x)return;S.budget+=x;if(!S.histMode)(S.incBy=S.incBy||{})[k]=(S.incBy[k]||0)+x}
 function lawRec(kind,n){if(!S.histMode)(S.lawLog=S.lawLog||[]).push({w:S.w,kind,n})}
+function outSnap(){return {pc:S.pc,b:S.budget,st:S.strain,lev:S.lev,cut:{...S.cut},tm:S.tmods.length,gm:S.gmods.length,inv:{...S.inv},know:{...S.know},truce:S.truce,rules:{...S.rules},
+  carve:Object.keys(S.carve||{}).filter(k=>carveOn(k)),ah:Object.fromEntries(Object.entries(S.ally||{}).map(([k,v])=>[k,v.hit.length])),cn:{h:cnS().heat,r:cnS().rung},ru:S.ru?{h:S.ru.heat,r:S.ru.rung}:null,proj:S.projects.length}}
+function outDiff(a){const r=[],add=(n,tag,v,good)=>r.push({n,tag,v,good}),sg=x=>x>0?'+':'−',nm=id=>id.startsWith?.('L:')?LINES[id.slice(2)].n:ND[id]?.n||LINES[id]?.n||id;
+  const dpc=S.pc-a.pc;if(Math.abs(dpc)>=.5)add('Political Capital','CAPITAL',`${sg(dpc)}${Math.round(Math.abs(dpc))} PC`,dpc>0);
+  const db=S.budget-a.b;if(Math.abs(db)>.004)add('Industrial budget','MONEY',`${sg(db)}${money(Math.abs(db))}`,db>0);
+  const ds=S.strain-a.st;if(Math.abs(ds)>=.5)add('Civilian strain','HOME FRONT',`${sg(ds)}${Math.round(Math.abs(ds))}`,ds<0);
+  const dl=S.lev-a.lev;if(Math.abs(dl)>=.5)add('Prime contractors’ leverage','INDUSTRY',`${sg(dl)}${Math.round(Math.abs(dl))}`,dl<0);
+  for(const id in S.cut)if(Math.abs(S.cut[id]-(a.cut[id]??1))>.005){const d=S.cut[id]-(a.cut[id]??1);add(`Chinese supply of ${nm(id).toLowerCase()} still flowing`,'SUPPLY',`${sg(d)}${Math.round(Math.abs(d)*100)} pts`,d>0)}
+  for(const m of S.tmods.slice(a.tm)){const what=m.kind==='line'?`${LINES[m.id]?.n} output`:m.kind==='ally'?`Allied supply of ${nm(m.id).toLowerCase()}`:m.kind==='prc'?`Chinese supply of ${nm(m.id).toLowerCase()}`:`US capacity: ${nm(m.id)}`;
+    add(what,m.kind==='line'?'LINE':'CAPACITY',`${sg(m.mult-1)}${pct(Math.abs(m.mult-1))}${m.left<9999?` for ${m.left} wk`:''}`,m.mult>1)}
+  for(const g of S.gmods.slice(a.gm))add(g.label||'Every program','PROGRAMS',`${sg(g.mult-1)}${pct(Math.abs(g.mult-1))} for ${g.left} wk`,g.mult>1);
+  for(const c in S.inv){const d=S.inv[c]-(a.inv[c]??0);if(Math.abs(d)>=Math.max(1,(a.inv[c]||0)*.002))add(`${LINES[c].n} in service`,'STOCKS',`${sg(d)}${fmtN(Math.abs(d))}`,d>0)}
+  for(const k in S.know){const d=S.know[k]-(a.know[k]??S.know[k]);if(Math.abs(d)>=1)add(`Know-how: ${nm(k)}`,'KNOW-HOW',`${sg(d)}${Math.round(Math.abs(d))}`,d>0)}
+  for(const k in S.ally||{}){const h=S.ally[k].hit.slice(a.ah[k]||0),M=[...ALLY_MEM.pac,...ALLY_MEM.eu].find(x=>x.k===k);for(const x of h)add(`${M?.n||k}: ${x.c==='*'?'all lines':LINES[x.c].n.toLowerCase()}`,'ALLY',`−${pct(1-x.m)} for ${x.left} wk`,false)}
+  if(cnS().rung!==a.cn.r)add('Beijing’s escalation','BEIJING',`step ${a.cn.r} → ${cnS().rung}`,cnS().rung<a.cn.r);
+  {const d=cnS().heat-a.cn.h;if(Math.abs(d)>=.5)add('Pressure on Beijing to escalate','BEIJING',`${sg(d)}${Math.round(Math.abs(d))}`,d<0)}
+  if(S.ru&&a.ru){const d=S.ru.heat-a.ru.h;if(Math.abs(d)>=.5)add('Pressure behind Moscow’s campaign','MOSCOW',`${sg(d)}${Math.round(Math.abs(d))}`,d<0)}
+  if(S.truce!==a.truce)add('Trade truce with Beijing','BEIJING',S.truce?'in force':'ended',S.truce);
+  for(const id in S.rules)if(!!S.rules[id]!==!!a.rules[id])add(RD2[id]?.n||id,'RULE',S.rules[id]?'in force':'lifted',null);
+  for(const id of Object.keys(S.carve||{}).filter(k=>carveOn(k)))if(!a.carve.includes(id))add(cname(CD[id]),'CARVE-OUT',`${S.carve[id].left} wk`,true);
+  if(S.projects.length!==a.proj)add('Programs under way','PROGRAMS',`${sg(S.projects.length-a.proj)}${Math.abs(S.projects.length-a.proj)}`,S.projects.length>a.proj);
+  return r}
+const optSplit=l=>{const t=String(l),m=t.match(/^(.*?)\s*\((.*)\)\s*\.?$/);return m?[m[1],m[2]]:[t,'']};
+function outHTML(q){const e=ED[q.ev];return `<div class="paper evp"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">
+  <div class="evch">You chose: <b>${q.ch}</b></div><div class="evsm">What it set in motion</div>
+  ${q.rows.map(r=>`<div class="eor ${r.good===true?'g':r.good===false?'b':'n'}"><span>${r.n}</span><i>${r.tag}</i><b>${r.good===true?'▲':r.good===false?'▼':'●'} ${r.v}</b></div>`).join('')}
+  <p class="evnote">Some effects take hold over the coming weeks; the timeline keeps the record.</p></div>
+  <div class="ft"><button class="pbtn primary evcont" data-a="evopt" data-k="-1">Continue ›</button></div></div>`}
 function decRec(auto){if(!S.histMode){S.decN=S.decN||{you:0,auto:0};S.decN[auto?'auto':'you']++}}
 const sumV=o=>Object.values(o||{}).reduce((a,b)=>a+b,0);
 function jobsNow(){let j=0,more=0;for(const pl of S.plants)if(pl.start>=PLAY0){const v=projCost(PD[pl.def])*JOBS_PER_B;j+=v*Math.min(1,pl.yield);more+=v*(1-Math.min(1,pl.yield))}
@@ -4778,7 +4814,7 @@ function renderGame(){
     <div class="spacer"></div>
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
-    <button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>On: the clock stops whenever a new problem appears.<br>Off: problems wait ${DECIDE_WK} weeks for you, then the default option is taken.`)}"><i></i>Pause on problems</button>
+    <button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>Event decisions always stop the clock. This covers program problems (permits, protests, audits).<br>On: the clock stops when one appears.<br>Off: they wait ${DECIDE_WK} weeks in the decisions bar, then the default is taken.`)}"><i></i>Pause on problems</button>
     ${res(S._svAt?'Saved':'Not saved',S._svAt?fmtDate(S._svW):'game file',`<b>Saved game</b><br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}<br>Download or load a save file, or start a new game.`,'savem','',S._svErr?'rwarn':'rquiet')}
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
@@ -4931,10 +4967,12 @@ function renderModal(){
   } else if(S.queue.length){
     const q=S.queue[0];
     if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${L.n.toLowerCase()}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
+    else if(q.sys==='outcome'){html=outHTML(q)}
     else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in Conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
-      html=`<div class="paper"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${V(e.pre)}</p>`:''}</div><div class="ft">${opts.map((o,k)=>`<button class="pbtn" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}>${V(o.l)}</button>`).join('')}</div></div>`}
+      const nq=S.queue.filter(x=>x.ev&&!x.read).length;
+      html=`<div class="paper evp"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}${nq>1?`<span class="evq">${fmtDate(S.w)} · 1 of ${nq}</span>`:''}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${V(e.pre)}</p>`:''}</div><div class="ft">${opts.map((o,k)=>{const [t,d]=optSplit(V(o.l));return `<button class="pbtn evo" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}><b>${t}</b>${d?`<span>${d}</span>`:''}</button>`}).join('')}${q.read?'':`<p class="evnote">The clock is stopped until you decide.</p>`}</div></div>`}
   } else if(S.modal==='scenPick'){
     html=scenPickHTML();
   } else if(S.modal==='scenEnd'&&S.scenRes){
@@ -5150,7 +5188,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'scenstop':S.over=true;S.speed=0;S.verdict=S.scenRes.verdict;S.overWhy='';S.modal=null;S.view='rec';S._vdirty=true;break;
     case 'rcptx':if(S._rcpt)S._rcpt.gone=true;renderReceipt();return;
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
-    case 'evopt':{const q=S.queue[0];if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.()}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
+    case 'evopt':{const q=S.queue[0];let out=null;if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);const a=outSnap();if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.();S.pc=Math.max(0,S.pc);const rows=outDiff(a);if(rows.length)out={sys:'outcome',ev:q.ev,ch:optSplit(V(o.l))[0],rows}}}S.queue.shift();if(out)S.queue.unshift(out);S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;clearSave();break;
     case 'cntalk':cnTalk();break;
     case 'aldeal':alDeal(b.dataset.d);S._vdirty=true;break;
