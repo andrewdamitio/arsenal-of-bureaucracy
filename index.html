@@ -725,7 +725,7 @@ const LAYERS={
  FISCAL:{n:'Fiscal & Appropriations',c:'#d4a63a'},PROCURE:{n:'Procurement Rules',c:'#4a78c8'},PRIME:{n:'Prime Contractor Rents',c:'#d0503f'},
  PERMIT:{n:'Environmental Permitting',c:'#6aa84f'},LEGAL:{n:'Litigation',c:'#a07ad0'},GRID:{n:'Power & Interconnection',c:'#e0803a'},
  LABOR:{n:'Workforce',c:'#b8b070'},PROTECT:{n:'Protectionism',c:'#d46a9a'},MARKET:{n:'Market / PRC Overcapacity',c:'#f0d860'},
- QUAL:{n:'Qualification & Testing',c:'#4fb3b0'},ALLIED:{n:'Export Controls & Alliance Politics',c:'#9fc8f0'},EXPERT:{n:'Know-How & Ramp-Up',c:'#c08850'},
+ QUAL:{n:'Qualification & Testing',c:'#4fb3b0'},ALLIED:{n:'Export Controls & Foreign Partners',c:'#9fc8f0'},EXPERT:{n:'Know-How & Ramp-Up',c:'#c08850'},
 };
 const TIERS={1:'Raw & Critical Minerals',2:'Processed Materials & Energetics',3:'Components',4:'Subsystems',5:'End Items'};
 const TIERS_S={1:'T1 Raw',2:'T2 Materials',3:'T3 Components',4:'T4 Subsystems',5:'T5 Lines'};
@@ -760,11 +760,11 @@ const NODES=[
   {id:'lithium',t:1,n:'Lithium',ic:'⛏',in:[],arch:'refine',civ:.9,cv:'ev',
   d:'Australia, Chile and China mine most lithium; China processes an estimated two-thirds.[c:sci_li] The US imports more than half its lithium; commercial production is one Nevada brine operation.[c:usgs26]',
   US:{mix:[.15,.55,.3],kn:20},adv:.4,
-  dp:{n:'Lithium Brine / Claystone Project',g:.5,c:.8},ap:{n:'Allied Lithium Offtake (Australia / Chile)',g:.3,c:.4}},
+  dp:{n:'Lithium Brine / Claystone Project',g:.5,c:.8},ap:{n:'Australian Lithium Offtake',g:.3,c:.4},np:{n:'Chilean / Argentine Lithium Offtake',g:.3,c:.35,d:'Brine lithium from the Atacama and the Puna. Chile and Argentina supplied 97% of US lithium imports in 2021–24.[c:mcs26]'}},
  {id:'rhenium',t:1,n:'Rhenium',ic:'⚗',in:[],arch:'refine',civ:.6,cv:'aero',
   d:'A few percent of every single-crystal turbine blade. Chile led 2025 output; the US (~9.8 t of ~81 t) recovers it from copper-moly roasting and recycles scrap.[c:usgsre]',
   US:{mix:[.45,.5,.05],kn:40},adv:.1,
-  dp:{n:'Rhenium Recovery from Moly Roasting',g:.4,c:.3},ap:{n:'Chilean Rhenium Supply Agreement',g:.3,c:.2}},
+  dp:{n:'Rhenium Recovery from Moly Roasting',g:.4,c:.3},np:{n:'Chilean Rhenium Supply Agreement',g:.3,c:.2,d:'Rhenium recovered from copper and molybdenum roasting. Chile is the largest single source of US rhenium imports, at 31%.[c:mcs26]'}},
  {id:'gallium',t:1,n:'Gallium',ic:'⚗',in:[],arch:'refine',civ:.5,cv:'elec',
   d:'China produced ~99% of primary gallium (USGS).[c:usgs26] It is a byproduct of alumina refining and cannot be mined on its own. Feeds GaN wafers → MMICs → AESA radars, EW, RF seekers.',
   US:{mix:[0,.05,.95],kn:5},adv:.3,
@@ -800,7 +800,7 @@ const NODES=[
  {id:'graphite',t:1,n:'Graphite',ic:'⛏',in:[],arch:'refine',civ:.8,cv:'ev',
   d:'China produced ~82% of natural graphite in 2025; the US mined none.[c:usgsgr] Battery anodes for drones, subs, and soldier power.',
   US:{mix:[0,.15,.85],kn:10},adv:.3,
-  dp:{n:'Anode Graphite Plant',g:.5,c:.6},ap:{n:'Allied Graphite (Canada / Mozambique)',g:.3,c:.3}},
+  dp:{n:'Anode Graphite Plant',g:.5,c:.6},ap:{n:'Canadian Graphite Offtake',g:.3,c:.35},np:{n:'Mozambique Graphite Offtake (Balama)',g:.3,c:.25,d:'Natural graphite from the Balama mine, which a US development-finance loan backed in 2024. Mozambique supplied 13% of US graphite imports.[c:mcs26][c:balama]'}},
  {id:'nico',t:1,n:'Nickel & Cobalt',ic:'⛏',in:[],arch:'refine',civ:.7,cv:'ev',
   d:'Indonesia (largely Chinese-financed) dominates nickel; the DRC mines most cobalt and China refines most of it; Russia\'s Nornickel is a major class-1 supplier. Feeds superalloys, armor steel, SmCo magnets, batteries.',
   US:{mix:[.1,.5,.4],kn:30},adv:.5,
@@ -808,7 +808,7 @@ const NODES=[
  {id:'tantalum',t:1,n:'Tantalum & Niobium',ic:'⛏',in:[],arch:'refine',civ:.5,cv:'elec',
   d:'US 100% import-reliant for both. Tantalum from the DRC/Rwanda; niobium almost entirely from Brazil (CBMM). DFARS restricts Chinese tantalum from 2027.',
   US:{mix:[0,.6,.4],kn:15},adv:.3,
-  dp:{n:'Tantalum Refining Line',g:.4,c:.4},ap:{n:'Allied Tantalum/Niobium Offtake',g:.3,c:.3}},
+  dp:{n:'Tantalum Refining Line',g:.4,c:.4},ap:{n:'Australian Tantalum Offtake',g:.3,c:.3},np:{n:'Brazilian Niobium Offtake',g:.3,c:.25,d:'Brazil supplied 67% of US niobium imports in 2021–24.[c:mcs26]'}},
  {id:'indium',t:1,n:'Indium',ic:'⛏',in:[],arch:'refine',civ:.4,cv:'elec',
   d:'China ~70% of refined indium; no US refinery production.[c:usgsin] Indium antimonide detectors sit inside many IR seekers.',
   US:{mix:[0,.3,.7],kn:10},adv:.2,
@@ -1431,6 +1431,8 @@ for(const n of NODES){
   if(n.dp)PROJECTS.push({id:'d_'+n.id,n:n.dp.n,d:n.d,t:{node:n.id},gain:n.dp.g,cost:n.dp.c,dur:n.dp.dur||a.dur,tags:[...a.tags,...(n.tags||[]),n.id],fac:n.dp.fac});
   if(n.ap){const prcHeavy=n.US.mix[2]>.4||AP_CN_FEED.includes(n.id);
     PROJECTS.push({id:'a_'+n.id,ally:1,n:n.ap.n,d:n.d,t:{node:n.id},gain:n.ap.g,cost:n.ap.c,adv:n.ap.adv??(prcHeavy?.1:0),dur:n.ap.dur||[8,14,0,78,20,8],tags:['allied',n.id,...(prcHeavy?['chinaInput','dumpable']:[])],fac:n.ap.fac});}
+  // an offtake from a neutral country: a mine or refinery abroad, slower to stand up than buying from an ally's existing plants
+  if(n.np)PROJECTS.push({id:'n_'+n.id,ally:1,nt:1,n:n.np.n,d:n.np.d||n.d,t:{node:n.id},gain:n.np.g,cost:n.np.c,adv:n.np.adv||0,dur:n.np.dur||[8,16,0,104,12,8],tags:['neutral',n.id]});
 }
 for(const n of NODES){const a=ARCH[n.arch];for(const L of LEVERS[n.arch]||[]){
   const kind=L.k,base=kind==='cap'?{gain:L.g,cost:L.c,dur:L.dur,tags:[...L.tags,n.id]}:{gain:0,cost:LEVER_COST[kind]*(kind==='mod'?Math.max(.5,(n.dp?.c||1)*.5):1),dur:LEVER_DUR[kind],tags:kind==='mod'?['brownfield',...a.tags.filter(t=>!['greenfield','mine','dumpable','prime'].includes(t)),n.id]:['program',n.id]};
@@ -1560,6 +1562,15 @@ const OBSTACLES=[
  {id:'dump',layer:'MARKET',stage:'ramp',tags:['dumpable'],al:1,chance:.7,mods:{pricefloor:.35,cvDPA3:.6},n:'Chinese Price Collapse',
   t:"Chinese output jumped again. The spot price is now below your cash cost. Your investors would like to discuss \"strategic alternatives.\"",
   o:[{l:'Price-floor offtake contract',req:'pricefloor',$:.3},{l:{US:'DPA Title III grant'},$:.3,p:.5,grant:1,fail:{wait:20}},{l:'Ride it out',wait:26,p:.5,fail:{wait:26,cancel:1},tip:'50% chance the project is mothballed at the end.'}]},
+ {id:'nzTerms',layer:'ALLIED',stage:'contract',ntOnly:1,chance:.45,n:'Host Government Rewrites the Terms',
+  t:"The host government wants a state stake, a higher royalty or a processing plant on its own soil before it signs. In April 2023 Chile announced that the state would take a majority in its strategic lithium deposits.[c:chileli]",
+  o:[{l:'Accept a state stake and a higher royalty',$:.1},{l:'Co-finance a processing plant there',$:.25,wait:6},{l:'Renegotiate',wait:20}]},
+ {id:'nzBid',layer:'ALLIED',stage:'contract',ntOnly:1,chance:.3,n:'Chinese Counter-Offer',
+  t:"A Chinese state-owned buyer offers the seller more money with fewer conditions. In March 2025 a Norinco unit's purchase of Congo's Chemaf lapsed only after the state miner objected and Washington lobbied against it.[c:chemaf]",
+  o:[{l:'Match the offer',$:.2},{l:'Lobby the host government',pc:10,p:.6,fail:{wait:16,gain:.6}},{l:'Settle for a smaller share of the output',gain:.6}]},
+ {id:'nzUnrest',layer:'ALLIED',stage:'build',ntOnly:1,chance:.25,n:'Unrest Halts the Mine',
+  t:"Protesters block the site and the operator declares force majeure. Syrah's Balama graphite mine in Mozambique did so in December 2024, which tripped defaults on its US government loans.[c:balama]",
+  o:[{l:'Wait for the government to restore access',wait:26},{l:'Fund a community settlement',$:.08,wait:8},{l:'Waive the loan default and restructure',pc:6,wait:14}]},
  {id:'itar',layer:'ALLIED',stage:'contract',alOnly:1,chance:.55,mods:{itarReform:.5,itarFree:.5},n:{US:'ITAR: Technical Assistance Agreement'},
   t:{US:"Your ally can't build the thing for you until the State Department licenses the export of your drawings to them. The Technical Assistance Agreement takes months; the amendments take longer."},
   o:[{l:'Process the license normally',wait:26,pages:200},{l:'Expedite through the interagency',pc:10,wait:8},{l:{US:'Strip controlled parts from the design'},$:.2,wait:16}]},
@@ -1723,6 +1734,19 @@ const EVENTS=[
   o:()=>[{l:'Accept the new conditions and retrofit (−$0.05B; output −15% for 10 weeks)',$:.05,fx:()=>siteHit(.85,10)},
    {l:'Negotiate a consent order (−6 PC; output −15% for 4 weeks)',pc:6,fx:()=>siteHit(.85,4)},
    {dflt:1,l:'Run reduced until the hearing (output −40% for 20 weeks)',fx:()=>siteHit(.6,20)}]},
+ {id:'nzBan',p:.003,once:false,cond:()=>!S.tmods.some(m=>m.kind==='neut'&&m.label==='Export ban')&&nzPick(true),ic:'🌐',fx:()=>{S._nz=nzPick()},
+  t:()=>`${neutTop(S._nz)||'A Supplier Country'} Halts Raw ${ND[S._nz].n} Exports`,
+  pre:'January 2020: Indonesia banned nickel ore exports two years ahead of schedule to force smelting at home.[c:idnickel] February 2025: Congo suspended cobalt exports, then replaced the ban with quotas that October.[c:drccobalt]',
+  body:()=>{const id=S._nz,sh=nodeSupply(id).neut/Math.max(S.nodes[id].scale,1e-9);return `${neutTop(id)||'A neutral supplier'} stops exports of unprocessed ${ND[id].n.toLowerCase()} so that buyers have to build processing plants there. Neutral countries supply about ${pct(sh)} of what your plants use. They answer to their own governments, not to an alliance.`},
+  o:()=>{const id=S._nz,lost=S.nodes[id].neut.amt*.6;return [
+   {l:'Co-finance a processing plant there (−$0.3B: supply returns within half a year)',$:.3,fx:()=>tmod('neut',id,.4,26,'Export ban')},
+   {l:'Buy on the open market at a premium (−$0.15B: half the loss is covered for a year)',$:.15,fx:()=>{tmod('neut',id,.4,52,'Export ban');S.spot.push({id,amt:lost*.5,left:52})}},
+   {dflt:1,l:'Accept the loss (neutral supply −60% for two years)',fx:()=>tmod('neut',id,.4,104,'Export ban')}]}},
+ {id:'cnCrack',p:.004,once:false,cond:()=>S.truce===false&&TS_NODES.some(id=>S.cut[id]<1&&S.cut[id]>.05)&&!S.tmods.some(m=>m.label==='Transshipment crackdown'),ic:FLAGS.cn,t:'Beijing Cracks Down on Transshipment',
+  pre:'May 2025: Beijing began a campaign against transshipment and smuggling of critical minerals. By then, five months of US imports of antimony oxides from Thailand and Mexico had passed the previous three years combined.[c:tranship]',
+  body:'Much of the gallium, germanium and antimony still reaching US buyers under Beijing’s ban comes through third countries, relabeled or processed just enough to change its origin. Beijing now inspects shipments and threatens the licences of exporters who sell to middlemen.',
+  o:[{dflt:1,l:'Leave buyers to adapt (Chinese supply through third countries −50% for a year)',fx:()=>{for(const id of TS_NODES)tmod('prc',id,.5,52,'Transshipment crackdown')}},
+   {l:'Help buyers line up allied and neutral sources (−$0.2B: the loss is halved)',$:.2,fx:()=>{for(const id of TS_NODES)tmod('prc',id,.75,52,'Transshipment crackdown')}}]},
  {id:'twBudget',fac:['US'],p:.0025,once:false,cond:()=>(S.rival||'pac')==='pac'&&!alS('tw').hit.length,ic:'🏛',t:'Taiwan’s Legislature Freezes Defense Funds',
   body:'Taiwan’s opposition-led legislature freezes part of the defense budget and cuts drone and missile lines from a special package. Production contracts in Taiwan stall while the parties fight it out.',
   pre:'January 2025: Taiwan’s legislature froze half the submarine budget and a third of a drone budget; in 2026 it passed a special defense budget with most drone funding cut.[c:twbud][c:twspec]',
@@ -1935,7 +1959,8 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
     for(const i of n.in){need[i]+=need[id]*cov*c.mix[0];pot[i]+=pot[id]}}
   for(const id of ORDER){const n=ND[id],c=n[fac],cov=c.cov??1.05,tot=need[id]*cov;
     const scale=Math.max(need[id],pot[id]*.3,.05);
-    S.nodes[id]={base:tot*c.mix[0],ally:{amt:tot*c.mix[1],adv:n.adv||0,src:''},prc:{amt:tot*c.mix[2]},scale,need0:need[id]};
+    const nz=neutShare(id);
+    S.nodes[id]={base:tot*c.mix[0],ally:{amt:tot*c.mix[1]*(1-nz),adv:n.adv||0,src:''},neut:{amt:tot*c.mix[1]*nz,adv:n.adv||0,src:neutNames(id)},prc:{amt:tot*c.mix[2]},scale,need0:need[id]};
     S.know[id]=c.kn??40}
   for(const l in LINES)S.know[l]=X.lineKn[l];
   for(const r of RULES)if(r.on0)setRule(r.id,true);
@@ -2034,6 +2059,19 @@ function tm(kind,id){let m=1;for(const x of S.tmods)if(x.kind===kind&&x.id===id)
 function cutOf(id){let c=S.cut[id];if(S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars'))c*=.2;return c} // COTS/de-minimis exceptions leave ~20%
 function plantMult(pl){return pl.issue?OPSD[pl.issue.id].mult:1}
 function plantsFor(kind,id){return S.plants.filter(p=>p.kind===kind&&p.target===id)}
+// Foreign supply comes in three classes. Allied: NATO members, Japan, South Korea, Australia and Israel, tied into US defense production
+// by treaty and defense-trade agreements. Adversary: China and Russia. Neutral: every other country; many are friendly trading partners
+// (Chile, Mexico, Brazil, India), but they sell to both sides and answer to their own governments, not to an alliance.
+// The starting split between allied and neutral comes from USGS import shares by country (2021-24) for the raw materials USGS reports;
+// countries USGS does not name are shared out in the same proportion. Other items start with no neutral supply.
+function neutShare(id){const rows=WMD.filter(x=>x.node===id);if(!rows.length)return 0;let t=0;for(const r of rows){let A=0,N=0;for(const [c,v] of r.src){const g=wmGrp(c);if(g==='al')A+=v;else if(g==='oth')N+=v}t+=A+N>0?N/(A+N):0}return t/rows.length}
+function neutNames(id){const m={};for(const r of WMD.filter(x=>x.node===id))for(const [c,v] of r.src)if(wmGrp(c)==='oth')m[c]=(m[c]||0)+v;return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join(', ')}
+const NEUT_MIRROR=false; // test switch: neutral supply follows every allied modifier, to prove the split alone changes nothing
+const TS_NODES=['gallium','germanium','antimony']; // banned outright in December 2024; what still arrives comes through third countries
+const neutTop=id=>neutNames(id).split(', ')[0]||'';
+// a material you buy from neutral countries (at least 5% of what your plants use), picked in proportion to how much
+function nzPick(test){const c=ORDER.map(id=>[id,nodeSupply(id).neut/Math.max(S.nodes[id].scale,1e-9)]).filter(x=>x[1]>=.05);if(test)return c.length>0;if(!c.length)return null;
+  let r=rand()*c.reduce((a,x)=>a+x[1],0);for(const x of c){r-=x[1];if(r<=0)return x[0]}return c[0][0]}
 function nodeSupply(id){
   const s=S.nodes[id],c=NO_PRC?0:cutOf(id),mob=MOB[S.mob];
   const nm=tm('node',id);
@@ -2043,11 +2081,12 @@ function nodeSupply(id){
   let allyMult=tm('ally',id);if(id==='shipyard'&&carveOn('cvJones'))allyMult*=1;
   let allyAmt=s.ally.amt+(id==='shipyard'&&carveOn('cvJones')?s.scale*.25:0);
   const bar=icBars(id),allyRaw=allyAmt*allyMult,ally=allyRaw*(1-s.ally.adv*(bar?1:1-c)),allyPrc=bar?0:allyRaw*s.ally.adv*c;
+  const neutRaw=s.neut.amt*tm('neut',id)*(NEUT_MIRROR?allyMult:1),neut=neutRaw*(1-s.neut.adv*(bar?1:1-c)),neutPrc=bar?0:neutRaw*s.neut.adv*c;
   const prcRaw=s.prc.amt*tm('prc',id),prc=prcRaw*c;
   let spot=0;for(const x of S.spot)if(x.id===id)spot+=x.amt;
   const div=S.prio[id]?(ND[id].civ||0)*s.scale*.4:0;
-  const ext=ally+prc+spot+div;
-  return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,prc,spot,div,ext,prcExtFrac:ext>0?(prc+allyPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(prcRaw-prc),prcRaw,allyRaw};
+  const ext=ally+neut+prc+spot+div;
+  return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,neut,prc,spot,div,ext,prcExtFrac:ext>0?(prc+allyPrc+neutPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(neutRaw-neut)+(prcRaw-prc),prcRaw,allyRaw,neutRaw};
 }
 function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors','strike','a2a','fires'].includes(lid))?1.1:1)*(S.shifts?.[lid]?SHIFT_M:1)}
 function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)*ruleLine(lid)}
@@ -2308,8 +2347,9 @@ function nextElec(){for(let w=S.w;w<S.w+120;w++){const d=dateOf(w);if(d.getMonth
 /* ---------- projects ---------- */
 function obsChance(o,def){
   if(!facOk(o))return 0;
-  if(def.ally&&!o.al&&!o.alOnly)return 0;
-  if(!def.ally&&o.alOnly)return 0;
+  if(def.nt){if(!o.al&&!o.ntOnly)return 0}
+  else if(def.ally){if(o.ntOnly||(!o.al&&!o.alOnly))return 0}
+  else if(o.alOnly||o.ntOnly)return 0;
   if(o.tags&&!o.tags.some(t=>def.tags.includes(t)))return 0;
   if(o.not&&o.not.some(t=>def.tags.includes(t)))return 0;
   let c;
@@ -2544,7 +2584,7 @@ function startProject(id,ct,mode){
   S.projects.push(p);enterStage(p);
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
   if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2037':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
-    receipt({ic:def.ally?'🤝':pk?'🏛':'🏗',lab:def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:pk?'Track the request →':'Open the program →',
+    receipt({ic:def.nt?'🌐':def.ally?'🤝':pk?'🏛':'🏗',lab:def.nt?'Offtake signed with a neutral supplier':def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:pk?'Track the request →':'Open the program →',
       lines:[`Raises <b>${tgt}</b>.${pk?` ${rk} Political Capital spent. Congress votes on the FY${FYOF(p.pkg)} ${billN()} ~${fmtDate(pkgWhen())}; if it funds the plant, Congress pays the ${money(c)}, not your budget. It is likelier to cut it the less it holds back output.`:pv.isPlant?` The ${OFFICES[officeOf(def)].n} office runs the contract, permits and construction.`:''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far${pk?'':` · ${money(c)} committed`}.`]})}
 }
 const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x};
@@ -2590,9 +2630,9 @@ function complete(p){
   const tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
   S.done.push({def:p.def,nm:projName(p),w:S.w,weeks:S.w-p.started,g,plan,inh:p.inh,uid:p.uid,h:p.h,lost:p.lost,dur:p.dur,started:p.started,ct:p.ct,spent:p.spent});
   if(def.ally){
-    const s=S.nodes[def.t.node],na=s.ally.amt+g,adv=Math.min(1,(def.adv||0)+p.adv);
-    s.ally.adv=(s.ally.amt*s.ally.adv+g*adv)/Math.max(1e-9,na);s.ally.amt=na;
-    log(`🤝 Allied capacity online: ${projName(p)} (+${tgt}${adv>.2?`, ${pct(adv)} PRC upstream`:''}).`,'good');
+    const s=S.nodes[def.t.node],ch=def.nt?s.neut:s.ally,na=ch.amt+g,adv=Math.min(1,(def.adv||0)+p.adv);
+    ch.adv=(ch.amt*ch.adv+g*adv)/Math.max(1e-9,na);ch.amt=na;
+    log(`${def.nt?'🌐 Neutral supply online':'🤝 Allied capacity online'}: ${projName(p)} (+${tgt}${adv>.2?`, ${pct(adv)} PRC upstream`:''}).`,'good');
     toast(`🤝 <b>${projName(p)}</b> online`,'good',{a:'prog',u:p.uid});
   } else {
     const kind=def.t.node?'node':'line',target=def.t.node||def.t.line,kn=S.know[target];
@@ -2800,7 +2840,7 @@ function crisisOpts(id,place){const c=S.cres[id];
 // market: sold to civilian customers too · ally: defense-only, but allied producers make it · null: built to order by a few defense suppliers, nothing to buy
 const spotKind=id=>allyBar(id)?null:ND[id].civ>0&&ND[id].t<=3?'market':S.nodes[id].ally.amt/Math.max(S.nodes[id].scale,1e-9)>=.05?'ally':null;
 const SPOT_L={market:['💸','Spot purchase','Emergency spot purchase'],ally:['🤝','Allied emergency buy','Emergency buy from allied producers']};
-function spotCost(id){const u=nodeSupply(id);const cutFrac=(u.prcRaw+u.allyRaw)>0?u.lost/(u.prcRaw+u.allyRaw):0;return .12*(1+4*cutFrac)*(spotKind(id)==='ally'?1.5:1)}
+function spotCost(id){const u=nodeSupply(id);const cutFrac=(u.prcRaw+u.allyRaw+u.neutRaw)>0?u.lost/(u.prcRaw+u.allyRaw+u.neutRaw):0;return .12*(1+4*cutFrac)*(spotKind(id)==='ally'?1.5:1)}
 function spotNone(id){const b=allyBar(id);if(b)return `Barred by law: ${RD2[b.r].n} (${RD2[b.r].since}). Foreign supply for defense work needs ${b.fix}.`;return `No market to buy from: ${ND[id].n.toLowerCase()} ${/s$/.test(ND[id].n)?'are':'is'} built to order by a few defense suppliers, and no ally has spare output. Only new capacity helps.`}
 // what you just spent floats off its counter in the top bar for a moment
 function spent(k,v){(S._sp=S._sp||{})[k]={v,t0:performance.now()}}
@@ -2899,7 +2939,7 @@ function gameOver(why){
    Each unit's value is split equally among its inputs (all recipes use 1:1);
    externally sourced supply carries its value in from its source.
    ===================================================================== */
-const SRC={'S:dva':{n:'Domestic value added',c:'#3f7a34'},'S:dom':{n:'Domestic mining & primary',c:'#5f9e4a'},'S:ally':{n:'Allied imports',c:'#5f8fc4'},'S:prc':{n:'PRC / Russia imports',c:'#b0453a'},
+const SRC={'S:dva':{n:'Domestic value added',c:'#3f7a34'},'S:dom':{n:'Domestic mining & primary',c:'#5f9e4a'},'S:ally':{n:'Allied imports',c:'#5f8fc4'},'S:neut':{n:'Neutral imports',c:'#c2a04e'},'S:prc':{n:'PRC / Russia imports',c:'#b0453a'},
   'S:spot':{n:'Spot-market purchases',c:'#8a7cc0'},'S:div':{n:'Civilian diversion (DPA)',c:'#c08a3a'},'S:stock':{n:'Stockpile drawdown',c:'#b8a040'}};
 function lineUnitWeight(l,mode){if(mode==='out')return 1;let v=0;for(const t of S.theaters)v+=VAL[l][t]*F().alloc[t][l]*S.q[l];return LINES[l].k/52*v}
 function sankeyFlows(R,focus,mode,attr){const alpha=attr==='va'?.5:0;
@@ -2909,7 +2949,7 @@ function sankeyFlows(R,focus,mode,attr){const alpha=attr==='va'?.5:0;
     for(let k=ORDER.length-1;k>=0;k--){const id=ORDER[k],v=val[id];if(!v)continue;const p=P[id];
       const used=p.usedExt+p.usedDom+p.usedStock;let fe,fd,fs;
       if(used>1e-9){fe=p.usedExt/used;fd=p.usedDom/used;fs=p.usedStock/used}else{const t=p.ext+p.dom;fe=t?p.ext/t:0;fd=t?p.dom/t:1;fs=0}
-      const ext=p.ext||1e-9;add(E,'S:ally',id,v*fe*p.ally/ext);add(E,'S:prc',id,v*fe*p.prc/ext);add(E,'S:spot',id,v*fe*p.spot/ext);add(E,'S:div',id,v*fe*p.div/ext);add(E,'S:stock',id,v*fs);
+      const ext=p.ext||1e-9;add(E,'S:ally',id,v*fe*p.ally/ext);add(E,'S:neut',id,v*fe*p.neut/ext);add(E,'S:prc',id,v*fe*p.prc/ext);add(E,'S:spot',id,v*fe*p.spot/ext);add(E,'S:div',id,v*fe*p.div/ext);add(E,'S:stock',id,v*fs);
       const ins=ND[id].in;if(ins.length){add(E,'S:dva',id,v*fd*alpha);const r=v*fd*(1-alpha)/ins.length;for(const i of ins){add(E,i,id,r);val[i]=(val[i]||0)+r}}else{add(E,'S:dva',id,v*fd*alpha);add(E,'S:dom',id,v*fd*(1-alpha))}}};
   const seedLines=(E,lines)=>{const seed={};for(const l of lines){const o=out[l],w=o.n*lineUnitWeight(l,mode);add(E,'S:dva','L:'+l,w*alpha);const r=w*(1-alpha)/LINES[l].in.length;for(const i of LINES[l].in){add(E,i,'L:'+l,r);seed[i]=(seed[i]||0)+r}}return seed};
   let Efin;
@@ -3022,7 +3062,7 @@ function previewOf(def,ct,wOn0){
   // this week's output with the finished project at full rate
   const R0=S._R||production(false),g=projGain(def);let undo=()=>{};
   if(isPlant){const pl={kind:def.t.node?'node':'line',target:tgt,gain:g,yield:1,issue:null,full:true,adv:0};S.plants.push(pl);undo=()=>S.plants.splice(S.plants.indexOf(pl),1)}
-  else if(def.ally){const s=S.nodes[tgt];s.ally.amt+=g;undo=()=>{s.ally.amt-=g}}
+  else if(def.ally){const ch=def.nt?S.nodes[tgt].neut:S.nodes[tgt].ally;ch.amt+=g;undo=()=>{ch.amt-=g}}
   else if(def.kind==='mod'||def.kind==='power'){const s=S.nodes[tgt],b0=s.base;s.base=def.kind==='mod'?(b0>1e-6?b0*1.15:s.scale*.05):b0*1.05;undo=()=>{s.base=b0}}
   let R1;try{R1=production(false)}finally{undo()}
   const p0={},p1={};for(const c in LINES){p0[c]=R0.out[c].yr;p1[c]=R1.out[c].yr}
@@ -3181,11 +3221,11 @@ function bnBody(){
     return `<div class="bncard" id="bn-${id}"><div class="bnhd"><span class="bnrank">${ix+1}</span>${open&&nowRank[id]!==ix+1?`<span class="bnnow" data-tip="Rank by today’s cost">#${nowRank[id]} today</span>`:''}<span class="dic" style="font-size:20px">${n.ic}</span><div><b class="linkn" data-a="node" data-n="${id}" style="font:700 16px Georgia;color:inherit">${n.n}</b><div class="mini">Tier ${n.t} · <b class="st-t-${st}">${st.toUpperCase()}</b> · ${pct(Math.min(p.cover,9.99))} of need${n.ss?' · sole source':''}</div></div><span class="dsp"></span>
       <div class="bngain">${gains.length?gains.map(([c,g])=>`<span class="bnlink" data-a="rcgo" data-c="${c}" data-tip="${tipQ(`Fully supplying ${n.n} would add this much ${LINES[c].u} output a year. Click to see ${LINES[c].n} in the Race on Command.`)}"><b>+${fmtN(g)}</b>/yr ${LINES[c].n} →</span>`).join(''):'<span class="mini">Another input binds first</span>'}</div></div>
      <div class="bngrid"><div><h5>Why it's short</h5><div class="bigbar" style="display:flex">${CAUSES.filter(([k])=>r.causes[k]>1e-9).map(([k,nm,c])=>`<i style="position:static;flex:${r.causes[k]};background:${c}" title="${nm}: ${pct(r.causes[k]/Math.max(p.need,1e-9))} of need"></i>`).join('')}</div>
-       <div class="bnc mini">Supply now, as a share of need: domestic ${pct(Math.min(p.dom,p.need)/Math.max(p.need,1e-9))} · allied ${pct(p.ally/Math.max(p.need,1e-9))} · PRC ${pct(p.prc/Math.max(p.need,1e-9))} · know-how ${Math.round(S.know[id])}</div>
+       <div class="bnc mini">Supply now, as a share of need: domestic ${pct(Math.min(p.dom,p.need)/Math.max(p.need,1e-9))} · allied ${pct(p.ally/Math.max(p.need,1e-9))}${p.neut/Math.max(p.need,1e-9)>.005?` · neutral ${pct(p.neut/Math.max(p.need,1e-9))}`:''} · PRC ${pct(p.prc/Math.max(p.need,1e-9))} · know-how ${Math.round(S.know[id])}</div>
        ${CAUSES.filter(([k])=>r.causes[k]>1e-9).map(([k,nm,c])=>`<div class="bnc"><span class="sw" style="background:${c}"></span>${nm} <b>${pct(r.causes[k]/Math.max(p.need,1e-9))}</b>${k==='starved'&&p.starvedBy?` — <span class="linkn" data-a="bngo" data-n="${p.starvedBy}">${ND[p.starvedBy].n}</span>`:''}${k==='cut'&&cutDom?` — <span class="linkn" data-a="rbgo" data-d="${cutDom}">⚖ ${DOMAINS.find(D=>D.id===cutDom).n}</span>`:''}</div>`).join('')}</div>
       <div><h5>Fixes under way</h5>${bnCovLine(cov[id],yr)}${projs.length||ramping.length?projs.map(q=>{const [t,c]=progStatus(q,true);return `<div class="bnc"><span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t}</span> <span class="mini">· ~${yr(Math.round(S.w+remW(q)*sl))}</span></div>`}).join('')+ramping.map(pl=>`<div class="bnc"><span class="linkn" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</span> <span class="mini">ramping, ${pct(pl.yield)} of nameplate</span></div>`).join(''):''}
        ${way.length?`<h5 style="margin-top:6px">What's in the way</h5>${way.map(([l,w])=>{const D=LAYER_DOM(l);return `<div class="bnc"><span class="sw" style="background:${LAYERS[l].c}"></span>${LAYERS[l].n} <b>${w>=1?fmt(w,0)+' wk':'now'}</b>${D?` — <span class="linkn" data-a="rbgo" data-d="${D.id}">⚖ ${D.n}</span>`:''}</div>`}).join('')}`:''}</div>
-      <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(d.dur.reduce((a,b)=>a+b,0))}</span></div>`).join('')}
+      <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(d.dur.reduce((a,b)=>a+b,0))}</span></div>`).join('')}
        ${S.nodes[id].base>0?`<div class="bnc"><button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':'⏩ Supplier shifts'}</button> <span class="mini">${money(NSHIFT_C)}/yr · +15% in ~3 mo</span></div>`:''}
        ${spotKind(id)?`<div class="bnc"><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?'Buy more':SPOT_L[spotKind(id)][1]}</button> <span class="mini">${money(spotCost(id))} · 26 wk</span>${spotLine(id)}</div>`:`<div class="bnc mini">${spotNone(id)}</div>`}
        ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
@@ -3258,7 +3298,7 @@ function raisePanel(id,P){
   const card=d=>{const v=previewOf(d,ctDefault(d)),best=v.rows.filter(r=>r.d>LINES[r.c].k*.002).sort((a,b)=>b.d/LINES[b.c].k-a.d/LINES[a.c].k)[0],held=v.rows.find(r=>r.chain);
     const gain=isL?`+${fmtN(d.gain*LINES[l].k)} ${LINES[l].u}/yr`:leverEffect(d,P);
     const impact=best?`${isL?'':`<span class="okt">${LINES[best.c].n} +${fmtN(best.d)}/yr.</span> `}${gapS(best.h0,best.h1)}`:held?`<span class="redt">No end-item gain yet: ${held.chain.map(i=>ND[i].n).join(' ← ')} holds it back.</span>`:'<span class="mini">No end-item gain yet.</span>';
-    return `<div class="rcard"><div class="rk">${d.ally?'🤝 Allied supply':KIND_L[d.kind||'cap']}</div><b>${d.n}</b><div>${gain}</div><div class="mini">${impact}</div>
+    return `<div class="rcard"><div class="rk">${d.nt?'🌐 Neutral supply':d.ally?'🤝 Allied supply':KIND_L[d.kind||'cap']}</div><b>${d.n}</b><div>${gain}</div><div class="mini">${impact}</div>
       <div class="rmeta">${money(projCost(d))} · ${v.isPlant?'First output':'Online'} ${yr(v.wOn)}${v.isPlant&&v.wFull<END_W?`, full rate ${yr(v.wFull)}`:''}</div>
       ${d.req&&!passed(d.req)?`<span class="mini redt">🔒 Needs ${rname(RD[d.req])}</span>`:launchBtn(d,1)}</div>`};
   const quick=isL?`<button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'⏩ Stop extra shifts':`⏩ Fund extra shifts · ${money(SHIFT_C)}/yr`}</button>`
@@ -3375,19 +3415,19 @@ function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.le
 function leversFor(id){return PROJECTS.filter(d=>facOk(d)&&d.t.node===id)}
 const KIND_L={cap:'Build capacity',mod:'Strengthen existing plants',power:'Strengthen existing plants',test:'Qualification & testing',know:'Workforce',ally:'Allied supply'};
 function leverEffect(d,P){const id=d.t.node,p=P[id],s=S.nodes[id],den=Math.max(p.need,s.scale*.5);
-  if(d.ally)return `+${pct(projGain(d)/den)} of need from allies${d.adv>.05?`, ${pct(d.adv)} of it still Chinese upstream`:''}`;
+  if(d.ally)return `+${pct(projGain(d)/den)} of need from ${d.nt?'a neutral supplier':'allies'}${d.adv>.05?`, ${pct(d.adv)} of it still Chinese upstream`:''}`;
   if(!d.kind||d.kind==='cap')return `+${pct(projGain(d)/den)} of need from a new domestic plant, once ramped up`;
   return {mod:'+15% on existing domestic capacity, +5 know-how',know:'+20 know-how; labor obstacles −40%, plant issues −30%',power:'Immune to grid curtailment; power obstacles −70%, +5% capacity',test:'Qualification obstacles −50% for projects here, +5 know-how'}[d.kind]}
 function leverDone(d){const f=S.nflags[d.t.node]||{};return d.kind&&d.kind!=='cap'&&f[d.kind]}
 /* ---------- supply web: one item's inputs, where each comes from, and what the item feeds; a local slice of the Flows diagram ---------- */
-const SRC_C={dom:'#5f9e4a',ally:'#5f8fc4',spot:'#8a7cc0',prc:'#b0453a'},ST_C={ok:'#6a8f5a',idle:'#9a8f70',tight:'#c9a227',short:'#c0503f',cut:'#8a1f15'};
+const SRC_C={dom:'#5f9e4a',ally:'#5f8fc4',neut:'#c2a04e',spot:'#8a7cc0',prc:'#b0453a'},ST_C={ok:'#6a8f5a',idle:'#9a8f70',tight:'#c9a227',short:'#c0503f',cut:'#8a1f15'};
 const tipQ=s=>String(s).replace(/"/g,'&quot;');
-function srcSplit(id,P){const p=P[id],dom=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));return {dom,ally:p.ally,spot:p.spot+p.div,prc:p.prc,lost:p.lost,need:p.need,stock:S.stock[id]||0}}
-function srcTip(id,P){const p=P[id],s=srcSplit(id,P),d=Math.max(s.need,1e-9),src=S.nodes[id].ally.src;
-  return tipQ(`<b>${ND[id].n}</b><br>${s.need>1e-6?`Covers ${pct(Math.min(p.cover,9.99))} of demand`:'No demand now'}<br>US-made ${pct(s.dom/d)} · allied ${pct(s.ally/d)}${s.spot>0?` · spot ${pct(s.spot/d)}`:''} · PRC/Russia ${pct(s.prc/d)}${s.lost>.005?`<br>Cut off: ${pct(s.lost/d)}`:''}${src?`<br>Allied: ${src}`:''}`)}
+function srcSplit(id,P){const p=P[id],dom=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));return {dom,ally:p.ally,neut:p.neut,spot:p.spot+p.div,prc:p.prc,lost:p.lost,need:p.need,stock:S.stock[id]||0}}
+function srcTip(id,P){const p=P[id],s=srcSplit(id,P),d=Math.max(s.need,1e-9),src=S.nodes[id].ally.src,nsrc=S.nodes[id].neut.src;
+  return tipQ(`<b>${ND[id].n}</b><br>${s.need>1e-6?`Covers ${pct(Math.min(p.cover,9.99))} of demand`:'No demand now'}<br>US-made ${pct(s.dom/d)} · allied ${pct(s.ally/d)}${s.neut/d>.005?` · neutral ${pct(s.neut/d)}`:''}${s.spot>0?` · spot ${pct(s.spot/d)}`:''} · PRC/Russia ${pct(s.prc/d)}${s.lost>.005?`<br>Cut off: ${pct(s.lost/d)}`:''}${src?`<br>Allied: ${src}`:''}${nsrc&&s.neut/d>.005?`<br>Neutral: ${nsrc}`:''}`)}
 // a horizontal bar of where supply comes from, scaled so the need marker sits at 80% of the width
-function srcBar(id,P,x,y,w,h){const s=srcSplit(id,P),sc=w*.8/Math.max(s.need,1e-9),tot=s.dom+s.ally+s.spot+s.prc+s.lost,k=Math.min(sc,w/Math.max(tot,1e-9));let cx=x,o=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#e6dbbd" stroke="#cbbd95"/>`;
-  for(const [v,c] of [[s.dom,SRC_C.dom],[s.ally,SRC_C.ally],[s.spot,SRC_C.spot],[s.prc,SRC_C.prc]])if(v>0){o+=`<rect x="${cx.toFixed(1)}" y="${y}" width="${(v*k).toFixed(1)}" height="${h}" fill="${c}"/>`;cx+=v*k}
+function srcBar(id,P,x,y,w,h){const s=srcSplit(id,P),sc=w*.8/Math.max(s.need,1e-9),tot=s.dom+s.ally+s.neut+s.spot+s.prc+s.lost,k=Math.min(sc,w/Math.max(tot,1e-9));let cx=x,o=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#e6dbbd" stroke="#cbbd95"/>`;
+  for(const [v,c] of [[s.dom,SRC_C.dom],[s.ally,SRC_C.ally],[s.neut,SRC_C.neut],[s.spot,SRC_C.spot],[s.prc,SRC_C.prc]])if(v>0){o+=`<rect x="${cx.toFixed(1)}" y="${y}" width="${(v*k).toFixed(1)}" height="${h}" fill="${c}"/>`;cx+=v*k}
   if(s.lost>0)o+=`<rect x="${cx.toFixed(1)}" y="${y}" width="${(s.lost*k).toFixed(1)}" height="${h}" fill="url(#swh)"/>`;
   if(s.need>1e-6)o+=`<line x1="${(x+s.need*k).toFixed(1)}" x2="${(x+s.need*k).toFixed(1)}" y1="${y-3}" y2="${y+h+3}" stroke="#2b241a" stroke-width="2"/>`;return o}
 // what limits an item this one feeds: this item itself, or something else
@@ -3409,8 +3449,8 @@ function supplyWeb(id,P){
   // the item itself
   if(isL){const r=o.n/Math.max(o.cap,1e-9),iy=cy0+ch*(1-r);g+=`<rect x="${CX}" y="${cy0}" width="${CW}" height="${ch}" fill="#f3ecd8" stroke="#8a8672" stroke-dasharray="4 3"/><rect x="${CX}" y="${iy.toFixed(1)}" width="${CW}" height="${(ch*r).toFixed(1)}" fill="#5f8fc4"/>`;
     if(r<.995)g+=`<g data-tip="${tipQ(`<b>Idle capacity: ${fmtN(o.capYr-o.yr)}/yr</b><br>The line could build this much more${o.bott?`, but ${ND[o.bott].n} is short`:''}.`)}"><rect x="${CX}" y="${cy0}" width="${CW}" height="${Math.max(2,ch*(1-r)).toFixed(1)}" fill="transparent"/></g><text x="${CX+CW+6}" y="${(cy0+Math.max(9,ch*(1-r)/2+4)).toFixed(1)}" class="swm">idle ${fmtN(o.capYr-o.yr)}/yr</text>`}
-  else{const s=srcSplit(id,P),tot=Math.max(s.need,s.dom+s.ally+s.spot+s.prc+s.lost,1e-9),bh=Math.min(ch,Math.max(34,tin+12)),by0=cy0+ch/2-bh/2,by1=by0+bh,cv=s.need>1e-6?(s.dom+s.ally+s.spot+s.prc)/s.need:1;let yy=by1;g+=`<rect x="${CX}" y="${by0.toFixed(1)}" width="${CW}" height="${bh.toFixed(1)}" fill="#e6dbbd" stroke="#cbbd95"/>`;
-    for(const [v,c] of [[s.dom,SRC_C.dom],[s.ally,SRC_C.ally],[s.spot,SRC_C.spot],[s.prc,SRC_C.prc],[s.lost,'url(#swh)']])if(v>0){const hh=v/tot*bh;yy-=hh;g+=`<rect x="${CX}" y="${yy.toFixed(1)}" width="${CW}" height="${hh.toFixed(1)}" fill="${c}"/>`}
+  else{const s=srcSplit(id,P),tot=Math.max(s.need,s.dom+s.ally+s.neut+s.spot+s.prc+s.lost,1e-9),bh=Math.min(ch,Math.max(34,tin+12)),by0=cy0+ch/2-bh/2,by1=by0+bh,cv=s.need>1e-6?(s.dom+s.ally+s.neut+s.spot+s.prc)/s.need:1;let yy=by1;g+=`<rect x="${CX}" y="${by0.toFixed(1)}" width="${CW}" height="${bh.toFixed(1)}" fill="#e6dbbd" stroke="#cbbd95"/>`;
+    for(const [v,c] of [[s.dom,SRC_C.dom],[s.ally,SRC_C.ally],[s.neut,SRC_C.neut],[s.spot,SRC_C.spot],[s.prc,SRC_C.prc],[s.lost,'url(#swh)']])if(v>0){const hh=v/tot*bh;yy-=hh;g+=`<rect x="${CX}" y="${yy.toFixed(1)}" width="${CW}" height="${hh.toFixed(1)}" fill="${c}"/>`}
     if(s.need>1e-6){const ny=by1-s.need/tot*bh;g+=`<line x1="${CX-4}" x2="${CX+CW+4}" y1="${ny.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#2b241a" stroke-width="2"/>`;g+=`<text x="${CX+CW/2}" y="${(by1+14).toFixed(1)}" text-anchor="middle" class="swm">supply ${pct(Math.min(cv,9.99))} of demand</text>`}}
   g+=`<text x="${CX+CW/2}" y="${top-10}" text-anchor="middle" class="swt">${isL?LINES[l].n:ND[id].n}</text>`;
   g+=`<g data-tip="${tipQ(isL?`<b>${LINES[l].n}</b><br>Output ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity`:srcTip(id,P))}"><rect x="${CX}" y="${cy0}" width="${CW}" height="${ch}" fill="transparent"/></g>`;
@@ -3423,7 +3463,7 @@ function supplyWeb(id,P){
     cons.forEach((c,k)=>{const y=rowY(k,cons.length),t=3+15*dem(c)/tot,ty=sy2+t/2;sy2+=t+4;const isLn=c.startsWith('L:'),nm=isLn?LINES[c.slice(2)].n:ND[c].n,st=isLn?(S._R.out[c.slice(2)].n<S._R.out[c.slice(2)].cap-1e-6?'tight':'ok'):nodeStatus(P[c]);
       g+=`<path d="M${RX},${ty.toFixed(1)} C${RX+90},${ty.toFixed(1)} ${RX+90},${y+16} ${RX+170},${y+16}" fill="none" stroke="#8a7440" stroke-opacity=".4" stroke-width="${t.toFixed(1)}"/>`;
       g+=`<g class="swr" data-a="node" data-n="${c}" data-tip="${tipQ(`<b>${nm}</b><br>Takes ${pct(dem(c)/tot)} of demand for ${ND[id].n}`)}"><rect x="${RX+172}" y="${y+2}" width="${W-RX-172}" height="${RH-6}" fill="transparent"/><circle cx="${RX+180}" cy="${y+16}" r="4" fill="${ST_C[st]}"/><text x="${RX+190}" y="${y+(feedWhy(c,id)?15:20)}" class="swn">${nm}${isLn?' 🏭':''}</text>${(()=>{const fw=feedWhy(c,id);return fw?`<text x="${RX+190}" y="${y+29}" class="swm ${fw.me?'swme':'swsib'}">${fw.t}</text>`:''})()}<text x="${W-2}" y="${y+20}" text-anchor="end" class="swp">${pct(dem(c)/tot)}</text></g>`})}
-  const leg=[['US-made',SRC_C.dom],['Allied',SRC_C.ally],['Spot / diverted',SRC_C.spot],['PRC / Russia',SRC_C.prc]].map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join('')+`<span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span>`;
+  const leg=[['US-made',SRC_C.dom],['Allied',SRC_C.ally],['Neutral',SRC_C.neut],['Spot / diverted',SRC_C.spot],['PRC / Russia',SRC_C.prc]].map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join('')+`<span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span>`;
   return `<div class="swhd"><span class="linkn" data-a="flow" data-f="${id}">⇶ Open in Flows</span></div>
     <svg class="sweb" viewBox="0 0 ${W} ${H}" width="100%"><defs><pattern id="swh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#e6dbbd"/><line x1="0" y1="0" x2="0" y2="5" stroke="#b0453a" stroke-width="2.5"/></pattern><pattern id="swi" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#d8ccaa"/><line x1="0" y1="0" x2="0" y2="6" stroke="#8a8672" stroke-width="2"/></pattern></defs>${g}</svg>
     <div class="sleg swleg">${leg}${isL?'<span><i style="background:#5f8fc4"></i>Line output</span><span><i style="background:#f3ecd8;outline:1px dashed #8a8672;outline-offset:-1px"></i>Idle capacity</span>':''}<span class="mini">Band width: how well each input is covered. Hover for sources.</span></div>`}
@@ -3526,11 +3566,11 @@ function wmSVG(d,dsh=0){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1
 function wmBody(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
   if(!WM)wmLoad();
   const shOf=(x,k)=>x.src.filter(y=>wmGrp(y[0])===k).reduce((a,y)=>a+y[1],0);
-  const segs=[['adv','China and Russia',shOf(d,'adv'),WM_COL.adv],['al','Allies and close partners',shOf(d,'al'),WM_COL.al],['oth','Other named countries',shOf(d,'oth'),WM_COL.oth],['un','Not named by USGS',d.oth,'#cfc5ad']];
+  const segs=[['adv','China and Russia',shOf(d,'adv'),WM_COL.adv],['al','Allies',shOf(d,'al'),WM_COL.al],['oth','Neutral countries',shOf(d,'oth'),WM_COL.oth],['un','Not named by USGS',d.oth,'#cfc5ad']];
   const bar=`<div class="wmbar">${segs.filter(x=>x[2]>0).map(([k,n,v,c])=>`<i style="width:${v}%;background:${c}" data-tip="<b>${n}</b><br>${v}% of US imports"></i>`).join('')}</div>
     <div class="wmleg">${segs.map(([k,n,v,c])=>`<span><i style="background:${c}"></i>${n} <b>${v}%</b></span>`).join('')}</div>`;
   const list=WMD.map(x=>{const a=shOf(x,'adv');return `<button class="wmi ${x.k===d.k?'on':''}" data-a="map" data-m="${x.k}"><span class="wmn">${x.n.replace(' (terbium)','')}</span><span class="wmc" data-tip="Share of US imports from China and Russia"><i style="width:${a}%"></i></span><span class="wmp">${a?a+'%':'—'}</span></button>`}).join('');
-  const sup=p?(()=>{const mk=p.spot+p.div,st=p.usedStock||0,n=Math.max(p.dom+p.ally+p.prc+mk+st,1e-9);return {n,seg:[['US plants',p.dom/n,'#2d5f99'],['Allied',p.ally/n,'#6f9bc8'],['Chinese',p.prc/n,WM_COL.adv],['Spot buys and diverted civilian supply',mk/n,'#8c7442'],['Stockpile drawdown',st/n,'#b8a040']]}})():null,dsh=sup?sup.seg[0][1]:0;
+  const sup=p?(()=>{const mk=p.spot+p.div,st=p.usedStock||0,n=Math.max(p.dom+p.ally+p.neut+p.prc+mk+st,1e-9);return {n,seg:[['US plants',p.dom/n,'#3f7a34'],['Allied',p.ally/n,WM_COL.al],['Neutral',p.neut/n,WM_COL.oth],['Chinese',p.prc/n,WM_COL.adv],['Spot buys and diverted civilian supply',mk/n,'#8a7cc0'],['Stockpile drawdown',st/n,'#b8a040']]}})():null,dsh=sup?sup.seg[0][1]:0;
   const acts=p?(()=>{const yr=w=>dateOf(w).getFullYear(),r=[];
     for(const pl of S.plants.filter(x=>x.target===d.node))r.push(`🏭 <b>${pl.nm}</b> · ${pl.full?'at full rate':'ramping up'}`);
     for(const q of S.projects.filter(x=>PD[x.def].t.node===d.node))r.push(`${PD[q.def].ally?'🤝':q.pkg?'🏛':'🏗'} <b class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</b> · ${q.pkg?`requested in the FY${FYOF(q.pkg)} NDAA`:`online ~${yr(S.w+remW(q))}`}`);
@@ -3548,7 +3588,7 @@ function wmBody(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||productio
   return `<div class="billv wmv">${cnPanel()}${top}
     <div class="wmwrap"><div class="wmlist"><div class="wmlh"><span>Raw material</span><span>From China / Russia</span></div>${list}</div><div class="wmmain">
       ${body}
-      <div class="wmsrc"><span class="wmk">Source</span>USGS, import sources 2021–24: “${d.ln}”${d.note?`<div class="wmnote">${d.note}</div>`:''}</div>${gm}
+      <div class="wmsrc"><span class="wmk">Source</span>USGS, import sources 2021–24: “${d.ln}”${d.note?`<div class="wmnote">${d.note}</div>`:''}<div class="wmnote"><b>Allies:</b> NATO members, Japan, South Korea, Australia and Israel. <b>Neutral:</b> every other country except China and Russia. Neutral suppliers sell to both sides and can restrict exports for their own reasons.</div></div>${gm}
       <p class="wmfoot">Shares of US imports by the country that shipped them, not of world production; material refined in one country may have been mined in another. Line width shows the share; lines mark origins, not shipping routes. The arrows are the USGS record; the blue circle on the United States and the panel below are your supply in the game, and change with what you do.${cut>.01?' Dashed: supply cut by export controls in the game now.':''} Allies: NATO, Japan, South Korea, Australia and Israel. Map: Natural Earth.</p>
     </div></div></div>`}
 function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
@@ -3563,7 +3603,8 @@ function makersHTML(id,P){const isL=id.startsWith('L:'),l=isL?id.slice(2):null,y
   for(const q of prs){const [t,cl]=progStatus(q,true);up.push(`<tr><td><b>${PD[q.def].ally?'🤝':'🏗'} <span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span></b><div class="mini">${PD[q.def].ally?'Allied deal you funded':needsContract(PD[q.def])?'New plant':'Upgrade to existing plants'}</div></td><td>+${share(projGain(PD[q.def]))} <span class="mini">when done</span></td><td><span class="${cl}">${t}</span><div class="mini">Output expected ~${yr(Math.round(S.w+remW(q)*sl))}</div></td></tr>`)}
   for(const x of ald)rows.push(`<tr><td><b>🤝 <span class="linkn" data-a="prog" data-u="${x.uid}">${x.nm}</span></b><div class="mini">Allied deal you funded · online ${yr(x.w)}</div></td><td>${share(x.g)}</td><td><span class="okt">Supplying</span> <span class="mini">(part of the allied row below)</span></td></tr>`);
   if(isL){const al=allyOut(l);if(al>0)rows.push(`<tr><td><b>🤝 ${AL().n}</b><div class="mini">Their own lines, counted toward sufficiency</div></td><td>${fmtN(al)}/yr</td><td>${allyDivert(l)>.005?`<span class="redt">−${pct(allyDivert(l))} from your purchases</span>`:'<span class="okt">Running</span>'}</td></tr>`)}
-  else{if(p.ally>1e-9)rows.push(`<tr><td><b>🤝 Allied suppliers</b><div class="mini">${S.nodes[id].ally.src||'Allied producers'}</div></td><td>${share(p.ally)}</td><td>${allyBar(id)?'<span class="redt">⚖ barred by law for defense work</span>':'<span class="okt">Supplying</span>'}</td></tr>`);
+  else{if(p.neut>1e-9)rows.push(`<tr><td><b>🌐 Neutral suppliers</b><div class="mini">${S.nodes[id].neut.src||'Countries outside the alliances'}</div></td><td>${share(p.neut)}</td><td><span class="okt">Supplying</span> <span class="mini">· sells to both sides</span></td></tr>`);
+    if(p.ally>1e-9)rows.push(`<tr><td><b>🤝 Allied suppliers</b><div class="mini">${S.nodes[id].ally.src||'Allied producers'}</div></td><td>${share(p.ally)}</td><td>${allyBar(id)?'<span class="redt">⚖ barred by law for defense work</span>':'<span class="okt">Supplying</span>'}</td></tr>`);
     if(p.prc+p.lost>1e-9)rows.push(`<tr><td><b>${FLAGS.cn} China / ${FLAGS.ru} Russia</b></td><td>${share(p.prc)}</td><td>${p.lost>.005?`<span class="redt">✂ ${share(p.lost)} cut off</span>`:'Supplying'}</td></tr>`)}
   const grp=(t,n)=>`<tr class="mkg"><td colspan="3">${t} <span>${n}</span></td></tr>`;
   return `<div class="dsec" id="makers"><h4>🏭 Who makes it</h4><table class="ctable mkt"><tr><th>Producer</th><th>${isL?'Output':'Supply'}</th><th>Status</th></tr>${grp('Existing',`${rows.length} source${rows.length===1?'':'s'}${pls.length+ald.length?` · ${pls.length+ald.length} you built or funded`:''}`)}${rows.join('')}${grp('Upcoming',up.length?`${up.length} under construction`:'nothing ordered')}${up.length?up.join(''):`<tr><td colspan="3" class="mini">No new capacity on order. The options above start some.</td></tr>`}</table></div>`}
@@ -3593,7 +3634,7 @@ function dossierHTML(id,P){
     const n=ND[id],p=P[id],s=S.nodes[id],st=nodeStatus(p),I=INFO[id]||{},who=I.who?(I.who[S.fac]||I.who.US||I.who):'';
     const ends=endItemsOf(id);const domUse=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));const den=Math.max(p.need,1e-9);
     const tot=Math.max(p.need,p.ext+p.dom+p.lost,1e-9)*1.05,W=x=>Math.min(100,x/tot*100);
-    const levs=leversFor(id);const groups={};for(const d of levs){const g=d.ally?'Allied supply':KIND_L[d.kind||'cap'];(groups[g]=groups[g]||[]).push(d)}
+    const levs=leversFor(id);const groups={};for(const d of levs){const g=d.nt?'Neutral supply':d.ally?'Allied supply':KIND_L[d.kind||'cap'];(groups[g]=groups[g]||[]).push(d)}
     const act=S.projects.filter(q=>PD[q.def].t.node===id),plants=S.plants.filter(q=>q.target===id),fl=S.nflags[id]||{};
     const sameTier=NODES.filter(x=>x.t===n.t),ix=sameTier.findIndex(x=>x.id===id);
     main=`${crumb()}<div class="dhead"><span class="dic">${n.ic}</span><div><h3>${n.n}</h3><div class="sub2">Tier ${n.t} · ${TIERS[n.t]} · <b class="st-t-${st}">${st.toUpperCase()}</b> · cover ${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'} · PRC exposure ${pct(p.expo)} · know-how ${Math.round(S.know[id])}</div></div><span class="dsp"></span>${back}
@@ -3601,14 +3642,15 @@ function dossierHTML(id,P){
      ${nodeLinks(id)}${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>${n.in.length?'Made from, and what it feeds':'Where it goes'}</h4>${supplyWeb(id,P)}</div><div class="dsec"><h4>Why it matters</h4><p>${n.d}</p>${I.why?`<p>${I.why}</p>`:''}${n.ss?`<p class="warnp">⚠ ${n.ss}.</p>`:''}
       <div class="kv"><b>Feeds</b><span class="chipsP">${CONSUMERS[id].map(c=>c.startsWith('L:')?`<span class="npill np-ok" data-a="node" data-n="${c}">${LINES[c.slice(2)].n}</span>`:pill(c,P)).join('')}</span><b>Ends up in</b><span>${ends.map(l=>`<span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span>`).join(' · ')}</span></div></div>
      <div class="dsec"><h4>Where it comes from</h4>${I.world?`<p><b>World:</b> ${I.world}</p>`:''}${who?`<p><b>${S.fac==='US'?'United States':'Europe'}:</b> ${who}</p>`:''}
-      <div class="bigbar"><i style="left:0;width:${W(domUse)}%;background:#5f9e4a"></i><i style="left:${W(domUse)}%;width:${W(p.ally)}%;background:#5f8fc4"></i><i style="left:${W(domUse+p.ally)}%;width:${W(p.spot+p.div)}%;background:#8a7cc0"></i><i style="left:${W(domUse+p.ally+p.spot+p.div)}%;width:${W(p.prc)}%;background:#b0453a"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
+      <div class="bigbar"><i style="left:0;width:${W(domUse)}%;background:#5f9e4a"></i><i style="left:${W(domUse)}%;width:${W(p.ally)}%;background:#5f8fc4"></i><i style="left:${W(domUse+p.ally)}%;width:${W(p.neut)}%;background:#c2a04e"></i><i style="left:${W(domUse+p.ally+p.neut)}%;width:${W(p.spot+p.div)}%;background:#8a7cc0"></i><i style="left:${W(domUse+p.ally+p.neut+p.spot+p.div)}%;width:${W(p.prc)}%;background:#b0453a"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
       <div class="kv"><b>Domestic</b><span>${pct(domUse/den)} of need (capacity ${pct(p.dom/den)}${p.ramp>.01?', plants still ramping':''})${p.starvedBy?` — <span class="redt">starved by <span class="linkn" data-a="node" data-n="${p.starvedBy}">${ND[p.starvedBy].n}</span></span>`:''}${p.domPrcFrac>.01?` · <span class="redt">${pct(p.domPrcFrac)} on PRC precursors</span>`:''}</span>
        <b>Allied</b><span>${pct(p.ally/den)} of need${s.ally.adv>.02?` · <span class="redt">${pct(s.ally.adv)} PRC content upstream</span>`:''}${s.ally.src?' · '+s.ally.src:''}</span>
+       ${p.neut/den>.005?`<b>Neutral</b><span>${pct(p.neut/den)} of need${s.neut.src?' · '+s.neut.src:''} · sells to both sides${s.neut.adv>.02?` · <span class="redt">${pct(s.neut.adv)} PRC content upstream</span>`:''}</span>`:''}
        <b>PRC / Russia</b><span>${pct(p.prc/den)} of need${p.lost>.01?` · <span class="redt">${pct(p.lost/den)} currently cut off</span>`:''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?' · <b>DFARS-restricted</b>':''}</span>
        ${p.spot+p.div>0?`<b>Spot / diverted</b><span>${pct((p.spot+p.div)/den)} of need</span>`:''}${S.stock[id]>0?`<b>Stockpile</b><span>${fmt(S.stock[id]/Math.max(s.scale,1e-9),1)} weeks of base demand</span>`:''}</div></div>
      <div class="dsec"><h4>How it's made</h4><div class="steps">${n.in.length?`<div class="step in">${n.in.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join('<br>')}</div><span class="sarr">→</span>`:''}${(I.chain||[]).map(x=>`<div class="step">${x}</div>`).join('<span class="sarr">→</span>')}<span class="sarr">→</span><div class="step out">${n.n}</div></div></div>
      <!--AO--><div class="dsec" id="allopts"><h4>All ways to increase supply</h4>${constraintStrip(Math.min(spotKind(id)?spotCost(id):Infinity,...levs.filter(d=>!d.req||passed(d.req)).map(projCost)))}
-      <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${Object.entries(groups).map(([g,ds])=>`<tr class="grp"><td colspan="5">${g}</td></tr>${ds.map(d=>{const done=leverDone(d),running=S.projects.some(q=>q.def===d.id);return `<tr class="${d.ally?'al':''}"><td><b>${d.ally?'🤝 ':''}${d.n}</b><div class="mini">${d.d===n.d?'':d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>${leverEffect(d,P)}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${done?'<span class="okt">✓ done</span>':running?`<span class="linkn mini" data-a="prog" data-u="${S.projects.find(q=>q.def===d.id).uid}">Under way →</span>`:d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`}).join('')}`).join('')}
+      <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${Object.entries(groups).map(([g,ds])=>`<tr class="grp"><td colspan="5">${g}</td></tr>${ds.map(d=>{const done=leverDone(d),running=S.projects.some(q=>q.def===d.id);return `<tr class="${d.ally?'al':''}"><td><b>${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</b><div class="mini">${d.d===n.d?'':d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>${leverEffect(d,P)}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${done?'<span class="okt">✓ done</span>':running?`<span class="linkn mini" data-a="prog" data-u="${S.projects.find(q=>q.def===d.id).uid}">Under way →</span>`:d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`}).join('')}`).join('')}
       <tr class="grp"><td colspan="5">Short-term measures</td></tr>
        <tr><td><b>⏩ Overtime and extra shifts at suppliers</b><div class="mini">Weekend overtime and another shift at existing US plants, as the Scranton shell plant did on its way from 24,000 to 36,000 rounds a month. About three months to hire and train. Shifts only go so far. Worn equipment breaks, tired crews get hurt${ENERGETIC.includes(id)?', energetics plants risk fires':''}, and each costs weeks of output.</div></td><td>${S.nodes[id].base>0?`+15% of existing domestic capacity${nshiftOn(id)?` · <span class="okt">on, ${pct(Math.min(1,(S.w-S.nshift[id].since)/NSHIFT_RAMP))} staffed</span> · <span class="amb">~${pct(1-Math.pow(1-shiftHaz(S.nshift[id].since),52))} odds of an outage a year</span>`:''}`:'<span class="mini">No US plant to run longer</span>'}</td><td>${money(NSHIFT_C)}/yr</td><td>~3 mo</td><td><button class="pbtn sm" data-a="nshift" data-n="${id}" ${S.nodes[id].base>0||nshiftOn(id)?'':'disabled'}>${nshiftOn(id)?'Stop':'Fund'}</button></td></tr>
        ${spotKind(id)==='market'?`<tr><td><b>💸 Emergency spot purchase</b><div class="mini">Bought on the commercial market. Non-Chinese prices run several times higher when PRC supply is cut (game estimate: 1.6–7×).</div></td><td>+25% of normal supply for 26 weeks${spotLine(id)}</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${spotAct(id).length?'Buy more':'Buy'}</button></td></tr>`
@@ -3876,6 +3918,12 @@ const CITES=[
  {id:'s1709',g:'Import controls',t:'DJI urges federal agencies to initiate NDAA-mandated security review ahead of December deadline',pub:'DroneLife',d:'Dec 2025',url:'https://dronelife.com/2025/12/04/dji-urges-federal-agencies-to-initiate-ndaa-mandated-security-review-ahead-of-december-deadline/',use:'FY2025 NDAA §1709: DJI and Autel go on the Covered List by default unless audited by 23 Dec 2025.'},
  {id:'flban',g:'Import controls',t:'Florida’s ban on Chinese drone tech comes with a $25M price tag',pub:'GovTech',d:'2023',url:'https://www.govtech.com/public-safety/floridas-ban-on-chinese-drone-tech-comes-with-a-25m-price-tag',use:'State and local agencies grounded Chinese drones; $25M to replace fleets that cost about $200M; US drones about twice the price.'},
  {id:'djishare',g:'Import controls',t:'DJI loses big share of commercial drone market, DroneAnalyst report finds',pub:'UAV Coach',d:'2021',url:'https://uavcoach.com/dji-commercial-market-drop/',use:'DJI about 54% of US commercial drones in 2021 (69% in 2020) and about 94% of consumer drones.'},
+ {id:'idnickel',g:'Neutral suppliers',t:'Prohibition of the export of nickel ore',pub:'International Energy Agency (policy database)',d:'2020',url:'https://www.iea.org/policies/16084-prohibition-of-the-export-of-nickel-ore',use:'Indonesia banned nickel ore exports from 1 January 2020, two years ahead of schedule.'},
+ {id:'drccobalt',g:'Neutral suppliers',t:'DRC ARECOMS Decision No. 004/2025 – Cobalt Quota System',pub:'International Energy Agency (policy database)',d:'Oct 2025',url:'https://www.iea.org/policies/29138-drc-arecoms-decision-no-0042025-cobalt-quota-system',use:'Cobalt exports suspended from 22 February 2025; quotas from 16 October 2025.'},
+ {id:'tranship',g:'Neutral suppliers',t:'How US buyers of critical minerals bypass China’s export ban',pub:'Reuters via TimesLIVE',d:'Jul 2025',url:'https://www.timeslive.co.za/news/world/2025-07-09-how-us-buyers-of-critical-minerals-bypass-chinas-export-ban',use:'3,834 t of antimony oxides from Thailand and Mexico, December to April; Beijing’s May 2025 campaign against transshipment.'},
+ {id:'balama',g:'Neutral suppliers',t:'Syrah Resources declares force majeure for graphite mine in Mozambique',pub:'Bloomberg via Mining.com',d:'Dec 2024',url:'https://mining.com/web/syrah-resources-declares-force-majeure-for-its-graphite-mine-in-mozambique',use:'Protests halted Balama and triggered defaults on Syrah’s US development-finance and Energy Department loans.'},
+ {id:'chileli',g:'Neutral suppliers',t:'Chile announces National Lithium Strategy',pub:'MercoPress',d:'Apr 2023',url:'https://en.mercopress.com/2023/04/21/chile-announces-national-lithium-strategy',use:'State majority control of strategic lithium deposits; Codelco to negotiate with SQM and Albemarle.'},
+ {id:'chemaf',g:'Neutral suppliers',t:'Trafigura-backed Congo cobalt miner scraps sale to Chinese firm',pub:'Bloomberg via Mining.com',d:'Mar 2025',url:'https://www.mining.com/web/trafigura-backed-congo-cobalt-miner-scraps-sale-to-chinese-firm/',use:'Chemaf’s sale to Norinco’s Norin Mining lapsed after Gécamines objected and US officials lobbied against it.'},
  {id:'dicas',g:'Allies & sabotage',t:'The 3rd Defense Industrial Cooperation, Acquisition, and Sustainment (DICAS) Forum',pub:'Japan Ministry of Defense',d:'Dec 2024',url:'https://www.mod.go.jp/en/article/2024/12/a0445c34b97e53baf2a2b704366e0613cfbeb056.html',use:'Action plans approved for AMRAAM and PAC-3 MSE co-production, following the July 2024 2+2.'},
  {id:'jpxfer',g:'Allies & sabotage',t:'Japan to ease arms export controls allowing PAC-3 sale to US',pub:'AFP via The Defense Post',d:'Dec 2023',url:'https://thedefensepost.com/2023/12/22/japan-ease-arms-export',use:'Licence-built Patriot missiles may be sent back to the United States.'},
  {id:'krloan',g:'Allies & sabotage',t:'South Korea to lend 500,000 rounds of artillery shells to US, report says',pub:'Stars and Stripes',d:'Apr 2023',url:'https://www.stripes.com/theaters/asia_pacific/2023-04-12/south-korea-ammo-loan-ukraine-9778630.html',use:'About 500,000 155mm shells lent (Yonhap: at least 330,000), after US purchases of 100,000.'},
@@ -4153,19 +4201,19 @@ let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
 function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
-  const foreign=id=>{const x=srcSplit(id,P),t=x.dom+x.ally+x.spot+x.prc;return t>1e-9?(x.ally+x.spot+x.prc)/t:0};
+  const foreign=id=>{const x=srcSplit(id,P),t=x.dom+x.ally+x.neut+x.spot+x.prc;return t>1e-9?(x.ally+x.neut+x.spot+x.prc)/t:0};
   const keep=id=>f==='all'||(f==='short'&&P[id].need>1e-6&&P[id].cover<.999)||(f==='foreign'&&foreign(id)>.5)||(f==='barred'&&!!allyBar(id));
   const cell=(v,d,c)=>`<td class="mdv" style="color:${v/d>.005?c:'#b8ad8a'}">${v/d>.005?pct(v/d):'—'}</td>`;
-  const row=id=>{const x0=srcSplit(id,P),p0=P[id],x={...x0,dom:x0.need>1e-6?x0.dom:p0.dom},d=Math.max(x.dom+x.ally+x.spot+x.prc+x.lost,1e-9),tot=Math.max(x.need,x.dom+x.ally+x.spot+x.prc+x.lost,1e-9),W=v=>(v/tot*100).toFixed(1),b=allyBar(id),src=S.nodes[id].ally.src;let l=0;
+  const row=id=>{const x0=srcSplit(id,P),p0=P[id],x={...x0,dom:x0.need>1e-6?x0.dom:p0.dom},d=Math.max(x.dom+x.ally+x.neut+x.spot+x.prc+x.lost,1e-9),tot=Math.max(x.need,x.dom+x.ally+x.neut+x.spot+x.prc+x.lost,1e-9),W=v=>(v/tot*100).toFixed(1),b=allyBar(id),src=S.nodes[id].ally.src;let l=0;
     const seg=(v,c)=>{const o=`<i style="left:${W(l)}%;width:${W(v)}%;background:${c}"></i>`;l+=v;return o};
-    return `<tr class="trc" data-n="${id}"><td><span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span></td><td><div class="mdbar">${seg(x.dom,SRC_C.dom)}${seg(x.ally,SRC_C.ally)}${seg(x.spot,SRC_C.spot)}${seg(x.prc,SRC_C.prc)}${x.lost>0?`<i class="mdcut" style="left:${W(l)}%;width:${W(x.lost)}%"></i>`:''}<span class="mdneed" style="left:${W(x.need)}%"></span></div></td>`+
-      cell(x.dom,d,'#3f6b33')+cell(x.ally+x.spot,d,'#2f62a0')+cell(x.prc,d,'#a3261c')+cell(x.lost,d,'#8a1f15')+`<td class="mdv"><b class="${x.need>1e-6&&P[id].cover<.8?'redt':x.need>1e-6&&P[id].cover<.999?'st-t-tight':''}">${x.need>1e-6?pct(Math.min(P[id].cover,9.99)):'no demand'}</b></td>`+
+    return `<tr class="trc" data-n="${id}"><td><span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span></td><td><div class="mdbar">${seg(x.dom,SRC_C.dom)}${seg(x.ally,SRC_C.ally)}${seg(x.neut,SRC_C.neut)}${seg(x.spot,SRC_C.spot)}${seg(x.prc,SRC_C.prc)}${x.lost>0?`<i class="mdcut" style="left:${W(l)}%;width:${W(x.lost)}%"></i>`:''}<span class="mdneed" style="left:${W(x.need)}%"></span></div></td>`+
+      cell(x.dom,d,'#3f6b33')+cell(x.ally+x.spot,d,'#2f62a0')+cell(x.neut,d,'#8a6d1f')+cell(x.prc,d,'#a3261c')+cell(x.lost,d,'#8a1f15')+`<td class="mdv"><b class="${x.need>1e-6&&P[id].cover<.8?'redt':x.need>1e-6&&P[id].cover<.999?'st-t-tight':''}">${x.need>1e-6?pct(Math.min(P[id].cover,9.99)):'no demand'}</b></td>`+
       `<td class="mdn">${b?`<span class="linkn redt" data-a="rbgo" data-d="source" data-tip="${tipQ(spotNone(id))}">⚖ Allies barred by law</span>`:src?src:''}${x.spot>.005?`${b||src?' · ':''}spot ${pct(x.spot/d)}`:''}</td></tr>`};
   const btn=(v,l)=>`<button class="pbtn sm ${f===v?'on':''}" data-a="mdf" data-v="${v}">${l}</button>`;
   let h=`<div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('all','Everything')}${btn('short','Short now')}${btn('foreign','Mostly foreign')}${btn('barred','Allies barred by law')}</div>
-   <table class="ctable mdt"><colgroup><col style="width:24%"><col style="width:30%"><col><col><col><col><col><col style="width:20%"></colgroup><tr><th>Item</th><th>Supply against demand</th><th>US-made</th><th>Allied</th><th>PRC / Russia</th><th>Cut off</th><th>Demand covered</th><th>Allied sources · limits</th></tr>`;
-  for(let t=1;t<=4;t++){const ids=NODES.filter(n=>n.t===t&&keep(n.id)).map(n=>n.id);if(!ids.length)continue;h+=`<tr class="grp"><td colspan="8">T${t} · ${TIERS[t]}</td></tr>`+ids.map(row).join('')}
-  if(f==='all'||f==='short'){const ls=S.order.filter(l=>f==='all'||R.out[l].bott);if(ls.length)h+=`<tr class="grp"><td colspan="8">T5 · ${TIERS[5]} · final assembly is in US plants</td></tr>`+ls.map(l=>{const o=R.out[l];return `<tr class="trc" data-n="L:${l}"><td><span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span></td><td><div class="mdbar"><i style="left:0;width:${(o.n/Math.max(o.cap,1e-9)*100).toFixed(1)}%;background:${SRC_C.dom}"></i></div></td><td class="mdv" colspan="5">${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity</td><td class="mdn">${o.bott?`short of ${ND[o.bott].n}`:'at capacity'}</td></tr>`}).join('')}
+   <table class="ctable mdt"><colgroup><col style="width:22%"><col style="width:28%"><col><col><col><col><col><col><col style="width:18%"></colgroup><tr><th>Item</th><th>Supply against demand</th><th>US-made</th><th>Allied</th><th>Neutral</th><th>PRC / Russia</th><th>Cut off</th><th>Demand covered</th><th>Allied sources · limits</th></tr>`;
+  for(let t=1;t<=4;t++){const ids=NODES.filter(n=>n.t===t&&keep(n.id)).map(n=>n.id);if(!ids.length)continue;h+=`<tr class="grp"><td colspan="9">T${t} · ${TIERS[t]}</td></tr>`+ids.map(row).join('')}
+  if(f==='all'||f==='short'){const ls=S.order.filter(l=>f==='all'||R.out[l].bott);if(ls.length)h+=`<tr class="grp"><td colspan="9">T5 · ${TIERS[5]} · final assembly is in US plants</td></tr>`+ls.map(l=>{const o=R.out[l];return `<tr class="trc" data-n="L:${l}"><td><span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span></td><td><div class="mdbar"><i style="left:0;width:${(o.n/Math.max(o.cap,1e-9)*100).toFixed(1)}%;background:${SRC_C.dom}"></i></div></td><td class="mdv" colspan="6">${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity</td><td class="mdn">${o.bott?`short of ${ND[o.bott].n}`:'at capacity'}</td></tr>`}).join('')}
   return h+`</table><div class="sleg" style="margin-top:6px"><span><i style="background:${SRC_C.dom}"></i>US-made</span><span><i style="background:${SRC_C.ally}"></i>Allied</span><span><i style="background:${SRC_C.spot}"></i>Spot / diverted</span><span><i style="background:${SRC_C.prc}"></i>PRC / Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span><span class="mini">US-made, allied, PRC and cut-off shares add up to 100% of supply. Allied includes spot purchases. The bar's black tick is this week's demand.</span></div>`}
 function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat',fv=S.flowV||'diag';
@@ -4293,8 +4341,8 @@ function nodeRow(id,P){
   const base=Math.max(p.need,p.ext+p.dom+p.lost,.0001)*1.05,W=x=>Math.min(100,x/base*100);
   const domUse=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));
   return `<div class="nrow trc" data-a="node" data-n="${id}"><div class="top"><span class="nm">${n.ic} ${n.n}</span><span>${n.ss?`<span class="tag ss" data-tip="<b>Sole source</b><br>${tipQ(n.ss)}">SS</span> `:''}${S.prio[id]?'<span class="tag dpa">DPA</span> ':''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?'<span class="tag ban" title="DFARS: PRC-linked supply unusable">DFARS</span> ':''}${stTag(st)} <span class="tag kh" data-tip="<b>Know-how</b><br>How experienced the workforce is, 0–100. Higher means faster ramp-up and fewer production problems.">KH ${Math.round(S.know[id])}</span></span></div>
-   <div class="bar"><i style="left:0;width:${W(domUse)}%;background:var(--green)"></i><i style="left:${W(domUse)}%;width:${W(p.ally+p.spot+p.div)}%;background:var(--blue)"></i><i style="left:${W(domUse+p.ally+p.spot+p.div)}%;width:${W(p.prc)}%;background:#a03a30"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
-   <div class="nums"><span>Cover <b class="${st==='ok'?'green':st==='tight'?'amber':'red'}">${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'}</b></span>${p.need>1e-6?`<span>Dom ${pct(domUse/p.need)}</span><span>Ally ${pct(p.ally/p.need)}</span><span>PRC ${pct(p.prc/p.need)}</span>`:''}${p.starvedBy?`<span class="red">Starved by ${ND[p.starvedBy].n}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
+   <div class="bar"><i style="left:0;width:${W(domUse)}%;background:var(--green)"></i><i style="left:${W(domUse)}%;width:${W(p.ally+p.spot+p.div)}%;background:var(--blue)"></i><i style="left:${W(domUse+p.ally+p.spot+p.div)}%;width:${W(p.neut)}%;background:#c2a04e"></i><i style="left:${W(domUse+p.ally+p.spot+p.div+p.neut)}%;width:${W(p.prc)}%;background:#a03a30"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
+   <div class="nums"><span>Cover <b class="${st==='ok'?'green':st==='tight'?'amber':'red'}">${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'}</b></span>${p.need>1e-6?`<span>Dom ${pct(domUse/p.need)}</span><span>Ally ${pct(p.ally/p.need)}</span>${p.neut/p.need>.005?`<span>Neut ${pct(p.neut/p.need)}</span>`:''}<span>PRC ${pct(p.prc/p.need)}</span>`:''}${p.starvedBy?`<span class="red">Starved by ${ND[p.starvedBy].n}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
 }
 /* ---------- defense needs: per end item, what the campaign requires vs what you have and build ---------- */
 function needsProj(R){if(S._np?.w===S.w)return S._np.pj;const prod={};for(const c in LINES)prod[c]=R.out[c].yr;const pj=project(prod,true);S._np={w:S.w,pj};return pj}
@@ -4363,15 +4411,16 @@ function spendB(x,k){x=+x||0;if(!x)return;S.budget-=x;if(!S.histMode)(S.spendBy=
 function gainB(x,k){x=+x||0;if(!x)return;S.budget+=x;if(!S.histMode)(S.incBy=S.incBy||{})[k]=(S.incBy[k]||0)+x}
 function lawRec(kind,n){if(!S.histMode)(S.lawLog=S.lawLog||[]).push({w:S.w,kind,n})}
 function outSnap(){return {pc:S.pc,b:S.budget,st:S.strain,lev:S.lev,cut:{...S.cut},tm:S.tmods.length,gm:S.gmods.length,inv:{...S.inv},know:{...S.know},truce:S.truce,rules:{...S.rules},
-  carve:Object.keys(S.carve||{}).filter(k=>carveOn(k)),ah:Object.fromEntries(Object.entries(S.ally||{}).map(([k,v])=>[k,v.hit.length])),cn:{h:cnS().heat,r:cnS().rung},ru:S.ru?{h:S.ru.heat,r:S.ru.rung}:null,proj:S.projects.length}}
+  carve:Object.keys(S.carve||{}).filter(k=>carveOn(k)),ah:Object.fromEntries(Object.entries(S.ally||{}).map(([k,v])=>[k,v.hit.length])),cn:{h:cnS().heat,r:cnS().rung},ru:S.ru?{h:S.ru.heat,r:S.ru.rung}:null,proj:S.projects.length,spot:S.spot.length}}
 function outDiff(a){const r=[],add=(n,tag,v,good)=>r.push({n,tag,v,good}),sg=x=>x>0?'+':'−',nm=id=>id.startsWith?.('L:')?LINES[id.slice(2)].n:ND[id]?.n||LINES[id]?.n||id;
   const dpc=S.pc-a.pc;if(Math.abs(dpc)>=.5)add('Political Capital','CAPITAL',`${sg(dpc)}${Math.round(Math.abs(dpc))} PC`,dpc>0);
   const db=S.budget-a.b;if(Math.abs(db)>.004)add('Industrial budget','MONEY',`${sg(db)}${money(Math.abs(db))}`,db>0);
   const ds=S.strain-a.st;if(Math.abs(ds)>=.5)add('Civilian strain','HOME FRONT',`${sg(ds)}${Math.round(Math.abs(ds))}`,ds<0);
   const dl=S.lev-a.lev;if(Math.abs(dl)>=.5)add('Prime contractors’ leverage','INDUSTRY',`${sg(dl)}${Math.round(Math.abs(dl))}`,dl<0);
   for(const id in S.cut)if(Math.abs(S.cut[id]-(a.cut[id]??1))>.005){const d=S.cut[id]-(a.cut[id]??1);add(`Chinese supply of ${nm(id).toLowerCase()} still flowing`,'SUPPLY',`${sg(d)}${Math.round(Math.abs(d)*100)} pts`,d>0)}
-  for(const m of S.tmods.slice(a.tm)){const what=m.kind==='line'?`${LINES[m.id]?.n} output`:m.kind==='ally'?`Allied supply of ${nm(m.id).toLowerCase()}`:m.kind==='prc'?`Chinese supply of ${nm(m.id).toLowerCase()}`:`US capacity: ${nm(m.id)}`;
+  for(const m of S.tmods.slice(a.tm)){const what=m.kind==='line'?`${LINES[m.id]?.n} output`:m.kind==='ally'?`Allied supply of ${nm(m.id).toLowerCase()}`:m.kind==='neut'?`Neutral supply of ${nm(m.id).toLowerCase()}`:m.kind==='prc'?`Chinese supply of ${nm(m.id).toLowerCase()}`:`US capacity: ${nm(m.id)}`;
     add(what,m.kind==='line'?'LINE':'CAPACITY',`${sg(m.mult-1)}${pct(Math.abs(m.mult-1))}${m.left<9999?` for ${m.left} wk`:''}`,m.mult>1)}
+  for(const x of S.spot.slice(a.spot||0))add(`Open-market supply of ${nm(x.id).toLowerCase()}`,'SUPPLY',`+${pct(x.amt/Math.max(S.nodes[x.id].scale,1e-9))} of normal use for ${x.left} wk`,true);
   for(const g of S.gmods.slice(a.gm))add(g.label||'Every program','PROGRAMS',`${sg(g.mult-1)}${pct(Math.abs(g.mult-1))} for ${g.left} wk`,g.mult>1);
   for(const c in S.inv){const d=S.inv[c]-(a.inv[c]??0);if(Math.abs(d)>=Math.max(1,(a.inv[c]||0)*.002))add(`${LINES[c].n} in service`,'STOCKS',`${sg(d)}${fmtN(Math.abs(d))}`,d>0)}
   for(const k in S.know){const d=S.know[k]-(a.know[k]??S.know[k]);if(Math.abs(d)>=1)add(`Know-how: ${nm(k)}`,'KNOW-HOW',`${sg(d)}${Math.round(Math.abs(d))}`,d>0)}
@@ -4467,7 +4516,7 @@ function mandVal(m){const r0=S.rec0||{},x=mandValRaw(m),fl=mandFloor(m);
   const half=m.kind==='expo'?S.exposure<=(r0.expo||S.exposure)*fl:x.v>=fl*.999;return {...x,fl,half:x.ok||half}}
 function mandValRaw(m){const r0=S.rec0||{};
   if(m.c)return {v:outOf(m.c),ok:outOf(m.c)>=m.tgt*.999,show:v=>m.dec?fmt(v,1):fmtN(v)};
-  if(m.kind==='magnets'){const P=(S._R||production(false)).P.magnets,x=srcSplit('magnets',(S._R||production(false)).P),v=P.need>1e-6?Math.min(1,(x.dom+x.ally+x.spot)/P.need):1;return {v,ok:v>=m.tgt,show:pct}}
+  if(m.kind==='magnets'){const P=(S._R||production(false)).P.magnets,x=srcSplit('magnets',(S._R||production(false)).P),v=P.need>1e-6?Math.min(1,(x.dom+x.ally+x.neut+x.spot)/P.need):1;return {v,ok:v>=m.tgt,show:pct}}
   if(m.kind==='expo'){const t=(r0.expo||S.exposure)*m.tgt;return {v:S.exposure,ok:S.exposure<=t,t,show:pct}}
   if(m.kind==='hold'){const v=Math.min(...m.lines.map(c=>outOf(c)/Math.max(r0.out?.[c]||1e-9,1e-9)));return {v,ok:v>=.999,show:pct}}
   if(m.kind==='keep'){const {v}=keepOf(m.lines);return {v,ok:v>=m.tgt-1e-9,show:pct}}}
@@ -4767,7 +4816,7 @@ function renderGame(){
   // ---- supply chain panel
   let sup=`<h2>Supply Chain</h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
-   <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
+   <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#c2a04e"></i>Neutral</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Need</span></div>`;
   if(S.tab==='bott'){
     const shortL=S.order.filter(l=>R.out[l].bott);
     sup+=`<div class="sect"><span>Short lines → root cause</span><span class="linkn" data-a="view" data-v="bn" style="color:#dcc78e">Full analysis →</span></div>`;
@@ -4808,7 +4857,7 @@ function renderGame(){
   if(bld.length)fc+=`<div class="sect"><span>Being built (${bld.length})</span><span>output starts</span></div>`+bld.sort((a,b)=>b.p.stage-a.p.stage||b.stalled-a.stalled).map(({p,def,stalled})=>{const tn=def.t.node||'L:'+def.t.line,D=p.dur[3],f=p.stage===3?Math.min(1,p.prog/D):p.stage>3?1:0;
     return `<div class="prow fcrow trc" data-tn="${tn}" data-pu="${p.uid}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${stalled?'⛔':'🏗'} ${projName(p)}</span><div class="sub ${stalled?'red':''}">${stalled?V(OD[p.obs[0].id].n):p.stage<3?STAGE_L[STAGES[p.stage]]+' · not yet built':p.stage===3?`Construction ${pct(f)}`:'Built · '+STAGE_L[STAGES[p.stage]].toLowerCase()}</div>${p.stage>=3?`<div class="fcbar"><i style="width:${f*100}%"></i></div>`:''}</span><span class="dim">~${yr(Math.round(S.w+remW(p)*sl))}</span></div>`}).join('');
   if(ramping.length||fullP.length)fc+=`<div class="sect"><span>Running (${ramping.length+fullP.length})</span><span></span></div>`;
-  const dis=S.tmods.map(m=>{const nm=m.kind==='line'?LINES[m.id].n:(m.kind==='ally'?'Allied ':m.kind==='prc'?'PRC ':'')+ND[m.id].n;return {t:`${m.label}: ${nm}`,x:'×'+fmt(m.mult,2),w:m.left}});
+  const dis=S.tmods.map(m=>{const nm=m.kind==='line'?LINES[m.id].n:(m.kind==='ally'?'Allied ':m.kind==='neut'?'Neutral ':m.kind==='prc'?'PRC ':'')+ND[m.id].n;return {t:`${m.label}: ${nm}`,x:'×'+fmt(m.mult,2),w:m.left}});
   const seen={};const disU=dis.filter(d=>{const k=d.t.split(':')[0]+d.x;if(d.t.startsWith('Allies prioritize')){if(seen[k])return false;seen[k]=1;d.t='Allies prioritize own needs: all allied supply'}return true});
   for(const g of S.gmods)disU.unshift({t:`${g.label}: ${g.stages.map(s=>STAGE_L[s]).join(', ')}`,x:'×'+fmt(g.mult,2),w:g.left,g:1});
   for(const c of S.costMods)disU.unshift({t:`${c.label}: new-start costs`,x:'×'+fmt(c.mult,2),w:c.left,g:1});
@@ -4893,7 +4942,7 @@ const csegOf=d=>d.ally?'ally':needsContract(d)?'plant':'other';
 function projRow(d,P){
   const c=projCost(d),lk=d.req&&!passed(d.req),tot=d.dur.reduce((a,b)=>a+b,0),node=d.t.node;
   const gainTxt=d.kind==='maint'?`+${Math.round(d.eff*100)} pts readiness`:d.t.line?`+${fmtN(d.gain*LINES[d.t.line].k)} ${LINES[d.t.line].u}/yr`:`+${pct(projGain(d)/Math.max(P[node].need,S.nodes[node].scale*.5))} of need`;
-  return `<tr class="${d.ally?'al':''}"><td><span class="nm">${d.ally?'🤝 ':''}${d.n}</span><div style="font-size:11px;color:#6b5a35">${likely(d).map(l=>LAYERS[l].n).join(' · ')}</div></td>
+  return `<tr class="${d.ally?'al':''}"><td><span class="nm">${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</span><div style="font-size:11px;color:#6b5a35">${likely(d).map(l=>LAYERS[l].n).join(' · ')}</div></td>
    <td>${node?pill(node,P):LINES[d.t.line].n}</td><td>${gainTxt}</td><td>${money(c)}</td><td>~${yrs(tot)}${d.ally?'':' + ramp'}</td>
    <td>${lk?`<span style="color:#a3261c">🔒 ${rname(RD[d.req])}</span>`:`${launchBtn(d)}`}</td></tr>`;
 }
@@ -5017,6 +5066,7 @@ function savedInfo(){try{const t=localStorage.getItem(SAVE_K);if(!t)return null;
 function loadData(txt){const d=JSON.parse(txt);if(!d||d.v!==1||!d.S||d.S.w==null)throw new Error('Not an Arsenal of Bureaucracy save file.');
   const cur=d.S;newGame(cur.fac);const tm=S; // fields added to the game since the save was made start from a fresh game's values
   for(const k in tm)if(!(k in cur)&&!SAVE_SKIP.has(k))cur[k]=tm[k];
+  for(const id in cur.nodes)if(!cur.nodes[id].neut)cur.nodes[id].neut={amt:0,adv:0,src:''};
   S=cur;uidN=Math.max(uidN,d.uidN||1);S.speed=0;S.replay=false;S.histMode=false;S.sim=false;S.queue=S.queue||[];if(S.modal==='save')S.modal=null;
   PJC.clear();viewKey='';S._vdirty=true;S._svW=S.w;S._svAt=d.at;scenUpdate();S._R=production(false)}
 function resumeSave(){let t=null;try{t=localStorage.getItem(SAVE_K)}catch(e){}if(!t)return false;
