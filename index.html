@@ -759,344 +759,337 @@ const NODES=[
  // ---------------- TIER 1 ----------------
   {id:'lithium',t:1,n:'Lithium',ic:'⛏',in:[],arch:'refine',civ:.9,cv:'ev',
   d:'Australia, Chile and China mine most lithium; China processes an estimated two-thirds.[c:sci_li] The US imports more than half its lithium; commercial production is one Nevada brine operation.[c:usgs26]',
-  US:{mix:[.15,.55,.3],kn:20},EU:{mix:[.02,.5,.48],kn:15},adv:.4,
+  US:{mix:[.15,.55,.3],kn:20},adv:.4,
   dp:{n:'Lithium Brine / Claystone Project',g:.5,c:.8},ap:{n:'Allied Lithium Offtake (Australia / Chile)',g:.3,c:.4}},
  {id:'rhenium',t:1,n:'Rhenium',ic:'⚗',in:[],arch:'refine',civ:.6,cv:'aero',
   d:'A few percent of every single-crystal turbine blade. Chile led 2025 output; the US (~9.8 t of ~81 t) recovers it from copper-moly roasting and recycles scrap.[c:usgsre]',
-  US:{mix:[.45,.5,.05],kn:40},EU:{mix:[.25,.65,.1],kn:35},adv:.1,
+  US:{mix:[.45,.5,.05],kn:40},adv:.1,
   dp:{n:'Rhenium Recovery from Moly Roasting',g:.4,c:.3},ap:{n:'Chilean Rhenium Supply Agreement',g:.3,c:.2}},
  {id:'gallium',t:1,n:'Gallium',ic:'⚗',in:[],arch:'refine',civ:.5,cv:'elec',
   d:'China produced ~99% of primary gallium (USGS).[c:usgs26] It is a byproduct of alumina refining and cannot be mined on its own. Feeds GaN wafers → MMICs → AESA radars, EW, RF seekers.',
-  US:{mix:[0,.05,.95],kn:5},EU:{mix:[.02,.08,.9],kn:15},adv:.3,
+  US:{mix:[0,.05,.95],kn:5},adv:.3,
   dp:{n:'Gallium Recovery Circuit (alumina refinery)',g:.6,c:.4},ap:{n:'Fund Allied Gallium Recovery',g:.3,c:.4}},
  {id:'germanium',t:1,n:'Germanium',ic:'⚗',in:[],arch:'refine',civ:.4,cv:'telecom',
   d:'China supplies an estimated 60–70%+ of germanium;[c:projblue] Belgium (Umicore), Canada, and recycling supply the rest. Feeds IR optics, seekers, and fiber-optic dopants.',
-  US:{mix:[.1,.3,.6],kn:20},EU:{mix:[.15,.35,.5],kn:35},adv:.2,
+  US:{mix:[.1,.3,.6],kn:20},adv:.2,
   dp:{n:'Germanium Recovery & Recycling',g:.5,c:.3},ap:{n:'Back Allied Germanium (Umicore / Teck)',g:.3,c:.3}},
  {id:'ndpr',t:1,n:'Rare Earths (NdPr)',ic:'🧲',in:[],arch:'mine',civ:.6,cv:'ev',
   d:'China mined ~69% of the world\'s rare earths in 2025 (USGS) and does most separation.[c:usgsree] MP Materials (Mountain Pass) is the main US source; DoD set a 10-year $110/kg NdPr price floor.[c:mp]',
-  US:{mix:[.2,.15,.65],kn:25},EU:{mix:[0,.25,.75],kn:15},adv:.4,
+  US:{mix:[.2,.15,.65],kn:25},adv:.4,
   dp:{n:'Rare-Earth Mine & Separation Expansion',g:.6,c:2},ap:{n:'Back Allied Separation (Lynas-type)',g:.35,c:.8}},
  {id:'hree',t:1,n:'Heavy Rare Earths (Dy/Tb/Sm)',ic:'🧲',in:[],arch:'refine',civ:.3,cv:'ev',
   d:'Dysprosium, terbium, samarium for high-temperature and SmCo magnets. China\'s April 2025 licensing of medium and heavy rare earths stayed in place after the Nov 2025 truce, which suspended only later expansions.[c:truce] Essentially no Western separation yet.',
-  US:{mix:[0,.08,.92],kn:5},EU:{mix:[0,.1,.9],kn:10},adv:.5,
+  US:{mix:[0,.08,.92],kn:5},adv:.5,
   dp:{n:'Heavy Rare-Earth Separation Circuit',g:.5,c:1},ap:{n:'Allied Heavy-REE Offtake',g:.25,c:.6}},
  {id:'antimony',t:1,n:'Antimony',ic:'⛏',in:[],arch:'mine',civ:.3,cv:'general',
   d:'China mined ~36% of world antimony in 2025 (USGS) and banned exports to the US in Dec 2024 — suspended until Nov 2026.[c:usgssb,truce] Antimony trisulfide primes nearly every round; China stopped supplying it to the US in 2021.[c:perpetua]',
-  US:{mix:[.05,.3,.65],kn:10},EU:{mix:[0,.35,.65],kn:15},adv:.2,
+  US:{mix:[.05,.3,.65],kn:10},adv:.2,
   dp:{n:'Antimony Mine (Stibnite-type)',g:.7,c:1.5},ap:{n:'Allied Antimony Offtake',g:.3,c:.3}},
  {id:'tungsten',t:1,n:'Tungsten',ic:'⛏',in:[],arch:'mine',civ:.4,cv:'metal',
   d:'China ~83% of mined tungsten (USGS, 2023); no US mine production.[c:usgschina] DFARS bans Chinese/Russian tungsten from ore to powder from 1 Jan 2027. Feeds penetrators and fragmentation.',
-  US:{mix:[0,.25,.75],kn:10},EU:{mix:[.1,.3,.6],kn:25},adv:.2,
+  US:{mix:[0,.25,.75],kn:10},adv:.2,
   dp:{n:'Tungsten Mine & APT Plant',g:.6,c:1.2},ap:{n:'Allied Tungsten (Korea / Portugal)',g:.3,c:.4}},
  {id:'magnesium',t:1,n:'Magnesium',ic:'⛏',in:[],arch:'smelter',civ:.5,cv:'metal',
   d:'China ~89% of primary magnesium (USGS, 2023).[c:usgschina] Alloys aluminum, makes IR decoy flares, and reduces titanium ore to sponge.',
-  US:{mix:[.1,.15,.75],kn:10},EU:{mix:[0,.15,.85],kn:10},adv:.2,
+  US:{mix:[.1,.15,.75],kn:10},adv:.2,
   dp:{n:'Primary Magnesium Plant',g:.5,c:.8},ap:{n:'Allied Magnesium Offtake',g:.3,c:.3}},
  {id:'ti_sponge',t:1,n:'Titanium Sponge',ic:'⛏',in:['magnesium'],arch:'metal',tags:['power'],civ:.5,cv:'aero',ss:'No US producer',
   d:'No US titanium sponge since TIMET Henderson idled in 2020; import reliance went from 68% to 100%.[c:tswg] China and Russia hold ~77% of world sponge capacity; US imports come from Japan, Kazakhstan, and Saudi Arabia.[c:usgsti]',
-  US:{mix:[0,.85,.15],kn:5},EU:{mix:[0,.7,.3],kn:10},adv:.3,
+  US:{mix:[0,.85,.15],kn:5},adv:.3,
   dp:{n:'Restart a Titanium Sponge Plant',g:.5,c:1.2},ap:{n:'Japanese Sponge Offtake',g:.3,c:.5}},
  {id:'graphite',t:1,n:'Graphite',ic:'⛏',in:[],arch:'refine',civ:.8,cv:'ev',
   d:'China produced ~82% of natural graphite in 2025; the US mined none.[c:usgsgr] Battery anodes for drones, subs, and soldier power.',
-  US:{mix:[0,.15,.85],kn:10},EU:{mix:[.05,.2,.75],kn:15},adv:.3,
+  US:{mix:[0,.15,.85],kn:10},adv:.3,
   dp:{n:'Anode Graphite Plant',g:.5,c:.6},ap:{n:'Allied Graphite (Canada / Mozambique)',g:.3,c:.3}},
  {id:'nico',t:1,n:'Nickel & Cobalt',ic:'⛏',in:[],arch:'refine',civ:.7,cv:'ev',
   d:'Indonesia (largely Chinese-financed) dominates nickel; the DRC mines most cobalt and China refines most of it; Russia\'s Nornickel is a major class-1 supplier. Feeds superalloys, armor steel, SmCo magnets, batteries.',
-  US:{mix:[.1,.5,.4],kn:30},EU:{mix:[.1,.45,.45],kn:35},adv:.5,
+  US:{mix:[.1,.5,.4],kn:30},adv:.5,
   dp:{n:'Nickel–Cobalt Refinery',g:.4,c:1},ap:{n:'Allied Nickel (Canada / Australia)',g:.3,c:.5}},
  {id:'tantalum',t:1,n:'Tantalum & Niobium',ic:'⛏',in:[],arch:'refine',civ:.5,cv:'elec',
   d:'US 100% import-reliant for both. Tantalum from the DRC/Rwanda; niobium almost entirely from Brazil (CBMM). DFARS restricts Chinese tantalum from 2027.',
-  US:{mix:[0,.6,.4],kn:15},EU:{mix:[0,.6,.4],kn:15},adv:.3,
+  US:{mix:[0,.6,.4],kn:15},adv:.3,
   dp:{n:'Tantalum Refining Line',g:.4,c:.4},ap:{n:'Allied Tantalum/Niobium Offtake',g:.3,c:.3}},
  {id:'indium',t:1,n:'Indium',ic:'⛏',in:[],arch:'refine',civ:.4,cv:'elec',
   d:'China ~70% of refined indium; no US refinery production.[c:usgsin] Indium antimonide detectors sit inside many IR seekers.',
-  US:{mix:[0,.3,.7],kn:10},EU:{mix:[.05,.3,.65],kn:15},adv:.2,
+  US:{mix:[0,.3,.7],kn:10},adv:.2,
   dp:{n:'Indium Recovery (zinc refinery)',g:.5,c:.25},ap:{n:'Allied Indium (Korea / Japan / Canada)',g:.3,c:.2}},
  {id:'al_primary',t:1,n:'Primary Aluminum',ic:'⛏',in:[],arch:'smelter',civ:.9,cv:'metal',
   d:'A smelter burns ~15 MWh per tonne; most US smelters closed on power costs. Canada is the main US supplier. Also aluminum powder is 15–20% of SRM propellant.',
-  US:{mix:[.3,.6,.1],kn:30},EU:{mix:[.35,.45,.2],kn:45},adv:0,
+  US:{mix:[.3,.6,.1],kn:30},adv:0,
   dp:{n:'Restart / Build a Primary Smelter',g:.4,c:2.5},ap:{n:'Long-Term Canadian / Nordic Offtake',g:.3,c:.4}},
  {id:'linters',t:1,n:'Cotton Linters & Cellulose',ic:'🌿',in:[],arch:'refine',civ:.3,cv:'general',
   d:'Feedstock for nitrocellulose. Rheinmetall\'s CEO said Europe gets >70% of its cotton linters from China;[c:papperger] the US uses domestic linters and wood pulp.',
-  US:{mix:[.85,.1,.05],kn:50},EU:{mix:[.05,.2,.75],kn:40},adv:.1,
+  US:{mix:[.85,.1,.05],kn:50},adv:.1,
   dp:{n:'Qualify Wood-Pulp Cellulose',g:.6,c:.2},ap:{n:'Allied Linter Offtake',g:.4,c:.15}},
  {id:'chem',t:1,n:'Nitric Acid, Ammonia & Toluene',ic:'🧪',in:[],arch:'refine',civ:.9,cv:'farm',
   d:'Commercial chemicals. The plants that nitrate them — not the feedstock — are the constraint. Diverting them hits fertilizer.',
-  US:{mix:[.9,.08,.02],kn:60,cov:1.4},EU:{mix:[.8,.15,.05],kn:60,cov:1.3},adv:0,
+  US:{mix:[.9,.08,.02],kn:60,cov:1.4},adv:0,
   dp:{n:'Dedicated Military Acid Plant',g:.5,c:.3}},
  {id:'beryllium',t:1,n:'Beryllium',ic:'⛏',in:[],arch:'refine',civ:.2,cv:'general',ss:'Single source (Materion)',
   d:'The US is the world\'s leading beryllium producer (Materion: Utah mine, Ohio plant) — a Western strength, but a single source. Used in IR optics, satellites, and F-35 parts.',
-  US:{mix:[.95,.05,0],kn:70,cov:1.15},EU:{mix:[0,.95,.05],kn:20},adv:0,
-  dp:{n:'Second Beryllium Line',g:.4,c:.3},ap:{n:'Beryllium Offtake (Materion)',g:.3,c:.2,fac:['EU']}},
+  US:{mix:[.95,.05,0],kn:70,cov:1.15},adv:0,
+  dp:{n:'Second Beryllium Line',g:.4,c:.3}},
  // ---------------- TIER 2 ----------------
  {id:'al_powder',t:2,n:'Spherical Aluminum Powder',ic:'⚪',in:['al_primary'],arch:'metal',ss:'Few qualified makers',
   d:'The fuel in composite propellant, made to MIL-PRF-23950 by a handful of atomizers (Toyal America, Valimet, AMPAL).[c:alpowder]',
-  US:{mix:[.9,.1,0],kn:45},EU:{mix:[.6,.4,0],kn:40},adv:0,
+  US:{mix:[.9,.1,0],kn:45},adv:0,
   dp:{n:'Inert-Gas Atomization Line',g:.5,c:.25},ap:{n:'Allied Powder Offtake',g:.3,c:.15}},
  {id:'propchem',t:2,n:'Binders & Propellant Additives (HTPB)',ic:'🧪',in:['chem'],arch:'energetic',ss:'Sole sources',
   d:'HTPB binder, curatives, insulation additives. DoD rates military-grade HTPB \"critically at-risk\" because one firm makes it.[c:htpb] Dechlorane for motor insulation had a single Belgian source.[c:dn2018b]',
-  US:{mix:[.85,.15,0],kn:35},EU:{mix:[.6,.4,0],kn:35},adv:.05,
+  US:{mix:[.85,.15,0],kn:35},adv:.05,
   dp:{n:'Second-Source HTPB Plant',g:.5,c:.4,dur:[12,20,26,104,52,0]},ap:{n:'Allied Binder Offtake',g:.25,c:.2}},
  {id:'imx',t:2,n:'Insensitive Explosives (NTO / DNAN)',ic:'💥',in:['chem'],arch:'energetic',
   d:'IMX-104 blends RDX, NTO and DNAN for safer shell and mortar fills. A $581M plant at Graham, KY is to make ~8M lb/yr from 2030.[c:imx]',
-  US:{mix:[.7,.3,0],kn:30},EU:{mix:[.6,.4,0],kn:35},adv:0,
+  US:{mix:[.7,.3,0],kn:30},adv:0,
   dp:{n:'IMX Production Plant',g:.6,c:1.2},ap:{n:'Allied Insensitive-Fill Offtake',g:.3,c:.3}},
  {id:'ap',t:2,n:'Ammonium Perchlorate',ic:'💥',in:['chem'],arch:'energetic',tags:['ap'],civ:.1,cv:'general',ss:'Sole source (AMPAC)',
   d:'68–73% of composite propellant mass. AMPAC in Cedar City, Utah is the only US producer — a single point of failure.[c:bdsrm] A 1988 explosion at PEPCON destroyed nearly half of US capacity.',
-  US:{mix:[1,0,0],kn:40,cov:1},EU:{mix:[.3,.7,0],kn:35},adv:0,
+  US:{mix:[1,0,0],kn:40,cov:1},adv:0,
   dp:{n:'Second-Source AP Plant',g:.6,c:1,dur:[20,26,52,260,52,0]},ap:{n:'Allied AP Offtake',g:.2,c:.5}},
  {id:'rdx',t:2,n:'RDX / HMX',ic:'💥',in:['chem'],arch:'energetic',ss:'Sole source (Holston AAP)',
   d:'Holston Army Ammunition Plant (Kingsport, TN; BAE) is the sole US source. Fills Comp B, IMX, PBX warheads.',
-  US:{mix:[.95,.05,0],kn:40,cov:1},EU:{mix:[.8,.2,0],kn:50},adv:0,
+  US:{mix:[.95,.05,0],kn:40,cov:1},adv:0,
   dp:{n:'Second RDX/HMX Line',g:.5,c:1.2},ap:{n:'Allied RDX Offtake (Nammo / Chemring)',g:.25,c:.5}},
  {id:'tnt',t:2,n:'TNT',ic:'💥',in:['chem'],arch:'energetic',ss:'No US producer',
   d:'No new US TNT since 1986. The Army\'s Graham, KY plant (Repkon, now Paligen; $435M) is due Feb 2029.[c:tntky] Until then: imports, notably from Poland.',
-  US:{mix:[0,1,0],kn:5,cov:1},EU:{mix:[.6,.4,0],kn:45},adv:0,
+  US:{mix:[0,1,0],kn:5,cov:1},adv:0,
   dp:{n:'TNT Plant',g:.7,c:1.5},ap:{n:'Polish TNT Offtake',g:.3,c:.3,fac:['US']}},
  {id:'nc',t:2,n:'Nitrocellulose & Propellant',ic:'💥',in:['linters','chem'],arch:'energetic',ss:'US: sole source (Radford)',civ:.1,cv:'ammo',
   d:'Radford (VA) is the sole US source; a production bay exploded in Feb 2025 (no injuries).[c:radford] Europe makes 4,500–10,000 t/yr against ~20,000 t of need.[c:epc]',
-  US:{mix:[.95,.05,0],kn:40,cov:.95},EU:{mix:[.55,.15,.3],kn:45,cov:.7},adv:.2,
+  US:{mix:[.95,.05,0],kn:40,cov:.95},adv:.2,
   dp:{n:'Nitrocellulose Line',g:.5,c:.8},ap:{n:'Allied Propellant Offtake',g:.25,c:.4}},
  {id:'primers',t:2,n:'Primers & Black Powder',ic:'💥',in:['antimony','chem'],arch:'energetic',civ:.5,cv:'ammo',ss:'Few/single sources',
   d:'Antimony trisulfide and lead styphnate prime nearly every round. The only US black-powder plant was idled for nearly two years after a 2021 explosion.[c:wotr] An Army antimony-trisulfide pilot opened in Idaho in July 2026.[c:perpetua]',
-  US:{mix:[.8,.15,.05],kn:30,cov:1},EU:{mix:[.7,.2,.1],kn:35},adv:.1,
+  US:{mix:[.8,.15,.05],kn:30,cov:1},adv:.1,
   dp:{n:'Primer & Black Powder Plant',g:.5,c:.3},ap:{n:'Allied Primer Offtake',g:.3,c:.2}},
  {id:'magnets',t:2,n:'NdFeB & SmCo Magnets',ic:'🧲',in:['ndpr','hree','nico'],arch:'metal',civ:.7,cv:'ev',
   d:'Fin actuators, motors, radar tubes — nearly every guided weapon. China dominates. MP Materials\' 10X plant comes with a 10-year DoD offtake.[c:mp] DFARS widens to mine-to-magnet on 1 Jan 2027.',
-  US:{mix:[.1,.25,.65],kn:15},EU:{mix:[.1,.25,.65],kn:25},adv:.5,
+  US:{mix:[.1,.25,.65],kn:15},adv:.5,
   dp:{n:'NdFeB Magnet Plant',g:.5,c:.9},ap:{n:'Allied Magnets (Japan / VAC)',g:.3,c:.5,adv:.4}},
  {id:'ti_mill',t:2,n:'Titanium Mill Products',ic:'🔩',in:['ti_sponge'],arch:'metal',civ:.6,cv:'aero',
   d:'US melters hold ~25% of world melt capacity but run on imported sponge.[c:tswg] IperionX is scaling sponge-free titanium powder from scrap in Virginia.',
-  US:{mix:[.85,.15,0],kn:50},EU:{mix:[.4,.4,.2],kn:40},adv:.2,
+  US:{mix:[.85,.15,0],kn:50},adv:.2,
   dp:{n:'Titanium Melt & Forge Expansion',g:.4,c:.8},ap:{n:'Allied Titanium Mill Products',g:.3,c:.4}},
  {id:'al_plate',t:2,n:'Aerospace Aluminum Plate',ic:'🔩',in:['al_primary','magnesium'],arch:'metal',civ:.7,cv:'aero',
   d:'A few thick-plate mills (Arconic, Kaiser, Constellium) serve both aerospace and defense.',
-  US:{mix:[.85,.15,0],kn:55},EU:{mix:[.8,.2,0],kn:55},adv:0,
+  US:{mix:[.85,.15,0],kn:55},adv:0,
   dp:{n:'Thick-Plate Mill Expansion',g:.4,c:.8},ap:{n:'Allied Plate Offtake',g:.3,c:.3}},
  {id:'superalloy',t:2,n:'Nickel Superalloys',ic:'🔩',in:['nico','tantalum','rhenium'],arch:'metal',civ:.7,cv:'aero',ss:'Concentrated (PCC / Howmet / ATI)',
   d:'Vacuum-melted by a handful of firms. Feeds single-crystal blades for fighter engines and cruise-missile turbofans.',
-  US:{mix:[.85,.15,0],kn:55},EU:{mix:[.7,.3,0],kn:45},adv:0,
+  US:{mix:[.85,.15,0],kn:55},adv:0,
   dp:{n:'Vacuum-Melt Furnace Line',g:.4,c:.6},ap:{n:'Allied Superalloy Offtake',g:.3,c:.4}},
  {id:'cfiber',t:2,n:'Aerospace Carbon Fiber',ic:'🧵',in:['chem'],arch:'metal',civ:.7,cv:'aero',
   d:'Concentrated in Hexcel, Toray (Japan), and Syensqo. Feeds airframes, motor cases, drones.',
-  US:{mix:[.55,.45,0],kn:40},EU:{mix:[.3,.65,.05],kn:35},adv:0,
+  US:{mix:[.55,.45,0],kn:40},adv:0,
   dp:{n:'PAN Precursor & Carbon Fiber Line',g:.4,c:.6},ap:{n:'Toray Offtake',g:.3,c:.3}},
  {id:'hy_steel',t:2,n:'HY-80/100 & Armor Steel',ic:'🔩',in:['nico'],arch:'metal',tags:['heavy'],ss:'Single qualified mill',
   d:'Submarine hull and armor plate from very few qualified mills; a contributor to Virginia-class material delays.',
-  US:{mix:[.95,.05,0],kn:45,cov:.95},EU:{mix:[.85,.15,0],kn:50},adv:0,
+  US:{mix:[.95,.05,0],kn:45,cov:.95},adv:0,
   dp:{n:'Qualify a Second Plate Mill',g:.4,c:.5},ap:{n:'Allied Armor Steel (SSAB)',g:.3,c:.3}},
  {id:'gan',t:2,n:'GaN / GaAs Wafers',ic:'💠',in:['gallium'],arch:'fab',civ:.5,cv:'elec',
   d:'Compound-semiconductor wafers behind every AESA radar and EW jammer.',
-  US:{mix:[.8,.15,.05],kn:45},EU:{mix:[.4,.4,.2],kn:35},adv:.3,
+  US:{mix:[.8,.15,.05],kn:45},adv:.3,
   dp:{n:'GaN Wafer Line',g:.5,c:.6},ap:{n:'Allied Compound-Semiconductor Wafers',g:.3,c:.3,adv:.3}},
  {id:'ir_optics',t:2,n:'IR Optics & Seeker Domes',ic:'💠',in:['germanium','beryllium'],arch:'fab',
   d:'Germanium lenses and windows, sapphire/ALON seeker domes — a few niche growers.',
-  US:{mix:[.6,.25,.15],kn:40},EU:{mix:[.5,.3,.2],kn:40},adv:.2,
+  US:{mix:[.6,.25,.15],kn:40},adv:.2,
   dp:{n:'IR Optics & Dome Line',g:.5,c:.3},ap:{n:'Allied IR Optics',g:.3,c:.2}},
  {id:'wha',t:2,n:'Tungsten Heavy Alloy',ic:'🔩',in:['tungsten'],arch:'metal',
   d:'Penetrators and fragmentation liners. DFARS covers the supply chain from ore to powder.',
-  US:{mix:[.7,.2,.1],kn:35},EU:{mix:[.6,.3,.1],kn:40},adv:.2,
+  US:{mix:[.7,.2,.1],kn:35},adv:.2,
   dp:{n:'Tungsten Powder & Alloy Line',g:.5,c:.3},ap:{n:'Allied Heavy-Alloy Offtake',g:.3,c:.2}},
  // ---------------- TIER 3 ----------------
  {id:'machine_tools',t:3,n:'Machine Tools & Forging Presses',ic:'🛠',in:[],arch:'heavy',civ:.6,cv:'auto',
   d:'Every forge line and blade shop runs on them, and most are imported (one estimate: ~65% of US consumption).[c:mtool] Mesquite\'s adapted equipment is being replaced with conventional machine tools.[c:sofrep]',
-  US:{mix:[.35,.6,.05],kn:40},EU:{mix:[.6,.38,.02],kn:55},adv:.1,
+  US:{mix:[.35,.6,.05],kn:40},adv:.1,
   dp:{n:'Domestic Machine-Tool Builder',g:.4,c:.6},ap:{n:'Allied Machine-Tool Orders',g:.4,c:.3}},
  {id:'bearings',t:3,n:'Precision Bearings',ic:'⚙',in:[],arch:'metal',civ:.7,cv:'auto',
   d:'Engine, gimbal and actuator bearings. DoD may buy only US- or Canadian-made ball and roller bearings (DFARS 225.7009) — protection for a thin base.[c:dfarsbr]',
-  US:{mix:[.8,.15,.05],kn:45},EU:{mix:[.6,.35,.05],kn:50},adv:.1,
+  US:{mix:[.8,.15,.05],kn:45},adv:.1,
   dp:{n:'Aerospace Bearing Line',g:.5,c:.3},ap:{n:'Canadian Bearings',g:.3,c:.15}},
  {id:'twt',t:3,n:'Vacuum Electronics (TWTs)',ic:'📟',in:[],arch:'fab',ss:'Sole sources',
   d:'Traveling-wave tubes still drive Aegis illuminators and EW jammers; the Navy buys many types sole-source.[c:twt]',
-  US:{mix:[.9,.1,0],kn:35},EU:{mix:[.6,.4,0],kn:35},adv:0,
+  US:{mix:[.9,.1,0],kn:35},adv:0,
   dp:{n:'TWT Production Line Restart',g:.4,c:.25},ap:{n:'Allied Tube Makers (Thales)',g:.3,c:.2}},
  {id:'shell_bodies',t:3,n:'Forged Shell Bodies',ic:'⚙',in:['machine_tools'],arch:'metal',tags:['shell'],ss:'Few forge lines',
   d:'The binding constraint for 155mm: the DoD IG called metal parts "the limiting factor" (Mar 2026), when a $469M Texas plant had produced zero usable parts.[c:dodig] Canada\'s IMT runs below target.[c:bdig]',
-  US:{mix:[.8,.2,0],kn:35,cov:.85},EU:{mix:[.85,.15,0],kn:50,cov:.9},adv:0,
+  US:{mix:[.8,.2,0],kn:35,cov:.85},adv:0,
   dp:{n:'Shell-Body Forge Line',g:.5,c:.5,dur:[8,16,12,78,26,0]},ap:{n:'Canadian Forge Offtake (IMT-type)',g:.3,c:.3}},
  {id:'castings',t:3,n:'Large Castings & Forgings',ic:'⚙',in:['hy_steel','ti_mill','superalloy','machine_tools'],arch:'heavy',civ:.4,cv:'aero',ss:'Thin supplier base',
   d:'A thin supplier base after decades of low demand; late supplier material is a recurring cause of submarine delays (GAO).[c:workboat]',
-  US:{mix:[.9,.1,0],kn:30,cov:.85},EU:{mix:[.8,.2,0],kn:45},adv:0,
+  US:{mix:[.9,.1,0],kn:30,cov:.85},adv:0,
   dp:{n:'Heavy Forge & Foundry',g:.4,c:1},ap:{n:'Allied Castings (Korea / Japan)',g:.3,c:.5}},
  {id:'pcb',t:3,n:'Printed Circuit Boards',ic:'▦',in:[],arch:'fab',tags:['dumpable'],civ:.9,cv:'elec',
   d:'The high-layer-count volume is in Asia, much of it in China.',
-  US:{mix:[.25,.3,.45],kn:25},EU:{mix:[.15,.3,.55],kn:25},adv:.25,
+  US:{mix:[.25,.3,.45],kn:25},adv:.25,
   dp:{n:'Trusted PCB Fab',g:.5,c:1},ap:{n:'Allied PCB Capacity (ex-China)',g:.3,c:.5,adv:.15}},
  {id:'micro',t:3,n:'Trusted & Rad-Hard Microelectronics',ic:'▣',in:[],arch:'fab',civ:.9,cv:'auto',ss:'Few trusted foundries',
   d:'Trusted and radiation-hardened chips and FPGAs from a few foundries; small volumes and constant obsolescence.',
-  US:{mix:[.6,.35,.05],kn:40},EU:{mix:[.3,.6,.1],kn:30},adv:.15,
+  US:{mix:[.6,.35,.05],kn:40},adv:.15,
   dp:{n:'Trusted Foundry Expansion',g:.4,c:2},ap:{n:'Allied Trusted Foundry Access',g:.3,c:.8}},
  {id:'mmic',t:3,n:'GaN MMICs / T-R Modules',ic:'▣',in:['gan'],arch:'fab',
   d:'Transmit/receive modules for AESA radars and RF seekers.',
-  US:{mix:[.9,.1,0],kn:45},EU:{mix:[.6,.4,0],kn:35},adv:0,
+  US:{mix:[.9,.1,0],kn:45},adv:0,
   dp:{n:'MMIC Foundry Line',g:.4,c:.8},ap:{n:'Allied MMIC Supply',g:.3,c:.4}},
  {id:'fpa',t:3,n:'IR Focal Plane Arrays',ic:'▣',in:['indium','ir_optics'],arch:'fab',
   d:'InSb and HgCdTe detectors from a handful of fabs (Raytheon, L3Harris, Teledyne, Lynred).',
-  US:{mix:[.9,.1,0],kn:40},EU:{mix:[.7,.3,0],kn:40},adv:0,
+  US:{mix:[.9,.1,0],kn:40},adv:0,
   dp:{n:'FPA Fab Line',g:.4,c:.6},ap:{n:'Allied FPA Supply (Lynred)',g:.3,c:.3}},
  {id:'thermal_bat',t:3,n:'Thermal Batteries',ic:'🔋',in:['nico'],arch:'fab',ss:'Near sole source',
   d:'Power missiles and fuzes in flight. One maker held ~80% of the market (DoD, 2018).[c:dn2018]',
-  US:{mix:[1,0,0],kn:35,cov:1},EU:{mix:[.6,.4,0],kn:35},adv:0,
+  US:{mix:[1,0,0],kn:35,cov:1},adv:0,
   dp:{n:'Second Thermal-Battery Line',g:.5,c:.3},ap:{n:'Allied Thermal Batteries',g:.3,c:.2}},
  {id:'fuzes',t:3,n:'Fuzes & Initiators',ic:'⚙',in:['micro','primers'],arch:'fab',ss:'Often single source',
   d:'Low-volume, often single-source: DoD found 98% of second- and third-tier munitions suppliers were single or sole source.[c:dn2018]',
-  US:{mix:[.9,.1,0],kn:35,cov:.95},EU:{mix:[.8,.2,0],kn:45},adv:0,
+  US:{mix:[.9,.1,0],kn:35,cov:.95},adv:0,
   dp:{n:'Fuze Line',g:.5,c:.3},ap:{n:'Allied Fuze Supply',g:.3,c:.2}},
  {id:'blades',t:3,n:'Single-Crystal Turbine Blades',ic:'⚙',in:['superalloy','machine_tools'],arch:'metal',civ:.6,cv:'aero',ss:'Concentrated',
   d:'Hot-section castings for fighter engines and cruise-missile turbofans; a handful of casting houses also serve commercial engines.',
-  US:{mix:[.9,.1,0],kn:50},EU:{mix:[.7,.3,0],kn:45},adv:0,
+  US:{mix:[.9,.1,0],kn:50},adv:0,
   dp:{n:'Single-Crystal Casting Line',g:.4,c:.8},ap:{n:'Allied Hot-Section Castings',g:.3,c:.4}},
  {id:'actuators',t:3,n:'Actuators & Motors',ic:'⚙',in:['magnets','bearings'],arch:'metal',civ:.5,cv:'auto',
   d:'Fin actuators, gimbals, and drone motors — every one needs magnets.',
-  US:{mix:[.7,.2,.1],kn:45},EU:{mix:[.6,.25,.15],kn:45},adv:.3,
+  US:{mix:[.7,.2,.1],kn:45},adv:.3,
   dp:{n:'Actuator & Motor Line',g:.5,c:.3},ap:{n:'Allied Actuators',g:.3,c:.2}},
  {id:'li_cells',t:3,n:'Lithium-Ion Cells',ic:'🔋',in:['graphite','nico','lithium'],arch:'fab',civ:.9,cv:'ev',
   d:'Mostly Chinese, Korean, and Japanese. China\'s Oct 2025 battery-material controls were suspended only to Nov 2026.',
-  US:{mix:[.15,.35,.5],kn:25},EU:{mix:[.15,.35,.5],kn:25},adv:.35,
+  US:{mix:[.15,.35,.5],kn:25},adv:.35,
   dp:{n:'Defense Cell Line',g:.5,c:.6},ap:{n:'Korean / Japanese Cell Offtake',g:.3,c:.3,adv:.3}},
  {id:'fiber',t:3,n:'Fiber-Optic Cable & Gyro Fiber',ic:'〰',in:['germanium'],arch:'fab',civ:.7,cv:'telecom',
   d:'For fiber-guided drones and fiber-optic gyros. Germanium is the core dopant.',
-  US:{mix:[.6,.2,.2],kn:50},EU:{mix:[.5,.25,.25],kn:50},adv:.2,
+  US:{mix:[.6,.2,.2],kn:50},adv:.2,
   dp:{n:'Preform & Draw Tower',g:.5,c:.3},ap:{n:'Allied Fiber Offtake',g:.3,c:.15}},
  {id:'composites',t:3,n:'Composite Structures & Motor Cases',ic:'⚙',in:['cfiber'],arch:'metal',
   d:'Filament-wound motor cases and composite airframe structures. Some SRM nozzles run 7–10 month lead times (Govini).[c:bdsrm]',
-  US:{mix:[.85,.15,0],kn:45},EU:{mix:[.7,.3,0],kn:40},adv:0,
+  US:{mix:[.85,.15,0],kn:45},adv:0,
   dp:{n:'Composite Case Winding Line',g:.5,c:.4},ap:{n:'Allied Composite Structures',g:.3,c:.3}},
  {id:'tantcap',t:3,n:'Tantalum Capacitors & Passives',ic:'▦',in:['tantalum'],arch:'fab',civ:.8,cv:'elec',
   d:'Avionics-grade passives from a few makers, now owned by Taiwanese and Japanese groups (KEMET/Yageo, AVX/Kyocera).',
-  US:{mix:[.4,.45,.15],kn:35},EU:{mix:[.2,.5,.3],kn:30},adv:.2,
+  US:{mix:[.4,.45,.15],kn:35},adv:.2,
   dp:{n:'Mil-Spec Capacitor Line',g:.5,c:.2},ap:{n:'Allied Passives',g:.3,c:.15}},
  {id:'sub_parts',t:3,n:'Sub Valves, Pumps & Propulsors',ic:'⚙',in:['castings'],arch:'heavy',ss:'Hundreds of sole sources',
   d:'Late supplier material is a top cause of Virginia-class delays; both boats delivered in 2025 were over three years late (GAO).[c:workboat] New entrants such as Anduril (Baltimore) are adding capacity.',
-  US:{mix:[1,0,0],kn:30,cov:.8},EU:{mix:[.95,.05,0],kn:50,cov:.95},adv:0,
+  US:{mix:[1,0,0],kn:30,cov:.8},adv:0,
   dp:{n:'Submarine Component Yard',g:.4,c:1.5},ap:{n:'AUKUS Partner Components',g:.2,c:.8}},
  // ---------------- TIER 4 ----------------
  {id:'srm',t:4,n:'Solid Rocket Motors',ic:'🚀',in:['ap','composites','primers','al_powder','propchem'],arch:'assembly',tags:['srm','energetic'],ss:'Duopoly',
   d:'Six US makers in 1995, two by 2017 (GAO).[c:gaosrm] Entrants (Anduril, Ursa Major, X-Bow, Avio USA) are still qualifying, and they draw on the same sub-tier suppliers.[c:bdsrm] Gates every interceptor ramp.',
-  US:{mix:[1,0,0],kn:45,cov:.85},EU:{mix:[.5,.5,0],kn:40,cov:.8},adv:0,
+  US:{mix:[1,0,0],kn:45,cov:.85},adv:0,
   dp:{n:'New-Entrant SRM Plant',g:.5,c:1,dur:[8,16,20,78,78,0]},ap:{n:'Nammo Motor Offtake',g:.3,c:.6}},
  {id:'rf_seeker',t:4,n:'RF Seekers',ic:'🎯',in:['mmic','micro','ir_optics'],arch:'assembly',
   d:'GaN MMICs, processors, and domes for PAC-3, SM-6, AMRAAM-class seekers.',
-  US:{mix:[1,0,0],kn:50,cov:.9},EU:{mix:[.8,.2,0],kn:45},adv:0,
+  US:{mix:[1,0,0],kn:50,cov:.9},adv:0,
   dp:{n:'Seeker Line Expansion',g:.4,c:.8},ap:{n:'Allied Seeker Production',g:.3,c:.5}},
  {id:'ir_seeker',t:4,n:'IR Seekers',ic:'🎯',in:['fpa','ir_optics','micro'],arch:'assembly',
   d:'Focal plane arrays behind germanium or sapphire domes.',
-  US:{mix:[1,0,0],kn:50,cov:.95},EU:{mix:[.85,.15,0],kn:45},adv:0,
+  US:{mix:[1,0,0],kn:50,cov:.95},adv:0,
   dp:{n:'IR Seeker Line',g:.4,c:.6},ap:{n:'Allied IR Seekers',g:.3,c:.4}},
  {id:'imu',t:4,n:'Guidance & IMUs',ic:'🧭',in:['fiber','micro'],arch:'assembly',
   d:'Ring-laser and fiber-optic gyros from Honeywell, Northrop, L3Harris; Safran and Exail in Europe.',
-  US:{mix:[.95,.05,0],kn:50},EU:{mix:[.8,.2,0],kn:50},adv:0,
+  US:{mix:[.95,.05,0],kn:50},adv:0,
   dp:{n:'IMU Line',g:.4,c:.5},ap:{n:'Allied IMUs',g:.3,c:.3}},
  {id:'aesa',t:4,n:'AESA Radars & EW',ic:'📡',in:['mmic','pcb','tantcap','beryllium','twt'],arch:'assembly',
   d:'F-35 APG-81, LTAMDS, SPY-6 — all GaN.',
-  US:{mix:[1,0,0],kn:55},EU:{mix:[.85,.15,0],kn:45},adv:0,
+  US:{mix:[1,0,0],kn:55},adv:0,
   dp:{n:'Radar Line Expansion',g:.4,c:1},ap:{n:'Allied Radar Modules',g:.3,c:.6}},
  {id:'turbofan',t:4,n:'Small Turbofans (cruise missiles)',ic:'🌀',in:['blades','ti_mill','bearings'],arch:'assembly',ss:'Sole source (Williams)',
   d:'Williams International makes the F107 family for Tomahawk, JASSM and LRASM; the other small-turbine maker announced its exit in 2018.[c:dn2018] A $253.7M DPA award and a $1B+ Crestview, FL plant are adding capacity.[c:williams,williamsfl]',
-  US:{mix:[1,0,0],kn:45,cov:.85},EU:{mix:[.6,.4,0],kn:40},adv:0,
+  US:{mix:[1,0,0],kn:45,cov:.85},adv:0,
   dp:{n:'Second Small-Turbofan Source',g:.5,c:.9,dur:[12,20,8,104,52,0]},ap:{n:'Allied Small Turbofans (Microturbo)',g:.3,c:.5}},
  {id:'fengine',t:4,n:'Fighter Engines',ic:'🌀',in:['blades','castings','ti_mill','bearings'],arch:'assembly',civ:.5,cv:'aero',
   d:'Pratt & Whitney and GE; commercial engine overhauls compete for the same castings and blades.',
-  US:{mix:[1,0,0],kn:60},EU:{mix:[.8,.2,0],kn:50},adv:0,
+  US:{mix:[1,0,0],kn:60},adv:0,
   dp:{n:'Engine Line Rate Increase',g:.3,c:2},ap:{n:'Allied Engine Modules',g:.2,c:.8}},
  {id:'warhead',t:4,n:'Warheads & Fills',ic:'💣',in:['rdx','wha','fuzes','imx'],arch:'assembly',tags:['energetic'],
   d:'RDX/HMX fills, tungsten fragments, fuzes.',
-  US:{mix:[1,0,0],kn:45},EU:{mix:[.9,.1,0],kn:50},adv:0,
+  US:{mix:[1,0,0],kn:45},adv:0,
   dp:{n:'Warhead Load Line',g:.5,c:.4},ap:{n:'Allied Warhead Loading',g:.3,c:.3}},
  {id:'airframe',t:4,n:'Airframe Structures',ic:'✈',in:['al_plate','ti_mill','composites'],arch:'assembly',civ:.5,cv:'aero',
   d:'Aluminum plate, titanium, composites.',
-  US:{mix:[.9,.1,0],kn:60},EU:{mix:[.85,.15,0],kn:55},adv:0,
+  US:{mix:[.9,.1,0],kn:60},adv:0,
   dp:{n:'Airframe Structures Line',g:.3,c:1.2},ap:{n:'Allied Structures (Japan / Italy)',g:.3,c:.6}},
  {id:'propulsion',t:4,n:'Ship Propulsion & Gears',ic:'⚙',in:['castings'],arch:'heavy',ss:'Few gear makers',
   d:'Main reduction gears and shafting from very few makers.',
-  US:{mix:[.95,.05,0],kn:40},EU:{mix:[.85,.15,0],kn:50},adv:0,
+  US:{mix:[.95,.05,0],kn:40},adv:0,
   dp:{n:'Reduction-Gear Shop',g:.4,c:.8},ap:{n:'Allied Propulsion (Korea / Japan)',g:.3,c:.5}},
  {id:'shipyard',t:4,n:'Surface Shipyards & Labor',ic:'⚓',in:[],arch:'yard',
   d:'ONI (2023): Chinese shipyard capacity ~23.25M tons vs under 100,000 for the US — at least 232x.[c:oni]',
-  US:{mix:[1,0,0],kn:25,cov:1},EU:{mix:[1,0,0],kn:50,cov:1},adv:0,
+  US:{mix:[1,0,0],kn:25,cov:1},adv:0,
   dp:{n:'New Drydock & Crane',g:.3,c:3}},
  {id:'sub_yard',t:4,n:'Submarine Yards',ic:'⚓',in:[],arch:'yard',ss:'Two yards',
   d:'Electric Boat and Newport News. Virginia-class output ~1.1–1.2 boats/yr since 2022 against a 2/yr goal (CRS); 2.33/yr needed with AUKUS.',
-  US:{mix:[1,0,0],kn:35,cov:1},EU:{mix:[1,0,0],kn:50,cov:1},adv:0,
+  US:{mix:[1,0,0],kn:35,cov:1},adv:0,
   dp:{n:'Submarine Module Yard',g:.3,c:3}},
 ];
 const ND=Object.fromEntries(NODES.map(n=>[n.id,n]));
 /* ---------- DOSSIER CONTENT: process chain, world sourcing, named producers ----------
    Shares are from USGS MCS 2025/26 and the research pass unless marked as estimates. */
 const INFO={
- gallium:{chain:['Bauxite mining','Alumina refining (Bayer process)','Gallium recovery from Bayer liquor','Purification to 6N–7N'],world:'China ~99% of primary low-purity gallium (USGS).[c:usgs26] Germany, Kazakhstan and Korea have restartable capacity.',who:{US:'No primary production since 1987; 100% import-reliant. Some high-purity refining of imported feed and scrap.',EU:'Legacy recovery capacity (e.g., Germany) mostly idle.'},why:'Recovery only pays when prices justify it. USGS modeling: a total Chinese ban would lift gallium prices more than 150%.[c:usgsmodel]'},
- germanium:{chain:['Zinc ores and coal fly ash','Zinc-refining residues','Germanium recovery as GeCl₄','Zone refining to optical/electronic grade'],world:'China supplies an estimated 60–70%+ (USGS publishes no world total);[c:projblue] Belgium (Umicore), Canada (Teck), and recycling supply most of the rest.',who:{US:'Recycling and small recovery; imports from Canada and Belgium.',EU:'Umicore (Belgium) is a major refiner and recycler.'},why:'USGS modeling: a total Chinese ban would raise germanium prices ~26%.[c:usgsmodel]'},
- ndpr:{chain:['Hard-rock mining (bastnäsite / monazite)','Flotation & concentration','Solvent-extraction separation into individual oxides','Metal & alloy making'],world:'China mined ~69% in 2025 (270,000 of 390,000 t, USGS)[c:usgsree] and does most separation and magnet making.',who:{US:'MP Materials (Mountain Pass, CA): mining and NdPr separation; DoD equity, loan, and a 10-year $110/kg NdPr floor.[c:mp]',EU:'Solvay (La Rochelle) separation; Neo (Estonia) processing; little mining.'},why:'The chokepoint is processing, not geology: China holds a far smaller share of reserves than of separation capacity.'},
- hree:{chain:['Ionic-clay or hard-rock feed (much from Myanmar)','Heavy-REE separation (Dy, Tb, Sm)','Metal reduction'],world:'China holds a near-monopoly on heavy rare-earth separation. Its April 2025 licensing stayed in place after the Nov 2025 truce.[c:truce]',who:{US:'Essentially no separation yet; MP Materials and others are building circuits.',EU:'Pilot-scale only.'},why:'Dy/Tb make NdFeB magnets survive heat; Sm goes into SmCo magnets for missiles and radar tubes.'},
- antimony:{chain:['Stibnite mining','Concentration & smelting','Antimony trisulfide / trioxide'],world:'China mined ~40,000 of ~110,000 t in 2025 (~36%, USGS); Russia, Tajikistan, Burma and Bolivia follow.[c:usgssb] China\'s Dec 2024 export ban to the US is suspended until 27 Nov 2026.[c:truce]',who:{US:'One Montana producer began mining in 2025.[c:usgssb] Perpetua\'s Stibnite (ID) is the only identified US reserve; an Army–INL trisulfide pilot opened in July 2026.[c:perpetua]',EU:'No meaningful mine output; imports.'},why:'Antimony trisulfide is in the primer of nearly every round. China stopped supplying it to the US in 2021; US import reliance is ~91%.[c:perpetua]'},
- tungsten:{chain:['Scheelite / wolframite mining','Concentrate → ammonium paratungstate (APT)','Tungsten powder'],world:'China ~83% of mined tungsten (USGS, 2023);[c:usgschina] Vietnam, Russia, Bolivia; Kazakhstan\'s Boguty mine started in 2025.[c:usgsw] No US mine production.',who:{US:'Carbide-scrap recycling; several mine projects in development.',EU:'Small mines in Portugal, Austria, Spain.'},why:'DFARS bans Chinese and Russian tungsten from ore through powder starting 1 Jan 2027.'},
- magnesium:{chain:['Dolomite or brines','Pidgeon (thermal) or electrolytic reduction','Ingot & alloy'],world:'China ~89% of primary magnesium (USGS, 2023).[c:usgschina]',who:{US:'Historically a single primary producer (Utah); current status uncertain.',EU:'No primary production.'},why:'Magnesium alloys aluminum, makes IR decoy flares, and reduces titanium ore to sponge in the Kroll process.'},
- ti_sponge:{chain:['Ilmenite / rutile mining','Chlorination to TiCl₄','Kroll reduction with magnesium → sponge'],world:'2025 sponge capacity: China 320,000 t/yr, Japan 65,200, Russia 46,500, Kazakhstan 26,000, Saudi Arabia 15,600 — China and Russia ≈77%.[c:usgsti]',who:{US:'No commercial sponge since TIMET Henderson (12,600 t/yr) idled in 2020. 2025 imports: Japan 73%, Kazakhstan 13%, Saudi Arabia 13%.[c:usgsti]',EU:'Dependence on Russia\'s VSMPO-AVISMA cut after 2022 but not fully replaced.'},why:'After Henderson closed, US sponge import reliance went from 68% to 100%.[c:tswg]'},
- graphite:{chain:['Flake mining or synthetic graphitization','Spheronization & purification','Coating into anode material'],world:'China ~82% of 2025 natural graphite output (USGS) and most anode processing.[c:usgsgr]',who:{US:'No natural graphite mined in 2025; flake was last mined in 1979.[c:usgsgr] Anode plants are planned.',EU:'Small mines; import-dependent anodes.'},why:'Battery anodes for drones, UUVs, and soldier power.'},
- nico:{chain:['Laterite or sulfide mining','HPAL or smelting','Refining to class-1 nickel / cobalt chemicals'],world:'Indonesia dominates nickel (largely Chinese-financed); the DRC mines most cobalt and China refines most of it; Russia\'s Nornickel is a major class-1 producer.',who:{US:'Small domestic mines; Canada and Australia are the main allied sources.',EU:'Finland refines; imports concentrate.'},why:'Hidden PRC exposure: "allied" or Indonesian nickel often runs through Chinese-owned refineries.'},
- tantalum:{chain:['Coltan / tantalite mining','Concentrate → K₂TaF₇','Powder & wire'],world:'DRC and Rwanda dominate tantalum mining; Brazil (CBMM) dominates niobium. US 100% import-reliant for both.',who:{US:'Imports; capacitor-grade powder from allied processors.',EU:'Imports.'},why:'DFARS restricts Chinese tantalum from mine through alloy starting 2027.'},
- indium:{chain:['Zinc ore','Zinc-refining residues','Indium recovery & refining'],world:'China ~760 of ~1,090 t refined in 2025 (~70%); Korea, Japan, Canada.[c:usgsin]',who:{US:'No refinery production; 100% imports.[c:usgsin]',EU:'Small recovery; imports.'},why:'Indium antimonide detectors sit inside many IR seekers.'},
- al_primary:{chain:['Bauxite mining','Alumina refining','Hall-Héroult smelting (~15 MWh/t)'],world:'China produces well over half the world\'s primary aluminum (estimate); Canada is the main US supplier.',who:{US:'Only a handful of US smelters remain; firm power at competitive prices is the binding constraint.',EU:'Many smelters idled after the 2022 energy shock; Norway and Iceland supply hydro-based metal.'},why:'Aluminum powder is also 15–20% of composite rocket propellant.'},
- linters:{chain:['Cotton ginning → linters (short fibers)','Bleaching & purification'],world:'China held ~49% of world linters-pulp exports in 2022 (ITC);[c:rand_nc] Europe gets >70% of its linters from China (Rheinmetall CEO).[c:papperger]',who:{US:'Domestic linters plus wood pulp.',EU:'Rheinmetall qualifying wood cellulose; Nammo researching wood pulp.'},why:'Every gun propellant starts here. China\'s share of EU guncotton imports rose from 12% (2021) to nearly one-third.[c:guncotton] RAND\'s Bradley Martin argues the dependence is overstated.[c:rand_nc]'},
- chem:{chain:['Natural gas → ammonia','Ammonia oxidation → nitric acid (and oleum)','Refinery toluene; hexamine'],world:'Broad commercial supply worldwide.',who:{US:'Commercial base; on-site acid plants at Holston and Radford.',EU:'Commercial base.'},why:'Feedstock is abundant; dedicated defense-grade acid concentration at the plant is not. Diverting it hits fertilizer.'},
- beryllium:{chain:['Bertrandite mining (Utah)','Beryllium hydroxide','Metal, BeO, AlBeMet'],world:'The US is the world\'s leading producer.',who:{US:'Materion: Utah mine and Elmore, Ohio plant — a strength, but a single source.',EU:'Imports from the US.'},why:'IR and satellite optics, avionics heat sinks, F-35 parts.'},
- ap:{chain:['Sodium chlorate electrolysis','Sodium perchlorate','Reaction with ammonia → AP','Grinding & classification'],world:'Few producers worldwide.',who:{US:'AMPAC (Cedar City, UT), the only US source — a single point of failure (Govini).[c:bdsrm] A ~$100M line due in 2026 adds >50% capacity.[c:ampac]',EU:'Limited production, oriented to space launch.'},why:'68–73% of composite propellant mass: every PAC-3, SM-6, GMLRS, AMRAAM, and Javelin motor. In 1988 the PEPCON explosion destroyed nearly half of US capacity.'},
- rdx:{chain:['Hexamine + concentrated nitric acid','Nitration','Recrystallization'],world:'Several producers among allies.',who:{US:'Holston Army Ammunition Plant (BAE), sole US source; modernization ongoing.',EU:'Several producers; ASAP funds >4,300 t/yr of new explosives capacity.[c:asap]'},why:'Fills Comp B, PBX, and IMX warheads.'},
- tnt:{chain:['Toluene','Three-stage mixed-acid nitration','Purification & red-water treatment'],world:'Produced in Poland and a few other allied states.',who:{US:'No new production since 1986.[c:imx] The Graham, KY plant ($435M) is due Feb 2029.[c:tntky] An Oct 2025 blast at Accurate Energetic Systems in Tennessee killed 16.[c:aes]',EU:'Poland\'s Nitro-Chem is a key producer.'},why:'Melt-pour fill for shells and bombs.'},
- nc:{chain:['Cotton linters / wood pulp','Nitration with mixed acid','Stabilization','Propellant formulation (single / double / triple base)'],world:'Europe makes 4,500–10,000 t/yr against ~20,000 t of need (European Policy Centre).[c:epc]',who:{US:'Radford AAP (BAE), sole source; a Feb 2025 explosion was confined to one bay.[c:radford]',EU:'Rheinmetall, Eurenco, MSM (Walsrode), Czech and Polish producers; ASAP funds >10,000 t/yr of new powder capacity.[c:asap]'},why:'Every gun round and modular charge needs it.'},
- primers:{chain:['Antimony trisulfide, lead styphnate','Primer mix compounding','Charging primer cups; black powder for igniters'],world:'Niche, concentrated producers.',who:{US:'Few producers. The only US black-powder plant (Minden, LA) was idled for nearly two years after a 2021 explosion.[c:wotr]',EU:'Several national producers.'},why:'Without primers, nothing fires.'},
- magnets:{chain:['NdPr / Dy / Tb / Sm oxides','Metal & alloy (strip casting)','Hydrogen decrepitation & jet milling','Pressing, sintering, coating'],world:'China dominates magnet making.',who:{US:'MP Materials Independence (TX), with the 10X plant and a 10-year DoD offtake;[c:mp] Vacuumschmelze eVAC (SC); Noveon (TX).',EU:'VAC (Germany); Neo (Estonia).'},why:'Fin actuators, motors, gimbals — nearly every guided weapon and drone.'},
- ti_mill:{chain:['Sponge + scrap','Vacuum arc / electron-beam melting','Forging & rolling'],world:'US ~25% of world titanium melt capacity, China ~33%, Russia ~15%.[c:tswg]',who:{US:'Several melters running on imported sponge; IperionX powder.',EU:'Melters and forgers; post-2022 shift away from VSMPO.'},why:'Airframes, engine fans, armor, submarine fittings.'},
- al_plate:{chain:['Primary ingot + alloying (Mg, Li, Sc)','Direct-chill slab casting','Hot rolling & heat treatment'],world:'A few thick-plate mills serve the whole Western aerospace market.',who:{US:'Arconic, Kaiser.',EU:'Constellium.'},why:'Fighter and missile structures.'},
- superalloy:{chain:['Ni, Co, Cr, Re, Ta, Nb','Vacuum induction melting','VAR / ESR remelting'],world:'Concentrated in a few Western and Japanese melters.',who:{US:'PCC, Howmet, ATI.',EU:'A few European melters.'},why:'Turbine disks and blades for fighters and cruise missiles.'},
- cfiber:{chain:['Acrylonitrile','PAN precursor fiber','Oxidation & carbonization','Sizing → prepreg'],world:'Japan (Toray) and a few US/EU firms dominate aerospace grades.',who:{US:'Hexcel, Toray US.',EU:'Syensqo, Toray Europe.'},why:'Motor cases, airframes, drones.'},
- hy_steel:{chain:['Ni-Cr-Mo steel melt','Plate rolling','Quench & temper','Hull / armor qualification'],world:'Very few qualified mills.',who:{US:'ArcelorMittal Coatesville, SSAB.',EU:'A few naval-grade heavy-plate mills.'},why:'Submarine hulls and armor; a contributor to Virginia-class material delays.'},
- gan:{chain:['High-purity gallium','SiC substrate growth','GaN epitaxy (MOCVD)'],world:'Concentrated in US, European, and Japanese compound-semiconductor fabs.',who:{US:'Wolfspeed (SiC), Qorvo, Northrop and Raytheon foundries.',EU:'UMS and a few others.'},why:'Every AESA radar and EW jammer.'},
- ir_optics:{chain:['Germanium, ZnSe, chalcogenide glass','Crystal growth / casting','Diamond turning & coating','Sapphire / ALON dome growth'],world:'Niche producers; Chinese suppliers significant in germanium optics.',who:{US:'Coherent; Surmet (ALON); a few sapphire growers.',EU:'Umicore optics and others.'},why:'Seeker windows and thermal imagers.'},
- wha:{chain:['Tungsten powder (from APT)','Blend with Ni / Fe / Co','Press & liquid-phase sinter','Machining'],world:'Depends on Chinese tungsten upstream.',who:{US:'A few powder-metallurgy shops.',EU:'Plansee (Austria) and others.'},why:'Kinetic penetrators and fragmentation liners.'},
- shell_bodies:{chain:['Steel billet','Hot forging / pressing','Heat treatment','Machining & inspection'],world:'—',who:{US:'Scranton AAP, Wilkes-Barre, Mesquite, TX ($469M; no usable parts as of Mar 2026).[c:dodig] GD plans to replace the Repkon equipment and run two lines.[c:sofrep] IMT Ingersoll (Canada) runs near 10,000/month against 15,000.[c:bdig]',EU:'Rheinmetall, Nammo, KNDS, Polish and Czech producers.'},why:'The DoD IG called metal parts "the limiting factor": 36,000 rounds/month in March 2026 against a 100,000 goal, and only 71,000 without Mesquite.[c:dodig]'},
- castings:{chain:['Steel, titanium, or superalloy melt','Large sand / investment casting or open-die forging','Heat treat & NDT','Machining'],world:'Thin Western supplier base after decades of low demand.',who:{US:'Many small suppliers; the Navy has funded the submarine industrial base since FY2018.[c:crsva]',EU:'Several heavy foundries and forges.'},why:'GAO cites late supplier material and shortages of experienced workers among the causes of Virginia-class delays.[c:workboat]'},
- pcb:{chain:['Copper-clad laminate','Imaging, etching, plating','Multilayer lamination','Drilling & test'],world:'High-layer-count volume concentrated in China and Taiwan.',who:{US:'A few trusted high-layer-count shops.',EU:'Few high-end shops.'},why:'Every electronic subsystem.'},
- micro:{chain:['Trusted / rad-hard wafer fab','Packaging & test','Trust accreditation'],world:'Leading-edge fabs in Taiwan/Korea; trusted mature-node fabs in the US.',who:{US:'Trusted-foundry-accredited fabs (e.g., SkyWater, BAE, GlobalFoundries for some processes).',EU:'Mostly allied and commercial sources.'},why:'Guidance, seekers, radars. Small volumes make fabs reluctant; obsolescence is constant.'},
- mmic:{chain:['GaN epi wafers','Front-end fab','Dicing & packaging into T/R modules'],world:'Prime-owned and a few merchant foundries.',who:{US:'Raytheon, Northrop, Qorvo.',EU:'UMS and national foundries.'},why:'The building block of AESA radars and RF seekers.'},
- fpa:{chain:['InSb / HgCdTe / InGaAs crystal growth','Detector array fab','Hybridization to readout ICs','Dewar & cooler integration'],world:'A handful of fabs worldwide.',who:{US:'Raytheon, L3Harris, Teledyne.',EU:'Lynred (France).'},why:'IR seekers, targeting pods, drone cameras.'},
- thermal_bat:{chain:['Lithium-alloy anodes, FeS₂ cathodes','Molten-salt electrolyte pellets','Stack & pyrotechnic heater','Hermetic case'],world:'Niche; very few makers.',who:{US:'EaglePicher is the dominant maker.',EU:'A few makers.'},why:'Powers missiles and fuzes in flight; DoD found one maker held ~80% of the market.[c:dn2018]'},
- fuzes:{chain:['Electronics & safe-arm devices','Primer & detonator','Assembly & lot acceptance'],world:'—',who:{US:'A few makers; many single sources.',EU:'National producers (Junghans, others).'},why:'DoD found 98% of second- and third-tier munitions suppliers single or sole source.[c:dn2018]'},
- blades:{chain:['Superalloy master melt','Ceramic cores & wax patterns','Single-crystal vacuum casting','Coating & machining'],world:'A handful of casting houses also serve commercial engines.',who:{US:'PCC, Howmet.',EU:'A few houses.'},why:'Fighter engines and cruise-missile turbofans compete with commercial overhaul demand.'},
- actuators:{chain:['Magnets, copper, bearings','Motor winding','Gearing & control electronics'],world:'Many makers; magnets are the constraint.',who:{US:'Moog, Woodward, and many sub-tier makers.',EU:'Several makers.'},why:'Every fin, gimbal, and drone motor.'},
- li_cells:{chain:['Cathode & anode materials','Electrode coating','Cell assembly & formation'],world:'China dominates; Korea and Japan follow.',who:{US:'Few defense-qualified cell lines.',EU:'Few defense-qualified cell lines.'},why:'Drones, UUVs, submarines, soldier power.'},
- fiber:{chain:['Germanium-doped preform','Draw tower','Coating & cabling'],world:'Large global capacity; China big in preforms.',who:{US:'Corning, OFS.',EU:'Prysmian.'},why:'Fiber-optic gyros and fiber-guided drones.'},
- composites:{chain:['Prepreg / fiber tow','Filament winding or layup','Autoclave cure','Inspection'],world:'—',who:{US:'Northrop, Hexcel, many sub-tier makers.',EU:'Several makers.'},why:'Motor cases and airframe structures; some SRM nozzles run 7–10 month lead times (Govini).[c:bdsrm]'},
- tantcap:{chain:['Tantalum powder','Pressing & sintering anodes','Dielectric & cathode','Mil-spec screening'],world:'A few makers now owned by Taiwanese and Japanese groups.',who:{US:'KEMET (Yageo), AVX (Kyocera).',EU:'Same groups.'},why:'Avionics and missile electronics.'},
- sub_parts:{chain:['Castings & forgings','Precision machining','Assembly & shock testing','Delivery to the yards'],world:'—',who:{US:'Hundreds of suppliers; Anduril (Baltimore) and Hadrian among new entrants.',EU:'National supplier bases.'},why:'Late material is a top cause of delays; both Virginia boats delivered in 2025 were over three years late.[c:workboat]'},
- srm:{chain:['AP + aluminum powder + HTPB binder','Mixing & casting propellant','Case winding & insulation','Nozzle & igniter','Static fire & lot acceptance'],world:'Six US makers in 1995, two by 2017 (GAO).[c:gaosrm]',who:{US:'Northrop Grumman, L3Harris (Aerojet); entrants Anduril, Ursa Major, X-Bow, Avio USA; Nammo (Norway). L3Harris\'s CEO warns new entrants just queue for the same suppliers.[c:bdsrm]',EU:'Nammo, Avio, ArianeGroup, Roxel.'},why:'Gates every interceptor ramp: PAC-3 MSE toward ~2,000/yr[c:lmpac3] and THAAD 96 → 400[c:thaad] are framework targets that depend on motors.'},
- rf_seeker:{chain:['MMICs + processors','Antenna & radome','Integration & test'],world:'—',who:{US:'Boeing (PAC-3 seeker), Raytheon.',EU:'MBDA, Thales, Diehl.'},why:'No reliable public figures on seeker production rates.'},
- ir_seeker:{chain:['FPA + cooler','Optics & dome','Gimbal & electronics'],world:'—',who:{US:'Raytheon, L3Harris.',EU:'Diehl, MBDA, Safran.'},why:'Cruise missiles, air-to-air, anti-armor.'},
- imu:{chain:['Gyro fiber / ring-laser blocks','Accelerometers','Electronics & calibration'],world:'—',who:{US:'Honeywell, Northrop, L3Harris.',EU:'Safran, Exail.'},why:'Every precision munition.'},
- aesa:{chain:['T/R modules','Array & cooling','Back-end processing','Integration'],world:'—',who:{US:'Northrop, Raytheon.',EU:'Thales, Leonardo, Hensoldt.'},why:'F-35 APG-81, LTAMDS, SPY-6.'},
- turbofan:{chain:['Single-crystal hot sections','Titanium compressor parts','Engine assembly','Test-cell acceptance'],world:'—',who:{US:'Williams International: DPA award ($253.7M, Dec 2024)[c:williams] and a $1B+ Crestview, FL plant.[c:williamsfl]',EU:'Safran (Microturbo).'},why:'Tomahawk >1,000/yr (Feb 2026 framework)[c:rtxfw] and JASSM/LRASM growth all need these engines.'},
- fengine:{chain:['Blades, disks, casings','Module assembly','Engine test'],world:'—',who:{US:'Pratt & Whitney, GE.',EU:'Safran, Rolls-Royce, Eurojet.'},why:'Competes with commercial engine overhauls for castings and blades.'},
- warhead:{chain:['Explosive fill (RDX / TNT)','Fragmentation case (WHA, steel)','Fuze integration','Load, assemble, pack'],world:'—',who:{US:'GD-OTS and government ammunition plants.',EU:'Rheinmetall, MBDA TDW, Nammo.'},why:'Ties energetics, tungsten, and fuzes together.'},
- airframe:{chain:['Plate, forgings, composites','Detail parts & sub-assemblies','Major assembly'],world:'—',who:{US:'Lockheed, Boeing, Northrop and suppliers.',EU:'Airbus, Dassault, Leonardo, Saab.'},why:'Commercial aerospace competes for the same suppliers.'},
- propulsion:{chain:['Large gear castings / forgings','Gear cutting & grinding','Assembly & test'],world:'—',who:{US:'Very few makers.',EU:'A few makers.'},why:'Reduction gears and shafting for every hull.'},
- shipyard:{chain:['Steel & modules','Hull assembly','Outfitting','Trials'],world:'ONI (2023): China ~23.25M tons of capacity vs <100,000 for the US — at least 232x.[c:oni]',who:{US:'BIW, Ingalls, Austal, Fincantieri Marinette.',EU:'Naval Group, Fincantieri, TKMS, Navantia, Damen.'},why:'Jones Act protection left almost no commercial order book to sustain the yards.'},
- sub_yard:{chain:['Modules from suppliers','Hull sections','Reactor plant & outfitting','Sea trials'],world:'—',who:{US:'Electric Boat, Newport News.',EU:'Naval Group, TKMS, Saab Kockums.'},why:'Virginia output ~1.1–1.2 boats/yr since 2022 against a 2/yr goal;[c:crsva] a Navy review put future deliveries 24–36 months late.[c:bgov]'},
- lithium:{chain:['Brine evaporation or spodumene mining','Concentrate','Conversion to carbonate / hydroxide','Battery-grade purification'],world:'Australia, Chile and China mine most lithium; China processes an estimated two-thirds of it.[c:sci_li]',who:{US:'One commercial brine operation in Nevada (output withheld by USGS);[c:usgsli] the US imports more than half its lithium.[c:usgs26] Larger projects are in development.',EU:'Projects in Portugal, Germany and Austria; little output.'},why:'Refining, not ore, is the chokepoint for drone and UUV batteries.'},
- rhenium:{chain:['Copper-molybdenum ore','Molybdenite roasting','Rhenium capture from flue gas (APR)','Metal pellets & powder'],world:'2025 mine output ~81 t: Chile ~30 t, China ~20 t, Poland ~10 t, US ~9.8 t (USGS).[c:usgsre]',who:{US:'Byproduct of Arizona and Montana copper-moly; the US and Germany lead recycling of superalloy scrap and catalysts.[c:usgsre]',EU:'Germany recycles; Poland (KGHM) produces.'},why:'Single-crystal turbine blades need a few percent rhenium; prices rose ~90% in 2025.[c:usgsre]'},
- al_powder:{chain:['Primary aluminum ingot','Inert-gas atomization','Classification by particle size','Lot qualification (MIL-PRF-23950)'],world:'Small, specialized producers.',who:{US:'Toyal America (Lockport, IL), Valimet (Stockton, CA), AMPAL (Palmerton, PA).[c:alpowder]',EU:'A few European atomizers.'},why:'Change the powder and you requalify the motor — qualified lots matter more than tonnage.'},
- propchem:{chain:['Butadiene','Polymerization to R-45M HTPB','Curatives, plasticizers, bonding agents','Lot characterization'],world:'Specialty chemicals from very few plants.',who:{US:'One incumbent HTPB supplier; Helicon Chemical (FL) is developing a second source with DLA funding.[c:htpb,bdsrm]',EU:'Specialty suppliers; Nammo lost a propellant-ingredient supplier in 2025.[c:bdsrm]'},why:'Swap one ingredient and you requalify the propellant, then the motor, then possibly the missile.[c:bdsrm] Dechlorane for motor insulation had a single Belgian source.[c:dn2018b]'},
- imx:{chain:['NTO synthesis','DNAN synthesis','Melt-pour blending with RDX','Qualification for each round'],world:'A handful of producers in NATO.',who:{US:'Nitradyn (Paligen + Dyno Nobel) plant at Graham, KY: $581M, ~8M lb/yr from 2030.[c:imx]',EU:'Several national producers.'},why:'Insensitive fills make magazines safer — and add another qualified chemical chain.'},
- machine_tools:{chain:['Castings, spindles, ball screws, CNC controls','Machine build & alignment','Installation & tooling','Process qualification'],world:'Japan, Germany, Taiwan, Italy and China lead; one industry estimate put US import reliance at ~65% of consumption in 2018.[c:mtool]',who:{US:'A shrunken builder base. In 1986 Washington negotiated machine-tool import restraints on national-security grounds.[c:nsdd226]',EU:'Germany and Italy are world leaders.'},why:'The $469M Mesquite plant failed partly on adapted equipment that is now being replaced.[c:sofrep]'},
- bearings:{chain:['Bearing steel (52100, M50)','Ring forging & turning','Heat treat & grinding','Superfinishing & inspection'],world:'Large commercial producers in Japan, Europe and China.',who:{US:'Domestic and Canadian makers; DoD may buy only US- or Canadian-made ball and roller bearings.[c:dfarsbr]',EU:'SKF, Schaeffler and others.'},why:'High-speed turbine bearings are long-lead items for fighter and cruise-missile engines.'},
- twt:{chain:['Cathodes & helix / coupled cavities','Vacuum brazing','Bake-out & pumping','Burn-in & test'],world:'A handful of firms: Teledyne, CPI, L3Harris, Thales.',who:{US:'Teledyne (Rancho Cordova), CPI and others; many Navy tubes are bought sole-source.[c:twt]',EU:'Thales.'},why:'Legacy radars and jammers stay in service for decades; their tubes are low-volume and easy to lose.'},
-};
-const LINEINFO_EU={
- interceptors:'European air defense spans Patriot (with a European-licensed missile line), SAMP/T and Aster, IRIS-T SLM, and NASAMS. Each line builds small batches. Ukraine draws down stocks faster than those lines replace them.',
- strike:'Storm Shadow/SCALP, Taurus, and NSM are built at low rates by MBDA, TAURUS Systems, and Kongsberg. Restarting idle lines takes years, gated by rocket motors and seekers.',
- aircraft:'Typhoon, Rafale, Gripen, and F-35 final assembly. Engines, radars, and magnets bind before the final assembly hall does.',
- surface:'Fragmented across many national classes, small batches, and long yard queues. Every navy wants its own frigate.',
- subs:'Built by TKMS, Naval Group, Saab Kockums, and BAE Barrow. Order books stretch years out and skilled trades are the bottleneck.',
+ gallium:{chain:['Bauxite mining','Alumina refining (Bayer process)','Gallium recovery from Bayer liquor','Purification to 6N–7N'],world:'China ~99% of primary low-purity gallium (USGS).[c:usgs26] Germany, Kazakhstan and Korea have restartable capacity.',who:{US:'No primary production since 1987; 100% import-reliant. Some high-purity refining of imported feed and scrap.'},why:'Recovery only pays when prices justify it. USGS modeling: a total Chinese ban would lift gallium prices more than 150%.[c:usgsmodel]'},
+ germanium:{chain:['Zinc ores and coal fly ash','Zinc-refining residues','Germanium recovery as GeCl₄','Zone refining to optical/electronic grade'],world:'China supplies an estimated 60–70%+ (USGS publishes no world total);[c:projblue] Belgium (Umicore), Canada (Teck), and recycling supply most of the rest.',who:{US:'Recycling and small recovery; imports from Canada and Belgium.'},why:'USGS modeling: a total Chinese ban would raise germanium prices ~26%.[c:usgsmodel]'},
+ ndpr:{chain:['Hard-rock mining (bastnäsite / monazite)','Flotation & concentration','Solvent-extraction separation into individual oxides','Metal & alloy making'],world:'China mined ~69% in 2025 (270,000 of 390,000 t, USGS)[c:usgsree] and does most separation and magnet making.',who:{US:'MP Materials (Mountain Pass, CA): mining and NdPr separation; DoD equity, loan, and a 10-year $110/kg NdPr floor.[c:mp]'},why:'The chokepoint is processing, not geology: China holds a far smaller share of reserves than of separation capacity.'},
+ hree:{chain:['Ionic-clay or hard-rock feed (much from Myanmar)','Heavy-REE separation (Dy, Tb, Sm)','Metal reduction'],world:'China holds a near-monopoly on heavy rare-earth separation. Its April 2025 licensing stayed in place after the Nov 2025 truce.[c:truce]',who:{US:'Essentially no separation yet; MP Materials and others are building circuits.'},why:'Dy/Tb make NdFeB magnets survive heat; Sm goes into SmCo magnets for missiles and radar tubes.'},
+ antimony:{chain:['Stibnite mining','Concentration & smelting','Antimony trisulfide / trioxide'],world:'China mined ~40,000 of ~110,000 t in 2025 (~36%, USGS); Russia, Tajikistan, Burma and Bolivia follow.[c:usgssb] China\'s Dec 2024 export ban to the US is suspended until 27 Nov 2026.[c:truce]',who:{US:'One Montana producer began mining in 2025.[c:usgssb] Perpetua\'s Stibnite (ID) is the only identified US reserve; an Army–INL trisulfide pilot opened in July 2026.[c:perpetua]'},why:'Antimony trisulfide is in the primer of nearly every round. China stopped supplying it to the US in 2021; US import reliance is ~91%.[c:perpetua]'},
+ tungsten:{chain:['Scheelite / wolframite mining','Concentrate → ammonium paratungstate (APT)','Tungsten powder'],world:'China ~83% of mined tungsten (USGS, 2023);[c:usgschina] Vietnam, Russia, Bolivia; Kazakhstan\'s Boguty mine started in 2025.[c:usgsw] No US mine production.',who:{US:'Carbide-scrap recycling; several mine projects in development.'},why:'DFARS bans Chinese and Russian tungsten from ore through powder starting 1 Jan 2027.'},
+ magnesium:{chain:['Dolomite or brines','Pidgeon (thermal) or electrolytic reduction','Ingot & alloy'],world:'China ~89% of primary magnesium (USGS, 2023).[c:usgschina]',who:{US:'Historically a single primary producer (Utah); current status uncertain.'},why:'Magnesium alloys aluminum, makes IR decoy flares, and reduces titanium ore to sponge in the Kroll process.'},
+ ti_sponge:{chain:['Ilmenite / rutile mining','Chlorination to TiCl₄','Kroll reduction with magnesium → sponge'],world:'2025 sponge capacity: China 320,000 t/yr, Japan 65,200, Russia 46,500, Kazakhstan 26,000, Saudi Arabia 15,600 — China and Russia ≈77%.[c:usgsti]',who:{US:'No commercial sponge since TIMET Henderson (12,600 t/yr) idled in 2020. 2025 imports: Japan 73%, Kazakhstan 13%, Saudi Arabia 13%.[c:usgsti]'},why:'After Henderson closed, US sponge import reliance went from 68% to 100%.[c:tswg]'},
+ graphite:{chain:['Flake mining or synthetic graphitization','Spheronization & purification','Coating into anode material'],world:'China ~82% of 2025 natural graphite output (USGS) and most anode processing.[c:usgsgr]',who:{US:'No natural graphite mined in 2025; flake was last mined in 1979.[c:usgsgr] Anode plants are planned.'},why:'Battery anodes for drones, UUVs, and soldier power.'},
+ nico:{chain:['Laterite or sulfide mining','HPAL or smelting','Refining to class-1 nickel / cobalt chemicals'],world:'Indonesia dominates nickel (largely Chinese-financed); the DRC mines most cobalt and China refines most of it; Russia\'s Nornickel is a major class-1 producer.',who:{US:'Small domestic mines; Canada and Australia are the main allied sources.'},why:'Hidden PRC exposure: "allied" or Indonesian nickel often runs through Chinese-owned refineries.'},
+ tantalum:{chain:['Coltan / tantalite mining','Concentrate → K₂TaF₇','Powder & wire'],world:'DRC and Rwanda dominate tantalum mining; Brazil (CBMM) dominates niobium. US 100% import-reliant for both.',who:{US:'Imports; capacitor-grade powder from allied processors.'},why:'DFARS restricts Chinese tantalum from mine through alloy starting 2027.'},
+ indium:{chain:['Zinc ore','Zinc-refining residues','Indium recovery & refining'],world:'China ~760 of ~1,090 t refined in 2025 (~70%); Korea, Japan, Canada.[c:usgsin]',who:{US:'No refinery production; 100% imports.[c:usgsin]'},why:'Indium antimonide detectors sit inside many IR seekers.'},
+ al_primary:{chain:['Bauxite mining','Alumina refining','Hall-Héroult smelting (~15 MWh/t)'],world:'China produces well over half the world\'s primary aluminum (estimate); Canada is the main US supplier.',who:{US:'Only a handful of US smelters remain; firm power at competitive prices is the binding constraint.'},why:'Aluminum powder is also 15–20% of composite rocket propellant.'},
+ linters:{chain:['Cotton ginning → linters (short fibers)','Bleaching & purification'],world:'China held ~49% of world linters-pulp exports in 2022 (ITC);[c:rand_nc] Europe gets >70% of its linters from China (Rheinmetall CEO).[c:papperger]',who:{US:'Domestic linters plus wood pulp.'},why:'Every gun propellant starts here. China\'s share of EU guncotton imports rose from 12% (2021) to nearly one-third.[c:guncotton] RAND\'s Bradley Martin argues the dependence is overstated.[c:rand_nc]'},
+ chem:{chain:['Natural gas → ammonia','Ammonia oxidation → nitric acid (and oleum)','Refinery toluene; hexamine'],world:'Broad commercial supply worldwide.',who:{US:'Commercial base; on-site acid plants at Holston and Radford.'},why:'Feedstock is abundant; dedicated defense-grade acid concentration at the plant is not. Diverting it hits fertilizer.'},
+ beryllium:{chain:['Bertrandite mining (Utah)','Beryllium hydroxide','Metal, BeO, AlBeMet'],world:'The US is the world\'s leading producer.',who:{US:'Materion: Utah mine and Elmore, Ohio plant — a strength, but a single source.'},why:'IR and satellite optics, avionics heat sinks, F-35 parts.'},
+ ap:{chain:['Sodium chlorate electrolysis','Sodium perchlorate','Reaction with ammonia → AP','Grinding & classification'],world:'Few producers worldwide.',who:{US:'AMPAC (Cedar City, UT), the only US source — a single point of failure (Govini).[c:bdsrm] A ~$100M line due in 2026 adds >50% capacity.[c:ampac]'},why:'68–73% of composite propellant mass: every PAC-3, SM-6, GMLRS, AMRAAM, and Javelin motor. In 1988 the PEPCON explosion destroyed nearly half of US capacity.'},
+ rdx:{chain:['Hexamine + concentrated nitric acid','Nitration','Recrystallization'],world:'Several producers among allies.',who:{US:'Holston Army Ammunition Plant (BAE), sole US source; modernization ongoing.'},why:'Fills Comp B, PBX, and IMX warheads.'},
+ tnt:{chain:['Toluene','Three-stage mixed-acid nitration','Purification & red-water treatment'],world:'Produced in Poland and a few other allied states.',who:{US:'No new production since 1986.[c:imx] The Graham, KY plant ($435M) is due Feb 2029.[c:tntky] An Oct 2025 blast at Accurate Energetic Systems in Tennessee killed 16.[c:aes]'},why:'Melt-pour fill for shells and bombs.'},
+ nc:{chain:['Cotton linters / wood pulp','Nitration with mixed acid','Stabilization','Propellant formulation (single / double / triple base)'],world:'Europe makes 4,500–10,000 t/yr against ~20,000 t of need (European Policy Centre).[c:epc]',who:{US:'Radford AAP (BAE), sole source; a Feb 2025 explosion was confined to one bay.[c:radford]'},why:'Every gun round and modular charge needs it.'},
+ primers:{chain:['Antimony trisulfide, lead styphnate','Primer mix compounding','Charging primer cups; black powder for igniters'],world:'Niche, concentrated producers.',who:{US:'Few producers. The only US black-powder plant (Minden, LA) was idled for nearly two years after a 2021 explosion.[c:wotr]'},why:'Without primers, nothing fires.'},
+ magnets:{chain:['NdPr / Dy / Tb / Sm oxides','Metal & alloy (strip casting)','Hydrogen decrepitation & jet milling','Pressing, sintering, coating'],world:'China dominates magnet making.',who:{US:'MP Materials Independence (TX), with the 10X plant and a 10-year DoD offtake;[c:mp] Vacuumschmelze eVAC (SC); Noveon (TX).'},why:'Fin actuators, motors, gimbals — nearly every guided weapon and drone.'},
+ ti_mill:{chain:['Sponge + scrap','Vacuum arc / electron-beam melting','Forging & rolling'],world:'US ~25% of world titanium melt capacity, China ~33%, Russia ~15%.[c:tswg]',who:{US:'Several melters running on imported sponge; IperionX powder.'},why:'Airframes, engine fans, armor, submarine fittings.'},
+ al_plate:{chain:['Primary ingot + alloying (Mg, Li, Sc)','Direct-chill slab casting','Hot rolling & heat treatment'],world:'A few thick-plate mills serve the whole Western aerospace market.',who:{US:'Arconic, Kaiser.'},why:'Fighter and missile structures.'},
+ superalloy:{chain:['Ni, Co, Cr, Re, Ta, Nb','Vacuum induction melting','VAR / ESR remelting'],world:'Concentrated in a few Western and Japanese melters.',who:{US:'PCC, Howmet, ATI.'},why:'Turbine disks and blades for fighters and cruise missiles.'},
+ cfiber:{chain:['Acrylonitrile','PAN precursor fiber','Oxidation & carbonization','Sizing → prepreg'],world:'Japan (Toray) and a few US/EU firms dominate aerospace grades.',who:{US:'Hexcel, Toray US.'},why:'Motor cases, airframes, drones.'},
+ hy_steel:{chain:['Ni-Cr-Mo steel melt','Plate rolling','Quench & temper','Hull / armor qualification'],world:'Very few qualified mills.',who:{US:'ArcelorMittal Coatesville, SSAB.'},why:'Submarine hulls and armor; a contributor to Virginia-class material delays.'},
+ gan:{chain:['High-purity gallium','SiC substrate growth','GaN epitaxy (MOCVD)'],world:'Concentrated in US, European, and Japanese compound-semiconductor fabs.',who:{US:'Wolfspeed (SiC), Qorvo, Northrop and Raytheon foundries.'},why:'Every AESA radar and EW jammer.'},
+ ir_optics:{chain:['Germanium, ZnSe, chalcogenide glass','Crystal growth / casting','Diamond turning & coating','Sapphire / ALON dome growth'],world:'Niche producers; Chinese suppliers significant in germanium optics.',who:{US:'Coherent; Surmet (ALON); a few sapphire growers.'},why:'Seeker windows and thermal imagers.'},
+ wha:{chain:['Tungsten powder (from APT)','Blend with Ni / Fe / Co','Press & liquid-phase sinter','Machining'],world:'Depends on Chinese tungsten upstream.',who:{US:'A few powder-metallurgy shops.'},why:'Kinetic penetrators and fragmentation liners.'},
+ shell_bodies:{chain:['Steel billet','Hot forging / pressing','Heat treatment','Machining & inspection'],world:'—',who:{US:'Scranton AAP, Wilkes-Barre, Mesquite, TX ($469M; no usable parts as of Mar 2026).[c:dodig] GD plans to replace the Repkon equipment and run two lines.[c:sofrep] IMT Ingersoll (Canada) runs near 10,000/month against 15,000.[c:bdig]'},why:'The DoD IG called metal parts "the limiting factor": 36,000 rounds/month in March 2026 against a 100,000 goal, and only 71,000 without Mesquite.[c:dodig]'},
+ castings:{chain:['Steel, titanium, or superalloy melt','Large sand / investment casting or open-die forging','Heat treat & NDT','Machining'],world:'Thin Western supplier base after decades of low demand.',who:{US:'Many small suppliers; the Navy has funded the submarine industrial base since FY2018.[c:crsva]'},why:'GAO cites late supplier material and shortages of experienced workers among the causes of Virginia-class delays.[c:workboat]'},
+ pcb:{chain:['Copper-clad laminate','Imaging, etching, plating','Multilayer lamination','Drilling & test'],world:'High-layer-count volume concentrated in China and Taiwan.',who:{US:'A few trusted high-layer-count shops.'},why:'Every electronic subsystem.'},
+ micro:{chain:['Trusted / rad-hard wafer fab','Packaging & test','Trust accreditation'],world:'Leading-edge fabs in Taiwan/Korea; trusted mature-node fabs in the US.',who:{US:'Trusted-foundry-accredited fabs (e.g., SkyWater, BAE, GlobalFoundries for some processes).'},why:'Guidance, seekers, radars. Small volumes make fabs reluctant; obsolescence is constant.'},
+ mmic:{chain:['GaN epi wafers','Front-end fab','Dicing & packaging into T/R modules'],world:'Prime-owned and a few merchant foundries.',who:{US:'Raytheon, Northrop, Qorvo.'},why:'The building block of AESA radars and RF seekers.'},
+ fpa:{chain:['InSb / HgCdTe / InGaAs crystal growth','Detector array fab','Hybridization to readout ICs','Dewar & cooler integration'],world:'A handful of fabs worldwide.',who:{US:'Raytheon, L3Harris, Teledyne.'},why:'IR seekers, targeting pods, drone cameras.'},
+ thermal_bat:{chain:['Lithium-alloy anodes, FeS₂ cathodes','Molten-salt electrolyte pellets','Stack & pyrotechnic heater','Hermetic case'],world:'Niche; very few makers.',who:{US:'EaglePicher is the dominant maker.'},why:'Powers missiles and fuzes in flight; DoD found one maker held ~80% of the market.[c:dn2018]'},
+ fuzes:{chain:['Electronics & safe-arm devices','Primer & detonator','Assembly & lot acceptance'],world:'—',who:{US:'A few makers; many single sources.'},why:'DoD found 98% of second- and third-tier munitions suppliers single or sole source.[c:dn2018]'},
+ blades:{chain:['Superalloy master melt','Ceramic cores & wax patterns','Single-crystal vacuum casting','Coating & machining'],world:'A handful of casting houses also serve commercial engines.',who:{US:'PCC, Howmet.'},why:'Fighter engines and cruise-missile turbofans compete with commercial overhaul demand.'},
+ actuators:{chain:['Magnets, copper, bearings','Motor winding','Gearing & control electronics'],world:'Many makers; magnets are the constraint.',who:{US:'Moog, Woodward, and many sub-tier makers.'},why:'Every fin, gimbal, and drone motor.'},
+ li_cells:{chain:['Cathode & anode materials','Electrode coating','Cell assembly & formation'],world:'China dominates; Korea and Japan follow.',who:{US:'Few defense-qualified cell lines.'},why:'Drones, UUVs, submarines, soldier power.'},
+ fiber:{chain:['Germanium-doped preform','Draw tower','Coating & cabling'],world:'Large global capacity; China big in preforms.',who:{US:'Corning, OFS.'},why:'Fiber-optic gyros and fiber-guided drones.'},
+ composites:{chain:['Prepreg / fiber tow','Filament winding or layup','Autoclave cure','Inspection'],world:'—',who:{US:'Northrop, Hexcel, many sub-tier makers.'},why:'Motor cases and airframe structures; some SRM nozzles run 7–10 month lead times (Govini).[c:bdsrm]'},
+ tantcap:{chain:['Tantalum powder','Pressing & sintering anodes','Dielectric & cathode','Mil-spec screening'],world:'A few makers now owned by Taiwanese and Japanese groups.',who:{US:'KEMET (Yageo), AVX (Kyocera).'},why:'Avionics and missile electronics.'},
+ sub_parts:{chain:['Castings & forgings','Precision machining','Assembly & shock testing','Delivery to the yards'],world:'—',who:{US:'Hundreds of suppliers; Anduril (Baltimore) and Hadrian among new entrants.'},why:'Late material is a top cause of delays; both Virginia boats delivered in 2025 were over three years late.[c:workboat]'},
+ srm:{chain:['AP + aluminum powder + HTPB binder','Mixing & casting propellant','Case winding & insulation','Nozzle & igniter','Static fire & lot acceptance'],world:'Six US makers in 1995, two by 2017 (GAO).[c:gaosrm]',who:{US:'Northrop Grumman, L3Harris (Aerojet); entrants Anduril, Ursa Major, X-Bow, Avio USA; Nammo (Norway). L3Harris\'s CEO warns new entrants just queue for the same suppliers.[c:bdsrm]'},why:'Gates every interceptor ramp: PAC-3 MSE toward ~2,000/yr[c:lmpac3] and THAAD 96 → 400[c:thaad] are framework targets that depend on motors.'},
+ rf_seeker:{chain:['MMICs + processors','Antenna & radome','Integration & test'],world:'—',who:{US:'Boeing (PAC-3 seeker), Raytheon.'},why:'No reliable public figures on seeker production rates.'},
+ ir_seeker:{chain:['FPA + cooler','Optics & dome','Gimbal & electronics'],world:'—',who:{US:'Raytheon, L3Harris.'},why:'Cruise missiles, air-to-air, anti-armor.'},
+ imu:{chain:['Gyro fiber / ring-laser blocks','Accelerometers','Electronics & calibration'],world:'—',who:{US:'Honeywell, Northrop, L3Harris.'},why:'Every precision munition.'},
+ aesa:{chain:['T/R modules','Array & cooling','Back-end processing','Integration'],world:'—',who:{US:'Northrop, Raytheon.'},why:'F-35 APG-81, LTAMDS, SPY-6.'},
+ turbofan:{chain:['Single-crystal hot sections','Titanium compressor parts','Engine assembly','Test-cell acceptance'],world:'—',who:{US:'Williams International: DPA award ($253.7M, Dec 2024)[c:williams] and a $1B+ Crestview, FL plant.[c:williamsfl]'},why:'Tomahawk >1,000/yr (Feb 2026 framework)[c:rtxfw] and JASSM/LRASM growth all need these engines.'},
+ fengine:{chain:['Blades, disks, casings','Module assembly','Engine test'],world:'—',who:{US:'Pratt & Whitney, GE.'},why:'Competes with commercial engine overhauls for castings and blades.'},
+ warhead:{chain:['Explosive fill (RDX / TNT)','Fragmentation case (WHA, steel)','Fuze integration','Load, assemble, pack'],world:'—',who:{US:'GD-OTS and government ammunition plants.'},why:'Ties energetics, tungsten, and fuzes together.'},
+ airframe:{chain:['Plate, forgings, composites','Detail parts & sub-assemblies','Major assembly'],world:'—',who:{US:'Lockheed, Boeing, Northrop and suppliers.'},why:'Commercial aerospace competes for the same suppliers.'},
+ propulsion:{chain:['Large gear castings / forgings','Gear cutting & grinding','Assembly & test'],world:'—',who:{US:'Very few makers.'},why:'Reduction gears and shafting for every hull.'},
+ shipyard:{chain:['Steel & modules','Hull assembly','Outfitting','Trials'],world:'ONI (2023): China ~23.25M tons of capacity vs <100,000 for the US — at least 232x.[c:oni]',who:{US:'BIW, Ingalls, Austal, Fincantieri Marinette.'},why:'Jones Act protection left almost no commercial order book to sustain the yards.'},
+ sub_yard:{chain:['Modules from suppliers','Hull sections','Reactor plant & outfitting','Sea trials'],world:'—',who:{US:'Electric Boat, Newport News.'},why:'Virginia output ~1.1–1.2 boats/yr since 2022 against a 2/yr goal;[c:crsva] a Navy review put future deliveries 24–36 months late.[c:bgov]'},
+ lithium:{chain:['Brine evaporation or spodumene mining','Concentrate','Conversion to carbonate / hydroxide','Battery-grade purification'],world:'Australia, Chile and China mine most lithium; China processes an estimated two-thirds of it.[c:sci_li]',who:{US:'One commercial brine operation in Nevada (output withheld by USGS);[c:usgsli] the US imports more than half its lithium.[c:usgs26] Larger projects are in development.'},why:'Refining, not ore, is the chokepoint for drone and UUV batteries.'},
+ rhenium:{chain:['Copper-molybdenum ore','Molybdenite roasting','Rhenium capture from flue gas (APR)','Metal pellets & powder'],world:'2025 mine output ~81 t: Chile ~30 t, China ~20 t, Poland ~10 t, US ~9.8 t (USGS).[c:usgsre]',who:{US:'Byproduct of Arizona and Montana copper-moly; the US and Germany lead recycling of superalloy scrap and catalysts.[c:usgsre]'},why:'Single-crystal turbine blades need a few percent rhenium; prices rose ~90% in 2025.[c:usgsre]'},
+ al_powder:{chain:['Primary aluminum ingot','Inert-gas atomization','Classification by particle size','Lot qualification (MIL-PRF-23950)'],world:'Small, specialized producers.',who:{US:'Toyal America (Lockport, IL), Valimet (Stockton, CA), AMPAL (Palmerton, PA).[c:alpowder]'},why:'Change the powder and you requalify the motor — qualified lots matter more than tonnage.'},
+ propchem:{chain:['Butadiene','Polymerization to R-45M HTPB','Curatives, plasticizers, bonding agents','Lot characterization'],world:'Specialty chemicals from very few plants.',who:{US:'One incumbent HTPB supplier; Helicon Chemical (FL) is developing a second source with DLA funding.[c:htpb,bdsrm]'},why:'Swap one ingredient and you requalify the propellant, then the motor, then possibly the missile.[c:bdsrm] Dechlorane for motor insulation had a single Belgian source.[c:dn2018b]'},
+ imx:{chain:['NTO synthesis','DNAN synthesis','Melt-pour blending with RDX','Qualification for each round'],world:'A handful of producers in NATO.',who:{US:'Nitradyn (Paligen + Dyno Nobel) plant at Graham, KY: $581M, ~8M lb/yr from 2030.[c:imx]'},why:'Insensitive fills make magazines safer — and add another qualified chemical chain.'},
+ machine_tools:{chain:['Castings, spindles, ball screws, CNC controls','Machine build & alignment','Installation & tooling','Process qualification'],world:'Japan, Germany, Taiwan, Italy and China lead; one industry estimate put US import reliance at ~65% of consumption in 2018.[c:mtool]',who:{US:'A shrunken builder base. In 1986 Washington negotiated machine-tool import restraints on national-security grounds.[c:nsdd226]'},why:'The $469M Mesquite plant failed partly on adapted equipment that is now being replaced.[c:sofrep]'},
+ bearings:{chain:['Bearing steel (52100, M50)','Ring forging & turning','Heat treat & grinding','Superfinishing & inspection'],world:'Large commercial producers in Japan, Europe and China.',who:{US:'Domestic and Canadian makers; DoD may buy only US- or Canadian-made ball and roller bearings.[c:dfarsbr]'},why:'High-speed turbine bearings are long-lead items for fighter and cruise-missile engines.'},
+ twt:{chain:['Cathodes & helix / coupled cavities','Vacuum brazing','Bake-out & pumping','Burn-in & test'],world:'A handful of firms: Teledyne, CPI, L3Harris, Thales.',who:{US:'Teledyne (Rancho Cordova), CPI and others; many Navy tubes are bought sole-source.[c:twt]'},why:'Legacy radars and jammers stay in service for decades; their tubes are low-volume and easy to lose.'},
 };
 const LINEINFO={
  shells:'US 155mm output was 14,000/month in 2022 and 36,000/month in March 2026 against a 100,000 goal (DoD IG).[c:dodig] Russia made ~3.4M howitzer shells in 2025 — ~7M counting mortar, tank and rocket rounds (Estonian intelligence).[c:estonia] The EU targeted 2M shells/yr by end-2025.[c:asap]',
@@ -1191,37 +1184,16 @@ const FACTIONS={
    {def:'l_str_prime',n:'Tomahawk Framework (>1,000/yr)',dur:[56,0,0,156,52,0],gm:1.52}, // Feb 2026 [c:rtxfw]
   ],
   blurb:['The Iran war used >1,000 Tomahawks and roughly half the Patriot and THAAD stocks; rebuilding takes 1–4 years.[c:csislast,twzstock]','~291 battle force ships vs. a PLAN headed for 435.[c:navy291,cmpr]','One ammonium perchlorate plant. One RDX plant. No TNT until 2029.[c:bdsrm,tntky]','~99% of primary gallium comes from China.[c:usgs26]','155mm output at ~36% of goal; a $469M plant made zero usable parts.[c:dodig]','Virginia-class subs at ~1.1–1.2/yr vs. a 2/yr goal.[c:crsva]','Annual budgets — usually late.']},
- EU:{name:'European Union',flag:FLAGS.eu,cur:'€',motto:'The Strategic Autonomy Working Group',
-  pc0:35,pcRate:1.5,budget0:7,fyBudget:8,lev0:60,slots:8,
-  lines:{shells:2.5,interceptors:1.33,strike:.375,aircraft:.55,surface:.83,subs:1.7,drones:2,a2a:.4,fires:.2},
-  lineKn:{shells:55,interceptors:50,strike:45,aircraft:55,surface:50,subs:50,drones:35,a2a:50,fires:45},
-  order:['shells','interceptors','drones','strike','aircraft','subs','surface','a2a','fires'],
-  inv:{shells:6e5,interceptors:1500,strike:2000,aircraft:1800,surface:120,subs:40,drones:20000,a2a:4000,fires:2000},
-  ret:{shells:.05,interceptors:.03,strike:.02,aircraft:.04,surface:.03,subs:.035,drones:.3,a2a:.03,fires:.04},
-  aid:{shells:1e6,interceptors:150}, // to Ukraine while the war lasts (estimate)
-  alloc:{pac:{shells:0,interceptors:0,strike:0,aircraft:0,surface:0,subs:0,drones:0,a2a:0,fires:0},eu:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:1,drones:1,a2a:1,fires:1}},
-  q:{shells:1,interceptors:.8,strike:.8,aircraft:.7,surface:.9,subs:.9,drones:1,a2a:.9,fires:.9},
-  allied:{pac:1,eu:1},alliedG:{pac:0,eu:0},alliedN:{pac:'',eu:'US forces in Europe'},
-  theaters:['eu'],primes:'the national champions',
-  inherited:[
-   {def:'d_nc',n:'ASAP Powder Expansions',dur:[0,0,0,156,26,0]},
-   {def:'d_rdx',n:'ASAP Explosives Expansions',dur:[0,0,0,144,26,0]},
-   {def:'l_shell_lap',n:'Rheinmetall Unterlüß Shell Plant',dur:[0,0,0,34,0,0],gm:1.46,st:-48},
-  ],
-  blurb:['Nitrocellulose: 4,500–10,000 t/yr against ~20,000 t of need.[c:epc]','>70% of cotton linters from China.[c:papperger]','Russia made ~7M shells, mortar rounds and rockets in 2025.[c:estonia]','SAFE: €150B in defence loans.','Most new shells go to Ukraine — about 2M rounds delivered in 2025.[c:kallas]','27 permitting regimes. Unanimity on anything with money.','Interceptors depend on US SRMs and seekers.']},
 };
-const READY0={US:{aircraft:.55,surface:.70,subs:.63},EU:{aircraft:.55,surface:.60,subs:.45},pac:{aircraft:.70,surface:.75,subs:.70},eu:{aircraft:.50,surface:.50,subs:.45}};
+const READY0={US:{aircraft:.55,surface:.70,subs:.63},pac:{aircraft:.70,surface:.75,subs:.70},eu:{aircraft:.50,surface:.50,subs:.45}};
 const PLANNED_MX={aircraft:.25,surface:.25,subs:.20};
 const READY_NOTE={
  US:{subs:'CRS: 18 of 49 attack submarines (37%) were in depot maintenance or idle awaiting it as of 2023, against a Navy goal of no more than 20%.[c:crsssn] GAO (Aug 2026): about 11% of attack-sub depot periods at the public yards finished on time, FY2016–25.[c:workboat] The 63% starting availability is the CRS figure applied to the whole submarine force.',
   aircraft:'GAO (June 2026): the F-35 fleet mission-capable rate fell from 67% in FY2021 to 44% in FY2025, with 25% fully mission capable.[c:gaof35] The 55% starting figure blends that with older fleets and is an estimate.',
-  surface:'Surface-ship depot periods routinely finish late. The 70% starting figure is an estimate.'},
- EU:{subs:'In mid-2026, all five active Royal Navy Astute-class boats were alongside for maintenance or repair.[c:astute] Other European fleets do better. The 45% starting figure is an estimate.',
-  aircraft:'European fast-jet availability has repeatedly been reported as low. The 55% starting figure is an estimate.',
-  surface:'Press reports in 2026 had only two of six Type 45 destroyers operational. The 60% starting figure is an estimate.'}};
+  surface:'Surface-ship depot periods routinely finish late. The 70% starting figure is an estimate.'}};
 const MXP=[
  {id:'m_subs_dock',fac:['US'],line:'subs',n:'Public Shipyard Dry Dock (SIOP)',d:'A new or rebuilt dry dock at a public naval shipyard. Dock space is the binding constraint on submarine maintenance. Portsmouth\'s Dry Dock 1: ground broken 2021, due 2029.[c:pnsy]',eff:.09,c:2.5,dur:[16,26,26,390,26,0],tags:['shipyard','labor','greenfield']},
- {id:'m_subs_dock_eu',fac:['EU'],line:'subs',n:'Submarine Dock Rebuild',d:'Rebuild and add submarine-capable dry docks. Today deterrent boats take priority for the few docks there are.',eff:.10,c:2,dur:[16,26,26,312,26,0],tags:['shipyard','labor','greenfield']},
+ 
  {id:'m_subs_priv',line:'subs',n:'Private-Yard Sub Maintenance',d:'Move maintenance periods to the private builders. They use the same trades as new construction, so new-build output falls 5%.',eff:.05,c:.6,dur:[8,16,0,52,12,0],tags:['shipyard','labor','brownfield'],sideLine:.95},
  {id:'m_trades',line:'subs',also:['surface'],n:'Shipyard Trades Pipeline',d:'Apprenticeships and pay for welders, pipefitters, and nuclear-qualified technicians.',eff:.04,c:.3,dur:[8,12,0,104,0,0],tags:['labor','program']},
  {id:'m_surf_rep',line:'surface',n:'Surface Ship Repair Capacity',d:'Expand private repair yards and dry-dock slots for surface combatants.',eff:.07,c:.8,dur:[12,20,26,104,0,0],tags:['shipyard','labor','brownfield']},
@@ -1451,11 +1423,13 @@ const RLINKS={
  export:[['itarReform','Extend license-free trade to Japan and Korea.'],['nds','Stockpile what Beijing can switch off.']],
  money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
 };
+// allied refiners of these still run on Chinese feedstock, so an allied deal for them carries Chinese content
+const AP_CN_FEED=['lithium','nico','linters'];
 const PROJECTS=[];
 for(const n of NODES){
   const a=ARCH[n.arch];
   if(n.dp)PROJECTS.push({id:'d_'+n.id,n:n.dp.n,d:n.d,t:{node:n.id},gain:n.dp.g,cost:n.dp.c,dur:n.dp.dur||a.dur,tags:[...a.tags,...(n.tags||[]),n.id],fac:n.dp.fac});
-  if(n.ap){const prcHeavy=(n.US.mix[2]>.4||n.EU.mix[2]>.4);
+  if(n.ap){const prcHeavy=n.US.mix[2]>.4||AP_CN_FEED.includes(n.id);
     PROJECTS.push({id:'a_'+n.id,ally:1,n:n.ap.n,d:n.d,t:{node:n.id},gain:n.ap.g,cost:n.ap.c,adv:n.ap.adv??(prcHeavy?.1:0),dur:n.ap.dur||[8,14,0,78,20,8],tags:['allied',n.id,...(prcHeavy?['chinaInput','dumpable']:[])],fac:n.ap.fac});}
 }
 for(const n of NODES){const a=ARCH[n.arch];for(const L of LEVERS[n.arch]||[]){
@@ -1485,20 +1459,16 @@ const OBSTACLES=[
  {id:'nostart',layer:'FISCAL',stage:'approp',fac:['US'],al:1,chance:.35,n:'No Line Item',
   t:"The project isn't in the President's Budget Request, which was locked 14 months ago. That makes it a \"new start,\" needing a reprogramming approved by four congressional committees — any one of which can say no by not answering.",
   o:[{l:'File a reprogramming request',pc:8,wait:8,pages:30},{l:'Wait for the next budget cycle',wait:30},{l:'Find a friendly appropriator',pc:18}]},
- {id:'unanim',layer:'FISCAL',stage:'approp',fac:['EU'],al:1,chance:.4,mods:{common:.6,cvEnhanced:.1},n:'Unanimity Required',
-  t:"The financing package needs all 27 capitals. One is holding out for concessions on an entirely unrelated file.",
-  o:[{l:'Concede the unrelated file',pc:18},{l:'Wait for the next European Council',wait:12},{l:'Go intergovernmental (smaller coalition)',pc:6,gain:.85}]},
+ 
  {id:'scoring',layer:'FISCAL',stage:'approp',al:1,chance:.2,n:'Budget Scoring Dispute',
-  t:{US:"OMB scores your 20-year plant as a one-year outlay and asks which program you'd like to cut to pay for it.",EU:"The finance ministry scores your 20-year plant against this year's deficit ceiling."},
+  t:{US:"OMB scores your 20-year plant as a one-year outlay and asks which program you'd like to cut to pay for it."},
   o:[{l:'Argue the methodology',pc:6,p:.6,fail:{wait:10}},{l:'Accept phased funding',wait:10}]},
  {id:'far',layer:'PROCURE',stage:'contract',fac:['US'],chance:.45,mods:{acq:.5},n:'FAR Part 15 Source Selection',
   t:"Full and open competition: draft RFP, industry day, questions, amendments, proposals, evaluation, discussions, final revisions, award. Then the debriefs.",
   o:[{l:'Run the full competition',wait:22,pages:400},{l:'Use Other Transaction Authority',pc:6,wait:4,p:.7,fail:{wait:14},tip:'Lawyers will debate whether a factory counts as a "prototype."'},{l:'Sole-source Justification & Approval',pc:12,lev:3,pages:60,waiver:1}]},
- {id:'eutender',layer:'PROCURE',stage:'contract',fac:['EU'],chance:.45,mods:{common:.5,cv346:.2},n:'Defence Procurement Directive Tender',
-  t:"An open EU tender is required. Three member states argue Article 346 TFEU lets them skip it, each for a different reason.",
-  o:[{l:'Run the tender',wait:20,pages:350},{l:'Invoke Article 346',pc:10,p:.7,fail:{wait:12},waiver:1},{l:'Direct award to the national champion',pc:6,lev:4}]},
- {id:'protest',layer:'PROCURE',stage:'contract',chance:{entrant:.7,_:.2},mods:{acq:.5,cv346:.5},n:{US:'GAO Bid Protest',EU:'Award Challenged in Court'},
-  t:{US:"The losing incumbent protests. GAO has 100 days to rule. Their lawyers bill by the hour; so do yours.",EU:"The losing bidder seeks review in national court and asks for interim suspension of the contract."},
+ 
+ {id:'protest',layer:'PROCURE',stage:'contract',chance:{entrant:.7,_:.2},mods:{acq:.5,cv346:.5},n:{US:'GAO Bid Protest'},
+  t:{US:"The losing incumbent protests. GAO has 100 days to rule. Their lawyers bill by the hour; so do yours."},
   o:[{l:'Wait for the ruling',wait:14},{l:'Override: "urgent and compelling"',pc:14,pages:40,waiver:1},{l:'Give the incumbent a subcontract',$:.2,lev:5}]},
  {id:'cas',layer:'PROCURE',stage:'contract',fac:['US'],tags:['entrant'],chance:.55,mods:{acq:.4},n:'Cost Accounting Standards',
   t:"The new entrant's accounting system was built for a company that sells things. DCAA wants one built for a company that bills things.",
@@ -1507,44 +1477,30 @@ const OBSTACLES=[
   t:"Before touching controlled unclassified information, every supplier needs a third-party cybersecurity assessment. There are not enough assessors.",
   o:[{l:'Get in line for an assessor',wait:14},{l:'Pay for a priority assessment',$:.05,wait:6}]},
  {id:'demand',layer:'MARKET',stage:'contract',al:1,chance:.35,mods:{multiyear:.25},n:'No Demand Signal',
-  t:{US:"Investors want a multi-year order book. DoD buys one fiscal year at a time, subject to appropriations. No board funds a 20-year plant on a one-year order.",EU:"Twenty-seven ministries each promise orders 'in principle.' None will sign for more than a year."},
+  t:{US:"Investors want a multi-year order book. DoD buys one fiscal year at a time, subject to appropriations. No board funds a 20-year plant on a one-year order."},
   o:[{l:'Multiyear contract',req:'multiyear'},{l:'Take-or-pay commitment',$:.25},{l:"Wait for this year's orders",wait:18}]},
- {id:'esg',layer:'MARKET',stage:'contract',fac:['EU'],chance:.45,mods:{taxonomy:.3},n:'Bank Declines: ESG Exclusion',
-  t:"Your lender's sustainability policy excludes \"controversial weapons\" and, out of an abundance of caution, all weapons.",
-  o:[{l:'Borrow elsewhere at a higher rate',$:.15},{l:'Wait for an EIB defence window',wait:16},{l:'Ministerial phone call',pc:8,p:.6,fail:{wait:10}}]},
- {id:'primelobby',layer:'PRIME',stage:'contract',tags:['line','prime'],chance:.35,mods:{acq:.5,common:.5},n:{US:'Incumbent Prime Objects',EU:'National Champion Objects'},
-  t:{US:"A prime notes your project \"duplicates\" a program of record that happens to have suppliers in 31 congressional districts.",EU:"A national champion's government warns the project \"fragments the European base\" — meaning it's located in another country."},
+ 
+ {id:'primelobby',layer:'PRIME',stage:'contract',tags:['line','prime'],chance:.35,mods:{acq:.5,common:.5},n:{US:'Incumbent Prime Objects'},
+  t:{US:"A prime notes your project \"duplicates\" a program of record that happens to have suppliers in 31 congressional districts."},
   o:[{l:'Give them the work',$:.3,lev:6},{l:'Hold the line',pc:16,lev:-4},{l:'Commission a study',wait:12,pages:200}]},
  {id:'reqcreep',layer:'PRIME',stage:'contract',fac:['US'],tags:['line'],chance:.3,n:'Requirements Creep',
   t:"The requirements process adds 14 new threshold requirements, three of which contradict each other. The prime is happy to price them in.",
   o:[{l:'Accept and redesign',wait:16},{l:'Freeze requirements',pc:10},{l:'Let the prime price them in',$:.3,lev:3}]},
- {id:'juste',layer:'PRIME',stage:'contract',fac:['EU'],tags:['line','assembly'],chance:.4,mods:{common:.4},n:'Juste Retour Workshare',
-  t:"Workshare must match each partner's funding share. Three countries want final assembly. Nobody wants the boring parts, which are most of it.",
-  o:[{l:'Split production across four countries',gain:.75},{l:'Negotiate',wait:18},{l:'Single-nation buy',pc:14}]},
- {id:'variants',layer:'PRIME',stage:'qual',fac:['EU'],tags:['line'],chance:.5,mods:{common:.3},n:'Variant Proliferation',
-  t:"Each army wants its own variant. The new line will produce eleven versions of the same item, each qualified separately.",
-  o:[{l:'Accept the variants',gain:.75},{l:'Impose a common standard',pc:18},{l:'Harmonization committee',wait:20,pages:300}]},
+ 
+ 
  {id:'eis',layer:'PERMIT',stage:'permit',fac:['US'],chance:{greenfield:.75,refine:.25,brownfield:.12,_:0},not:['mine'],mods:{nepaReform:.5,cvPermit:.3},wm:{nepaReform:.6},n:'NEPA: Environmental Impact Statement',
   t:"Statute caps an EIS at two years and 150 pages (300 if \"extraordinarily complex\"), and Seven County told courts to defer more. Every EIS is extraordinarily complex. Appendices don't count toward the limit.",
   o:[{l:'Prepare the full EIS',wait:52,pages:1200},{l:'Argue for an EA + FONSI instead',pc:10,p:.5,wait:14,pages:150,fail:{wait:52,pages:1200}},{l:'Emergency alternative arrangements',pc:30,wait:8,waiver:1}]},
  {id:'ea',layer:'PERMIT',stage:'permit',fac:['US'],tags:['brownfield','metal'],chance:.5,mods:{ceDefense:.4,cvPermit:.3},n:'NEPA: Environmental Assessment',
   t:"Inside an existing fence, on land that has made this stuff since the 1940s. Still needs an assessment.",
   o:[{l:'Prepare the EA',wait:14,pages:150},{l:'Apply the defense categorical exclusion',req:'ceDefense',pages:3},{l:'Claim a categorical exclusion anyway',pc:6,p:.45,fail:{spawn:'lawsuit'},waiver:1,tip:'If it fails, expect to be sued.'}]},
- {id:'eia',layer:'PERMIT',stage:'permit',fac:['EU'],chance:{greenfield:.8,refine:.4,brownfield:.35,_:0},not:['mine'],mods:{omnibus:.6,cvPermitEU:.4},wm:{omnibus:.6},n:'Environmental Impact Assessment',
-  t:"The EIA Directive, transposed 27 slightly different ways. Your site straddles two regions with different interpretations.",
-  o:[{l:'Full EIA',wait:44,pages:900},{l:'Overriding public interest designation',pc:14,p:.6,wait:10,fail:{wait:40},waiver:1},{l:'Shrink the project under thresholds',gain:.8,wait:8}]},
- {id:'natura',layer:'PERMIT',stage:'permit',fac:['EU'],tags:['greenfield','mine'],chance:.45,mods:{cvPermitEU:.4},n:'Natura 2000 Appropriate Assessment',
-  t:"A protected habitat lies 3 km downwind. You must show no adverse effect on site integrity — or show no alternative exists and an imperative reason of overriding public interest.",
-  o:[{l:'Appropriate assessment',wait:26,pages:300},{l:'IROPI derogation + compensation habitat',pc:12,$:.1,wait:8,waiver:1}]},
- {id:'reach',layer:'PERMIT',stage:'permit',fac:['EU'],tags:['energetic'],chance:.65,mods:{omnibus:.2,cvReach:.1},n:'REACH Authorisation',
-  t:"A substance essential to your propellant chemistry is on the authorisation list. Applying takes roughly as long as the war you are preparing for.",
-  o:[{l:'Apply for authorisation',wait:40,pages:600},{l:'National defence exemption (Art. 2(3))',pc:10,p:.7,wait:4,fail:{wait:30},waiver:1},{l:'Reformulate',$:.15,wait:20}]},
+ 
+ 
+ 
  {id:'caa',layer:'PERMIT',stage:'permit',fac:['US'],tags:['energetic','smelter','refine','metal'],chance:.5,mods:{cvPermit:.3},n:'Clean Air Act: Major Source Permit',
   t:"New Source Review, then a Title V operating permit. The state agency has two permit engineers. One is on leave.",
   o:[{l:'Apply and wait',wait:30,pages:400},{l:'Accept tighter limits (lower throughput)',gain:.85,wait:8},{l:'Pay for extra controls',$:.25,wait:14}]},
- {id:'ied',layer:'PERMIT',stage:'permit',fac:['EU'],tags:['energetic','smelter','refine','metal'],chance:.5,mods:{omnibus:.6,cvPermitEU:.4},n:'Industrial Emissions Permit',
-  t:"Your plant must meet Best Available Techniques conclusions — which are being revised, so the regulator would prefer you wait for the new ones.",
-  o:[{l:'Apply and wait',wait:28,pages:350},{l:'Accept tighter limits (lower throughput)',gain:.85,wait:8},{l:'Pay for extra controls',$:.25,wait:12}]},
+ 
  {id:'qd',layer:'PERMIT',stage:'permit',tags:['energetic'],chance:.45,n:'Explosives Safety Siting (Q-D Arcs)',
   t:"DoD explosives-safety quantity-distance arcs mean the plant needs far more buffer land than you bought. The neighbors have noticed what the arcs cover.",
   o:[{l:'Buy more buffer land',$:.1,wait:20},{l:'Redesign smaller',gain:.8,wait:6},{l:'Explosives-safety waiver',pc:10,p:.5,fail:{wait:20},waiver:1}]},
@@ -1560,24 +1516,22 @@ const OBSTACLES=[
  {id:'nhpa',layer:'PERMIT',stage:'permit',fac:['US'],chance:.12,mods:{cvPermit:.3},n:'NHPA Section 106 Review',
   t:"A 1950s Quonset hut on the site is eligible for the National Register of Historic Places.",
   o:[{l:'Consult the State Historic Preservation Officer',wait:12},{l:'Document it, then demolish (MOA)',pc:4,wait:6}]},
- {id:'local',layer:'PERMIT',stage:'permit',chance:.25,mods:{cvPermit:.5,cvPermitEU:.5},n:'Local Zoning & Permits',
+ {id:'local',layer:'PERMIT',stage:'permit',chance:.25,mods:{cvPermit:.5},n:'Local Zoning & Permits',
   t:"The zoning board meets monthly. Public comment runs four hours. Topics include traffic, property values, and \"the explosions.\"",
   o:[{l:'Wait it out',wait:16},{l:'Governor intervenes',pc:10}]},
  {id:'mineplan',layer:'PERMIT',stage:'permit',fac:['US'],tags:['mine'],chance:1,n:'Mine Plan of Operations + EIS',
   t:"Federal land-agency review of the mine plan, its EIS, and state permits. Stibnite took ~15 years from start to final approval. You are about average.",
   o:[{l:'Standard review',wait:120,pages:3000},{l:'FAST-41 covered project',pc:15,wait:70,pages:2000,tip:'Coordinates agencies on a public timetable. Does not skip steps.'},{l:'DPA critical-minerals emergency',req:'dpaMin',pc:10,wait:36,pages:800,waiver:1}]},
- {id:'minepermit',layer:'PERMIT',stage:'permit',fac:['EU'],tags:['mine'],chance:1,n:'National Mining Permit',
-  t:"National mining law, an EIA, water permits, and a regional referendum. The Critical Raw Materials Act sets a 27-month target for Strategic Projects — if you are one.",
-  o:[{l:'Standard national procedure',wait:110,pages:2500},{l:'CRMA Strategic Project track',req:'crma',wait:56,pages:1200},{l:'National-interest declaration',pc:20,p:.5,wait:40,fail:{wait:110},waiver:1}]},
- {id:'lawsuit',layer:'LEGAL',stage:'permit',tags:['greenfield','mine'],chance:.4,mods:{judRev:.5,cvPermit:1.5,cvPermitEU:1.5},n:{US:'Lawsuit: NEPA Challenge',EU:'Lawsuit: Aarhus Challenge'},
-  t:{US:"A coalition sues, alleging the review failed to consider cumulative effects. The judge enjoins construction pending review.",EU:"An NGO challenges the permit before the administrative court, which schedules a hearing for next year and suspends the permit meanwhile."},
-  o:[{l:'Litigate',wait:36,p:.75,fail:{wait:60}},{l:'Settle (fund a conservation trust)',$:.15,wait:8},{l:{US:'Statutory exemption rider',EU:'Emergency legislation'},pc:40,waiver:1,tip:'Congress did this for a gas pipeline once.'}]},
+ 
+ {id:'lawsuit',layer:'LEGAL',stage:'permit',tags:['greenfield','mine'],chance:.4,mods:{judRev:.5,cvPermit:1.5},n:{US:'Lawsuit: NEPA Challenge'},
+  t:{US:"A coalition sues, alleging the review failed to consider cumulative effects. The judge enjoins construction pending review."},
+  o:[{l:'Litigate',wait:36,p:.75,fail:{wait:60}},{l:'Settle (fund a conservation trust)',$:.15,wait:8},{l:{US:'Statutory exemption rider'},pc:40,waiver:1,tip:'Congress did this for a gas pipeline once.'}]},
  {id:'queue',layer:'GRID',stage:'permit',tags:['power'],chance:.65,n:'Interconnection Queue',
   t:"Position 214 of 380. The cluster study assigns you $480M of network upgrades, which will be restudied when someone ahead of you drops out.",
   o:[{l:'Wait in the queue',wait:78},{l:'Fund the network upgrades',$:.5,wait:26},{l:"Use a retiring plant's surplus interconnection",pc:12,p:.5,wait:8,fail:{wait:40}}]},
  {id:'power',layer:'GRID',stage:'build',tags:['power'],chance:.8,n:'No Firm Power Contract',
   t:"A smelter or sponge plant needs hundreds of MW of firm power for 20 years at a price that beats captive coal. Utilities offer five-year index pricing. Your board laughs.",
-  o:[{l:{US:'Federal power allocation (TVA / BPA)',EU:'State-backed industrial power tariff'},pc:18,p:.6,fail:{wait:30}},{l:'Build a behind-the-meter gas plant',$:.5,spawn:{US:'caa',EU:'ied'},tip:'Which needs its own air permit.'},{l:'Wait for a utility to bite',wait:52}]},
+  o:[{l:{US:'Federal power allocation (TVA / BPA)'},pc:18,p:.6,fail:{wait:30}},{l:'Build a behind-the-meter gas plant',$:.5,spawn:{US:'caa'},tip:'Which needs its own air permit.'},{l:'Wait for a utility to bite',wait:52}]},
  {id:'labor',layer:'LABOR',stage:'build',chance:{shipyard:.75,heavy:.55,labor:.5,_:.2},mods:{workforce:.4,cvHire:.4},n:'Skilled Labor Shortage',
   t:"You need 600 welders and pipefitters. The regional labor market has 40, and 35 of them work at the yard across the river.",
   o:[{l:'Pay a wage premium',$:.2,wait:8},{l:'Train them from scratch',wait:30},{l:'Fast-track visas for allied tradespeople',pc:14,p:.6,wait:4,fail:{wait:24}}]},
@@ -1587,9 +1541,7 @@ const OBSTACLES=[
  {id:'buyam',layer:'PROTECT',stage:'build',fac:['US'],tags:['electronics','smelter','energetic','metal'],chance:.3,mods:{cvBuyAm:.2},n:'Buy American / Specialty Metals: Foreign Tooling',
   t:"The key machine is made in Germany or Japan. The domestic alternative is made by no one, but that has to be formally established.",
   o:[{l:'Nonavailability determination',pc:5,wait:8,pages:60,waiver:1},{l:'Wait for a domestic vendor',wait:40}]},
- {id:'buyeu',layer:'PROTECT',stage:'build',fac:['EU'],tags:['electronics','smelter','energetic','metal'],chance:.3,n:'European Preference Clause',
-  t:"EU funding requires most component value to come from the EU, EEA, or Ukraine. The key machine is Japanese.",
-  o:[{l:'Request a derogation',pc:6,wait:8,pages:60,waiver:1},{l:'Wait for a European vendor',wait:36}]},
+ 
  {id:'jones',layer:'PROTECT',stage:'build',fac:['US'],tags:['shipyard'],chance:.7,mods:{jonesReform:.3,cvJones:.3},n:'Jones Act: No Commercial Order Book',
   t:"Behind the Jones Act wall, US commercial hulls cost several times the world price, so almost nobody orders them. Without commercial work, the new drydock sits idle between Navy contracts — and the workforce leaves.",
   o:[{l:'Guarantee Navy work (take-or-pay)',$:.6},{l:'Subsidize Jones Act commercial orders',$:.4,pc:6},{l:'Wait for Navy awards',wait:26}]},
@@ -1602,15 +1554,15 @@ const OBSTACLES=[
  {id:'fat',layer:'QUAL',stage:'qual',tags:['line','assembly'],chance:.4,mods:{cvQual:.5},n:'First Article Test Failure',
   t:"The first lot fails acceptance testing, for reasons that turn out to be a test fixture.",
   o:[{l:'Fix and retest',wait:12},{l:'Accept with a deviation',pc:7,p:.7,fail:{wait:16},waiver:1}]},
- {id:'trusted',layer:'QUAL',stage:'qual',tags:['electronics'],chance:.5,mods:{cvQual:.5},n:{US:'Trusted Supplier Accreditation',EU:'National Security Accreditation'},
+ {id:'trusted',layer:'QUAL',stage:'qual',tags:['electronics'],chance:.5,mods:{cvQual:.5},n:{US:'Trusted Supplier Accreditation'},
   t:"Before parts go into weapons, the fab must be accredited as a trusted source. The accreditor audits two fabs a year.",
   o:[{l:'Go through accreditation',wait:20,pages:150},{l:'Sell only into unclassified uses (lower yield)',gain:.7}]},
  {id:'dump',layer:'MARKET',stage:'ramp',tags:['dumpable'],al:1,chance:.7,mods:{pricefloor:.35,cvDPA3:.6},n:'Chinese Price Collapse',
   t:"Chinese output jumped again. The spot price is now below your cash cost. Your investors would like to discuss \"strategic alternatives.\"",
-  o:[{l:'Price-floor offtake contract',req:'pricefloor',$:.3},{l:{US:'DPA Title III grant',EU:'EDIP grant'},$:.3,p:.5,grant:1,fail:{wait:20}},{l:'Ride it out',wait:26,p:.5,fail:{wait:26,cancel:1},tip:'50% chance the project is mothballed at the end.'}]},
- {id:'itar',layer:'ALLIED',stage:'contract',alOnly:1,chance:.55,mods:{itarReform:.5,itarFree:.5},n:{US:'ITAR: Technical Assistance Agreement',EU:'US Component Makes It ITAR'},
-  t:{US:"Your ally can't build the thing for you until the State Department licenses the export of your drawings to them. The Technical Assistance Agreement takes months; the amendments take longer.",EU:"One US-origin component makes the whole item ITAR-controlled. Every re-export now needs Washington's permission."},
-  o:[{l:'Process the license normally',wait:26,pages:200},{l:'Expedite through the interagency',pc:10,wait:8},{l:{US:'Strip controlled parts from the design',EU:'Redesign ITAR-free'},$:.2,wait:16}]},
+  o:[{l:'Price-floor offtake contract',req:'pricefloor',$:.3},{l:{US:'DPA Title III grant'},$:.3,p:.5,grant:1,fail:{wait:20}},{l:'Ride it out',wait:26,p:.5,fail:{wait:26,cancel:1},tip:'50% chance the project is mothballed at the end.'}]},
+ {id:'itar',layer:'ALLIED',stage:'contract',alOnly:1,chance:.55,mods:{itarReform:.5,itarFree:.5},n:{US:'ITAR: Technical Assistance Agreement'},
+  t:{US:"Your ally can't build the thing for you until the State Department licenses the export of your drawings to them. The Technical Assistance Agreement takes months; the amendments take longer."},
+  o:[{l:'Process the license normally',wait:26,pages:200},{l:'Expedite through the interagency',pc:10,wait:8},{l:{US:'Strip controlled parts from the design'},$:.2,wait:16}]},
  {id:'offsets',layer:'ALLIED',stage:'contract',alOnly:1,chance:.3,n:'Industrial Offsets Demanded',
   t:"The ally wants local-content offsets and a share of the follow-on work. Their parliament wants a ribbon to cut too.",
   o:[{l:'Agree to offsets',$:.15},{l:'Negotiate',wait:16}]},
@@ -1629,7 +1581,7 @@ OBSTACLES.push(
  {id:'reapply',layer:'PERMIT',stage:'event',chance:0,n:'Permit Vacated: Re-Apply',t:"The general permit this project relied on was vacated. It must now re-apply individually, starting with a fresh public notice.",
   o:[{l:'Re-apply individually',wait:26,pages:300},{l:'Expedited agency review',pc:12,wait:8}]},
  {id:'moratorium',layer:'LEGAL',stage:'event',chance:0,n:'State Moratorium',t:"A new state moratorium on explosives and chemical plants covers this site.",
-  o:[{l:'Relocate to a federal reservation',$:.3,wait:26},{l:'Challenge on preemption grounds',wait:30,p:.7,fail:{wait:52}},{l:{US:'Federal preemption rider in the NDAA',EU:'National-security override law'},pc:25,waiver:1}]},
+  o:[{l:'Relocate to a federal reservation',$:.3,wait:26},{l:'Challenge on preemption grounds',wait:30,p:.7,fail:{wait:52}},{l:{US:'Federal preemption rider in the NDAA'},pc:25,waiver:1}]},
 );
 const OD=Object.fromEntries(OBSTACLES.map(x=>[x.id,x]));
 
@@ -1681,30 +1633,30 @@ const REFORMS=[
  {id:'judRev',fac:['US'],n:'NEPA Litigation Reform',d:'Short statute of limitations; remand without vacatur. Lawsuits −50%.',pc:40,wk:20,p:.5},
  {id:'dpaMin',fac:['US'],n:'DPA Critical-Minerals Emergency',d:'Unlocks the emergency mine-permitting track.',pc:25,wk:8,p:.9},
  {id:'dpaFund',fac:['US'],n:'Recapitalize DPA Title III',d:'+30% grant success against dumping. Costs $2B.',pc:20,$:2,wk:16,p:.75},
- {id:'pricefloor',n:'Strategic Price Floors & Offtake',nEU:'Raw Materials Platform: Joint Offtake',d:'Generalize the MP-style $110/kg floor. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
- {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',nEU:'Multi-Year Framework Contracts',d:'Demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
+ {id:'pricefloor',n:'Strategic Price Floors & Offtake',d:'Generalize the MP-style $110/kg floor. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
+ {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',d:'Demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
  {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Protests, CAS, and prime objections −50%. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15;queueEvent('blitz')}},
  {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Block further prime mergers; dual-source key subsystems. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20;queueEvent('blitz')}},
- {id:'workforce',n:'Industrial Workforce Act',nEU:'Defence Skills Academy',d:'Labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
- {id:'expertVisa',n:'Allied Technical Expert Program',nEU:'Defence Talent Mobility Scheme',d:'+15 know-how in every node and line. Faster ramp-up, fewer production issues. Costs 0.5B.',pc:20,$:.5,wk:16,p:.75,on:()=>{for(const k in S.know)S.know[k]=Math.min(95,S.know[k]+15)}},
- {id:'slep',n:'Service-Life Extension Program',nEU:'Fleet Life-Extension Programme',d:'Retirement of ships, subs and aircraft −40%. Costs 1B per year.',pc:25,wk:12,p:.75},
- {id:'readiness',n:'Fix the Maintenance Backlog',nEU:'Readiness Recovery Programme',d:'More of what you own can fight: ships, subs & aircraft count +15% (EU +25%). Costs 3B.',pc:30,$:3,wk:20,p:.65,on:()=>{const m=S.fac==='EU'?1.25:1.15;for(const c of ['surface','subs','aircraft'])S.q[c]*=m}},
+ {id:'workforce',n:'Industrial Workforce Act',d:'Labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
+ {id:'expertVisa',n:'Allied Technical Expert Program',d:'+15 know-how in every node and line. Faster ramp-up, fewer production issues. Costs 0.5B.',pc:20,$:.5,wk:16,p:.75,on:()=>{for(const k in S.know)S.know[k]=Math.min(95,S.know[k]+15)}},
+ {id:'slep',n:'Service-Life Extension Program',d:'Retirement of ships, subs and aircraft −40%. Costs 1B per year.',pc:25,wk:12,p:.75},
+ {id:'readiness',n:'Fix the Maintenance Backlog',d:'More of what you own can fight: ships, subs & aircraft count +15%. Costs 3B.',pc:30,$:3,wk:20,p:.65,on:()=>{for(const c of ['surface','subs','aircraft'])S.q[c]*=1.15}},
  {id:'itarReform',fac:['US'],n:'License-Free Defense Trade with Japan & Korea',d:'Extend AUKUS-style ITAR exemptions. Export-control obstacles −50%.',pc:35,wk:20,p:.55},
  {id:'jonesReform',fac:['US'],n:'Jones Act Reform',d:'Allow allied-built commercial hulls and allied-operated yards. Order-book obstacles −70%; +allied shipyard capacity.',pc:75,wk:30,p:.3,onStart:()=>queueEvent('unions'),on:()=>{const s=S.nodes.shipyard;s.ally.amt+=s.scale*.25;s.ally.src='Allied-operated US yards'}},
  {id:'byrnes',fac:['US'],n:'Ensuring Naval Readiness Act (S. 406)',d:'Lets yards in NATO and Indo-Pacific treaty allies build Navy ships and major hull components when it costs less than a US yard (introduced Feb 2025). +3 surface ships/yr of line capacity and allied yard capacity.',pc:40,wk:20,p:.45,on:()=>{const s=S.nodes.shipyard;s.ally.amt+=s.scale*.5;s.ally.src='Korea / Japan';S.lines.surface.base+=.5}},
- {id:'nds',fac:['EU'],n:'National Defense Stockpile Buy',nEU:'Strategic Stockpiling Strategy',d:'Buy buffers of gallium, germanium, heavy rare earths, antimony, and tungsten that drain when supply falls short. Costs 2B.',pc:12,$:2,wk:12,p:.9,on:()=>{for(const id of ['gallium','germanium','hree','antimony','tungsten'])S.stock[id]=(S.stock[id]||0)+S.nodes[id].scale*30}},
+ 
  {id:'crAnomaly',fac:['US'],n:'New-Start Authority Under CRs',d:'Projects in Appropriation progress at half speed during a CR instead of stopping.',pc:25,wk:12,p:.6},
- {id:'qualReform',n:'Qualification by Similarity',nEU:'Mutual Recognition of Qualification',d:'Energetics & motor qualification obstacles −50–60%, duration −50%.',pc:20,wk:16,p:.7},
+ {id:'qualReform',n:'Qualification by Similarity',d:'Energetics & motor qualification obstacles −50–60%, duration −50%.',pc:20,wk:16,p:.7},
  {id:'tariffExempt',fac:['US'],n:'Exempt Allied Metals from §232',d:'+allied aluminum supply; no tariff spats. But domestic smelters face 40% more price-collapse risk.',pc:15,wk:8,p:.7,on:()=>{const s=S.nodes.al_primary;s.ally.amt+=s.scale*.3}},
- {id:'acqWorkforce',n:'Hire Acquisition Workforce',nEU:'Joint Programme Office',d:'Adds staff to every portfolio office: each runs about one more order at full speed. Costs 0.5B.',pc:20,$:.5,wk:12,p:.85,on:()=>{S.slots+=3}},
- {id:'omnibus',fac:['EU'],n:'Defence Readiness Omnibus',d:'REACH defence carve-outs and faster permits. REACH −80%; EIA & emissions −40%.',pc:40,wk:20,p:.6},
- {id:'safe',fac:['EU'],n:'SAFE II Loans',d:'€15B for industrial projects — disbursed in quarterly tranches over three years (SAFE I was fully allocated but slow to pay out).',pc:30,wk:16,p:.8,on:()=>{S.safeLeft=15}},
- {id:'taxonomy',fac:['EU'],n:'Defence Is Not "Controversial"',d:'Clarify sustainable-finance rules. ESG bank exclusions −70%.',pc:25,wk:12,p:.7},
- {id:'crma',fac:['EU'],n:'CRMA Strategic Project Designation',d:'Unlocks the 27-month permitting track for mines.',pc:25,wk:12,p:.8},
- {id:'itarFree',fac:['EU'],n:'Fund ITAR-Free Designs',d:'Design US-controlled parts out of European systems. Export-control obstacles −50%. Costs €1B.',pc:30,$:1,wk:20,p:.7},
- {id:'common',fac:['EU'],n:'Common Procurement & Standard Variants',d:'Juste retour, variant, champion, and unanimity obstacles cut sharply; leverage −15.',pc:50,wk:26,p:.4,on:()=>{S.lev-=15;queueEvent('blitz')}},
- {id:'debtbrake',fac:['EU'],n:'Extend National Escape Clauses',d:'+€6B per year for industrial projects.',pc:35,wk:12,p:.7},
- {id:'asap',fac:['EU'],n:'Ammunition Production Act II',d:'Energetics & shell projects cost −30%; shell line +0.4 (≈+240k/yr).',pc:20,wk:12,p:.85,on:()=>{S.lines.shells.base+=.4}},
+ {id:'acqWorkforce',n:'Hire Acquisition Workforce',d:'Adds staff to every portfolio office: each runs about one more order at full speed. Costs 0.5B.',pc:20,$:.5,wk:12,p:.85,on:()=>{S.slots+=3}},
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 ];
 const RD=Object.fromEntries(REFORMS.map(x=>[x.id,x]));
 
@@ -1714,13 +1666,13 @@ const CARVES=[
  {id:'cvDfars',fac:['US'],n:'DFARS Non-Availability Determinations',d:'Suspend the mine-to-magnet, tungsten and tantalum restrictions while compliant supply catches up.',pc:12,wk:52,need:'nonavail',court:0},
  {id:'cvBuyAm',fac:['US'],n:'Buy American & Specialty-Metals Waivers',d:'Foreign-tooling obstacles −80%; allied bearings allowed in defense work. Domestic producers lobby against renewal.',pc:10,wk:52,need:'',court:0},
  {id:'cvJones',fac:['US'],n:'Jones Act / Byrnes-Tollefson Emergency Waiver',d:'A presidential exception (10 U.S.C. 8679(b)): allied yards may repair and build auxiliaries; +allied shipyard capacity; order-book obstacles −70%. Unions sue.',pc:30,wk:52,need:'ne',court:.005},
- {id:'cvPermitEU',fac:['EU'],n:'Defence Readiness Derogations',d:'Emergency derogations from EIA/Natura/IED timelines: permitting obstacles −60%. Aarhus challenges +50%.',pc:25,wk:78,need:'',court:.006},
- {id:'cvReach',fac:['EU'],n:'Blanket REACH Defence Exemptions',d:'Member states use Art. 2(3) across the board: REACH obstacles −90%.',pc:12,wk:52,need:'',court:.002},
- {id:'cv346',fac:['EU'],n:'Blanket Article 346 Invocation',d:'Skip open tenders for defence: tender obstacles −80%, award challenges −50%. The Commission may open infringement cases.',pc:18,wk:52,need:'',court:.005},
- {id:'cvEnhanced',fac:['EU'],n:'Enhanced Cooperation (Bypass Unanimity)',d:'Coalition financing outside unanimity: unanimity obstacles −90%.',pc:20,wk:104,need:'',court:.002},
+ 
+ 
+ 
+ 
  {id:'cvQual',n:'Emergency Qualification Authority',d:'Accept allied qualifications and similarity data: qualification obstacles −50–60%. Quality escapes at new plants more likely.',pc:18,wk:52,need:'ne',court:0},
  {id:'cvHire',n:'Emergency Hiring & Visa Authority',d:'Labor & clearance obstacles −60%; fewer turnover issues.',pc:15,wk:52,need:'ne',court:.003},
- {id:'cvDPA3',n:'Waive DPA / EDIP Funding Limits',nEU:'Waive EDIP Funding Limits',d:'Grant success +40%; price-collapse obstacles −40%.',pc:15,wk:52,need:'cut',court:0},
+ {id:'cvDPA3',n:'Waive DPA / EDIP Funding Limits',d:'Grant success +40%; price-collapse obstacles −40%.',pc:15,wk:52,need:'cut',court:0},
 ];
 const CD=Object.fromEntries(CARVES.map(x=>[x.id,x]));
 const MOB=[{n:'Normal operations',d:'',line:1,dom:1,upkeep:0,strain:0,urg:0}]; // baseline only; surge is bought line by line (SHIFT)
@@ -1761,10 +1713,7 @@ const EVENTS=[
   body:"<p><b>What the truce is.</b> After Presidents Trump and Xi met in Busan on 30 October 2025, each side paused its newest trade weapons for a year. Beijing suspended its December 2024 ban on gallium, germanium and antimony exports to the United States (licenses are still required) and its October 2025 rare-earth export rules.[c:truce] Washington suspended the Commerce Department's Affiliates Rule, which extends export controls to any firm at least 50% owned by a company on the Entity List.</p><p><b>Where it stands.</b> On 24 September 2026, Treasury Secretary Bessent announced the truce would run to 10 January 2027, and Commerce extended the Affiliates Rule suspension to match. Beijing's own suspension was dated to 27 November 2026, and it has not said whether the extension covers it.[c:truce26]</p><p><b>Your call.</b> Extend again, and the minerals keep flowing while firms owned by blacklisted Chinese companies stay outside US export controls. Reinstate the rule, and that loophole closes, but expect Beijing to switch its bans back on.</p>",
   o:[{dflt:1,l:'Extend the truce (−8 PC: hawks call it a giveaway)',pc:8,fx:()=>{S.truce=true;S.pc+=2;log(`${FLAGS.cn} Truce extended; the Affiliates Rule stays suspended.`,'ev')}},
      {l:'Reinstate the Affiliates Rule (+10 PC; Beijing retaliates)',fx:()=>{S.pc+=10;affilOn()}}]},
- {id:'truce0',pre:"November 2025: Beijing suspended its gallium, germanium and antimony ban for a year, to 27 November 2026.[c:truce]",fac:['EU'],fixedW:PLAY0+2,ic:FLAGS.cn,t:'Beijing Decides on Its Suspended Controls',
-  fx:()=>{S._tr=rand()<.55;if(S._tr){S.truce=true}else{applyChinaBan()}},
-  body:()=>S._tr?"The November 2026 deadlines pass with a quiet one-year extension of the gallium, germanium, antimony, graphite, and rare-earth suspensions. The heavy rare-earth licensing regime from April 2025 stays in force. Everyone knows it can be switched back on.":"Beijing lets the suspensions lapse. Exports of gallium, germanium, and antimony to you are halted again; graphite and battery materials face end-user checks. Heavy rare-earth licensing continues.",
-  o:[{l:'Understood.',fx:()=>{S.pc+=S._tr?3:12}}]},
+ 
  {id:'truceReview',pre:"November 2025: under the Busan truce, Beijing suspended its mineral export bans for a year, so every renewal is a fresh decision.[c:truce][c:truce26]",once:false,when:()=>{const d=dateOf(S.w);return S.truce&&d.getMonth()===10&&d.getDate()<=7},ic:FLAGS.cn,t:'Annual Review of the Trade Truce',
   fx:()=>{const p=.15+cnS().heat/120;S._tr=rand()>=p;if(!S._tr){S.truce=false;applyChinaBan()}},
   body:()=>S._tr?"The truce is extended another year. Markets exhale. Your procurement officials do not.":"Talks break down. Beijing reimposes its mineral export bans. Spot prices outside China jump several-fold overnight.",
@@ -1805,9 +1754,7 @@ const EVENTS=[
   body:"Section 232 tariffs on allied metal provoke retaliation. Canadian smelters redirect output to Europe. Allied aluminum falls 40% for six months.",
   fx:()=>{tmod('ally','al_primary',.6,26,'Tariff retaliation')},
   o:[{l:'Quietly exempt the ally (−10 PC, ends the spat)',pc:10,fx:()=>{S.tmods=S.tmods.filter(m=>m.label!=='Tariff retaliation')}},{l:'Hold firm (+3 PC from domestic producers)',fx:()=>{S.pc+=3}}]},
- {id:'usControls',pre:"2018: Washington held up an export licence for a US part in the SCALP missile, stalling France's Rafale sale to Egypt.[c:scalp]",fac:['EU'],p:.003,once:false,cond:()=>!S.tmods.some(m=>m.label==='US export controls'),ic:FLAGS.us,t:'Washington Tightens Export Controls',
-  body:"A new US rule restricts re-export of controlled components. Allied microelectronics, seekers and MMICs that contain them need licenses. Allied supply of those −40% for six months.",
-  fx:()=>{for(const id of ['micro','mmic','rf_seeker','fpa'])tmod('ally',id,.6,26,'US export controls')},o:[{l:'Strategic autonomy, they said. (+5 PC)',fx:()=>{S.pc+=5}}]},
+ 
  // single points of failure
  {id:'ampac',pre:"May 1988: the PEPCON explosion in Henderson, Nevada destroyed one of the two US ammonium perchlorate plants.[c:pepcon]",fac:['US'],p:.002,once:false,cond:()=>!S.tmods.some(m=>m.id==='ap'&&m.kind==='cap'),ic:'💥',t:'Explosion at the Nation\'s Only AP Plant',
   body:"A fire spreads through a drying building at the sole North American ammonium perchlorate plant. Precedent: in 1988 the PEPCON explosion destroyed nearly half of US capacity. Every interceptor line now draws down AP inventories.",
@@ -1815,13 +1762,11 @@ const EVENTS=[
  {id:'radford',pre:"28 February 2025: an explosion at the Radford plant, confined to one bay.[c:radford]",fac:['US'],p:.0025,once:false,cond:()=>!S.tmods.some(m=>m.id==='nc'&&m.kind==='cap'),ic:'💥',t:'Explosion on the Nitrocellulose Line',
   body:"An explosion at the sole US nitrocellulose plant forces a stand-down — as one did in February 2025. Every gun propellant charge waits.",
   fx:()=>{S.pc+=8},o:[{l:'Full investigation (NC −70% for 20 weeks)',fx:()=>tmod('cap','nc',.3,20,'Safety stand-down')},{l:'Emergency restart waiver (−12 PC; −70% for 8 weeks)',pc:12,fx:()=>{tmod('cap','nc',.3,8,'Partial restart');S.waivers++}}]},
- {id:'holston',pre:"January 2019: a roof fire and explosion stood down the Holston plant.[c:holston19]",p:.002,once:false,cond:()=>!S.tmods.some(m=>m.id==='rdx'&&m.kind==='cap'),ic:'💥',t:{US:'Incident at the Sole RDX Plant',EU:'Incident at an Explosives Plant'},
+ {id:'holston',pre:"January 2019: a roof fire and explosion stood down the Holston plant.[c:holston19]",p:.002,once:false,cond:()=>!S.tmods.some(m=>m.id==='rdx'&&m.kind==='cap'),ic:'💥',t:{US:'Incident at the Sole RDX Plant'},
   body:"A nitration incident at the explosives plant halts RDX/HMX production. The equipment is older than anyone working there.",
   fx:()=>{S.pc+=6},o:[{l:'Full investigation (RDX −60% for 20 weeks)',fx:()=>tmod('cap','rdx',.4,20,'Safety stand-down')},{l:'Emergency restart waiver (−12 PC; 8 weeks)',pc:12,fx:()=>{tmod('cap','rdx',.4,8,'Partial restart');S.waivers++}}]},
 
- {id:'ncBlastEU',pre:"August 2022: an explosion in Eurenco's nitrocellulose building at Bergerac injured eight.[c:eurenco22]",fac:['EU'],p:.0025,once:false,cond:()=>!S.tmods.some(m=>m.id==='nc'&&m.kind==='cap'),ic:'💥',t:'Explosion at a European Powder Plant',
-  body:"A blast at one of Europe's few nitrocellulose plants removes a large slice of an already short supply.",
-  fx:()=>{S.pc+=8},o:[{l:'Full investigation (NC −40% for 26 weeks)',fx:()=>tmod('cap','nc',.6,26,'Plant explosion')},{l:'Emergency restart (−12 PC; 10 weeks)',pc:12,fx:()=>{tmod('cap','nc',.6,10,'Partial restart');S.waivers++}}]},
+ 
  {id:'contingency',pre:"Spring 2026: the Iran campaign drew down most of America's long-range missiles.[c:jassm]",p:.003,once:false,ic:'🔥',t:'Middle East Contingency',
   body:"A regional war draws down your munitions. In 2026 the first 96 hours of the Iran campaign consumed more than 5,000 munitions, including ~1,100 JASSMs. Interceptor and strike stocks fall.",
   o:[{l:'Fight it (interceptors −10%, strike −8%; +17 PC)',fx:()=>{S.inv.interceptors*=.9;S.inv.strike*=.92;S.pc+=17}},{dflt:1,l:'Stay out (−10 PC; allies irritated)',pc:10,fx:()=>{S.allied.pac*=.97}}]},
@@ -1837,26 +1782,26 @@ const EVENTS=[
  {id:'elecUS',fac:['US'],once:false,when:()=>{const d=dateOf(S.w);return d.getMonth()===10&&d.getDate()<=7&&d.getFullYear()%2===0},ic:'🗳',t:()=>`Election Day ${dateOf(S.w).getFullYear()}`,
   fx:()=>{const pres=dateOf(S.w).getFullYear()%4===0;const pen=S.strain>50?-10:0;S._e=(rand()<elecOdds()?(pres?25:15):(pres?-20:-15))+pen;S.pc+=S._e;if(S._e<0&&pres&&S.bill)S.bill.left+=8},
   body:()=>(S._e>0?`Rearmament polled well. The new Congress arrives eager to be seen building things. (${S._e>0?'+':''}${S._e} PC)`:`Divided government, or a new administration reviewing everything it inherited. (${S._e} PC)`)+(S.strain>50?' Voters punished civilian shortages.':''),o:[{l:'Onward.'}]},
- {id:'ep29',fac:['EU'],fixedW:weekOf(2029,5,7),ic:'🗳',t:'European Parliament Elections',fx:()=>{S._e=(rand()<.5?15:-15)-(S.strain>50?10:0);S.pc+=S._e},body:()=>S._e>0?"A pro-defence majority returns with a mandate to 'deliver.'":"A fragmented Parliament spends six months forming committees.",o:[{l:'Onward.'}]},
- {id:'ep34',fac:['EU'],fixedW:weekOf(2034,5,5),ic:'🗳',t:'European Parliament Elections',fx:()=>{S._e=(rand()<.5?15:-15)-(S.strain>50?10:0);S.pc+=S._e},body:()=>S._e>0?"Voters reward the parties that built factories.":"Voters punish the parties that raised taxes — and caused shortages — to build factories.",o:[{l:'Onward.'}]},
+ 
+ 
  {id:'cruisers',pre:"March 2024: the Navy's FY2025 plan proposed decommissioning 19 ships, 10 of them early. Congress has blocked most such requests.[c:navy25]",fac:['US'],fixedW:PLAY0+40,ic:'⚓',t:'Navy Proposes Early Ship Retirements',body:"To free money for new construction, the Navy proposes decommissioning 10 ships before the end of their service lives. Congress can block it — and pay to keep them running.",
   o:[{l:'Approve the retirements (−10 ships, +$1.5B)',fx:()=>{S.inv.surface-=10;gainB(1.5,'Retirements')}},{l:'Block it in the NDAA (−10 PC, −$0.5B)',pc:10,fx:()=>{spendB(.5,'Events')}}]},
- {id:'divest',pre:"March 2023: the Air Force's FY2024 request proposed divesting 310 aircraft.[c:af310]",at:[80,120],ic:'✈',t:{US:'Air Force Proposes Divesting Old Aircraft',EU:'Air Forces Propose Retiring Old Fleets'},body:"Retire about 300 old airframes to fund modernization. They are expensive to maintain — and, in a war, would still be airframes.",
+ {id:'divest',pre:"March 2023: the Air Force's FY2024 request proposed divesting 310 aircraft.[c:af310]",at:[80,120],ic:'✈',t:{US:'Air Force Proposes Divesting Old Aircraft'},body:"Retire about 300 old airframes to fund modernization. They are expensive to maintain — and, in a war, would still be airframes.",
   o:[{l:'Approve (−300 aircraft, +2B)',fx:()=>{S.inv.aircraft-=300;gainB(2,'Retirements')}},{l:'Block it (−8 PC)',pc:8}]},
  {id:'ceasefire',pre:"Talks have failed repeatedly; as of October 2026 only local ceasefires hold.[c:uaceasefire]",p:.006,once:false,cond:()=>!S.ceasefire,ic:'🕊',t:'Ceasefire Talks in Ukraine',
   fx:()=>{S._cf=rand()<.6;if(S._cf)doCeasefire()},
   body:()=>S._cf?"The guns fall silent along the front. Russian factories keep running at war tempo — but the output now goes into depots instead of the front. Russia's in-service stocks begin to climb.":"Talks collapse. The war of attrition grinds on, consuming Russian output nearly as fast as it is produced.",o:[{l:'Watch the depots.',fx:()=>{if(S._cf)S.pc+=8}}]},
- {id:'usDrawdown',pre:"July 2020: the Pentagon announced it would pull about 12,000 of its 36,000 troops out of Germany.[c:de2020]",fac:['EU'],at:[100,220],ic:FLAGS.us,t:'US Announces Drawdown from Europe',fx:()=>{S.allied.eu*=.5;S.pc+=15},body:"Washington shifts forces to the Indo-Pacific. US forces in Europe are halved. \"Europe must take responsibility for its own conventional defense,\" says a spokesman, as every spokesman has since 1953.",o:[{l:'We were warned.'}]},
+ 
  {id:'japanBuild',pre:"December 2022: Japan set a goal of 2% of GDP for defense by fiscal 2027.[c:jp2pct]",fac:['US'],at:[30,90],ic:'🇯🇵',t:'Japan Accelerates Its Buildup',body:"Tokyo accelerates defense spending ahead of its 2% target. Allied forces in the Indo-Pacific +10%.",fx:()=>{S.allied.pac*=1.1},o:[{l:'Arigatō.'}]},
- {id:'buyback',pre:"RTX ran a $10 billion buyback in 2023, and the primes kept buying back shares in 2024 despite the Navy Secretary's public criticism.[c:buyback24]",p:.005,once:false,cond:()=>S.lev>45,ic:'💼',t:{US:'Prime Announces $10B Buyback',EU:'National Champions Merge'},
-  body:{US:"Citing \"supply chain headwinds\" for late deliveries, a prime contractor announces a $10 billion share repurchase and a dividend increase.",EU:"Two national champions merge into a \"European champion,\" with the same plants, the same workforce, and one fewer competitor."},
+ {id:'buyback',pre:"RTX ran a $10 billion buyback in 2023, and the primes kept buying back shares in 2024 despite the Navy Secretary's public criticism.[c:buyback24]",p:.005,once:false,cond:()=>S.lev>45,ic:'💼',t:{US:'Prime Announces $10B Buyback'},
+  body:{US:"Citing \"supply chain headwinds\" for late deliveries, a prime contractor announces a $10 billion share repurchase and a dividend increase."},
   o:[{l:'Publicly shame them (−6 PC, leverage −4)',pc:6,fx:()=>{S.lev-=4}},{l:'Say nothing (leverage +3)',fx:()=>{S.lev+=3}}]},
- {id:'blitz',pre:"2025–26: industry groups lobbied against military right-to-repair and data-rights provisions in the NDAA.[c:r2r]",manual:true,once:false,ic:'🎩',t:{US:'K Street Mobilizes',EU:'The Brussels Lobby Mobilizes'},body:"Having read your reform, the incumbents discover deep concerns about \"quality,\" \"proven performance,\" and \"jobs in your district.\" Op-eds appear. Retired generals appear in them.",
+ {id:'blitz',pre:"2025–26: industry groups lobbied against military right-to-repair and data-rights provisions in the NDAA.[c:r2r]",manual:true,once:false,ic:'🎩',t:{US:'K Street Mobilizes'},body:"Having read your reform, the incumbents discover deep concerns about \"quality,\" \"proven performance,\" and \"jobs in your district.\" Op-eds appear. Retired generals appear in them.",
   o:[{l:'Absorb it (−15 PC)',pc:15},{l:'Cut a deal (−5 PC, leverage +8)',pc:5,fx:()=>{S.lev+=8}}]},
  {id:'unions',pre:"2015–17: maritime unions and the American Maritime Partnership fought Senator McCain's Jones Act reform bills.[c:jonesamp]",manual:true,ic:'⚓',t:'The Maritime Coalition Mobilizes',body:"Domestic yards, maritime unions, and a bipartisan caucus describe Jones Act reform as \"surrendering American shipbuilding\" — which, to be fair, mostly already happened.",
   o:[{l:'Fight it (−15 PC, pass chance +10%)',pc:15,fx:()=>{if(S.bill)S.bill.boost+=.1}},{l:'Let it play out (pass chance −10%)',fx:()=>{if(S.bill)S.bill.boost-=.1}}]},
- {id:'gao',p:.005,once:false,ic:'📑',t:{US:'GAO: Industrial Base "Fragile"',EU:'Court of Auditors Special Report'},
-  body:{US:"GAO finds the munitions base fragile and single-sourced. A DoD review found 98% of second- and third-tier munitions suppliers were single or sole source.[c:dn2018] Little has changed.",EU:"The Court of Auditors finds joint procurement 'below potential' and SAFE disbursement slow."},
+ {id:'gao',p:.005,once:false,ic:'📑',t:{US:'GAO: Industrial Base "Fragile"'},
+  body:{US:"GAO finds the munitions base fragile and single-sourced. A DoD review found 98% of second- and third-tier munitions suppliers were single or sole source.[c:dn2018] Little has changed."},
   o:[{l:'Wave it at the legislature (+14 PC)',fx:()=>{S.pc+=14}}]},
  {id:'ukraine',pre:"2022–24: the United States sent Ukraine more than 70 drawdown packages from its own stocks.[c:pda24]",p:.004,once:false,cond:()=>!S.ceasefire,ic:'🇺🇦',t:'Ukraine Requests Emergency Transfers',body:"Kyiv asks for an emergency drawdown from your stocks. Every round fired there is one Russia can't fire later — and one not in your own magazines.",
   o:[{l:'Send them (−200k shells, −300 interceptors; Russia −12% shells; +5 PC)',fx:()=>{S.inv.shells=Math.max(0,S.inv.shells-2e5);S.inv.interceptors=Math.max(0,S.inv.interceptors-300);S.enemy.eu.inv.shells*=.88;S.pc+=5}},{dflt:1,l:'Decline (−6 PC)',pc:6}]},
@@ -1889,8 +1834,8 @@ EVENTS.push(
  {id:'grid',pre:"February 2021: during Winter Storm Uri, Texas ordered industrial users to curtail, and dozens of chemical plants shut.[c:uri]",p:.004,once:false,cond:()=>!S.tmods.some(m=>m.label==='Grid emergency'),ic:'⚡',t:'Grid Emergency: Industrial Curtailment',
   body:"A winter storm or heat dome pushes the grid into an energy emergency. With reserve margins already thinned by data-center load growth, the operator orders large industrial loads to curtail. Smelters, sponge plants, and magnesium cells are the biggest interruptible loads you have.",
   o:[{l:'Curtail as ordered (power-intensive nodes −60% for 6 weeks; a potline may freeze)',fx:()=>{for(const id of POWER_NODES)if(!(S.nflags[id]||{}).power)tmod('node',id,.4,6,'Grid emergency');if(rand()<.5)freezeOne()}},
-     {l:{US:'DOE 202(c) emergency order keeping defense loads online (−12 PC; −25% for 2 weeks)',EU:'Exempt defence plants from load-shedding (−12 PC; −25% for 2 weeks)'},pc:12,fx:()=>{for(const id of POWER_NODES)tmod('node',id,.75,2,'Grid emergency')}}]},
- {id:'enforce',pre:"September 2024: an EPA compliance order on consent covered air violations at the Radford plant.[c:raapepa]",p:.003,once:false,ic:'🏛',t:{US:'EPA Consent Decree at an Operating Plant',EU:'Regulator Suspends an Operating Permit'},
+     {l:{US:'DOE 202(c) emergency order keeping defense loads online (−12 PC; −25% for 2 weeks)'},pc:12,fx:()=>{for(const id of POWER_NODES)tmod('node',id,.75,2,'Grid emergency')}}]},
+ {id:'enforce',pre:"September 2024: an EPA compliance order on consent covered air violations at the Radford plant.[c:raapepa]",p:.003,once:false,ic:'🏛',t:{US:'EPA Consent Decree at an Operating Plant'},
   fx:()=>{const c=domNodes(['rdx','nc','ap','tnt','primers','chem','al_primary','magnesium','gallium','ndpr','graphite','ti_sponge']);S._en=c.length?pick(c):'chem'},
   body:()=>S.fac==='US'?`EPA and the state find emissions and hazardous-waste violations at the ${ND[S._en].n} plant. A consent decree requires curtailed output until new controls are installed. The plant is government-owned; so, technically, is the violation.`:`The regional authority finds an emissions exceedance at a ${ND[S._en].n} plant and suspends part of its operating permit pending new controls.`,
   o:()=>[{l:'Install controls (−0.3B; −40% for 20 weeks)',$:.3,fx:()=>tmod('node',S._en,.6,20,'Enforcement action')},
@@ -1900,8 +1845,8 @@ EVENTS.push(
   fx:()=>{S._cy=pick(['micro','fuzes','thermal_bat','imu','castings','pcb','actuators','composites','blades'])},
   body:()=>`Ransomware encrypts the ERP system and machine controllers at a sub-tier supplier of ${ND[S._cy].n} — the only qualified source for several programs.`,
   o:[{l:'Rebuild from clean backups (−80% for 6 weeks)',fx:()=>tmod('node',S._cy,.2,6,'Cyberattack')},{l:'Bring in government incident-response teams (−6 PC; 3 weeks)',pc:6,fx:()=>tmod('node',S._cy,.2,3,'Cyberattack')}]},
- {id:'storm',pre:"August 2005: Katrina flooded Ingalls, and the Navy expected its programs there to slip about six months.[c:katrina]",p:.0025,once:false,cond:()=>{const m=dateOf(S.w).getMonth();return S.fac==='EU'||(m>=7&&m<=9)},ic:'🌀',t:{US:'Hurricane Hits the Gulf Coast',EU:'Floods in Central Europe'},
-  body:{US:"A major hurricane floods a Gulf Coast shipyard and shuts in petrochemical and acid plants — as Katrina did to Pascagoula in 2005.",EU:"Catastrophic floods — like those in Central Europe in 2024 — swamp chemical and powder plants along the river valleys."},
+ {id:'storm',pre:"August 2005: Katrina flooded Ingalls, and the Navy expected its programs there to slip about six months.[c:katrina]",p:.0025,once:false,cond:()=>{const m=dateOf(S.w).getMonth();return m>=7&&m<=9},ic:'🌀',t:'Hurricane Hits the Gulf Coast',
+  body:{US:"A major hurricane floods a Gulf Coast shipyard and shuts in petrochemical and acid plants — as Katrina did to Pascagoula in 2005."},
   fx:()=>{if(S.fac==='US'){tmod('node','shipyard',.4,10,'Storm damage');tmod('node','chem',.7,6,'Storm damage')}else{tmod('node','chem',.6,8,'Flood damage');tmod('node','nc',.7,8,'Flood damage')}S.pc+=3},
   o:[{l:'Rebuild.'},{l:'Emergency reconstruction funding (−0.4B; damage clears twice as fast)',$:.4,fx:()=>{for(const m of S.tmods)if(/Storm|Flood/.test(m.label))m.left=Math.ceil(m.left/2)}}]},
  {id:'insolvency',pre:"2016: gearbox suppliers' bankruptcies put the Apache, V-22 and CH-53K at risk, the Pentagon's industrial base report found.[c:gearbox]",p:.003,once:false,ic:'📉',t:'Sole-Source Supplier Files for Bankruptcy',
@@ -1928,9 +1873,9 @@ EVENTS.push(
  {id:'overrun',pre:"2022: GAO found the Navy's first three shipyard dry-dock projects had grown by more than $4 billion.[c:siop]",p:.003,once:false,cond:()=>S.projects.some(p=>STAGES[p.stage]==='build'&&!PD[p.def].ally),ic:'💰',t:'Construction Cost Shock',
   body:"Steel, equipment, and labor inflation push estimates at completion up 25–40% across your construction portfolio. Every plant still being built needs more money — or less plant.",
   fx:()=>spawnWhere(p=>STAGES[p.stage]==='build'&&!PD[p.def].ally,'costOverrun'),o:[{l:'Understood.'}]},
- {id:'vacatur',pre:"April 2020: a federal court in Montana vacated Nationwide Permit 12.[c:nwp12]",p:.0025,once:false,cond:()=>S.projects.some(p=>STAGES[p.stage]==='permit'),ic:'⚖',t:{US:'Court Vacates a Nationwide Permit',EU:'Court Ruling Forces Re-Screening'},
-  body:{US:"A federal court vacates a general permit that industrial projects relied on — as a court did to a nationwide pipeline-crossing permit in 2020. Every project still in permitting must re-apply individually.",EU:"A Court of Justice ruling on habitat assessments forces national authorities to re-screen every project still in permitting."},
-  fx:()=>{spawnWhere(p=>STAGES[p.stage]==='permit','reapply');if(carveOn('cvPermit')&&rand()<.5)endCarve('cvPermit','struck down');if(carveOn('cvPermitEU')&&rand()<.5)endCarve('cvPermitEU','struck down')},o:[{l:'Re-file everything.'}]},
+ {id:'vacatur',pre:"April 2020: a federal court in Montana vacated Nationwide Permit 12.[c:nwp12]",p:.0025,once:false,cond:()=>S.projects.some(p=>STAGES[p.stage]==='permit'),ic:'⚖',t:{US:'Court Vacates a Nationwide Permit'},
+  body:{US:"A federal court vacates a general permit that industrial projects relied on — as a court did to a nationwide pipeline-crossing permit in 2020. Every project still in permitting must re-apply individually."},
+  fx:()=>{spawnWhere(p=>STAGES[p.stage]==='permit','reapply');if(carveOn('cvPermit')&&rand()<.5)endCarve('cvPermit','struck down');},o:[{l:'Re-file everything.'}]},
 
  {id:'shutdown',pre:"October–November 2025: a 43-day shutdown, the longest on record.[c:shut25]",manual:true,fac:['US'],once:false,ic:'🚧',t:'Government Shutdown',
   fx:()=>{S._sd=3+Math.floor(rand()*5);gmod(0,S._sd,'Government shutdown',['approp','contract','qual'],'FISCAL')},
@@ -1938,14 +1883,11 @@ EVENTS.push(
   o:[{l:'Wait it out. (civilian strain +3)',fx:()=>{S.strain+=3}}]},
  {id:'financing',pre:"March 2022: the Federal Reserve began its fastest rate rises in decades.[c:fed22]",p:.003,once:false,cond:()=>!S.costMods.length,ic:'🏦',t:'Financing Squeeze',
   body:"Interest rates jump and private co-investors pull back from capital-intensive defense-industrial projects. New starts cost 20% more for a year.",fx:()=>{S.costMods.push({mult:1.2,left:52,label:'Financing squeeze'})},o:[{l:'Noted.'}]},
- {id:'euFreeze',pre:"December 2022: the Council froze €6.3 billion of Hungary's EU funds over rule of law.[c:hufreeze]",fac:['EU'],p:.0025,once:false,cond:()=>!gmodOn('EU funds frozen'),ic:FLAGS.eu,t:'Funds Frozen Over Rule of Law',
-  body:"The Commission freezes EU funds to a member state over rule-of-law concerns. Jointly financed projects in funding and contracting stall while lawyers argue over which money is which.",
-  fx:()=>gmod(0,12,'EU funds frozen',['approp','contract'],'FISCAL'),o:[{l:'Wait for the Council.'}]},
+ 
 );
-const CRISES={US:[],EU:[]}; // the race is about production; the old crisis dates are kept for reference
+const CRISES={US:[]}; // the race is about production; the old crisis dates are kept for reference
 const CRISES_OLD={
  US:[['baltic',weekOf(2029,3,2),'eu','the Baltic'],['strait',weekOf(2031,8,1),'pac','the Taiwan Strait'],['scs',weekOf(2033,5,6),'pac','the South China Sea'],['narva',weekOf(2035,2,5),'eu','Narva']],
- EU:[['baltic',weekOf(2029,3,2),'eu','the Baltic'],['suwalki',weekOf(2031,8,1),'eu','the Suwałki Gap'],['narva',weekOf(2033,5,6),'eu','Narva'],['blacksea',weekOf(2035,2,5),'eu','the Black Sea']],
 };
 const CRISIS_WIN=.85,CRISIS_TENSE=.6; // on the true coverage score (assumption)
 for(const fac in CRISES)for(const [id,w,t,place] of CRISES[fac])
@@ -1957,19 +1899,17 @@ let ED=Object.fromEntries(EVENTS.map(x=>[x.id,x]));
    ===================================================================== */
 let S=null,uidN=1;
 const F=()=>FACTIONS[S.fac];
-const V=x=>typeof x==='function'?x():(x&&typeof x==='object'&&!Array.isArray(x)&&('US' in x||'EU' in x))?(x[S.fac]??x.US):x;
+const V=x=>typeof x==='function'?x():(x&&typeof x==='object'&&!Array.isArray(x)&&'US' in x)?x.US:x;
 const facOk=o=>!o.fac||o.fac.includes(S.fac);
 const passed=id=>S.reforms[id]==='passed';
 const carveOn=id=>(S.carve[id]?.left||0)>0;
 const active=id=>passed(id)||carveOn(id);
 const money=x=>F().cur+fmt(x,Math.abs(x)<10?2:1)+'B';
-const rname=r=>S.fac==='EU'&&r.nEU?r.nEU:r.n;
-const cname=c=>S.fac==='EU'&&c.nEU?c.nEU:c.n;
+const rname=r=>r.n,cname=c=>c.n;
 const dateOf=w=>new Date(START.getTime()+w*7*DAY);
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmtDate=w=>{const d=dateOf(w);return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`};
 const fyStart=()=>{const d=dateOf(S.w);return d.getMonth()===9&&d.getDate()<=7};
-const euFyStart=()=>{const d=dateOf(S.w);return d.getMonth()===0&&d.getDate()<=7&&S.w>0};
 const yrs=w=>fmt(w/52,1)+' yr';
 const clone=o=>JSON.parse(JSON.stringify(o));
 // topological order (inputs before consumers)
@@ -2185,7 +2125,7 @@ const SCEN={
   w:{shells:1,interceptors:.8,strike:.6,aircraft:1,surface:.3,subs:.3,drones:.3,a2a:0,fires:0},
   fire:[.05,.08,.15],shots:[1.5,2,2.5],share:[.5,.7,.9],
   anch:{shells:[35000,70000,140000],drones:[5000,15000,50000],strike:[150,300,500]},
-  ally:{US:{shells:.75,interceptors:.5,strike:.5,drones:.8},EU:{shells:.1,interceptors:.3,strike:.35,drones:.05}},pshare:{US:.65,EU:.25},
+  ally:{US:{shells:.75,interceptors:.5,strike:.5,drones:.8}},pshare:{US:.65},
   req:[.85,1,1.3]},
 };
 const READY_E={pac:{aircraft:[.55,.7,.8],surface:[.65,.75,.85],subs:[.45,.6,.7]},eu:{aircraft:[.45,.55,.65],surface:[.4,.5,.6],subs:[.35,.45,.55]}};
@@ -2332,8 +2272,6 @@ const BACKTEST=[
  {fac:'US',n:'Submarine output, 2026',kind:'fit',obs:'~1.1–1.2 Virginia-class boats a year; two a year only in the early 2030s',lo:1.0,hi:1.3,v:r=>r.dec26.out.subs,f:v=>fmt(v,2)+'/yr',c:'crsva,usniva'},
  {fac:'US',n:'Interceptor deliveries to US stocks, 2026',kind:'fit',obs:'PAC-3 MSE ~650/yr, about half to the US; 76 SM-3 and 125 SM-6 in FY2026; no THAAD until April 2027 (derived)',lo:500,hi:750,v:r=>r.dec26.out.interceptors,f:v=>fmtN(v)+'/yr',c:'csisday12,twzstock'},
  {fac:'US',n:'US long-range strike output, 2026',kind:'fit',obs:'~190–207 Tomahawk, ~500 JASSM (decade average), ~100 PrSM, some LRASM (derived)',lo:750,hi:1100,v:r=>r.dec26.out.strike,f:v=>fmtN(v)+'/yr',c:'csisday12,twzstock'},
- {fac:'EU',n:'European 155mm output, 2026',kind:'check',obs:'“More than 2 million a year” is a capacity claim. Nitrocellulose: 4,500–10,000 t made vs ~20,000 t needed; EU plan 1.4M/yr (derived band)',lo:7e5,hi:1.6e6,v:r=>r.dec26.out.shells,f:v=>fmtN(v)+'/yr',c:'euammo26,dgapnc'},
- {fac:'EU',n:'Unterlüß share of nameplate, end 2026',kind:'fit',obs:'Plan: 140k in 2026, 350k/yr from 2027; first Ukraine-bound rounds left in July 2026, a low five-figure batch',lo:.2,hi:.6,v:r=>(r.dec26.plants.find(p=>p.def==='l_shell_lap')||{y:0}).y,f:v=>pct(v),c:'unterluss,grosswald'},
  {n:'Russian missile stock, October 2026',kind:'check',obs:'Up to ~700 ballistic and several thousand cruise missiles',lo:2000,hi:4500,v:r=>r.oct26.en.eu.strike,c:'hurmis'},
  {n:'PLAN battle force, end 2026',kind:'check',obs:'395 projected for 2025 and 435 for 2030 (interpolated)',lo:395,hi:425,v:r=>r.dec26.en.pac.surface+r.dec26.en.pac.subs,c:'cmpr'},
  {n:'PRC combat aircraft, end 2025',kind:'check',obs:'~2,118 (IISS, which may undercount) to ~2,500',lo:2100,hi:2600,v:r=>r.y25.en.pac.aircraft,c:'iiss26'},
@@ -2405,10 +2343,10 @@ const ctCost=(def,ct)=>projCost(def)*ctTerms(def,ct).costM;
 const ctDur=(def,ct)=>{const t=ctTerms(def,ct);return def.dur.map((d,i)=>Math.round(d*t.durM[i]))};
 /* ---------- shared national bottlenecks: projects in the same stage queue for the same scarce things ---------- */
 const POOLS={
- xfmr:{n:'Large power transformers',ic:'⚡',stage:'build',layer:'GRID',tags:['greenfield','smelter','energetic','power'],cap:{US:4,EU:2}},
- tools:{n:'Heavy machine tools & presses',ic:'⚙',stage:'build',layer:'EXPERT',tags:['metal','heavy','line','assembly','refine'],cap:{US:8,EU:3}},
- trades:{n:'Skilled trades',ic:'👷',stage:'build',layer:'LABOR',tags:['labor','shipyard','heavy','energetic','mine'],cap:{US:5,EU:3}},
- ranges:{n:'Test ranges & qualification slots',ic:'🎯',stage:'qual',layer:'QUAL',tags:null,cap:{US:3,EU:2}},
+ xfmr:{n:'Large power transformers',ic:'⚡',stage:'build',layer:'GRID',tags:['greenfield','smelter','energetic','power'],cap:{US:4}},
+ tools:{n:'Heavy machine tools & presses',ic:'⚙',stage:'build',layer:'EXPERT',tags:['metal','heavy','line','assembly','refine'],cap:{US:8}},
+ trades:{n:'Skilled trades',ic:'👷',stage:'build',layer:'LABOR',tags:['labor','shipyard','heavy','energetic','mine'],cap:{US:5}},
+ ranges:{n:'Test ranges & qualification slots',ic:'🎯',stage:'qual',layer:'QUAL',tags:null,cap:{US:3}},
 };
 function poolCap(k){let c=POOLS[k].cap[S.fac];
   if(k==='trades'){if(passed('workforce'))c+=2;if(carveOn('cvHire'))c+=1}
@@ -2420,7 +2358,6 @@ function projCost(def){
   let c=def.cost;
   if(def.tags.includes('prime'))c*=1+(S.lev-50)/100;
   c*=1+.25*(S.built[def.id]||0);
-  if(S.fac==='EU'&&passed('asap')&&(def.tags.includes('energetic')||def.t.line==='shells'))c*=.7;
   for(const m of S.costMods)c*=m.mult;
   c*=ruleCost(def);
   if(icOn('ic232')&&droneRel(def))c*=.85; // onshoring program: duty-free equipment for new US drone plants
@@ -2890,14 +2827,12 @@ function homeTick(lastOut){
   for(const x of S.spot)if(spotKind(x.id)==='ally'){S.allyGrow=S.allyGrow||{};S.allyGrow[x.id]=Math.min(ALLY_GROW_WK,(S.allyGrow[x.id]||0)+1/Math.max(1,S.spot.filter(y=>y.id===x.id).length))}
   S.spot.forEach(x=>x.left--);S.spot=S.spot.filter(x=>x.left>0);
   for(const lid in S.fw){const f=S.fw[lid];if(S.w>=f.due){const got=lastOut[lid]?.n||0,r=got/f.target;S.queue.push({sys:'fw',lid,r});S.pc+=r>=.7?10:-20;if(r<.7)S.pc+=0;delete S.fw[lid]}}
-  if(S.safeLeft>0&&S.w%13===0){const a=Math.min(1.25,S.safeLeft);S.safeLeft-=a;gainB(a,'SAFE loans');log(`SAFE tranche disbursed: +${money(a)}.`,'good')}
 }
 /* ---------- weekly tick ---------- */
 function tick(){
   if(S.over)return;
   pcPre();S.w++;
   if(S.fac==='US'&&(S.histMode?fyStart():billNow())){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(F().fyBudget)}.`,'good');if(!S.histMode)S._yrDue=1}
-  if(S.fac==='EU'&&euFyStart()){S.repro=0;const b=F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0);S.budget+=b;log(`Annual defence-industrial envelope: +${money(b)}.`,'good');if(!S.histMode)S._yrDue=1}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
   if(!S.histMode){enactPkg();suppTick();billAlertTick();cnTick();alTick();ruTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
@@ -3064,9 +2999,9 @@ function attachSankey(root=ov){
    DOSSIER — one page per node / end item, with navigation
    ===================================================================== */
 /* ---------- money and offices: what's binding, and reprogramming when the budget runs dry ---------- */
-function nextFunds(){const d=dateOf(S.w),y=d.getFullYear(),US=S.fac==='US';if(US&&!S.histMode)return {w:billW()+1,amt:F().fyBudget};
-  let t=US?new Date(y,9,1):new Date(y+1,0,1);if(US&&d>=t)t=new Date(y+1,9,1);
-  const w=Math.ceil((t-START)/(7*DAY));return {w,amt:US?F().fyBudget:F().fyBudget+(passed('debtbrake')?6:0)-(passed('slep')?1:0)}}
+function nextFunds(){const d=dateOf(S.w),y=d.getFullYear();if(!S.histMode)return {w:billW()+1,amt:F().fyBudget};
+  let t=new Date(y,9,1);if(d>=t)t=new Date(y+1,9,1);
+  const w=Math.ceil((t-START)/(7*DAY));return {w,amt:F().fyBudget}}
 const REPRO=.5,reproCost=()=>Math.round(10*Math.pow(1.6,S.repro||0));
 function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;gainB(REPRO,'Reprogramming');spent('pc',c);spent('$',-REPRO);toast(`💵 <b>Reprogrammed +${money(REPRO)}</b><br><span class="dim">−${c} PC</span>`,'good');S.repro=(S.repro||0)+1;S.pages+=40;
   log(`${S.fac==='US'?'Reprogramming approved by the four defense committees':'Budget transfer approved'}: +${money(REPRO)} moved from other accounts (${c} PC).`,'ev')}
@@ -3358,20 +3293,20 @@ const PERMITS=[
  {id:'itarReg',ph:'o',n:'ITAR registration',ag:'State Department (DDTC)',law:'ITAR',yrs:1,risk:.01,tags:['line','assembly','electronics']},
  {id:'fcl',ph:'o',n:'Facility security clearance',ag:'DCSA',law:'NISPOM',yrs:3,risk:.04,tags:['line','assembly','electronics','srm']},
  // Europe: the same jobs under EU directives, issued by national and regional authorities
- {f:'EU',id:'eiaP',ph:'b',n:'Environmental impact assessment',ag:'National environment authority',law:'EIA Directive',w:52,all:1,ob:['eia','lawsuit']},
- {f:'EU',id:'iedP',ph:'b',n:'Industrial emissions permit',ag:'Regional environment authority',law:'Industrial Emissions Directive',w:40,tags:['energetic','smelter','refine','metal','heavy'],ob:['ied']},
- {f:'EU',id:'naturaP',ph:'b',n:'Natura 2000 appropriate assessment',ag:'Nature conservation authority',law:'Habitats Directive Art. 6',w:26,tags:['greenfield','mine'],ob:['natura']},
- {f:'EU',id:'mineEU',ph:'b',n:'Mining permit',ag:'National mining authority',law:'National mining codes',w:78,tags:['mine'],ob:['minepermit']},
- {f:'EU',id:'reachP',ph:'b',n:'REACH authorisation for listed substances',ag:'European Chemicals Agency',law:'REACH',w:52,tags:['energetic'],ob:['reach']},
- {f:'EU',id:'sevesoP',ph:'b',n:'Major-hazard safety report',ag:'Regional safety authority',law:'Seveso III Directive',w:26,tags:['energetic','refine'],ob:['qd']},
- {f:'EU',id:'waterP',ph:'b',n:'Water abstraction & discharge permit',ag:'River basin authority',law:'Water Framework Directive',w:26,tags:['energetic','refine','smelter','mine','electronics','metal','shipyard'],ob:[]},
- {f:'EU',id:'gridEU',ph:'b',n:'Grid connection agreement',ag:'Transmission system operator',law:'National grid codes',w:52,tags:['power','smelter'],ob:['queue']},
- {f:'EU',id:'buildEU',ph:'b',n:'Building & land-use permit',ag:'Municipality',law:'Local planning law',w:16,all:1,ob:['local']},
- {f:'EU',id:'iedR',ph:'o',n:'Industrial emissions permit review',ag:'Regional environment authority',law:'IED (new BAT conclusions)',yrs:4,risk:.1,tags:['energetic','smelter','refine','metal','heavy']},
- {f:'EU',id:'waterR',ph:'o',n:'Discharge permit renewal',ag:'River basin authority',law:'Water Framework Directive',yrs:6,risk:.06,all:1},
- {f:'EU',id:'sevesoI',ph:'o',n:'Major-hazard site inspection',ag:'Regional safety authority',law:'Seveso III Art. 20',yrs:1,risk:.04,tags:['energetic','refine']},
- {f:'EU',id:'explEU',ph:'o',n:'Explosives manufacturing licence',ag:'National interior ministry',law:'Explosives Directive (national law)',yrs:5,risk:.05,tags:['energetic','srm']},
- {f:'EU',id:'secEU',ph:'o',n:'Facility security clearance',ag:'National security authority',law:'National security law',yrs:5,risk:.03,tags:['line','assembly','electronics','srm']},
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 ];
 const PMD=Object.fromEntries(PERMITS.map(x=>[x.id,x]));
 // every physical project needs permits: plants, upgrades inside existing plants, test cells, dry docks and depot lines.
@@ -3643,7 +3578,7 @@ function dossierHTML(id,P){
   if(id.startsWith('L:')){const l=id.slice(2),L=LINES[l],o=S._R.out[l],f=F();
     const projs=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint');const lp=linePipe(l),pj0=project(Object.fromEntries(Object.keys(LINES).map(c=>[c,S._R.out[c].yr]))),rq=reqRate(l,pj0);
     main=`${crumb()}<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div></div><span class="dsp"></span><div class="jtabs"><span class="jl">See</span><button data-a="ovjump" data-s="#makers">🏭 Producers</button><button data-a="flow" data-f="L:${l}">⇶ Flows</button><button data-a="arsenal">📈 Stocks</button></div></div>
-     <div class="dsec dlim"><h4>What limits output</h4>${ladder(l,S._R,6)}</div><div class="dsec"><h4>The race: output per year</h4>${outRaceHTML(l,o,lp)}</div><!--ISV-->${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>Situation</h4><p>${(S.fac==='EU'&&LINEINFO_EU[l])||LINEINFO[l]}</p></div>
+     <div class="dsec dlim"><h4>What limits output</h4>${ladder(l,S._R,6)}</div><div class="dsec"><h4>The race: output per year</h4>${outRaceHTML(l,o,lp)}</div><!--ISV-->${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>Situation</h4><p>${LINEINFO[l]}</p></div>
      <div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
      <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
      <!--AO--><div class="dsec" id="allopts"><h4>All ways to raise output</h4>${constraintStrip(Math.min(...projs.filter(d=>!d.req||passed(d.req)).map(projCost)))}<table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`).join('')}
@@ -3964,10 +3899,8 @@ const CITES=[
  {id:'tw22',g:'Policy & trade',t:'China drills force ships to sail around Taiwan danger zones',pub:'Bloomberg',d:'Aug 2022',url:'https://www.bloomberg.com/news/articles/2022-08-04/china-drills-force-ships-to-circumnavigate-taiwan-danger-zones',use:'Ships rerouted during the 4–7 Aug 2022 drills.'},
  {id:'edis',g:'Policy & trade',t:'The European Union charts its own path for European rearmament',pub:'CSIS',d:'2024',url:'https://www.csis.org/analysis/european-union-charts-its-own-path-european-rearmament',use:'EDIS: half of procurement from European industry by 2030.'},
  {id:'ca232',g:'Policy & trade',t:'Canada imposes retaliatory measures in response to US steel and aluminum tariffs',pub:'McCarthy Tétrault',d:'Jun 2018',url:'https://www.mccarthy.ca/en/insights/blogs/terms-trade/canada-imposes-retaliatory-measures-response-us-steel-and-aluminum-tariffs',use:'C$16.6B of countermeasures from 1 Jul 2018.'},
- {id:'scalp',g:'Policy & trade',t:'A jet sale to Egypt is being blocked by a US regulation, and France is over it',pub:'Defense News',d:'Aug 2018',url:'https://www.defensenews.com/global/europe/2018/08/01/a-jet-sale-to-egypt-is-being-blocked-by-a-us-regulation-and-france-is-over-it',use:'ITAR licence for a US part in SCALP held up a Rafale sale.'},
  {id:'pepcon',g:'Munitions & energetics',t:'The PEPCON explosion',pub:'Clark County Fire Department',d:'1988',url:'https://www.clarkcountynv.gov/government/departments/fire/the-pepcon-explosion',use:'4 May 1988, Henderson NV; one of two US ammonium perchlorate producers.'},
  {id:'holston19',g:'Munitions & energetics',t:'Army probes fire at Holston ammunition plant; explosion felt in the area',pub:'WJHL',d:'Jan 2019',url:'https://www.wjhl.com/news/local/army-probes-fire-at-holston-ammunition-plant-explosion-felt-in-the-area/amp',use:'Operations stood down after the January 2019 fire and explosion.'},
- {id:'eurenco22',g:'Munitions & energetics',t:'Eight injured in explosion at factory in south-west France',pub:'The Local',d:'Aug 2022',url:'https://www.thelocal.fr/20220803/eight-injured-in-explosion-at-factory-in-south-west-france',use:'Eurenco Bergerac nitrocellulose building, 3 Aug 2022.'},
  {id:'buyback24',g:'Policy & trade',t:'Defense companies keep up momentum on share repurchases despite Navy leader’s criticism',pub:'Breaking Defense',d:'May 2024',url:'https://breakingdefense.com/2024/05/defense-companies-keep-up-momentum-on-share-repurchases-despite-navy-leaders-criticism/',use:'Primes bought back shares after the Navy Secretary urged investment.'},
  {id:'r2r',g:'US rulebook',t:'HASC advances right to repair proposal, industry pushes back',pub:'Federal News Network',d:'Jun 2026',url:'https://federalnewsnetwork.com/congress/2026/06/hasc-advances-right-to-repair-proposal-industry-pushes-back/',use:'Industry lobbying against right-to-repair and data-rights provisions.'},
  {id:'jonesamp',g:'US rulebook',t:'The US Jones Act gets a new fight and a new argument',pub:'S&P Global',d:'Mar 2016',url:'https://www.spglobal.com/energy/en/news-research/blog/crude-oil/033116-the-us-jones-act-gets-a-new-fight-and-a-new-argument',use:'American Maritime Partnership opposition to repeal.'},
@@ -3986,11 +3919,9 @@ const CITES=[
  {id:'nwp12',g:'US rulebook',t:'Court blocks the use of Nationwide Permit 12 for pipeline water crossings',pub:'NRDC',d:'Apr 2020',url:'https://www.nrdc.org/press-releases/court-blocks-use-nationwide-permit-12-pipeline-water-crossings',use:'Northern Plains Resource Council v. Corps, D. Mont., 15 Apr 2020.'},
  {id:'shut25',g:'US rulebook',t:'Longest government shutdown in US history ends after 43 days',pub:'NHPR',d:'Nov 2025',url:'https://www.nhpr.org/2025-11-13/longest-government-shutdown-in-u-s-history-ends-after-43-days',use:'1 Oct – 12 Nov 2025.'},
  {id:'fed22',g:'Policy & trade',t:'Federal Reserve issues FOMC statement (first rate increase of 2022)',pub:'Federal Reserve',d:'Mar 2022',url:'https://www.federalreserve.gov/newsevents/pressreleases/monetary20220316a.htm',use:'Start of the 2022–23 tightening cycle.'},
- {id:'hufreeze',g:'US rulebook',t:'Council adopted historic decision on budget protection vis-à-vis Hungary',pub:'eucrim',d:'Dec 2022',url:'https://eucrim.eu/news/council-adopted-historic-decision-on-budget-protection-vis-a-vis-hungary-conditions-also-for-rrf-payments/',use:'€6.3B frozen under the conditionality mechanism.'},
  {id:'navy25',g:'Ships, submarines & readiness',t:'New Navy budget seeks 6 battle force ships, decommissions 19 hulls in FY 2025',pub:'USNI News',d:'Mar 2024',url:'https://news.usni.org/2024/03/11/new-navy-budget-seeks-6-battle-force-ships-10-decommissions-in-fy-2025',use:'19 decommissionings, 10 before end of service life.'},
  {id:'af310',g:'Ships, submarines & readiness',t:'Air Force’s FY24 request seeks to retire 310 older planes to invest in its future',pub:'Breaking Defense',d:'Mar 2023',url:'https://breakingdefense.com/2023/03/air-forces-fy24-request-seeks-to-retire-310-older-planes-to-invest-in-its-future/',use:'310 aircraft proposed for divestment.'},
  {id:'jp2pct',g:'Policy & trade',t:'Japan’s defense spending climbs toward 2% of GDP',pub:'The Japan Times',d:'Apr 2024',url:'https://www.japantimes.co.jp/news/2024/04/29/japan/politics/japan-defense-spending-gdp',use:'2% of GDP by FY2027 goal (Dec 2022 strategy).'},
- {id:'de2020',g:'Policy & trade',t:'Defense Secretary Esper says U.S. plans to cut troops in Germany by a third',pub:'NPR',d:'Jul 2020',url:'https://www.npr.org/2020/07/29/896804140/defense-secretary-esper-says-u-s-plans-to-cut-troops-in-germany-by-a-third',use:'About 11,900 of 36,000 troops.'},
  {id:'manchin22',g:'US rulebook',t:'Manchin’s permit overhaul falls short again',pub:'Roll Call',d:'Dec 2022',url:'https://www.rollcall.com/2022/12/15/manchins-permit-overhaul-falls-short-again',use:'Permitting amendment to the FY2023 NDAA failed 47–47.'},
  {id:'safebank',g:'US rulebook',t:'SAFE Banking Act removed from federal defense spending bill',pub:'Mondaq',d:'Dec 2021',url:'https://www.mondaq.com/unitedstates/financial-services/1140902/safe-banking-act-removed-from-federal-defense-spending-bill',use:'House-attached rider stripped in conference (FY2022; again FY2023).'},
  {id:'mcs26',g:'Minerals & materials',t:'Mineral Commodity Summaries 2026',pub:'U.S. Geological Survey',d:'Feb 2026',url:'https://pubs.usgs.gov/publication/mcs2026',use:'Import sources by country (2021–24) and net import reliance (2025) for each raw material on the world map, copied from each chapter.'},
@@ -4071,7 +4002,6 @@ const CITES=[
  {id:'workboat',g:'Ships, submarines & readiness',t:'GAO: Navy submarine maintenance delays cost $4.2 billion',pub:'WorkBoat (on GAO, Aug 2026)',d:'Aug 2026',url:'https://www.workboat.com/gao-navy-submarine-maintenance-delays-cost-4-2-billion',use:'~11% of SSN depot periods on time FY2016–25; two Virginias delivered in 2025, both >3 years late.'},
  {id:'crsssn',g:'Ships, submarines & readiness',t:'Diminishing returns: the US Navy’s attack boat availability problem (citing CRS)',pub:'Naval Technology',d:'2024',url:'https://www.naval-technology.com/features/diminishing-returns-the-us-navys-attack-boat-availability-problem/',use:'31 of 49 SSNs available in FY2023; 18 in or awaiting maintenance; Navy goal ≤20%.'},
  {id:'gaof35',g:'Ships, submarines & readiness',t:'Only 1 in 4 F-35s is fully mission capable, GAO finds',pub:'Defense News',d:'Jun 2026',url:'https://www.defensenews.com/industry/techwatch/2026/06/12/only-1-in-4-f-35s-is-fully-mission-capable-gao-finds/',use:'F-35 mission-capable rate 67% (FY2021) → 44% (FY2025); fully mission capable 25%.'},
- {id:'astute',g:'Ships, submarines & readiness',t:'Royal Navy has no available nuclear submarines at sea as entire fleet sits in port',pub:'Brussels Signal',d:'Jun 2026',url:'https://brusselssignal.eu/2026/06/royal-navy-has-no-available-nuclear-submarines-at-sea-as-entire-fleet-sits-in-port/',use:'All five active Astute-class boats alongside for maintenance or repair.'},
  {id:'cmpr',g:'Ships, submarines & readiness',t:'China Naval Modernization (RL33153), citing DoD’s China Military Power Report',pub:'CRS via USNI News',d:'Apr 2025',url:'https://news.usni.org/2025/05/01/report-to-congress-on-chinese-naval-modernization-21',use:'PLAN >370 ships; 395 projected in 2025, 435 by 2030; US Navy 296 battle force ships (Sep 2024).'},
  {id:'oni',g:'Ships, submarines & readiness',t:'Alarming Navy intel slide warns of China’s 200 times greater shipbuilding capacity',pub:'The War Zone',d:'Jul 2023',url:'https://twz.com/alarming-navy-intel-slide-warns-of-chinas-200-times-greater-shipbuilding-capacity',use:'ONI: ~23.25M tons Chinese capacity vs <100,000 US — at least 232×.'},
  // Adversary
@@ -4106,8 +4036,6 @@ const CITES=[
  {id:'csiswg',g:'Wars of 2025–26',t:'Three weeks of war with China would exhaust US long-range munitions (on CSIS wargames)',pub:'Defense Daily',d:'2023',url:'https://www.defensedaily.com/?p=1134588',use:'The US typically fired more than 5,000 long-range missiles in three weeks; LRASM stocks were gone in the first week.'},
  {id:'csisloss',g:'Wars of 2025–26',t:'US defeats China in simulated war over Taiwan, at a cost',pub:'Washington Times (on CSIS)',d:'Jan 2023',url:'https://m.washingtontimes.com/news/2023/jan/9/us-defeats-china-simulated-war-over-taiwan-costs-a/',use:'Base case: US and Japan lose ~450 combat aircraft and ~40 ships; China ~155 aircraft and ~140 ships.'},
  {id:'army40k',g:'Munitions & energetics',t:'Army’s 155mm production rate stalls, 100,000 per month mark delayed till spring 2026',pub:'Inside Defense',d:'Jul 2025',url:'https://insidedefense.com/node/224601',use:'US output 40,000 rounds a month in mid-2025.'},
- {id:'euammo26',g:'Munitions & energetics',t:'Europe actively scales up 155mm shell production — EU Commissioner Kubilius',pub:'Interfax-Ukraine',d:'Feb 2026',url:'https://interfax.com.ua/news/general/1147530.html',use:'Commissioner: European 155mm production above two million a year.'},
- {id:'kallas',g:'Munitions & energetics',t:'EU produces more than 2 million shells per year and continues to supply them to Ukraine',pub:'Censor.net',d:'Feb 2026',url:'https://censor.net/en/n3602525',use:'EU goal of two million large-calibre rounds for Ukraine in 2025 met (Kallas).'},
  {id:'unterluss',g:'Munitions & energetics',t:'Ceremonial opening of new ammunition factory: Turning point at Rheinmetall-speed',pub:'Rheinmetall',d:'Sep 2025',url:'https://www.rheinmetall.com/en/media/news-watch/news/2025/09/2025-09-05-factory-opening-in-unterluess',use:'Ground broken Feb 2024; construction 15 months; 25,000 rounds in 2025, 140,000 in 2026, up to 350,000/yr from 2027.'},
  {id:'tntaward',g:'Munitions & energetics',t:'Contract award: Repkon USA-Defense LLC, $217.5M (TNT facility)',pub:'Defense Daily',d:'Nov 2024',url:'https://defensedaily.com/contract-awards/contract-award-repkon-usa-defense-llc-tampa-bay-florida-217500000',use:'Design-build TNT plant at Graham, KY; estimated completion 3 Nov 2028.'},
  {id:'tntslip',g:'Munitions & energetics',t:'U.S. Army awards $404M contract for domestic TNT production facility',pub:'SAMsearch',d:'Jun 2026',url:'https://samsearch.co/government-contracting-news/us-army-awards-404m-contract-for-domestic-tnt-production-facility-108689',use:'Completion date now February 2029.'},
@@ -4117,7 +4045,6 @@ const CITES=[
  {id:'navyfy26',g:'Ships, submarines & readiness',t:'Department of the Navy Fiscal Year 2026 Budget Highlights',pub:'USNI News',d:'Jun 2025',url:'https://news.usni.org/2025/06/26/department-of-the-navy-fiscal-year-2026-budget-highlights',use:'Deployable battle force of 287 in FY2026: 115 surface combatants, 63 submarines, 11 carriers, 31 amphibious, 67 support and logistics.'},
  {id:'usniva',g:'Ships, submarines & readiness',t:'Virginia subs will hit 2-a-year build rate in 2030s, CNO Caudle says',pub:'USNI News',d:'May 2026',url:'https://news.usni.org/?p=122562',use:'Two Virginia-class boats a year expected only in the early 2030s.'},
  {id:'pnsy',g:'Ships, submarines & readiness',t:'Portsmouth Naval Shipyard has big plans for 2025 and beyond',pub:'NH Business Review',d:'2025',url:'https://www.nhbr.com/?p=170783',use:'Dry Dock 1 expansion: ground broken Sep 2021, seven-year, ~$1.9B project; Navy target May 2029 (GAO, ~$2.5B).'},
- {id:'wotrnav',g:'Ships, submarines & readiness',t:'Are European navies ready for high-intensity warfare?',pub:'War on the Rocks (IISS data)',d:'Jan 2022',url:'https://warontherocks.com/2022/01/are-european-navies-ready-for-high-intensity-warfare/',use:'European navies: 116 large surface combatants and 66 submarines in 2021.'},
  {id:'iiss26',g:'Adversary production',t:'US outpaces Russia in combat aircraft by almost 2.5 times (on IISS Military Balance 2026)',pub:'www1.ru (secondary report of IISS)',d:'May 2026',url:'https://www1.ru/en/news/2026/05/03/ssha-operezhaiut-rossiiu-po-boevoi-aviatsii-pochti-v-25-raza.html',use:'IISS: US services 2,444 combat aircraft (~3,000 with the Guard); Russia ~1,200; China ~2,118.'},
  {id:'plarf',g:'Adversary production',t:'US intel: China emerges as a global leader in ballistic missile power (on the 2024 CMPR)',pub:'Army Recognition',d:'Dec 2024',url:'https://www.armyrecognition.com/archives/archives-land-defense/land-defense-2024/focus-u-s-intel-china-emerges-as-a-global-leader-in-ballistic-missile-power-with-more-than-3-000-missiles',use:'PLARF: 900 SRBM, 1,300 MRBM, 500 IRBM, 400 GLCM, 400 ICBM.'},
  {id:'plan25',g:'Adversary production',t:'Going nuclear, getting bigger and going beyond (the PLAN in 2025)',pub:'USNI Proceedings',d:'May 2026',url:'https://www.usni.org/magazines/proceedings/2026/may/going-nuclear-getting-bigger-and-going-beyond',use:'At least 21 major combatants launched and commissioned in 2025.'},
@@ -4129,7 +4056,6 @@ const CITES=[
  {id:'uadrone',g:'Adversary production',t:'Ukraine emerges as world leader in drone technology',pub:'Army Recognition (citing Bloomberg)',d:'Nov 2025',url:'https://armyrecognition.com/news/aerospace-news/2025/ukraine-emerges-as-world-leader-in-drone-technology-driven-by-battle-proven-innovation',use:'Ukraine producing ~4 million drones a year.'},
  {id:'stibnite',g:'Critical minerals',t:'Stibnite gold project, US — update',pub:'Mining Weekly',d:'Oct 2025',url:'https://www.miningweekly.com/article/stibnite-gold-project-us-update-2025-10-24',use:'Record of decision January 2025 after nearly a decade in permitting; early construction started autumn 2025.'},
  {id:'thacker',g:'Critical minerals',t:'Thacker Pass lithium project, Nevada',pub:'Mining Technology',d:'2025',url:'https://www.mining-technology.com/projects/thacker-pass-lithium-project-nevada-usa/',use:'Record of decision January 2021; construction March 2023; production expected 2027.'},
- {id:'dgapnc',g:'Munitions & energetics',t:'Upstream of the shell: the energetics chokepoint beneath Europe’s rearmament (citing DGAP, Mar 2026)',pub:'Shaping Tomorrow',d:'Jun 2026',url:'https://decision-intel.shapingtomorrow.com/scans/defence-security-resilience/2026-06-03-energetics-feedstock-chokepoint/scan.html',use:'European nitrocellulose demand ~20,000 t/yr against internal production of ~4,500–10,000 t.'},
  {id:'grosswald',g:'Munitions & energetics',t:'European ammunition and energetics capacity tracker',pub:'Großwald',d:'2026',url:'https://www.grosswald.org/european-ammunition-and-energetics-tracker/',use:'First Ukraine-bound RH1412 rounds left Unterlüß on 14 July 2026, a low five-figure batch; Rheinmetall targets ~1.5M shells/yr by 2027–30.'},
  {id:'mp10x',g:'Critical minerals',t:'MP Materials selects Northlake, Texas, as the site of 10X',pub:'MP Materials',d:'Feb 2026',url:'https://investors.mpmaterials.com/investor-news/news-details/2026/MP-Materials-Selects-Northlake-Texas-as-the-Site-of-10X-a-New-U-S--Rare-Earth-Magnet-Manufacturing-Campus/default.aspx',use:'Partnership with DoD from July 2025; commissioning set to begin in 2028.'}
 ];
@@ -4179,8 +4105,7 @@ function modelCheckHTML(){
   const th=t=>{const s=SCEN[t],A=v=>Array.isArray(v)?`${v[0]} / <b>${v[1]}</b> / ${v[2]}`:v;return `<tr><td colspan="2"><b>${THEATERS[t]}: ${s.n}</b></td></tr><tr><td>Weeks to sustain</td><td>${A(s.wk)}</td></tr><tr><td>Enemy missiles launched per week (share of stock)</td><td>${A(s.fire)}</td></tr><tr><td>Interceptors per threat</td><td>${A(s.shots)}</td></tr><tr><td>Share of salvos at defended targets</td><td>${A(s.share)}</td></tr>${s.spk?`<tr><td>Long-range missiles per PLAN ship (3 weeks)</td><td>${A(s.spk)}</td></tr>`:''}${Object.entries(s.anch).map(([c,v])=>`<tr><td>${LINES[c].n} burn per week (2025 enemy)</td><td>${A(v.map(x=>fmtN(x)))}</td></tr>`).join('')}<tr><td>Allies' share (${S.fac})</td><td>${Object.entries(s.ally[S.fac]||{}).map(([c,v])=>`${LINES[c].u} ${pct(v)}`).join(' · ')||'—'}</td></tr><tr><td>Platform requirement multiplier</td><td>${A(s.req)}</td></tr>`};
   const sc=`<div class="acard"><div class="ah"><b>Scenario: optimistic / <b>central</b> / pessimistic</b></div><table class="mtab">${S.theaters.map(th).join('')}</table></div>`;
   const ir=`<div class="acard"><div class="ah"><b>Intelligence ranges: what you plan on vs the open-source range</b></div><table class="mtab"><tr><th></th><th>In service, Jan 2025 (central · range)</th><th>Output per year (central · range)</th><th>Basis</th></tr>${['pac','eu'].map(t=>Object.keys(LINES).map(c=>`<tr><td>${ENEMIES[t].flag} ${LINES[c].n}</td><td>${fmtN(ENEMIES[t].inv[c])} · ${fmtN(ENEMY_RNG[t].inv[c][0])}–${fmtN(ENEMY_RNG[t].inv[c][1])}</td><td>${fmtN(ENEMIES[t].prod[c])} · ${fmtN(ENEMY_RNG[t].prod[c][0])}–${fmtN(ENEMY_RNG[t].prod[c][1])}</td><td>${ENEMY_SRC[t][c]||'Estimate'}</td></tr>`).join('')).join('')}</table></div>`;
-  const OWN={US:{shells:'Estimate (stock not public).',interceptors:'Derived: CSIS prewar estimates (Feb 2026) less 2025 output, plus 2025 use.[c:twzstock,csisday12]',strike:'Derived the same way.[c:twzstock,csisday12]',aircraft:'IISS: 2,444 combat aircraft in the active services, ~3,000 with the Guard.[c:iiss26]',surface:'296 battle force ships (Dec 2024) less submarines.[c:cmpr,navyfy26]',subs:'Navy FY2026: 63 submarines in the deployable force.[c:navyfy26]',drones:'Estimate.',a2a:'Estimate (AMRAAM inventory is not public).',fires:'Estimate: GMLRS stock after Ukraine transfers (not public).'},
-   EU:{shells:'Estimate; most new rounds have gone to Ukraine.[c:kallas]',interceptors:'Estimate.',strike:'Estimate.',aircraft:'Estimate.',surface:'IISS (2021): 116 large surface combatants in European navies, including the UK.[c:wotrnav]',subs:'IISS (2021): 66 submarines, including the UK, Norway and Turkey; EU members only is an estimate.[c:wotrnav]',drones:'Estimate.'}}[S.fac];
+  const OWN={US:{shells:'Estimate (stock not public).',interceptors:'Derived: CSIS prewar estimates (Feb 2026) less 2025 output, plus 2025 use.[c:twzstock,csisday12]',strike:'Derived the same way.[c:twzstock,csisday12]',aircraft:'IISS: 2,444 combat aircraft in the active services, ~3,000 with the Guard.[c:iiss26]',surface:'296 battle force ships (Dec 2024) less submarines.[c:cmpr,navyfy26]',subs:'Navy FY2026: 63 submarines in the deployable force.[c:navyfy26]',drones:'Estimate.',a2a:'Estimate (AMRAAM inventory is not public).',fires:'Estimate: GMLRS stock after Ukraine transfers (not public).'}}[S.fac];
   const own=`<div class="acard"><div class="ah"><b>Your starting forces, January 2025</b></div><table class="mtab">${Object.keys(LINES).map(c=>`<tr><td>${LINES[c].n}</td><td><b>${fmtN(F().inv[c])}</b></td><td>${OWN[c]}</td></tr>`).join('')}</table></div>`;
   return `<div class="srcgrid">${bt}${tl}${sc}${ir}${own}</div>`;
 }
@@ -4330,7 +4255,7 @@ function linkify(m){const pn=S.projects.length+S.done.length+S.gone.length;if(LK
   if(LKC.size>600)LKC.clear();LKC.set(m,r);return r}
 const stTag=s=>({ok:'<span class="tag ok">ok</span>',tight:'<span class="tag tight">tight</span>',short:'<span class="tag short">short</span>',cut:'<span class="tag cut">cut</span>',idle:'<span class="tag t">idle</span>'}[s]);
 
-const PLAYABLE=['US']; // the EU campaign is parked while the US regulatory regime is built out; its data stays in place
+const PLAYABLE=['US']; // the game is the US defense industrial base; Europe appears as allies
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
    <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2037 (2025–26 replayed)</div>
