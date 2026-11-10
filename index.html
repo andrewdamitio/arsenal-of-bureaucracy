@@ -732,13 +732,13 @@ const TIERS={1:'Raw & Critical Minerals',2:'Processed Materials & Energetics',3:
 const TIERS_S={1:'T1 Raw',2:'T2 Materials',3:'T3 Components',4:'T4 Subsystems',5:'T5 Lines'};
 const ARCH={
  mine:{dur:[20,26,156,156,26,52],tags:['mine','greenfield','dumpable']},
- refine:{dur:[12,20,26,104,26,26],tags:['refine','brownfield','dumpable']},
- energetic:{dur:[12,26,26,170,52,8],tags:['energetic','greenfield']},
- metal:{dur:[12,20,20,78,40,26],tags:['metal','brownfield','dumpable']},
+ refine:{dur:[12,20,26,90,26,20],tags:['refine','brownfield','dumpable']},
+ energetic:{dur:[12,22,24,120,44,8],tags:['energetic','greenfield']},
+ metal:{dur:[12,16,12,60,30,26],tags:['metal','brownfield','dumpable']},
  smelter:{dur:[20,26,52,182,12,20],tags:['smelter','greenfield','dumpable','power']},
  fab:{dur:[12,20,16,104,40,16],tags:['electronics','labor']},
- heavy:{dur:[26,30,52,208,26,0],tags:['heavy','labor','greenfield']},
- assembly:{dur:[12,20,8,78,52,0],tags:['assembly','prime']},
+ heavy:{dur:[20,26,40,170,26,0],tags:['heavy','labor','greenfield']},
+ assembly:{dur:[12,16,8,60,40,0],tags:['assembly','prime']},
  yard:{dur:[26,30,52,260,0,0],tags:['shipyard','labor','greenfield']},
 };
 const CIV={
@@ -760,23 +760,23 @@ const NODES=[
  // ---------------- TIER 1 ----------------
   {id:'lithium',t:1,n:'Lithium',ic:'⛏',in:[],arch:'refine',civ:.9,cv:'ev',
   d:'Australia, Chile and China mine most lithium; China processes an estimated two-thirds.[c:sci_li] The US imports more than half its lithium; commercial production is one Nevada brine operation.[c:usgs26]',
-  US:{mix:[.15,.55,.3],kn:20},adv:.4,
+  US:{mix:[.375,.625,0],kn:20},adv:.4,
   dp:{n:'Lithium Brine / Claystone Project',g:.5,c:.8},ap:{n:'Australian Lithium Offtake',g:.3,c:.4},np:{n:'Chilean / Argentine Lithium Offtake',g:.3,c:.35,d:'Brine lithium from the Atacama and the Puna. Chile and Argentina supplied 97% of US lithium imports in 2021–24.[c:mcs26]'}},
  {id:'rhenium',t:1,n:'Rhenium',ic:'⚗',in:[],arch:'refine',civ:.6,cv:'aero',
   d:'A few percent of every single-crystal turbine blade. Chile led 2025 output; the US (~9.8 t of ~81 t) recovers it from copper-moly roasting and recycles scrap.[c:usgsre]',
-  US:{mix:[.45,.5,.05],kn:40},adv:.1,
+  US:{mix:[.25,.75,0],kn:40},adv:.1,
   dp:{n:'Rhenium Recovery from Moly Roasting',g:.4,c:.3},np:{n:'Chilean Rhenium Supply Agreement',g:.3,c:.2,d:'Rhenium recovered from copper and molybdenum roasting. Chile is the largest single source of US rhenium imports, at 31%.[c:mcs26]'}},
  {id:'gallium',t:1,n:'Gallium',ic:'⚗',in:[],arch:'refine',civ:.5,cv:'elec',
   d:'China produced ~99% of primary gallium (USGS).[c:usgs26] It is a byproduct of alumina refining and cannot be mined on its own. Feeds GaN wafers → MMICs → AESA radars, EW, RF seekers.',
-  US:{mix:[0,.05,.95],kn:5},adv:.3,
+  US:{mix:[0,.82,.18],kn:5},adv:.85,
   dp:{n:'Gallium Recovery Circuit (alumina refinery)',g:.6,c:.4},ap:{n:'Fund Allied Gallium Recovery',g:.3,c:.4}},
  {id:'germanium',t:1,n:'Germanium',ic:'⚗',in:[],arch:'refine',civ:.4,cv:'telecom',
   d:'China supplies an estimated 60–70%+ of germanium;[c:projblue] Belgium (Umicore), Canada, and recycling supply the rest. Feeds IR optics, seekers, and fiber-optic dopants.',
-  US:{mix:[.1,.3,.6],kn:20},adv:.2,
+  US:{mix:[.375,.481,.144],kn:20},adv:.2,
   dp:{n:'Germanium Recovery & Recycling',g:.5,c:.3},ap:{n:'Back Allied Germanium (Umicore / Teck)',g:.3,c:.3}},
  {id:'ndpr',t:1,n:'Rare Earths (NdPr)',ic:'🧲',in:[],arch:'mine',civ:.6,cv:'ev',
   d:'China mined ~69% of the world\'s rare earths in 2025 (USGS) and does most separation.[c:usgsree] MP Materials (Mountain Pass) is the main US source; DoD set a 10-year $110/kg NdPr price floor.[c:mp]',
-  US:{mix:[.2,.15,.65],kn:25},adv:.4,
+  US:{mix:[.33,.194,.476],kn:25},adv:.4,
   dp:{n:'Rare-Earth Mine & Separation Expansion',g:.6,c:2},ap:{n:'Back Allied Separation (Lynas-type)',g:.35,c:.8}},
  {id:'hree',t:1,n:'Heavy Rare Earths (Dy/Tb/Sm)',ic:'🧲',in:[],arch:'refine',civ:.3,cv:'ev',
   d:'Dysprosium, terbium, samarium for high-temperature and SmCo magnets. China\'s April 2025 licensing of medium and heavy rare earths stayed in place after the Nov 2025 truce, which suspended only later expansions.[c:truce] Essentially no Western separation yet.',
@@ -784,39 +784,39 @@ const NODES=[
   dp:{n:'Heavy Rare-Earth Separation Circuit',g:.5,c:1},ap:{n:'Allied Heavy-REE Offtake',g:.25,c:.6}},
  {id:'antimony',t:1,n:'Antimony',ic:'⛏',in:[],arch:'mine',civ:.3,cv:'general',
   d:'China mined ~36% of world antimony in 2025 (USGS) and banned exports to the US in Dec 2024 — suspended until Nov 2026.[c:usgssb,truce] Antimony trisulfide primes nearly every round; China stopped supplying it to the US in 2021.[c:perpetua]',
-  US:{mix:[.05,.3,.65],kn:10},adv:.2,
+  US:{mix:[.09,.41,.5],kn:10},adv:.2,
   dp:{n:'Antimony Mine (Stibnite-type)',g:.7,c:1.5},ap:{n:'Allied Antimony Offtake',g:.3,c:.3}},
  {id:'tungsten',t:1,n:'Tungsten',ic:'⛏',in:[],arch:'mine',civ:.4,cv:'metal',
   d:'China ~83% of mined tungsten (USGS, 2023); no US mine production.[c:usgschina] DFARS bans Chinese/Russian tungsten from ore to powder from 1 Jan 2027. Feeds penetrators and fragmentation.',
-  US:{mix:[0,.25,.75],kn:10},adv:.2,
+  US:{mix:[.375,.463,.162],kn:10},adv:.2,
   dp:{n:'Tungsten Mine & APT Plant',g:.6,c:1.2},ap:{n:'Allied Tungsten (Korea / Portugal)',g:.3,c:.4}},
  {id:'magnesium',t:1,n:'Magnesium',ic:'⛏',in:[],arch:'smelter',civ:.5,cv:'metal',
   d:'China ~89% of primary magnesium (USGS, 2023).[c:usgschina] Alloys aluminum, makes IR decoy flares, and reduces titanium ore to sponge.',
-  US:{mix:[.1,.15,.75],kn:10},adv:.2,
+  US:{mix:[.125,.875,0],kn:10},adv:.2,
   dp:{n:'Primary Magnesium Plant',g:.5,c:.8},ap:{n:'Allied Magnesium Offtake',g:.3,c:.3}},
  {id:'ti_sponge',t:1,n:'Titanium Sponge',ic:'⛏',in:['magnesium'],arch:'metal',tags:['power'],civ:.5,cv:'aero',ss:'No US producer',
   d:'No US titanium sponge since TIMET Henderson idled in 2020; import reliance went from 68% to 100%.[c:tswg] China and Russia hold ~77% of world sponge capacity; US imports come from Japan, Kazakhstan, and Saudi Arabia.[c:usgsti]',
-  US:{mix:[0,.85,.15],kn:5},adv:.3,
+  US:{mix:[0,1,0],kn:5},adv:.3,
   dp:{n:'Restart a Titanium Sponge Plant',g:.5,c:1.2},ap:{n:'Japanese Sponge Offtake',g:.3,c:.5}},
  {id:'graphite',t:1,n:'Graphite',ic:'⛏',in:[],arch:'refine',civ:.8,cv:'ev',
   d:'China produced ~82% of natural graphite in 2025; the US mined none.[c:usgsgr] Battery anodes for drones, subs, and soldier power.',
-  US:{mix:[0,.15,.85],kn:10},adv:.3,
+  US:{mix:[0,.54,.46],kn:10},adv:.3,
   dp:{n:'Anode Graphite Plant',g:.5,c:.6},ap:{n:'Canadian Graphite Offtake',g:.3,c:.35},np:{n:'Mozambique Graphite Offtake (Balama)',g:.3,c:.25,d:'Natural graphite from the Balama mine, which a US development-finance loan backed in 2024. Mozambique supplied 13% of US graphite imports.[c:mcs26][c:balama]'}},
  {id:'nico',t:1,n:'Nickel & Cobalt',ic:'⛏',in:[],arch:'refine',civ:.7,cv:'ev',
   d:'Indonesia (largely Chinese-financed) dominates nickel; the DRC mines most cobalt and China refines most of it; Russia\'s Nornickel is a major class-1 supplier. Feeds superalloys, armor steel, SmCo magnets, batteries.',
-  US:{mix:[.1,.5,.4],kn:30},adv:.5,
+  US:{mix:[.4,.6,0],kn:30},adv:.5,
   dp:{n:'Nickel–Cobalt Refinery',g:.4,c:1},ap:{n:'Allied Nickel (Canada / Australia)',g:.3,c:.5}},
  {id:'tantalum',t:1,n:'Tantalum & Niobium',ic:'⛏',in:[],arch:'refine',civ:.5,cv:'elec',
   d:'US 100% import-reliant for both. Tantalum from the DRC/Rwanda; niobium almost entirely from Brazil (CBMM). DFARS restricts Chinese tantalum from 2027.',
-  US:{mix:[0,.6,.4],kn:15},adv:.3,
+  US:{mix:[0,.89,.11],kn:15},adv:.3,
   dp:{n:'Tantalum Refining Line',g:.4,c:.4},ap:{n:'Australian Tantalum Offtake',g:.3,c:.3},np:{n:'Brazilian Niobium Offtake',g:.3,c:.25,d:'Brazil supplied 67% of US niobium imports in 2021–24.[c:mcs26]'}},
  {id:'indium',t:1,n:'Indium',ic:'⛏',in:[],arch:'refine',civ:.4,cv:'elec',
   d:'China ~70% of refined indium; no US refinery production.[c:usgsin] Indium antimonide detectors sit inside many IR seekers.',
-  US:{mix:[0,.3,.7],kn:10},adv:.2,
+  US:{mix:[0,.88,.12],kn:10},adv:.2,
   dp:{n:'Indium Recovery (zinc refinery)',g:.5,c:.25},ap:{n:'Allied Indium (Korea / Japan / Canada)',g:.3,c:.2}},
  {id:'al_primary',t:1,n:'Primary Aluminum',ic:'⛏',in:[],arch:'smelter',civ:.9,cv:'metal',
   d:'A smelter burns ~15 MWh per tonne; most US smelters closed on power costs. Canada is the main US supplier. Also aluminum powder is 15–20% of SRM propellant.',
-  US:{mix:[.3,.6,.1],kn:30},adv:0,
+  US:{mix:[.4,.582,.018],kn:30},adv:0,
   dp:{n:'Restart / Build a Primary Smelter',g:.4,c:2.5},ap:{n:'Long-Term Canadian / Nordic Offtake',g:.3,c:.4}},
  {id:'linters',t:1,n:'Cotton Linters & Cellulose',ic:'🌿',in:[],arch:'refine',civ:.3,cv:'general',
   d:'Feedstock for nitrocellulose. Rheinmetall\'s CEO said Europe gets >70% of its cotton linters from China;[c:papperger] the US uses domestic linters and wood pulp.',
@@ -1161,7 +1161,7 @@ const STAGE_L={approp:'Appropriation',contract:'Contracting',permit:'Siting & Pe
 /* ---------- FACTIONS ---------- */
 const FACTIONS={
  US:{name:'United States',flag:FLAGS.us,cur:'$',motto:'The Arsenal of Democracy (Pending Review)',
-  pc0:40,pcRate:1.6,budget0:8,fyBudget:9,lev0:70,slots:8,
+  pc0:40,pcRate:1.6,budget0:8,fyBudget:9,lev0:70,slots:14,
   lines:{shells:1,interceptors:1,strike:1,aircraft:1,surface:1,subs:1,drones:1,a2a:1,fires:1},
   lineKn:{shells:40,interceptors:50,strike:50,aircraft:60,surface:30,subs:35,drones:30,a2a:55,fires:55},
   order:['interceptors','strike','subs','aircraft','surface','drones','shells','a2a','fires'],
@@ -1424,8 +1424,9 @@ const RLINKS={
  export:[['itarReform','Extend license-free trade to Japan and Korea.'],['nds','Stockpile what Beijing can switch off.']],
  money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
 };
-// allied refiners of these still run on Chinese feedstock, so an allied deal for them carries Chinese content
-const AP_CN_FEED=['lithium','nico','linters'];
+// China dominates world production of these, so an allied deal for them carries Chinese feedstock or faces Chinese price competition,
+// even where the United States buys little from China directly
+const AP_CN_FEED=['lithium','nico','linters','gallium','germanium','ndpr','hree','antimony','tungsten','magnesium','graphite','indium'];
 const PROJECTS=[];
 for(const n of NODES){
   const a=ARCH[n.arch];
@@ -1640,16 +1641,16 @@ const OPSD=Object.fromEntries(OPS.map(x=>[x.id,x]));
 
 /* ---------- REFORMS (slow, permanent, can fail) ---------- */
 const REFORMS=[
- {id:'ceDefense',fac:['US'],n:'Defense Brownfield Categorical Exclusion',d:'Expansions inside existing defense-industrial fences skip the EA.',pc:20,wk:10,p:.8},
- {id:'nepaReform',fac:['US'],n:'SPEED Act (Permitting Overhaul)',d:'Passed the House 221–196 in Dec 2025; a Senate deal followed in Sep 2026. Deadlines with real remedies. EIS chance −50%, EIS duration −40%.',pc:55,wk:26,p:.4},
+ {id:'ceDefense',fac:['US'],n:'Defense Brownfield Categorical Exclusion',d:'Expansions inside existing defense-industrial fences skip the environmental assessment: permits there take 65% less time.',pc:20,wk:10,p:.8},
+ {id:'nepaReform',fac:['US'],n:'SPEED Act (Permitting Overhaul)',d:'Passed the House 221–196 in Dec 2025; a Senate deal followed in Sep 2026. Deadlines with real remedies. Permitting takes 40% less time; impact-statement fights are half as likely.',pc:55,wk:26,p:.4},
  {id:'judRev',fac:['US'],n:'NEPA Litigation Reform',d:'Short statute of limitations; remand without vacatur. Lawsuits −50%.',pc:40,wk:20,p:.5},
- {id:'dpaMin',fac:['US'],n:'DPA Critical-Minerals Emergency',d:'Unlocks the emergency mine-permitting track.',pc:25,wk:8,p:.9},
+ {id:'dpaMin',fac:['US'],n:'DPA Critical-Minerals Emergency',d:'Unlocks the emergency mine-permitting track: mine permits take 40% less time.',pc:25,wk:8,p:.9},
  {id:'dpaFund',fac:['US'],n:'Recapitalize DPA Title III',d:'+30% grant success against dumping. Costs $2B.',pc:20,$:2,wk:16,p:.75},
  {id:'pricefloor',n:'Strategic Price Floors & Offtake',d:'Generalize the MP-style $110/kg floor. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
- {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',d:'Demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
- {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Protests, CAS, and prime objections −50%. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15;queueEvent('blitz')}},
+ {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',d:'Firm orders years ahead: funding for munitions work and ramp-up to full orders take 40% less time; demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
+ {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Contract awards take 40% less time; protests, cost-accounting and prime objections −50%. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15;queueEvent('blitz')}},
  {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Block further prime mergers; dual-source key subsystems. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20;queueEvent('blitz')}},
- {id:'workforce',n:'Industrial Workforce Act',d:'Labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
+ {id:'workforce',n:'Industrial Workforce Act',d:'Construction 15% faster where trades are short; labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
  {id:'expertVisa',n:'Allied Technical Expert Program',d:'+15 know-how in every node and line. Faster ramp-up, fewer production issues. Costs 0.5B.',pc:20,$:.5,wk:16,p:.75,on:()=>{for(const k in S.know)S.know[k]=Math.min(95,S.know[k]+15)}},
  {id:'slep',n:'Service-Life Extension Program',d:'Retirement of ships, subs and aircraft −40%. Costs 1B per year.',pc:25,wk:12,p:.75},
  {id:'readiness',n:'Fix the Maintenance Backlog',d:'More of what you own can fight: ships, subs & aircraft count +15%. Costs 3B.',pc:30,$:3,wk:20,p:.65,on:()=>{for(const c of ['surface','subs','aircraft'])S.q[c]*=1.15}},
@@ -1658,7 +1659,7 @@ const REFORMS=[
  {id:'byrnes',fac:['US'],n:'Ensuring Naval Readiness Act (S. 406)',d:'Lets yards in NATO and Indo-Pacific treaty allies build Navy ships and major hull components when it costs less than a US yard (introduced Feb 2025). +3 surface ships/yr of line capacity and allied yard capacity.',pc:40,wk:20,p:.45,on:()=>{const s=S.nodes.shipyard;s.ally.amt+=s.scale*.5;s.ally.src='Korea / Japan';S.lines.surface.base+=.5}},
  
  {id:'crAnomaly',fac:['US'],n:'New-Start Authority Under CRs',d:'Projects in Appropriation progress at half speed during a CR instead of stopping.',pc:25,wk:12,p:.6},
- {id:'qualReform',n:'Qualification by Similarity',d:'Energetics & motor qualification obstacles −50–60%, duration −50%.',pc:20,wk:16,p:.7},
+ {id:'qualReform',n:'Qualification by Similarity',d:'Accept test data from similar items: qualification of munitions work takes 45% less time; qualification obstacles −50–60%.',pc:20,wk:16,p:.7},
  {id:'tariffExempt',fac:['US'],n:'Exempt Allied Metals from §232',d:'+allied aluminum supply; no tariff spats. But domestic smelters face 40% more price-collapse risk.',pc:15,wk:8,p:.7,on:()=>{const s=S.nodes.al_primary;s.ally.amt+=s.scale*.3}},
  {id:'acqWorkforce',n:'Hire Acquisition Workforce',d:'Adds staff to every portfolio office: each runs about one more order at full speed. Costs 0.5B.',pc:20,$:.5,wk:12,p:.85,on:()=>{S.slots+=3}},
  
@@ -1717,10 +1718,10 @@ const DFARS_NODES=['ndpr','hree','magnets','tungsten','wha','tantalum','tantcap'
 /* ---------- EVENTS ---------- */
 const cutAll=(ids,v)=>{for(const id of ids)S.cut[id]=Math.min(S.cut[id],v)};
 const EVENTS=[
- {id:'dfars',fac:['US'],fixedW:PLAY0+1,ic:'🧲',t:'DFARS Restrictions Widen (1 Jan 2027)',
+ {id:'dfars',fac:['US'],fixedW:PLAY0+1,ic:'🧲',t:'DFARS Restrictions Widen (1 Jan 2027)',pre:'September 2022: the Pentagon halted F-35 deliveries after a Chinese-made alloy turned up in a pump magnet, then signed a national security waiver a month later so deliveries could resume.[c:f35magnet]',
   body:"DFARS 225.7018 now bans Chinese- and Russian-origin magnets, tungsten, and tantalum \"mined, refined, separated, melted, or produced\" anywhere in the supply chain.[c:dfars7018] Your allied magnet suppliers buy Chinese oxide. Compliant supply shrinks now; new supply (MP's 10X plant, 2028) arrives later.",
-  o:[{l:'Comply strictly (+15 PC; ~80% of PRC-linked supply becomes unusable)',fx:()=>{S.dfars=true;S.pc+=15}},
-     {l:'Issue non-availability determinations (start the 52-week DFARS carve-out)',fx:()=>{S.dfars=true;startCarve('cvDfars',true)}}]},
+  o:[{dflt:1,l:'Waive it where nothing compliant exists (non-availability determinations for a year, renewable; supply keeps flowing)',fx:()=>{S.dfars=true;startCarve('cvDfars',true)}},
+     {l:'Comply strictly (+15 PC from the hawks; about 80% of Chinese-linked magnet, tungsten and tantalum supply becomes unusable now)',fx:()=>{S.dfars=true;S.pc+=15}}]},
  {id:'truce27',fac:['US'],fixedW:PLAY0+1,ic:FLAGS.cn,t:'The Truce Runs Out (10 Jan 2027)',
   body:"<p><b>What the truce is.</b> After Presidents Trump and Xi met in Busan on 30 October 2025, each side paused its newest trade weapons for a year. Beijing suspended its December 2024 ban on gallium, germanium and antimony exports to the United States (licenses are still required) and its October 2025 rare-earth export rules.[c:truce] Washington suspended the Commerce Department's Affiliates Rule, which extends export controls to any firm at least 50% owned by a company on the Entity List.</p><p><b>Where it stands.</b> On 24 September 2026, Treasury Secretary Bessent announced the truce would run to 10 January 2027, and Commerce extended the Affiliates Rule suspension to match. Beijing's own suspension was dated to 27 November 2026, and it has not said whether the extension covers it.[c:truce26]</p><p><b>Your call.</b> Extend again, and the minerals keep flowing while firms owned by blacklisted Chinese companies stay outside US export controls. Reinstate the rule, and that loophole closes, but expect Beijing to switch its bans back on.</p>",
   o:[{dflt:1,l:'Extend the truce (−8 PC: hawks call it a giveaway)',pc:8,fx:()=>{S.truce=true;S.pc+=2;log(`${FLAGS.cn} Truce extended; the Affiliates Rule stays suspended.`,'ev')}},
@@ -1961,7 +1962,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
   for(const id of ORDER){const n=ND[id],c=n[fac],cov=c.cov??1.05,tot=need[id]*cov;
     const scale=Math.max(need[id],pot[id]*.3,.05);
     const nz=neutShare(id);
-    S.nodes[id]={base:tot*c.mix[0],ally:{amt:tot*c.mix[1]*(1-nz),adv:n.adv||0,src:''},neut:{amt:tot*c.mix[1]*nz,adv:n.adv||0,src:neutNames(id)},prc:{amt:tot*c.mix[2]},scale,need0:need[id]};
+    S.nodes[id]={base:tot*c.mix[0],ally:{amt:tot*c.mix[1]*(1-nz),adv:n.adv||0,src:''},neut:{amt:tot*c.mix[1]*nz,adv:NEUT_ADV[id]??(n.adv||0),src:neutNames(id)},prc:{amt:tot*c.mix[2]},scale,need0:need[id]};
     S.know[id]=c.kn??40}
   for(const l in LINES)S.know[l]=X.lineKn[l];
   for(const r of RULES)if(r.on0)setRule(r.id,true);
@@ -2016,7 +2017,7 @@ function cnInit(){return {heat:15,rung:0,hist:[],talkTo:0,next:PLAY0+13}}
 const cnS=()=>S.cn||(S.cn=cnInit());
 function cnNodes(r){if(!r.all)return r.nodes;const f=S.fac;return ORDER.filter(id=>ND[id][f].mix[2]>=r.min&&(!r.tier||ND[id].t<=r.tier)).map(id=>[id,r.all])}
 // plants of yours now replacing Chinese supply: Beijing reads them as lost leverage
-function cnReplaced(){const f=S.fac;return [...new Set(S.plants.filter(p=>p.kind==='node'&&p.yield>=.5&&ND[p.target]&&ND[p.target][f].mix[2]>=.3).map(p=>p.target))]}
+function cnReplaced(){const f=S.fac;return [...new Set(S.plants.filter(p=>p.kind==='node'&&p.yield>=.5&&ND[p.target]&&(ND[p.target][f].mix[2]>=.3||AP_CN_FEED.includes(p.target))).map(p=>p.target))]}
 function cnDrivers(){const r=[],U=S.fac==='US',c=cnS();cnBase(c);
   r.push(['Rivalry, and Beijing’s own plan to keep its lead in processing',3]);
   if(S.scen==='taiwan')r.push(['Military pressure around Taiwan',5]);
@@ -2067,6 +2068,7 @@ function plantsFor(kind,id){return S.plants.filter(p=>p.kind===kind&&p.target===
 // countries USGS does not name are shared out in the same proportion. Other items start with no neutral supply.
 function neutShare(id){const rows=WMD.filter(x=>x.node===id);if(!rows.length)return 0;let t=0;for(const r of rows){let A=0,N=0;for(const [c,v] of r.src){const g=wmGrp(c);if(g==='al')A+=v;else if(g==='oth')N+=v}t+=A+N>0?N/(A+N):0}return t/rows.length}
 function neutNames(id){const m={};for(const r of WMD.filter(x=>x.node===id))for(const [c,v] of r.src)if(wmGrp(c)==='oth')m[c]=(m[c]||0)+v;return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join(', ')}
+const NEUT_ADV={antimony:.6}; // Chinese content in neutral supply where it is documented: antimony re-routed through third countries [c:tranship]
 const NEUT_MIRROR=false; // test switch: neutral supply follows every allied modifier, to prove the split alone changes nothing
 const TS_NODES=['gallium','germanium','antimony']; // banned outright in December 2024; what still arrives comes through third countries
 const neutTop=id=>neutNames(id).split(', ')[0]||'';
@@ -2383,13 +2385,13 @@ function ctTerms(def,ct){
   if(ct.k==='my'){t.costM*=1.25;t.lm.MARKET=.25;t.y0=.15;t.rampM=1.5}
   return t}
 const ctCost=(def,ct)=>projCost(def)*ctTerms(def,ct).costM;
-const ctDur=(def,ct)=>{const t=ctTerms(def,ct);return def.dur.map((d,i)=>Math.round(d*t.durM[i]))};
+const ctDur=(def,ct)=>{const t=ctTerms(def,ct);return planDur(def).map((d,i)=>Math.round(d*t.durM[i]))};
 /* ---------- shared national bottlenecks: projects in the same stage queue for the same scarce things ---------- */
 const POOLS={
  xfmr:{n:'Large power transformers',ic:'⚡',stage:'build',layer:'GRID',tags:['greenfield','smelter','energetic','power'],cap:{US:4}},
- tools:{n:'Heavy machine tools & presses',ic:'⚙',stage:'build',layer:'EXPERT',tags:['metal','heavy','line','assembly','refine'],cap:{US:8}},
- trades:{n:'Skilled trades',ic:'👷',stage:'build',layer:'LABOR',tags:['labor','shipyard','heavy','energetic','mine'],cap:{US:5}},
- ranges:{n:'Test ranges & qualification slots',ic:'🎯',stage:'qual',layer:'QUAL',tags:null,cap:{US:3}},
+ tools:{n:'Heavy machine tools & presses',ic:'⚙',stage:'build',layer:'EXPERT',tags:['metal','heavy','line','assembly','refine'],cap:{US:10}},
+ trades:{n:'Skilled trades',ic:'👷',stage:'build',layer:'LABOR',tags:['labor','shipyard','heavy','energetic','mine'],cap:{US:7}},
+ ranges:{n:'Test ranges & qualification slots',ic:'🎯',stage:'qual',layer:'QUAL',tags:['energetic','assembly','line'],cap:{US:4}},
 };
 function poolCap(k){let c=POOLS[k].cap[S.fac];
   if(k==='trades'){if(passed('workforce'))c+=2;if(carveOn('cvHire'))c+=1}
@@ -2418,7 +2420,7 @@ const OFF_L={shells:'mun',interceptors:'msl',strike:'msl',a2a:'msl',fires:'msl',
 function officeOf(def){if(def.t.line)return OFF_L[def.t.line]||'mat';for(const k in OFF_N)if(OFF_N[k].includes(def.t.node))return k;return 'mat'}
 const officeCap=()=>S.slots/3,staffed=p=>!p.inh&&!p.pkg;
 function officeLoad(){const o={};for(const k in OFFICES)o[k]={n:0,cap:officeCap()};for(const p of S.projects)if(staffed(p))o[officeOf(PD[p.def])].n++;for(const k in o)o[k].f=o[k].n>o[k].cap+1e-9?o[k].cap/o[k].n:1;return o}
-const OFF_TIP='Since the November 2025 acquisition overhaul, one portfolio acquisition executive runs each sector: every plant, upgrade and deal in it. Each has staff for about three orders at full speed; past that, all of its orders slow down together. The Hire Acquisition Workforce reform adds staff to every office.';
+const OFF_TIP='Since the November 2025 acquisition overhaul, one portfolio acquisition executive runs each sector: every plant, upgrade and deal in it. Each has staff for about five orders at full speed; past that, all of its orders slow down together. The Hire Acquisition Workforce reform adds staff to every office.';
 function officeChips(lbl=true){const L=officeLoad();return `<span class="offs">${lbl?'<span class="offl">Offices</span>':''}${Object.entries(OFFICES).map(([k,o])=>`<span class="offc ${L[k].f<1?'over':L[k].n>=L[k].cap-1e-9?'full':''}" data-tip="${tipQ(`<b>${o.ic} ${o.n} office</b><br>${L[k].n} order${L[k].n===1?'':'s'} running, staff for about ${fmt(L[k].cap,0)} at full speed.${L[k].f<1?` <span style='color:#e8a090'>Every order here moves at ${pct(L[k].f)} speed.</span>`:''}<br><br>${OFF_TIP}`)}">${o.ic} ${L[k].n}/${fmt(L[k].cap,0)}</span>`).join('')}</span>`}
 // New plants are new starts: they need the annual NDAA and appropriations. An order joins the next request and waits for
 // enactment (every 18 December); markup cuts depend on how much each item matters, and money is charged only if funded.
@@ -2582,7 +2584,7 @@ function startProject(id,ct,mode){
   const def=PD[id],c=ct?ctCost(def,ct):projCost(def),pk=mode==='pkg'&&!S.histMode;if(!canStart(def,c))return;
   if(!pk&&S.budget<c-1e-9)return;const rk=REQ_PC(c);if(pk){if(S.pc<rk)return;S.pc-=rk;spent('pc',rk)}
   if(!pk)spendB(c,'Programs');S.built[id]=(S.built[id]||0)+1;
-  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):[...def.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
+  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):planDur(def),sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
@@ -2599,6 +2601,23 @@ function doUCA(uid){const p=S.projects.find(x=>x.uid==uid);if(!p||!ucaOK(p))retu
   log(`⚡ Undefinitized contract action: ${projName(p)} starts work now; the price is settled later (${money(c)}).`,'ev');
   receipt({ic:'⚡',lab:'Work starts now',title:projName(p),ok:1,act:`data-a="prog" data-u="${p.uid}"`,actL:'Open the program →',
     lines:[`Contracting ends in about 4 weeks instead of ${was}.`,'The price is settled later; until then the government carries the cost risk.',`${money(c)} spent.`]})}
+// Today's process sets how long each stage takes. An enacted reform shortens the stage it governs, for new programs and for the
+// stages running programs have not finished. The sizes are estimates.
+const REF_STAGE=[
+ {r:'acq',st:'contract',m:.6,dom:1,t:'contract awards 40% faster'},
+ {r:'itarReform',st:'contract',m:.6,ally:1,t:'allied deals signed 40% faster'},
+ {r:'nepaReform',st:'permit',m:.6,dom:1,t:'permitting 40% faster'},
+ {r:'ceDefense',st:'permit',m:.35,dom:1,tags:['brownfield'],t:'permits inside existing plants 65% faster'},
+ {r:'dpaMin',st:'permit',m:.6,dom:1,tags:['mine'],t:'mine permitting 40% faster'},
+ {r:'workforce',st:'build',m:.85,dom:1,tags:['labor','shipyard','heavy','energetic','mine'],t:'construction 15% faster where trades are short'},
+ {r:'qualReform',st:'qual',m:.55,tags:['energetic','assembly','line'],t:'qualification 45% faster'},
+ {r:'multiyear',st:'approp',m:.6,dom:1,tags:['energetic','assembly','line'],t:'funding 40% faster for munitions work'},
+ {r:'multiyear',st:'ramp',m:.6,t:'ramp-up to full orders 40% faster'}];
+const refFits=(x,def)=>(!x.dom||!def.ally)&&(!x.ally||def.ally)&&(!x.tags||x.tags.some(t=>def.tags.includes(t)));
+const stageM=(def,st)=>{let m=1;for(const x of REF_STAGE)if(x.st===st&&passed(x.r)&&refFits(x,def))m*=x.m;return Math.max(.25,m)};
+const planDur=def=>def.dur.map((d,i)=>d?Math.max(1,Math.round(d*stageM(def,STAGES[i]))):0);
+function refRescale(id){for(const p of S.projects){const def=PD[p.def];for(const x of REF_STAGE){if(x.r!==id||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(!p.dur[i])continue;
+  if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*x.m));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*x.m))}}}PJC.clear()}
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
@@ -2765,7 +2784,7 @@ function refEnact(got,lost,fy,room){const its=refReqs().filter(x=>x.pkg<S.w);if(
   for(const x of its){const R=RD[x.id],n=rname(R);if(passed(x.id))continue;
     const why=room.r<x.req-1e-9?'below the money line':rand()<refPass(x)?null:x.rider?'stripped in conference':'dropped in conference';
     if(why){lost.push(`${n} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${n} ${why}.`,'bad');continue}
-    room.r-=x.req;S.reforms[x.id]='passed';lawRec('Law',n);R.on?.();got.push(`Law: ${n}`);log(`✅ Enacted in the FY${fy%100} ${billN()}: ${n}.`,'good')}}
+    room.r-=x.req;S.reforms[x.id]='passed';refRescale(x.id);lawRec('Law',n);R.on?.();got.push(`Law: ${n}`);log(`✅ Enacted in the FY${fy%100} ${billN()}: ${n}.`,'good')}}
 function refStatus(R){if(passed(R.id))return 'Enacted';const q=refReqs().find(x=>x.id===R.id),v=vehOf(R);
   if(q)return `${q.rider?'Rider on':'In'} the FY${FYOF(q.pkg)} NDAA · ~${Math.round(refPass(q)*100)}% chance it survives conference`;
   if(S.bill?.id===R.id)return `Stand-alone bill on the floor · vote in ${S.bill.left} wk`;
@@ -2778,7 +2797,7 @@ function reformAvail(R){return facOk(R)&&!passed(R.id)&&(!R.req||passed(R.req))}
 function reformsTick(){
   if(!S.bill||--S.bill.left>0)return;
   const R=RD[S.bill.id],p=clamp(R.p+S.bill.boost,.05,.98);
-  if(rand()<p){S.reforms[R.id]='passed';lawRec('Law',rname(R));log(`✅ Enacted: ${rname(R)}.`,'good');R.on?.();S.queue.push({sys:'pass',id:R.id})}
+  if(rand()<p){S.reforms[R.id]='passed';refRescale(R.id);lawRec('Law',rname(R));log(`✅ Enacted: ${rname(R)}.`,'good');R.on?.();S.queue.push({sys:'pass',id:R.id})}
   else{S.reforms[R.id]='failed';log(`❌ ${rname(R)} stripped in conference.`,'bad');S.queue.push({sys:'fail',id:R.id})}
   S.bill=null;
 }
@@ -3059,7 +3078,7 @@ const RAMP=kn=>.018+kn*.0004; // weekly learning rate of a new plant's yield
 function rampWeeks(kn,y0,rm){let y=y0,k=kn,w=0;while(y<.9&&w<520){y=Math.min(1,y+Math.max(.02,y)*(1-y)*RAMP(k)*rm);k=Math.min(95,k+.05);w++}return w}
 function previewOf(def,ct,wOn0){
   const key=def.id+'|'+S.w+'|'+(ct?ct.b+ct.k+(ct.now?'n':''):'')+'|'+(wOn0||'')+'|'+S.plants.length+'|'+S.done.length+'|'+(S.cr||0);if(S._pvc?.k===key)return S._pvc.v;
-  const tm=ctTerms(def,ct),dur=ct?ctDur(def,ct):def.dur,build=dur.reduce((a,b)=>a+b,0)*slipF().f;
+  const tm=ctTerms(def,ct),dur=ct?ctDur(def,ct):planDur(def),build=dur.reduce((a,b)=>a+b,0)*slipF().f;
   const tgt=def.t.node||def.t.line,kn=S.know[tgt]??40,isPlant=needsContract(def);
   const pkWait=isPlant&&!S.histMode?(ct&&ct.now?-Math.max(0,dur[0]-NSR_WK):Math.max(0,pkgWhen()-S.w-dur[0])):0;
   const wPlan=S.w+pkWait+dur.reduce((a,b)=>a+b,0),ramp=isPlant?rampWeeks(kn,Math.min(.55,.05+kn*.003+tm.y0),tm.rampM):0,wOn=wOn0??S.w+pkWait+build,wFull=wOn+ramp;
@@ -3229,7 +3248,7 @@ function bnBody(){
        ${CAUSES.filter(([k])=>r.causes[k]>1e-9).map(([k,nm,c])=>`<div class="bnc"><span class="sw" style="background:${c}"></span>${nm} <b>${pct(r.causes[k]/Math.max(p.need,1e-9))}</b>${k==='starved'&&p.starvedBy?` — <span class="linkn" data-a="bngo" data-n="${p.starvedBy}">${ND[p.starvedBy].n}</span>`:''}${k==='cut'&&cutDom?` — <span class="linkn" data-a="rbgo" data-d="${cutDom}">⚖ ${DOMAINS.find(D=>D.id===cutDom).n}</span>`:''}</div>`).join('')}</div>
       <div><h5>Fixes under way</h5>${bnCovLine(cov[id],yr)}${projs.length||ramping.length?projs.map(q=>{const [t,c]=progStatus(q,true);return `<div class="bnc"><span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t}</span> <span class="mini">· ~${yr(Math.round(S.w+remW(q)*sl))}</span></div>`}).join('')+ramping.map(pl=>`<div class="bnc"><span class="linkn" data-a="prog" data-u="${pl.uid}">🏭 ${pl.nm}</span> <span class="mini">ramping, ${pct(pl.yield)} of nameplate</span></div>`).join(''):''}
        ${way.length?`<h5 style="margin-top:6px">What's in the way</h5>${way.map(([l,w])=>{const D=LAYER_DOM(l);return `<div class="bnc"><span class="sw" style="background:${LAYERS[l].c}"></span>${LAYERS[l].n} <b>${w>=1?fmt(w,0)+' wk':'now'}</b>${D?` — <span class="linkn" data-a="rbgo" data-d="${D.id}">⚖ ${D.n}</span>`:''}</div>`}).join('')}`:''}</div>
-      <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(d.dur.reduce((a,b)=>a+b,0))}</span></div>`).join('')}
+      <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(planDur(d).reduce((a,b)=>a+b,0))}</span></div>`).join('')}
        ${S.nodes[id].base>0?`<div class="bnc"><button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':'⏩ Supplier shifts'}</button> <span class="mini">${money(NSHIFT_C)}/yr · +15% in ~3 mo</span></div>`:''}
        ${spotKind(id)?`<div class="bnc"><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?'Buy more':SPOT_L[spotKind(id)][1]}</button> <span class="mini">${money(spotCost(id))} · 26 wk</span>${spotLine(id)}</div>`:`<div class="bnc mini">${spotNone(id)}</div>`}
        ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
@@ -3626,7 +3645,7 @@ function dossierHTML(id,P){
      <div class="dsec dlim"><h4>What limits output</h4>${ladder(l,S._R,6)}</div><div class="dsec"><h4>The race: output per year</h4>${outRaceHTML(l,o,lp)}</div><!--ISV-->${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>Situation</h4><p>${LINEINFO[l]}</p></div>
      <div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
      <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
-     <!--AO--><div class="dsec" id="allopts"><h4>All ways to raise output</h4>${constraintStrip(Math.min(...projs.filter(d=>!d.req||passed(d.req)).map(projCost)))}<table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`).join('')}
+     <!--AO--><div class="dsec" id="allopts"><h4>All ways to raise output</h4>${constraintStrip(Math.min(...projs.filter(d=>!d.req||passed(d.req)).map(projCost)))}<table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">${likely(d).map(x=>LAYERS[x].n).join(' · ')}</div></td><td>+${fmtN(d.gain*L.k)} ${L.u}/yr at full rate</td><td>${money(projCost(d))}</td><td>~${yrs(planDur(d).reduce((a,b)=>a+b,0))} + ramp</td><td>${d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`).join('')}
       ${S.ready[l]!=null?`<tr><td><b>🔧 Spare-parts priority</b><div class="mini">See Readiness below.</div></td><td>−15% new output, + readiness</td><td>—</td><td>now</td><td>${S.spares[l]?'on':'off'}</td></tr>`:''}
       <tr><td><b>⏩ Fund extra shifts</b><div class="mini">Overtime and another shift at existing lines. Only helps when the line itself, not its inputs, is the limit. Tired crews and harder-run machines mean more breakdowns and accidents${BOOM_L.includes(l)?', and fires where explosives are loaded':''}.</div></td><td>+${Math.round((SHIFT_M-1)*100)}% line capacity${o.bott?` · <span class="redt">${ND[o.bott].n} binds now</span>`:''}</td><td>${money(SHIFT_C)}/yr</td><td>now</td><td><button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'Stop':'Fund'}</button></td></tr>
       <tr><td><b>📣 Framework agreement</b><div class="mini">Headline now; audit in three years.</div></td><td>+12 PC now; ±PC on audit</td><td>—</td><td>3 yr</td><td>${S.fw[l]?'active':`<button class="pbtn sm" data-a="fw" data-l="${l}">Announce</button>`}</td></tr>
@@ -3654,7 +3673,7 @@ function dossierHTML(id,P){
        ${p.spot+p.div>0?`<b>Spot / diverted</b><span>${pct((p.spot+p.div)/den)} of need</span>`:''}${S.stock[id]>0?`<b>Stockpile</b><span>${fmt(S.stock[id]/Math.max(s.scale,1e-9),1)} weeks of base demand</span>`:''}</div></div>
      <div class="dsec"><h4>How it's made</h4><div class="steps">${n.in.length?`<div class="step in">${n.in.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join('<br>')}</div><span class="sarr">→</span>`:''}${(I.chain||[]).map(x=>`<div class="step">${x}</div>`).join('<span class="sarr">→</span>')}<span class="sarr">→</span><div class="step out">${n.n}</div></div></div>
      <!--AO--><div class="dsec" id="allopts"><h4>All ways to increase supply</h4>${constraintStrip(Math.min(spotKind(id)?spotCost(id):Infinity,...levs.filter(d=>!d.req||passed(d.req)).map(projCost)))}
-      <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${Object.entries(groups).map(([g,ds])=>`<tr class="grp"><td colspan="5">${g}</td></tr>${ds.map(d=>{const done=leverDone(d),running=S.projects.some(q=>q.def===d.id);return `<tr class="${d.ally?'al':''}"><td><b>${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</b><div class="mini">${d.d===n.d?'':d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>${leverEffect(d,P)}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${done?'<span class="okt">✓ done</span>':running?`<span class="linkn mini" data-a="prog" data-u="${S.projects.find(q=>q.def===d.id).uid}">Under way →</span>`:d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`}).join('')}`).join('')}
+      <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup><tr><th>Action</th><th>Effect</th><th>Cost</th><th>Time</th><th></th></tr>${Object.entries(groups).map(([g,ds])=>`<tr class="grp"><td colspan="5">${g}</td></tr>${ds.map(d=>{const done=leverDone(d),running=S.projects.some(q=>q.def===d.id);return `<tr class="${d.ally?'al':''}"><td><b>${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</b><div class="mini">${d.d===n.d?'':d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>${leverEffect(d,P)}</td><td>${money(projCost(d))}</td><td>~${yrs(planDur(d).reduce((a,b)=>a+b,0))}</td><td>${done?'<span class="okt">✓ done</span>':running?`<span class="linkn mini" data-a="prog" data-u="${S.projects.find(q=>q.def===d.id).uid}">Under way →</span>`:d.req&&!passed(d.req)?`🔒 ${rname(RD[d.req])}`:`${launchBtn(d)}`}</td></tr>`}).join('')}`).join('')}
       <tr class="grp"><td colspan="5">Short-term measures</td></tr>
        <tr><td><b>⏩ Overtime and extra shifts at suppliers</b><div class="mini">Weekend overtime and another shift at existing US plants, as the Scranton shell plant did on its way from 24,000 to 36,000 rounds a month. About three months to hire and train. Shifts only go so far. Worn equipment breaks, tired crews get hurt${ENERGETIC.includes(id)?', energetics plants risk fires':''}, and each costs weeks of output.</div></td><td>${S.nodes[id].base>0?`+15% of existing domestic capacity${nshiftOn(id)?` · <span class="okt">on, ${pct(Math.min(1,(S.w-S.nshift[id].since)/NSHIFT_RAMP))} staffed</span> · <span class="amb">~${pct(1-Math.pow(1-shiftHaz(S.nshift[id].since),52))} odds of an outage a year</span>`:''}`:'<span class="mini">No US plant to run longer</span>'}</td><td>${money(NSHIFT_C)}/yr</td><td>~3 mo</td><td><button class="pbtn sm" data-a="nshift" data-n="${id}" ${S.nodes[id].base>0||nshiftOn(id)?'':'disabled'}>${nshiftOn(id)?'Stop':'Fund'}</button></td></tr>
        ${spotKind(id)==='market'?`<tr><td><b>💸 Emergency spot purchase</b><div class="mini">Bought on the commercial market. Non-Chinese prices run several times higher when PRC supply is cut (game estimate: 1.6–7×).</div></td><td>+25% of normal supply for 26 weeks${spotLine(id)}</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${spotAct(id).length?'Buy more':'Buy'}</button></td></tr>`
@@ -3880,7 +3899,7 @@ function readyCard(c,full,wide){
    <div class="kv"><b>Enemy available</b><span>${S.theaters.map(th=>{const E=S.enemy[th];return `${E.flag} ${fmtN(E.inv[c]*E.ready[c])} of ${fmtN(E.inv[c])} (${pct(E.ready[c])}, assumed)`}).join(' · ')}</span>
     <b>Heading to</b><span><b>${pct(t)}</b> = baseline ${pct(S.ready0[c])}${S.mxAdd[c]?` + maintenance capacity ${pct(S.mxAdd[c])}`:''}${S.spares[c]?' + spares priority 5%':''}${sh>.005?` <span class="redt">− parts shortage ${pct(sh)}</span>`:''} · moves about 4% of the gap per month</span></div>
    ${full&&H2.length>1?lineChart({unit:'Share available for operations',W:wide?900:440,H:wide?130:110,yMax:1,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1-pl,c:'#5f9e4a',n:'Goal: only planned maintenance'}],series:[{pts:H2.map(h=>[h.w,h.ready[c]]),c:'#2f62a0',wd:2.2,n:'Available'},{pts:[[S.w,r],...[26,52,104,208,416].map(dw=>[S.w+dw,t+(r-t)*Math.exp(-dw/26)]).filter(p=>p[0]<=END_W)],c:'#2f62a0',dash:'4 4',wd:1,n:'Available'}]}):''}
-   <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>+${Math.round(d.eff*100)} pts${d.also?' (subs & surface)':''}</td><td>${money(projCost(d))}</td><td>~${yrs(d.dur.reduce((a,b)=>a+b,0))}</td><td>${S.mxDone[d.id]?'<span class="okt">✓ done</span>':S.projects.some(q=>q.def===d.id)?'<span class="mini">Under way</span>':`${launchBtn(d)}`}</td></tr>`).join('')}
+   <table class="ctable lev"><colgroup><col style="width:44%"><col style="width:27%"><col style="width:10%"><col style="width:8%"><col style="width:11%"></colgroup>${projs.map(d=>`<tr><td><b>${d.n}</b><div class="mini">${d.d}</div><div class="mini">Likely barriers: ${likely(d).map(x=>LAYERS[x].n).join(' · ')||'few'}</div></td><td>+${Math.round(d.eff*100)} pts${d.also?' (subs & surface)':''}</td><td>${money(projCost(d))}</td><td>~${yrs(planDur(d).reduce((a,b)=>a+b,0))}</td><td>${S.mxDone[d.id]?'<span class="okt">✓ done</span>':S.projects.some(q=>q.def===d.id)?'<span class="mini">Under way</span>':`${launchBtn(d)}`}</td></tr>`).join('')}
     <tr><td><b>Spare-parts priority</b><div class="mini">Send 15% of new production to the spares pool instead of new units.</div></td><td>+5 pts; no parts-shortage penalty</td><td>−15% output</td><td>now</td><td><button class="pbtn sm" data-a="spares" data-l="${c}">${S.spares[c]?'Stop':'Divert'}</button></td></tr></table>
    ${full?`<p class="mini">${READY_NOTE[S.fac][c]}</p>`:''}</div>`;
 }
@@ -3922,6 +3941,7 @@ const CITES=[
  {id:'s1709',g:'Import controls',t:'DJI urges federal agencies to initiate NDAA-mandated security review ahead of December deadline',pub:'DroneLife',d:'Dec 2025',url:'https://dronelife.com/2025/12/04/dji-urges-federal-agencies-to-initiate-ndaa-mandated-security-review-ahead-of-december-deadline/',use:'FY2025 NDAA §1709: DJI and Autel go on the Covered List by default unless audited by 23 Dec 2025.'},
  {id:'flban',g:'Import controls',t:'Florida’s ban on Chinese drone tech comes with a $25M price tag',pub:'GovTech',d:'2023',url:'https://www.govtech.com/public-safety/floridas-ban-on-chinese-drone-tech-comes-with-a-25m-price-tag',use:'State and local agencies grounded Chinese drones; $25M to replace fleets that cost about $200M; US drones about twice the price.'},
  {id:'djishare',g:'Import controls',t:'DJI loses big share of commercial drone market, DroneAnalyst report finds',pub:'UAV Coach',d:'2021',url:'https://uavcoach.com/dji-commercial-market-drop/',use:'DJI about 54% of US commercial drones in 2021 (69% in 2020) and about 94% of consumer drones.'},
+ {id:'f35magnet',g:'US rulebook',t:'DoD inks waiver for deliveries of F-35s halted over Chinese material',pub:'Defense News',d:'Oct 2022',url:'https://defensenews.com/pentagon/2022/10/07/dod-inks-waiver-for-deliveries-of-f-35s-halted-over-chinese-material',use:'Deliveries suspended 31 August 2022 over a Chinese cobalt-samarium alloy in a Honeywell pump magnet; national security waiver signed in October.'},
  {id:'idnickel',g:'Neutral suppliers',t:'Prohibition of the export of nickel ore',pub:'International Energy Agency (policy database)',d:'2020',url:'https://www.iea.org/policies/16084-prohibition-of-the-export-of-nickel-ore',use:'Indonesia banned nickel ore exports from 1 January 2020, two years ahead of schedule.'},
  {id:'drccobalt',g:'Neutral suppliers',t:'DRC ARECOMS Decision No. 004/2025 – Cobalt Quota System',pub:'International Energy Agency (policy database)',d:'Oct 2025',url:'https://www.iea.org/policies/29138-drc-arecoms-decision-no-0042025-cobalt-quota-system',use:'Cobalt exports suspended from 22 February 2025; quotas from 16 October 2025.'},
  {id:'tranship',g:'Neutral suppliers',t:'How US buyers of critical minerals bypass China’s export ban',pub:'Reuters via TimesLIVE',d:'Jul 2025',url:'https://www.timeslive.co.za/news/world/2025-07-09-how-us-buyers-of-critical-minerals-bypass-chinas-export-ban',use:'3,834 t of antimony oxides from Thailand and Mexico, December to April; Beijing’s May 2025 campaign against transshipment.'},
@@ -4113,6 +4133,8 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Build times and what reforms do to them','Planned times by kind of plant are anchored on recent projects: the Mesquite shell plant (award to opening in 18 months, then no usable parts for two years), the Graham TNT plant (under 36 months planned), MP Materials’ magnet plant (3.5 years to commercial output, twice its plan) and the Stibnite mine (8–9 years of permitting, about 3 of construction). Obstacles add the delays real projects meet. An enacted reform shortens the stage it governs (contract awards, permitting, qualification, funding, ramp-up) by 15–65%; those sizes are estimates. Each program office runs about five orders at full speed.'],
+ ['Raw-material supply shares','For the raw materials USGS reports, the domestic share is one minus net import reliance (reliance given as “more than 50%” is read as 62.5%, “more than 75%” as 87.5%), and imports are split between allied, neutral and Chinese or Russian sources by USGS import shares for 2021–24. China’s hold on world production appears as Chinese content inside allied and neutral supply: a share of it stops when Beijing cuts supply. That share is an estimate for each material (85% for gallium, because allied refiners purify Chinese primary gallium; 60% for neutral antimony, which is largely re-routed Chinese material).'],
  ['Civilian drone market','US civilian drone sales start at about 400,000 a year and grow 6% a year. US makers’ share moves over about two years toward a level set by the bans in force (shown in the Rulebook under Sourcing). At about 250,000 US-made civilian drones a year, the military drone base reaches full scale: drone line capacity +25%, drone plants 20% cheaper.'],
  ['New starts and offices','A new plant is paid for one of two ways: from your budget, starting now, or by requesting it in the next NDAA with Political Capital (about 2 PC plus 2.5 per $1B), in which case Congress pays if it funds it, from money it sets aside for requests (about $8B in an ordinary year, more or less with its appetite). The bill passes (the game passes it every 18 December, when recent NDAAs have been signed). Markup cuts fall hardest on plants that fix nothing holding output back and lightest on the worst bottlenecks, never absolutely, and Congress’s appetite swings from year to year (game estimates); money is charged only if funded. The bill also brings your annual industrial-base budget. Since the November 2025 overhaul, a portfolio acquisition executive runs each sector, not one office per plant; each office in the game staffs about three orders at full speed, and beyond that all its orders slow together (game estimate). Upgrades, workforce measures and allied deals are funded from existing accounts and start at once. After a shock (Chinese export bans, or a disaster at a plant), you can ask for an emergency supplemental: 30 PC, one a fiscal year, a vote in two to five months with a 75% chance of passing (game estimates); it adds $4B and funds every waiting new plant at once.[c:pl11850]'],
  ['Shared shortages','When an input is short, every line that needs it shares it evenly up to half of each line’s capacity, so no line stops outright. Beyond half, your priority order decides: higher lines fill to 80% first, then to 100% (a game simplification of how allocation boards and DPA ratings work).'],
@@ -4955,7 +4977,7 @@ const CSEG=[['plant','🏗','New plants','Built at home: from your budget now, o
   ['other','⚙','Upgrades, workforce & upkeep','Improves plants and people you already have. No new start: it begins as soon as you fund it.']];
 const csegOf=d=>d.ally?'ally':needsContract(d)?'plant':'other';
 function projRow(d,P){
-  const c=projCost(d),lk=d.req&&!passed(d.req),tot=d.dur.reduce((a,b)=>a+b,0),node=d.t.node;
+  const c=projCost(d),lk=d.req&&!passed(d.req),tot=planDur(d).reduce((a,b)=>a+b,0),node=d.t.node;
   const gainTxt=d.kind==='maint'?`+${Math.round(d.eff*100)} pts readiness`:d.t.line?`+${fmtN(d.gain*LINES[d.t.line].k)} ${LINES[d.t.line].u}/yr`:`+${pct(projGain(d)/Math.max(P[node].need,S.nodes[node].scale*.5))} of need`;
   return `<tr class="${d.ally?'al':''}"><td><span class="nm">${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</span><div style="font-size:11px;color:#6b5a35">${likely(d).map(l=>LAYERS[l].n).join(' · ')}</div></td>
    <td>${node?pill(node,P):LINES[d.t.line].n}</td><td>${gainTxt}</td><td>${money(c)}</td><td>~${yrs(tot)}${d.ally?'':' + ramp'}</td>
