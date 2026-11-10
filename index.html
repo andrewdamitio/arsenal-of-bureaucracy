@@ -669,6 +669,7 @@ body{background:
 .bnsort .pbtn.sm.on{background:#3a3020;color:#f0dfae;border-color:#3a3020}
 .bnnow{font:600 10px var(--disp);letter-spacing:.06em;text-transform:uppercase;color:#7a6a48;border:1px solid #cdb98a;padding:1px 5px;margin-left:-4px;align-self:center}
 .bncov{font-size:12.5px;padding:4px 8px;margin:0 0 6px;border-left:3px solid #8a8672;background:#efe5cb}.bncov.ok{border-left-color:#3f7a34;color:#2f5a24}.bncov.part{border-left-color:#c9a227}.bncov.part b{color:#8a2a1c}.bncov.none{border-left-color:#a3261c;color:#8a2a1c}
+.sc-midv{font:600 10.5px var(--disp);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--brass);color:var(--brass2);padding:1px 6px;margin-right:8px;white-space:nowrap}
 /* scrollbars */
 *{scrollbar-width:thin;scrollbar-color:#8a7440 #10120e}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -2893,6 +2894,7 @@ function tick(){
   pcPost();
   if(S._yrDue){S._yrDue=0;yrOpen()}
   if(S.queue.length&&!S.sim)S.speed=0;
+  if(S.scen&&!S.scenMid&&!S.scenRes&&S.w>=SCD[S.scen].mid)scenMidJudge();
   if(S.scen&&!S.scenRes&&S.w>=SCD[S.scen].dl)scenJudge();
   if(S.w>=END_W)gameOver(null);
 }
@@ -2912,7 +2914,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)
   const rows=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0,ch=x>0?y/x-1:0,rv=cnOut(c);
     return `<tr><td>${LINES[c].n}</td><td class="num">${fmtN(x)}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num ${ch>.005?'okt':ch<-.005?'redt':'mini'}">${Math.abs(ch)<.005?'—':(ch>0?'+':'−')+pct(Math.abs(ch))}</td><td class="num">${fmtN(rv)}</td><td class="num ${y>=rv?'okt':'redt'}">${rv>0?pct(y/rv):'—'}</td></tr>`}).join('');
   const li=(t,xs)=>xs.length?`<div class="yrl"><b>${t}</b><span>${xs.join(' · ')}</span></div>`:'';
-  const bl=r.bill,sc=S.scen&&SCD[S.scen],dlY=sc?yrs(sc.dl-S.w):null,nx=CN_RUNGS[cnS().rung],sp=b.spend-a.spend,inc=b.inc-a.inc;
+  const bl=r.bill,sc=S.scen&&SCD[S.scen],nxW=sc?(S.w<sc.mid?sc.mid:sc.dl):null,dlY=sc&&nxW>S.w?yrs(nxW-S.w):null,nx=CN_RUNGS[cnS().rung],sp=b.spend-a.spend,inc=b.inc-a.inc;
   const lim=r.lim.map(([id,cs])=>`${ND[id].n} hold${/s$/.test(ND[id].n.replace(/\s*\(.*\)$/,''))?'':'s'} back ${cs.map(c=>LINES[c].n.toLowerCase()).join(', ')}`);
   return `<div class="paper wide yrp"><div class="hd"><span class="ic">📅</span>${r.y}: the year in review</div><div class="bd">
    <div class="yrts">${tile(pct(b.race),'of the requirement, you + allies',d(a.race*100,b.race*100,v=>fmt(v,0)+' pt'))}${tile(`${b.suff}/${Object.keys(LINES).length}`,'lines sufficient',d(a.suff,b.suff,v=>String(v)))}${tile(r.cleared.length,`bottleneck${r.cleared.length===1?'':'s'} cleared this year`)}${tile(`${cnS().rung}/${CN_RUNGS.length}`,'Beijing’s escalation steps',d(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
@@ -2925,7 +2927,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)
    ${li(`${FLAGS.cn} Beijing`,[...r.cn.map(h=>h.k<0?'<span class="redt">ended the truce early</span>':`<span class="redt">${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`),`pressure ${Math.round(a.cn.heat)} → ${Math.round(b.cn.heat)} of 100`,r.truce?'the truce holds':'no truce'])}
    ${li('💰 Money',[`${money(inc)} came in`,`${money(sp)} spent`,`${money(S.budget)} in hand`,`${Math.floor(S.pc)} Political Capital: +${fmt(r.pcY.inc,0)} earned, −${fmt(r.pcY.sp,0)} spent, ${r.pcY.ev>=0?'+':'−'}${fmt(Math.abs(r.pcY.ev),0)} from events`])}
    <h5 class="yrh">The year ahead</h5>
-   ${li('⏱ Deadline',sc?[`${sc.n}: ${dlY} to ${fmtDate(sc.dl)}`]:[`The race runs to ${fmtDate(END_W)}`])}
+   ${li('⏱ Next checkpoint',sc&&dlY?[`${sc.n}: ${dlY} to ${nxW===sc.mid?'the halfway floors':'the real targets'}, ${fmtDate(nxW)}`]:[`The race runs to ${fmtDate(END_W)}`])}
    ${li('⛓ Biggest limits now',lim.length?lim:['No input holds a line back right now: line capacity is the limit.'])}
    ${li(`${FLAGS.cn} Beijing next`,[nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year)`:'nothing left to escalate'])}
    ${S.fac==='US'?li('🏛 Next bill',[`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}; request plants, stockpile buys and reforms before then on the NDAA & Congress tab`]):''}
@@ -4482,8 +4484,8 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
 let NO_PRC=false; // set while testing what survives if China switches everything off
 const outOf=c=>(S._R||production(false)).out[c].yr;
 const SCENS=[
- {id:'taiwan',n:'The Taiwan Window',rival:'pac',ic:FLAGS.cn,dl:weekOf(2030,0,7),
-  threat:'The PLA was ordered to be ready to take Taiwan by 2027, and US commanders warn the window stays open through the decade.[c:cmpr] You have until January 2030 to build the munitions and boats a fight in the Strait would burn through, and to keep building them once China, the supplier of many of their parts, stops selling.',
+ {id:'taiwan',n:'The Taiwan Window',rival:'pac',ic:FLAGS.cn,mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
+  threat:'The PLA was ordered to be ready to take Taiwan by 2027, and US commanders warn the window stays open through the decade.[c:cmpr] You have until January 2030 to get halfway to the munitions and boats a fight in the Strait would burn through, and until January 2035 to reach the full targets, while still building once China, the supplier of many of their parts, stops selling.',
   mand:[{n:'Air & missile defense interceptors',c:'interceptors',tgt:1800,src:'PAC-3 MSE to 2,000 a year (about half for the US), THAAD to 400, SM-6 past 500.[c:lmpac3,thaad,rtxfw]'},
         {n:'Long-range strike missiles',c:'strike',tgt:1800,src:'JASSM/LRASM toward 1,100 a year plus a Tomahawk framework past 1,000.[c:jassm,tlam26]'},
         {n:'Submarines',c:'subs',tgt:2,dec:1,src:'The Navy needs two Virginia-class boats a year (2.33 with AUKUS); it has built about 1.2.[c:crsva]'},
@@ -4492,15 +4494,15 @@ const SCENS=[
         {n:'All five above, if China cuts you off',kind:'keep',lines:['interceptors','strike','subs','surface','drones'],tgt:.8,pct:1,src:'A war over Taiwan ends Chinese exports to the US on day one. Measured across the five lines above: the share of today’s output (or January 2027’s, if higher) you would still build with no Chinese or Russian inputs, before stocks run down. Beijing’s 2023–25 bans on gallium, germanium, antimony and rare earths were the preview.[c:truce]'}],
   test:{t:'pac',n:'Taiwan Strait campaign'},
   lesson:'Interceptors, strike missiles and air-to-air missiles all wait on the same solid rocket motors and seekers; ships and submarines on yards that take a decade to grow; drones on cells, magnets and boards that come from China. Whatever still needs China stops the day the fighting starts.'},
- {id:'flank',n:'The Eastern Flank',rival:'eu',ic:FLAGS.ru,dl:weekOf(2030,0,7),
-  threat:'Germany’s military chief points to 2029 and its intelligence service to 2030 as the year Russia could be ready to test NATO.[c:bund29,bnd30] You have until January 2030 to build the volume a long war on the flank would eat.',
+ {id:'flank',n:'The Eastern Flank',rival:'eu',ic:FLAGS.ru,mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
+  threat:'Germany’s military chief points to 2029 and its intelligence service to 2030 as the year Russia could be ready to test NATO.[c:bund29,bnd30] You have until January 2030 to get halfway to the volume a long war on the flank would eat, and until January 2035 to reach it.',
   mand:[{n:'155mm artillery shells',c:'shells',tgt:1.2e6,src:'The Army’s goal: 100,000 shells a month.[c:dodig]'},
         {n:'Army precision fires (GMLRS, PrSM)',c:'fires',tgt:16000,src:'The US share of the Army’s planned 19,002 rockets a year.[c:gmlrs19k]'},
         {n:'Drones',c:'drones',tgt:330000,src:'The Army plans to buy a million drones over two to three years; Ukraine and Russia each build about 4 million a year.[c:army1m]'}],
   test:{t:'eu',n:'eastern-flank campaign'},
   lesson:'A long war is won by volume: energetics, shell bodies, rocket motors and cheap drones, most of whose parts come from China.'},
- {id:'cutoff',n:'The Rare-Earth Cutoff',rival:'pac',ic:'🧲',dl:weekOf(2030,0,7),
-  threat:'January 2027: the trade truce collapses. Beijing reimposes its export bans and tightens rare-earth licensing, the way it did in 2023 and 2025.[c:truce] You have until January 2030 to build a base that keeps running without China.',
+ {id:'cutoff',n:'The Rare-Earth Cutoff',rival:'pac',ic:'🧲',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
+  threat:'January 2027: the trade truce collapses. Beijing reimposes its export bans and tightens rare-earth licensing, the way it did in 2023 and 2025.[c:truce] You have until January 2030 to get halfway to a base that keeps running without China, and until January 2035 to finish.',
   setup:()=>{S.truce=false;cnS().heat=30;S.fired.truce27=1;S.inbox=(S.inbox||[]).filter(x=>x.ev!=='truce27');applyChinaBan();cutAll(['ndpr','hree','magnets'],.4);log(`${FLAGS.cn} The truce collapses: export bans are back, and rare-earth licenses stop coming.`,'bad')},
   mand:[{n:'Magnet demand met without China',kind:'magnets',tgt:.9,pct:1,src:'MP Materials’ 10X plant (2028) and the 2027 DFARS ban on Chinese magnets.[c:mp10x,dfars7018]'},
         {n:'PRC and Russian content cut in half',kind:'expo',tgt:.5,low:1,pct:1,src:'Measured against January 2027.'},
@@ -4530,7 +4532,7 @@ function scenTest(sc){const T=sc.test;
   scenUpdate();const tr=trueScore(T.t),es=ratio(T.t);
   return {v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
 function setTheater(t){if(S.fac!=='US')return;S.theaters=[t];scenUpdate();PJC.clear()}
-function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;if(S.modal==='scenPick')S.modal=null;S.rival=sc.rival;setTheater(sc.rival);S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Deadline ${fmtDate(sc.dl)}.`,'ev')}
+function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;if(S.modal==='scenPick')S.modal=null;S.rival=sc.rival;setTheater(sc.rival);S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Halfway floors judged ${fmtDate(sc.mid)}; real targets ${fmtDate(sc.dl)}.`,'ev')}
 function mandWhy(m){const R=S._R||production(false);
   if(m.c){const o=R.out[m.c],lim=limOf(o,m.c);return lim.startsWith('L:')?'Line capacity: more lines needed':'Short of '+o.chain.map(i=>ND[i].n).join(' ← ')}
   if(m.kind==='magnets'){const P=R.P.magnets;return P.starvedBy?'Short of '+chainOf(R.P,'magnets').slice(1).map(i=>ND[i].n).join(' ← '):'Not enough non-Chinese magnet capacity yet'}
@@ -4538,6 +4540,17 @@ function mandWhy(m){const R=S._R||production(false);
   if(m.kind==='keep'){const {by}=keepOf(m.lines);return 'Without China: '+m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>`${LINES[c].n} ${pct(by[c])}`).join(', ')}
   if(m.kind==='expo'){const P=R.P,top=ORDER.filter(id=>P[id].need>1e-6).sort((a,b)=>P[b].prc*(1-P[b].expo*0)-P[a].prc).slice(0,2);return 'Still buying from China: '+top.map(id=>ND[id].n).join(', ')}
   return ''}
+// January 2030, when the window opens: are you halfway there, and would what you hold be enough today?
+function scenMidJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),fl=ms.filter(x=>x.half).length;
+  const verdict=fl===ms.length?(t.ok?'ON TRACK':'ON TRACK, BUT EXPOSED'):fl>=ms.length/2?'BEHIND':'FAR BEHIND';
+  S.scenMid={w:S.w,verdict,floors:fl,of:ms.length,ms:ms.map(x=>({why:x.half?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
+  log(`🎯 ${sc.n}, ${fmtDate(S.w)}: ${verdict} (${fl} of ${ms.length} floors; test ${t.ok?'passed':'failed'}). Real targets are judged ${fmtDate(sc.dl)}.`,fl===ms.length?'good':'bad');if(!S.sim){S.modal='scenMid';S.speed=0}}
+function scenMidHTML(){const sc=SCD[S.scen],r=S.scenMid;
+  return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, the window opens</div><div class="bd">
+    <div class="stamp" style="font-size:22px">${r.verdict}</div><p>The first checkpoint asks whether you are halfway from where you started in January 2027 to each real target. The real targets are judged in January 2035.</p>
+    <table class="ctable"><tr><th>Mandate</th><th>Halfway floor</th><th>Reached</th><th></th><th>Real target, 2035</th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.half?'okt':'redt'}">${x.ok?'✓ already at the real target':x.half?'✓ floor met':'✗ below the floor'}</td><td>${mFmt(x,x.t)}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
+    <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} If it came today.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p></div>
+    <div class="ft"><button class="pbtn primary" data-a="close">Keep building: five years to the real targets →</button></div></div>`}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
   const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
   S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
@@ -4548,18 +4561,18 @@ function scenCard(){
   if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2037. You can still pick a scenario until the clock starts.</span></div>`:'';
   if(false){
     return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">Real targets on real timelines: the US is not on track for most of them. The floors show how close you can get. Or close this and play the open race to 2037.</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
-  const sc=SCD[S.scen],left=sc.dl-S.w,res=S.scenRes;
-  return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span>`}</div>
+  const sc=SCD[S.scen],mid=S.scenMid,nextW=mid||S.w>=sc.mid?sc.dl:sc.mid,left=nextW-S.w,res=S.scenRes;
+  return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`${mid?`<span class="sc-midv" data-tip="${tipQ(`January 2030: ${mid.floors} of ${mid.of} halfway floors met; the test ${mid.test.ok?'passed':'failed'}.`)}">2030: ${mid.verdict}</span>`:''}<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${nextW===sc.mid?'the floors':'the real targets'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}</span>`}</div>
     ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
-      return `${m.kind==='keep'?`<div class="sc-sep">Same five lines, with no Chinese or Russian inputs: the share of output you keep · weakest: ${(()=>{const {by}=keepOf(m.lines);return m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>{const n=LINES[c].n;return n[0]+n.slice(1).toLowerCase()+' '+pct(by[c])}).join(', ')})()}</div>`:''}<div class="sc-m${m.kind==='keep'?' sc-keep':''}"><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}">${x.ok?'✓':x.half?'◐':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.kind==='keep'?`<span data-tip="${tipQ(mandWhy(m))}">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the floor (halfway from January 2027). End: the real target."><i style="width:${f*100}%;background:${x.ok?'#76b357':x.half?'#d9a441':'#d0503f'}"></i><span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
-    <div class="sc-test">${res?`Test: ${res.test.txt}`:`◐ floor met · ✓ real target met. At the deadline: ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}. Full pass: every real target met. Bare pass: every floor met.`}</div></div>`}
+      return `${m.kind==='keep'?`<div class="sc-sep">Same five lines, with no Chinese or Russian inputs: the share of output you keep · weakest: ${(()=>{const {by}=keepOf(m.lines);return m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>{const n=LINES[c].n;return n[0]+n.slice(1).toLowerCase()+' '+pct(by[c])}).join(', ')})()}</div>`:''}<div class="sc-m${m.kind==='keep'?' sc-keep':''}"><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}">${x.ok?'✓':x.half?'◐':'○'} ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.kind==='keep'?`<span data-tip="${tipQ(mandWhy(m))}">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the halfway floor, judged January 2030. End: the real target, judged January 2035."><i style="width:${f*100}%;background:${x.ok?'#76b357':x.half?'#d9a441':'#d0503f'}"></i><span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
+    <div class="sc-test">${res?`Test: ${res.test.txt}`:`◐ halfway floor met · ✓ real target met. January 2030 judges the floors and ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}; January 2035 judges the real targets.`}</div></div>`}
 function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"><span class="ic">🎯</span>January 2027: choose your mandate</div><div class="bd">
-  <p>Each scenario hands you dated targets drawn from real public goals, and a test at the deadline. They are real targets on real timelines: the US is not on track for most of them. The floors show how close you can get.</p>
-  <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
+  <p>Each scenario hands you targets drawn from real public goals. In January 2030 you are judged on whether you are halfway there and whether what you hold would be enough that day. In January 2035 you are judged on the real targets. Under today’s rules the United States is not on track for most of them.</p>
+  <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
   <div class="ft"><button class="pbtn" data-a="scenskip">No mandate: play the open race to 2037</button></div></div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
-  return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: the deadline</div><div class="bd">
-    <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>
+  return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
+    <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>${S.scenMid?`<p class="mini">In January 2030 you were <b>${S.scenMid.verdict.toLowerCase()}</b>: ${S.scenMid.floors} of ${S.scenMid.of} halfway floors met.</p>`:''}
     <table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
     <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
     <p><i>${sc.lesson}</i></p></div>
@@ -4955,7 +4968,7 @@ function renderModal(){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
     html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
       <div class="stamp" style="font-size:24px">${S.verdict}</div>${S.overWhy?`<p>${S.overWhy}</p>`:''}
-      ${S.scenRes?`<p><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} at the deadline (${S.scenRes.met} of ${S.scenRes.ms.length} mandates; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}<p>With ${AL().n}, you meet <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of what the plan requires across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
+      ${S.scenRes?`<p><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} in January 2035 (${S.scenRes.met} of ${S.scenRes.ms.length} mandates; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}<p>With ${AL().n}, you meet <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of what the plan requires across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
       <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}'s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
       <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Pages: <b>${S.pages.toLocaleString()}</b>. Exceptions: <b>${S.waivers}</b>.</p>
@@ -4973,6 +4986,8 @@ function renderModal(){
       html=`<div class="paper evp"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}${nq>1?`<span class="evq">${fmtDate(S.w)} · 1 of ${nq}</span>`:''}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${V(e.pre)}</p>`:''}</div><div class="ft">${opts.map((o,k)=>{const [t,d]=optSplit(V(o.l));return `<button class="pbtn evo" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}><b>${t}</b>${d?`<span>${d}</span>`:''}</button>`}).join('')}${q.read?'':`<p class="evnote">The clock is stopped until you decide.</p>`}</div></div>`}
   } else if(S.modal==='scenPick'){
     html=scenPickHTML();
+  } else if(S.modal==='scenMid'&&S.scenMid){
+    html=scenMidHTML();
   } else if(S.modal==='scenEnd'&&S.scenRes){
     html=scenEndHTML();
   } else if(S.modal==='prog'&&S.selP){

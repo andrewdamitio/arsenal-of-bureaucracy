@@ -45,13 +45,13 @@ const res=await p.evaluate(({bot,scen,years})=>{
     out:Object.fromEntries(Object.keys(LINES).map(c=>[c,Math.round(R.out[c].yr)])),vsStart:Object.fromEntries(Object.keys(LINES).map(c=>[c,+(R.out[c].yr/Math.max(start[c],1e-9)).toFixed(2)])),
     zero:Object.keys(LINES).filter(c=>R.out[c].yr<start[c]*.05).length,plants:S.plants.filter(x=>x.nm).length,finished:dn.length,avgYears:dn.length?+(dn.reduce((a,d)=>a+d.weeks,0)/dn.length/52).toFixed(1):null,planYears:dn.length?+(dn.reduce((a,d)=>a+d.plan,0)/dn.length/52).toFixed(1):null,
     live:S.projects.length,stalled:S.projects.filter(q=>q.obs.length).length,budget:+S.budget.toFixed(1),pc:Math.round(S.pc),spent:+sumV(S.spendBy||{}).toFixed(1),reforms:Object.keys(S.reforms).filter(k=>S.reforms[k]==='passed').length,beijing:cnS().rung,started,deals}};
- const marks=[snap()];const dl=scen!=='open'?SCD[scen].dl:weekOf(2030,0,7);
+ const marks=[snap()];const mid=scen!=='open'?SCD[scen].mid:weekOf(2030,0,7),dl=scen!=='open'?SCD[scen].dl:weekOf(2035,0,8);
  for(let i=0;i<52*years&&!S.over;i++){tick();events();
    if(act){problems();if(i%4===0)build();if(reform&&i%4===2)reforms()}
-   if(S.w===dl||i===52*years-1||S.over)marks.push(snap())}
- return {marks,scen:S.scenRes?{verdict:S.scenRes.verdict,met:S.scenRes.met,of:S.scenRes.ms.length,floors:S.scenRes.ms.filter(x=>x.ok||x.half).length,test:S.scenRes.test.ok}:null,
+   if(S.w===mid||S.w===dl||i===52*years-1||S.over)marks.push(snap())}
+ return {marks,mid:S.scenMid?{verdict:S.scenMid.verdict,floors:S.scenMid.floors,of:S.scenMid.of,test:S.scenMid.test.ok}:null,scen:S.scenRes?{verdict:S.scenRes.verdict,met:S.scenRes.met,of:S.scenRes.ms.length,floors:S.scenRes.ms.filter(x=>x.ok||x.half).length,test:S.scenRes.test.ok}:null,
    lost:Object.fromEntries(Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk).slice(0,5).map(([k,v])=>[LAYERS[k].n,Math.round(v.wk)])),passed:Object.keys(S.reforms).filter(k=>S.reforms[k]==='passed')}},{bot,scen,years});
 res.bot=bot;res.seed=seed;res.secs=Math.round((Date.now()-t0)/1000);res.errors=errs;
 require('fs').writeFileSync(OUT+'/bot_'+bot+'_'+scen+'_'+seed+'.json',JSON.stringify(res));
-const m=res.marks;console.log(`${bot} seed ${seed} ${scen}: share ${m.map(x=>x.share+'%').join(' → ')} | lines at zero ${m[m.length-1].zero} | finished ${m[m.length-1].finished} (avg ${m[m.length-1].avgYears} yr vs plan ${m[m.length-1].planYears}) | reforms ${m[m.length-1].reforms} | ${res.scen?res.scen.met+'/'+res.scen.of+' targets, '+res.scen.floors+' floors':''} | ${res.secs}s${errs.length?' ERRORS '+errs[0]:''}`);
+const m=res.marks;console.log(`${bot} seed ${seed} ${scen}: share ${m.map(x=>x.share+'%').join(' → ')} | lines at zero ${m[m.length-1].zero} | finished ${m[m.length-1].finished} (avg ${m[m.length-1].avgYears} yr vs plan ${m[m.length-1].planYears}) | reforms ${m[m.length-1].reforms} | ${res.mid?'2030: '+res.mid.floors+'/'+res.mid.of+' floors':''}${res.scen?' · 2035: '+res.scen.met+'/'+res.scen.of+' targets':''} | ${res.secs}s${errs.length?' ERRORS '+errs[0]:''}`);
 await b.close()})();
