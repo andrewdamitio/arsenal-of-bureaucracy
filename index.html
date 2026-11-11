@@ -638,7 +638,13 @@ body{background:
 .rbchgs{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:8px 0 2px}.rbchg{font:600 12px "Segoe UI",system-ui,sans-serif;padding:3px 9px;border:1px solid #b9a678;border-radius:12px;background:#fbf7ec;color:#3a3020;cursor:pointer}.rbchg:hover{background:#efe3c4}.rbchg.on{background:#dfe8d2;border-color:#8fae78;color:#2f4f22}
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
-.svp{width:min(720px,94vw)}.svft{flex-direction:row!important;flex-wrap:wrap}.svft .pbtn{flex:1;text-align:center;min-width:150px}
+.svp{width:min(720px,94vw)}
+.gmenu{width:min(520px,94vw);background:var(--panel);border:1px solid var(--brass);box-shadow:0 18px 50px rgba(0,0,0,.6);color:#e6dcc2;font:14px/1.5 "Segoe UI",system-ui,sans-serif}
+.gm-hd{display:flex;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);background:#22231c}.gm-hd span{font:700 13px "Segoe UI",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--brass2)}
+.gm-x{margin-left:auto;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:#2a2c24;color:#e6dcc2;cursor:pointer;font:700 13px "Segoe UI"}.gm-x:hover{border-color:var(--brass)}
+.gm-bd{padding:16px 18px}.gm-info{margin-bottom:14px}.gm-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gm-row .ti-btn{margin-bottom:8px}
+.ti-btn:disabled{opacity:.45;cursor:default}.gm-danger{color:#e8a090;border-color:#6a3a30}.gm-danger:hover{background:#3a2622}.gm-err{color:#e8a090;font-size:12.5px;margin:6px 0 0}
+#top .rmenu b{letter-spacing:.06em}.svft{flex-direction:row!important;flex-wrap:wrap}.svft .pbtn{flex:1;text-align:center;min-width:150px}
 .pbtn.danger{background:#efe2cc;border-color:#a3261c;color:#8a1f15}.pbtn.danger:hover:not(:disabled){background:#a3261c;color:#fff}
 .svwarn{display:flex;align-items:center;gap:16px;border:1px solid #c8a090;background:#f3e3d6;padding:6px 14px;margin-top:8px}.svwarn .stamp{margin:6px 0;font-size:16px;flex:none}.svwarn p{margin:0;color:#5a2a1e;font-size:13.5px}
 .ndaaref{background:#e6d7b2!important;border:1px solid #a8925a!important;color:#3d3426!important;box-shadow:inset 0 0 0 3px #efe3c4}
@@ -5080,7 +5086,7 @@ function renderGame(){
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
     <button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>Event decisions always stop the clock. This covers program problems (permits, protests, audits).<br>On: the clock stops when one appears.<br>Off: they wait ${DECIDE_WK} weeks in the decisions bar, then the default is taken.`)}"><i></i>Pause on problems</button>
-    ${res(S._svAt?'Saved':'Not saved',S._svAt?fmtDate(S._svW):'game file',`<b>Saved game</b><br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}<br>Download or load a save file, or start a new game.`,'savem','',S._svErr?'rwarn':'rquiet')}
+    ${res('☰ Menu',S._svAt?'Saved':'Not saved',`<b>Menu</b><br>Save, load, main menu or a new game.<br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}`,'savem','',S._svErr?'rwarn':'rquiet rmenu')}
     <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
   let sup=`<h2>Supply Chain</h2>
@@ -5339,21 +5345,22 @@ function loadData(txt){const d=JSON.parse(txt);if(!d||d.v!==1||!d.S||d.S.w==null
   S=cur;uidN=Math.max(uidN,d.uidN||1);S.speed=0;S.replay=false;S.histMode=false;S.sim=false;S.queue=S.queue||[];if(S.modal==='save')S.modal=null;
   PJC.clear();viewKey='';S._vdirty=true;S._svW=S.w;S._svAt=d.at;scenUpdate();S._R=production(false)}
 function resumeSave(){let t=null;try{t=localStorage.getItem(SAVE_K)}catch(e){}if(!t)return false;
-  try{loadData(t);render();toast(`💾 <b>Resumed your game</b><br><span class="dim">${fmtDate(S.w)}${S.scen?' · '+SCD[S.scen].n:''}. The 💾 button in the top bar starts a new one.</span>`,'good');return true}
+  try{loadData(t);render();toast(`<b>Resumed your game</b><br><span class="dim">${fmtDate(S.w)}${S.scen?' · '+SCD[S.scen].n:''}. ☰ Menu, top right, saves, loads or starts over.</span>`,'good');return true}
   catch(e){console.error(e);S=null;clearSave();return false}}
 function saveDownload(){const t=saveData(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));
   const d=dateOf(S.w);a.download=`arsenal-${S.fac.toLowerCase()}-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function saveUpload(){const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
   i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{const old=S;try{loadData(t);S.modal=null;saveGame();render();toast(`💾 <b>Save loaded</b><br><span class="dim">${fmtDate(S.w)}</span>`,'good')}catch(e){S=old;if(S){S._svMsg=e.message||'That file could not be read.';render()}else{renderTitle();alert(e.message||'That file could not be read.')}}})};i.click()}
 function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S._svAt)/60000)):null,can=saveable()||S.over;
-  const t=(v,l)=>`<div class="yrt"><b>${v}</b><span>${l}</span></div>`;
   const when=!ok?'Not yet':ago<1?'Just now':ago<60?ago+' min ago':'Over an hour ago';
-  return `<div class="paper svp"><div class="hd"><span class="ic">💾</span>Saved game</div><div class="bd">
-   <div class="yrts">${t(fmtDate(S.w),'game date')}${t(when,ok?'last saved, at '+fmtDate(S._svW):'saving starts once play begins')}${t(S.scen?SCD[S.scen].n:'Open race','mandate')}${t('This browser','where it is kept')}</div>
-   <p class="mini">The game saves itself every four game weeks and whenever you close the tab, and picks up where you left off. A browser save lives only on this computer, and clearing site data erases it: download a file to keep a copy or to move the game.</p>
-   ${S._svErr?`<p class="redt mini">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="redt mini">${S._svMsg}</p>`:''}
-</div>
-   <div class="ft svft"><button class="pbtn primary" data-a="savedl" ${can?'':'disabled'}>⬇ Download save file</button><button class="pbtn" data-a="saveul">⬆ Load a save file</button><button class="pbtn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="pbtn danger" data-a="savenew" data-tip="Starts over now. This game's browser save is replaced; download a file first to keep it.">New game</button></div></div>`}
+  const t=(l,v)=>`<div><span>${l}</span><b>${v}</b></div>`;
+  return `<div class="gmenu"><div class="gm-hd"><span>Menu</span><button class="gm-x" data-a="close" title="Close (Esc)" aria-label="Close">✕</button></div>
+   <div class="gm-bd"><div class="ti-save gm-info">${t('Game date',fmtDate(S.w))}${t('Mandate',S.scen?SCD[S.scen].n:'Open race')}${t('Mode',S.sandbox?'Sandbox':'Standard')}${t('Last saved',ok?when+' · '+fmtDate(S._svW):'Not yet')}</div>
+   <button class="ti-btn primary" data-a="close">Resume ›</button>
+   <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
+   <div class="gm-row"><button class="ti-btn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="ti-btn gm-danger" data-a="savenew" data-tip="Starts over from the title screen. This game's browser save is replaced; download a file first to keep it.">New game</button></div>
+   <p class="ti-note">The game saves itself in this browser every four game weeks and when you close the tab. Clearing site data erases it, so download a file to keep a copy or move the game to another computer.</p>
+   ${S._svErr?`<p class="gm-err">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="gm-err">${S._svMsg}</p>`:''}</div></div>`}
 window.addEventListener('pagehide',()=>saveGame());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame()});
 let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
