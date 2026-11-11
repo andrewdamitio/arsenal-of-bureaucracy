@@ -2015,7 +2015,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
      cn:cnInit(),projects:[],plants:[],built:{},done:[],reforms:{},bill:null,cr:0,dfars:false,truce:false,tension:0,
      ledger:Object.fromEntries(Object.keys(LAYERS).map(k=>[k,{n:0,wk:0}])),
      pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},ic:{},icOnshore:0,icSince:{},gone:[],rules:{},rulesSince:{},shifts:{},ne:null,
-     over:false,overWhy:'',modal:null,autoPause:false,exposure:0,tab:'bott',ptab:1,sel:null};
+     over:false,overWhy:'',modal:null,autoPause:true,exposure:0,tab:'bott',ptab:1,sel:null};
   // size each node from starting demand
   const lineCap0=l=>S.lines[l].base;
   const need={},pot={};for(const id of ORDER){need[id]=0;pot[id]=0}
