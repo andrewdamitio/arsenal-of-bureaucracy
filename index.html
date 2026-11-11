@@ -615,7 +615,8 @@ body{background:
 .billv{max-width:1180px;color:#2a2418;background:#efe6cf;padding:12px 18px;border:1px solid #a8925a}
 .bltt{margin:0 0 4px;font:400 24px var(--sten);letter-spacing:.03em;color:#2a2418}.bltop{border-bottom:2px solid #8a7850;margin-bottom:6px}
 .ndaav{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}.ndaaref{background:#1d1e18;border:1px solid #3a3626;color:#ddd3b8}.ndaaref h2{margin:0;padding:8px 10px;font:400 16px var(--sten);letter-spacing:.04em;background:#25261e;border-bottom:1px solid var(--brass);display:flex;gap:6px;align-items:center}.ndaaref h2 .r{margin-left:auto;font:400 11px var(--disp)}
-@media(max-width:1100px){.ndaav{grid-template-columns:1fr}}
+@media(max-width:1100px){.ndaav,.polv{grid-template-columns:1fr}}
+.polv{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}.polv .billv{max-width:none}.polref{box-shadow:none!important}.polref>h2,.polref .xintro{display:none}
 .ref .rbtns{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 .rbkey{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 12px}.rbkey div{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid #c8b48a;background:#f3ebd6;font-size:12.5px;color:#3d3426}.rbkey b{font:600 13.5px var(--disp);letter-spacing:.03em;color:#2a2418}@media(max-width:900px){.rbkey{grid-template-columns:1fr}}
 .wmv{max-width:none}.wmv .dtop{position:static;margin:0 0 6px;padding:0;background:none;box-shadow:none}
@@ -2642,7 +2643,7 @@ function ndsSec(){const P=S._R?.P||production(false).P,left0=pkgRoom()-pkgPlan()
     ${rows?`<table class="ctable bl-t"><tr><th>Material</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:'<p class="mini">No stockpile buys in the request.</p>'}
     ${sh.length?`<div class="mini" style="margin-top:6px">Short now: ${sh.map(id=>`<button class="btn sm" data-a="ndsadd" data-n="${id}" ${S.pc>=REQ_PC(NDS_C)?'':'disabled'}>+ ${ND[id].n} · ${REQ_PC(NDS_C)} PC</button>`).join(' ')}</div>`:''}</div>`}
 // the reform agenda: bills you push through Congress, shown on the NDAA tab
-function emergHTML(){let h=`   <h2>Emergency powers <span class="r dim">fast, temporary, fragile</span></h2><div class="sub" style="padding:6px 10px">Issued by the executive in weeks. Each lasts a set time, many need a declared emergency, and some can be struck down in court.</div>
+function emergHTML(){let h=`   <h2>Emergency powers <span class="r dim">fast, temporary, fragile</span></h2><div class="sub xintro" style="padding:6px 10px">Issued by the executive in weeks. Each lasts a set time, many need a declared emergency, and some can be struck down in court.</div>
    ${S.fac==='US'?`<div class="ref ${S.ne?'act':''}"><span class="nm">🚨 National emergency on the defense industrial base</span>${S.ne?`<span class="sub green">since ${fmtDate(S.ne.since)}</span>`:`<button class="btn sm" data-a="ne" ${S.pc>=NE_COST?'':'disabled'}>${NE_COST} PC · declare</button>`}<span class="d">The legal trigger for emergency permitting, the Jones Act waiver, emergency qualification and hiring. Renewed each year (${NE_RENEW} PC); lapses if you can’t.</span></div>`:''}`;
   for(const C of CARVES.filter(facOk)){const on=carveOn(C.id),c=carveCost(C),k=S.carve[C.id];
     h+=`<div class="ref ${on?'act':''}" id="ag-${C.id}" data-fk="ag:${C.id}"><span class="nm">${on?'🖋 ':''}${cname(C)}</span>${on?`<span class="sub green">${k.left} wk left</span>`:`<button class="btn sm" data-a="carve" data-c="${C.id}" ${carveAvail(C)&&S.pc>=c?'':'disabled'}>${c} PC · ${C.wk}w${carveNeed(C)?' · 🔒':''}${k?' · renew':''}</button>`}<span class="d">${C.d}${C.court?` <span class="red">Court risk.</span>`:''}</span></div>`}
@@ -2650,9 +2651,10 @@ function emergHTML(){let h=`   <h2>Emergency powers <span class="r dim">fast, te
 function policyBody(){if(S.fac!=='US')return agendaHTML();
   const ex=DOMAINS.map(D=>{const rs=RULES.filter(r=>r.dom===D.id&&isExec(r));return rs.length?`<tr class="pdom"><td colspan="3">${D.n}</td></tr>`+rs.map(ruleRow).join(''):''}).join('');
   const on=RULES.filter(r=>isExec(r)&&ruleOn(r.id)).length;
-  return `<div class="ndaav"><div class="billv"><h3 class="bltt">Executive actions</h3><p class="mini" style="margin:2px 0 8px">Rules the administration can adopt, finalize or reverse for Political Capital. They take effect at once, but the next administration can undo them, and proposed rules invite lawsuits. ${on} in force now.</p>
+  return `<div class="polv"><div class="billv"><h3 class="bltt">Executive actions</h3><p class="mini" style="margin:2px 0 8px">Rules the administration can adopt, finalize or reverse for Political Capital. They take effect at once, but the next administration can undo them, and proposed rules invite lawsuits. ${on} in force now.</p>
     <table class="ctable lev rbt"><colgroup><col style="width:56px"><col style="width:44%"><col></colgroup>${ex}</table></div>
-    <div class="ndaaref">${emergHTML()}${agendaHTML('bills')}</div></div>`}
+    <div class="billv"><h3 class="bltt">Stand-alone bills</h3><p class="mini" style="margin:2px 0 8px">Laws written by committees other than Armed Services: permitting, courts, shipping, immigration and trade. One goes to the floor at a time on its own vote, or rides the NDAA as a long-shot rider. Permanent once enacted.</p><div class="ndaaref polref">${agendaHTML('bills')}</div>
+      <h3 class="bltt" style="margin-top:16px">Emergency powers</h3><p class="mini" style="margin:2px 0 8px">Issued by the executive in weeks. Each lasts a set time, many need a declared national emergency, and some can be struck down in court.</p><div class="ndaaref polref">${emergHTML()}</div></div></div>`}
 function agendaHTML(mode){const nd=mode!=='bills'&&S.fac==='US';
   let ag=`<h2>${S.fac!=='US'?'Council Agenda':nd?'Reforms in the NDAA':'Stand-alone bills'} <span class="r dim">slow, permanent</span></h2>`;
   if(nd){}else if(S.bill){const Rf=RD[S.bill.id],p=clamp(Rf.p+S.bill.boost,.05,.98);
@@ -2666,7 +2668,7 @@ function agendaHTML(mode){const nd=mode!=='bills'&&S.fac==='US';
   const open=REFORMS.filter(R=>facOk(R)&&!passed(R.id));
   if(S.fac==='US'){const A=open.filter(R=>vehOf(R)==='ndaa'),B=open.filter(R=>vehOf(R)!=='ndaa');
     if(nd)ag+=`<div class="sub" style="padding:6px 10px">Armed Services and defense appropriations write these every year. Add them to the request; they are decided with the bill on 18 December, any number at once. Reforms from other committees are stand-alone bills on the <span class="linkn" data-a="view" data-v="policy">Policy tab</span>, where you can also attach one to the NDAA as a rider.</div>`+A.map(row).join('');
-    else ag+=`<div class="sub" style="padding:4px 10px">Permitting, courts, shipping, immigration and trade belong to other committees: one bill at a time on its own vote, or a long-shot rider on the NDAA.</div>`+B.map(row).join('')}
+    else ag+=`<div class="sub xintro" style="padding:4px 10px">Permitting, courts, shipping, immigration and trade belong to other committees: one bill at a time on its own vote, or a long-shot rider on the NDAA.</div>`+B.map(row).join('')}
   else ag+=open.map(row).join('');
   const pas=REFORMS.filter(R=>passed(R.id)&&(S.fac!=='US'||(vehOf(R)==='ndaa')===nd));if(pas.length)ag+=`<div class="sect"><span>Enacted</span><span></span></div>`+pas.map(R=>`<div class="ref pass" id="ag-${R.id}" data-fk="ag:${R.id}"><span class="nm">✓ ${rname(R)}</span></div>`).join('');
   return ag}
@@ -2896,7 +2898,7 @@ function whip(){if(!S.bill||S.pc<10||S.bill.whips>=3)return;S.pc-=10;S.bill.whip
 // Political Capital and are decided on 18 December. The rest (permitting, courts, Jones Act, visas, trade, broad labor law) are
 // stand-alone bills; one can be attached to the NDAA as a rider, at a premium and with a high chance it is stripped in
 // conference, as Manchin's permitting amendment (Dec 2022) and the SAFE Banking Act (FY2022, FY2023) were.[c:manchin22][c:safebank]
-const NDAA_REF=['multiyear','acq','qualReform','antitrust','itarReform','ceDefense','byrnes','dpaMin','dpaFund','pricefloor','acqWorkforce','slep','readiness','crAnomaly'];
+const NDAA_REF=['multiyear','ibfPerm','acq','qualReform','antitrust','itarReform','ceDefense','byrnes','dpaMin','dpaFund','pricefloor','acqWorkforce','slep','readiness','crAnomaly'];
 const vehOf=R=>S.fac!=='US'?'own':NDAA_REF.includes(R.id)?'ndaa':'rider',RIDER_F=1.4;
 const refReqs=()=>(S.refReq=S.refReq||[]),inReq=id=>refReqs().some(x=>x.id===id);
 function refPass(x){const R=RD[x.id],m=moodOf(FYOF(x.pkg)).f;return x.rider?clamp(R.p*.35/m,.05,.4):clamp((R.p+.2)/Math.sqrt(m),.25,.95)}
