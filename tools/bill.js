@@ -7,7 +7,7 @@ const {chromium}=require('playwright-core');
 const b=await chromium.launch({executablePath:CHROME});const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.addInitScript(()=>{let a=5;Math.random=function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};try{localStorage.clear()}catch(e){}});
 await p.goto('file:///'+DEFAULT_HTML);await p.waitForTimeout(700);
-const res=await p.evaluate(({scen,ref})=>{newGame('US');S.modal=null;chooseScen(scen);S.modal=null;S.queue=[];S.sim=1;
+const res=await p.evaluate(({scen,ref})=>{newGame('US');S.modal=null;chooseScen(scen);S.modal=null;S.queue=[];S.sim=1;S.ord=null; // the bill counts capacity only
  if(ref)for(const id of ['multiyear','pricefloor','acq'])S.reforms[id]='passed';
  const sc=SCD[scen],tg=sc.mand.filter(m=>m.c).map(m=>[m.c,m.tgt]);
  const cap=d=>!d.kind||d.kind==='cap'||d.kind==='mod';

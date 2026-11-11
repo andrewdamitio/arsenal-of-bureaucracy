@@ -42,9 +42,10 @@ const res=await p.evaluate(({bot,scen,years})=>{
  // run fn against the industrial base as it will be once every program under way has landed and every plant has ramped; then put it all back
  const future=fn=>{const np=S.plants.length,built={...S.built},nf=JSON.stringify(S.nflags),ys=S.plants.map(x=>x.yield),iss=S.plants.map(x=>x.issue),
      nd=Object.fromEntries(ORDER.map(id=>[id,[S.nodes[id].ally.amt,S.nodes[id].neut.amt,S.nodes[id].base]]));
+   const ord0=S.ord;S.ord=null; // plan as if new capacity will be ordered
    for(const pl of S.plants){pl.yield=1;pl.issue=null}
    for(const q of S.projects){const d=PD[q.def];if(d.t.line?!d.kind:cap(d))land(d,false)}
-   try{return fn()}finally{S.plants.length=np;S.plants.forEach((x,i)=>{x.yield=ys[i];x.issue=iss[i]});S.built=built;S.nflags=JSON.parse(nf);for(const id of ORDER){const [a,n,bs]=nd[id];S.nodes[id].ally.amt=a;S.nodes[id].neut.amt=n;S.nodes[id].base=bs}}};
+   try{return fn()}finally{S.ord=ord0;S.plants.length=np;S.plants.forEach((x,i)=>{x.yield=ys[i];x.issue=iss[i]});S.built=built;S.nflags=JSON.parse(nf);for(const id of ORDER){const [a,n,bs]=nd[id];S.nodes[id].ally.amt=a;S.nodes[id].neut.amt=n;S.nodes[id].base=bs}}};
  const ok=d=>canStart(d)&&(!d.req||passed(d.req));
  const levers=id=>leversFor(id).filter(x=>cap(x)&&ok(x)&&!(x.kind==='mod'&&(S.nflags[id]||{}).mod)).sort((a,b)=>projGain(b)/projCost(b)-projGain(a)/projCost(a));
  // what a finished project would add to a line, measured and then undone
@@ -78,6 +79,9 @@ const res=await p.evaluate(({bot,scen,years})=>{
    // a stopgap while plants are built: emergency purchases for the worst shortages
    for(const r of rows.slice(0,5)){const p=P[r.id];if(p.cover>=.9)continue;
      if(spotKind(r.id)&&S.spot.filter(x=>x.id===r.id).length<2&&S.budget>=spotCost(r.id)+3){spotBuy(r.id);stop++}}
+   // order what the lines can make: request it in the NDAA, or buy a year from the budget when money is spare
+   for(const c of Object.keys(LINES)){const o=R0.out[c];const gap=o.physYr-ordOf(c);if(!isFinite(gap)||gap<=o.physYr*.03||ordReqs().some(x=>x.c===c))continue;
+     if(S.pc>=ordPC(c,gap))ordAdd(c,gap)}
    const out=R0.out;for(const D of ALLY_DEALS)if(alDealOk(D)&&S.pc>=D.pc+15+reserve()&&S.budget>=(D.$||0)+1&&suffLine(D.c,out[D.c].yr)<1){alDeal(D.id);deals++}};
  // ---- reforms
  const NDAA=['acq','byrnes','ceDefense','qualReform','multiyear','acqWorkforce','pricefloor','itarReform','dpaMin','crAnomaly','dpaFund','antitrust'],BILLS=['nepaReform','workforce','judRev','expertVisa','jonesReform','tariffExempt'],EXEC=['rFAST','rNSR','rWOTUS','rITAR','rKnown'];
