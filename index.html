@@ -639,6 +639,9 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+.psteps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:2px 0 8px}.pstep{display:flex;flex-direction:column;padding:6px 8px;border:1px solid #cbbd95;background:#f7f1e1;border-radius:3px;font-size:12px;position:relative}.pstep b{font-size:12.5px}.pstep span{color:#6b5a35}.pstep.done{background:#e3edd6;border-color:#a9c48f}.pstep.done b{color:#2f5a24}.pstep.cur{background:#fbf3dc;border:2px solid #b8860b}.pstep.skip{opacity:.45}.pstep .late{font-style:normal;color:#a3261c;font-size:11px;font-weight:600}
+.pdet{border:1px solid #d6c79f;background:#f7f1e1;padding:8px 12px;border-radius:3px}.pdh{font-size:13px;margin-bottom:4px}.pbar{height:9px;background:#e4d8b8;border-radius:5px;overflow:hidden;margin:4px 0 6px}.pbar i{display:block;height:100%;background:#a0703a}.pmiles{list-style:none;margin:0 0 6px;padding:0;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px}.pmiles li{color:#9c8a5c}.pmiles li.ok{color:#2f5a24}.pmiles li.now{color:#2b241a;font-weight:700}
+@media(max-width:760px){.psteps{grid-template-columns:repeat(3,1fr)}}
 .opt{flex-wrap:wrap}.opt .ox{flex:1 0 100%;display:block;font:12px/1.45 "Segoe UI",system-ui,sans-serif;text-align:left;white-space:normal;opacity:.82;margin-top:3px;text-transform:none;letter-spacing:0;font-weight:400}.ochoose{font-size:12px;margin:6px 0 4px;opacity:.85}.remh{font-size:11.5px;opacity:.8;margin-right:6px}
 .pvimp{margin:8px 0 4px;padding-top:6px;border-top:1px solid rgba(160,140,90,.45)}.pvih{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase;opacity:.85;margin-bottom:2px}.pvih span{text-transform:none;letter-spacing:0;font-weight:400;opacity:.8;margin-left:4px}.pvisvg{display:block;width:100%;max-width:360px;height:auto}.pvisvg text{font:9.5px "Segoe UI",system-ui,sans-serif;fill:#9c8a5c}.pvilg{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin:2px 0 4px;opacity:.9}.pvilg i{display:inline-block;width:14px;height:3px;vertical-align:3px;margin-right:4px}.pvilg i.d{height:0;border-top:2px dashed #9c8a5c}.pvilg i.r{height:0;border-top:1px dashed #c0503f}.pvir{display:grid;grid-template-columns:1fr 78px 92px;gap:6px;font-size:12px}.pvir span:not(:first-child){text-align:right}.pvir.pvhd{font-size:10px;text-transform:uppercase;letter-spacing:.05em;opacity:.7}.grps{font-weight:400;text-transform:none;letter-spacing:0;opacity:.8}
 .pvt{width:100%;border-collapse:collapse;font-size:11.5px;margin:4px 0}.pvt th{font-weight:600;text-align:right;opacity:.75;padding:1px 4px}.pvt th:first-child{text-align:left}.pvt td{text-align:right;padding:1px 4px;white-space:nowrap}.pvt td:first-child{text-align:left;opacity:.85}.pvt tr.pvtn td{font-weight:700;text-align:left;padding-top:6px;border-bottom:1px solid rgba(160,140,90,.45);opacity:1}.pvt tr.rq td{opacity:.6;font-style:italic}.pvt tr.w td{font-weight:700}.pvt tr.d td{border-bottom:1px solid rgba(160,140,90,.25)}
@@ -3479,6 +3482,28 @@ function progGantt(p,live){
 function pinTop(h){const i0=h.indexOf('<div class="dhead">');if(i0<0)return h;const c=h.lastIndexOf('<div class="crumb">',i0),i=c>=0&&h.slice(c,i0).split('<div').length===2?c:i0;
   let d=0,k=i0;const re=/<div\b|<\/div>/g;re.lastIndex=i0;let m;while((m=re.exec(h))){d+=m[0]==='</div>'?-1:1;if(d===0){k=m.index+6;break}}
   return h.slice(0,i)+'<div class="dtop">'+h.slice(i,k)+'</div>'+h.slice(k)}
+// ---- program progress: where each stage stands, and the milestones of the current one
+const STEP_N={approp:'Funding',contract:'Contract',permit:'Permits',build:'Construction',qual:'Qualification',ramp:'Ramp-up'};
+const MILES={approp:[['Funding approved and obligated',1]],
+ contract:[['Solicitation issued',.3],['Proposals evaluated',.75],['Contract awarded',1]],
+ permit:[['Applications filed',.15],['Reviews and public comment',.7],['Permits issued',1]],
+ build:[['Site preparation',.12],['Foundations and utilities',.3],['Structure and enclosure',.55],['Equipment installed',.82],['Commissioning and trial runs',1]],
+ qual:[['First test lots made',.2],['Tests: static fires, flights or inspections',.7],['Lot acceptance and certification',1]],
+ ramp:[['First long-term orders',.4],['Steady input contracts',.8],['Running at rate',1]]};
+const MILES_ALLY={build:[['Partner expands its line',.6],['Shipments begin',1]]};
+function progStages(p,live){const def=PD[p.def],stEv=(p.h||[]).filter(e=>e.st!=null),startOf=i=>i===0?(p.started??null):(stEv.find(e=>e.st===i)?.w??null);
+  const endW=live?null:((p.h||[]).find(e=>e.done||e.gone)?.w??p.w??S.w);
+  const nextStart=i=>{for(let j=i+1;j<STAGES.length;j++){const w=startOf(j);if(w!=null)return w}return endW};
+  const cells=STAGES.map((st,i)=>{const pl=p.dur[i]||0;if(!pl)return p.inh&&(!live||i<p.stage)?`<div class="pstep done"><b>✓ ${STEP_N[st]}</b><span>Done before 2027</span></div>`:`<div class="pstep skip"><b>${STEP_N[st]}</b><span>Not needed</span></div>`;
+    const done=live?i<p.stage:!!(p.h||[]).find(e=>e.done),cur=live&&i===p.stage,s0=startOf(i),s1=nextStart(i),took=done&&s0!=null&&s1!=null?s1-s0:null;
+    return `<div class="pstep ${done?'done':cur?'cur':''}"><b>${done?'✓ ':cur?'▶ ':''}${STEP_N[st]}</b><span>${cur?`week ${Math.floor(p.prog)} of ${pl}`:done?(took!=null?`${took} wk (plan ${pl})`:'done'):`plan ${pl} wk`}</span>${took!=null&&took>pl*1.15?`<i class="late">+${took-pl} wk</i>`:''}</div>`}).join('');
+  let det='';
+  if(live&&p.dur[p.stage]){const st=STAGES[p.stage],pl=p.dur[p.stage],f=Math.min(1,p.prog/pl),ms=(def.ally&&MILES_ALLY[st])||MILES[st]||[],wait=p.obs[0]?.wait||0,stEnd=S.w+wait+Math.max(0,pl-p.prog);
+    let firstOpen=true;const ml=ms.map(([n,t])=>{const ok=f>=t-1e-9,curM=!ok&&firstOpen;if(!ok)firstOpen=false;return `<li class="${ok?'ok':curM?'now':''}">${ok?'✓':curM?'▶':'○'} ${n}</li>`}).join('');
+    det=`<div class="pdet"><div class="pdh"><b>${STEP_N[st]}</b> · ${pct(f)} done · week ${Math.floor(p.prog)} of ${pl}${p.obs.length?` · <span class="redt">${p.obs[0].wait?'paused':'stopped'}: ${V(OD[p.obs[0].id].n)}</span>`:''}</div>
+      <div class="pbar"><i style="width:${(f*100).toFixed(1)}%"></i></div><ul class="pmiles">${ml}</ul>
+      <div class="mini">This stage should finish about <b>${fmtDate(stEnd)}</b>; the whole program about <b>${fmtDate(S.w+remW(p))}</b>${slipF().f>1.05?`, or ${fmtDate(S.w+Math.round(remW(p)*slipF().f))} if it slips like your programs so far`:''}.</div></div>`}
+  return `<div class="psteps">${cells}</div>${det}`}
 function progHTML(uid){
   const R=progRec(uid);if(!R)return '';const {p,live}=R,def=PD[p.def],nm=p.nm||def.n,pl=S.plants.find(x=>x.uid==uid),[stT,stC]=progStatus(p,live);
   const tgt=def.t.node?`<span class="linkn" data-a="node" data-n="${def.t.node}">${ND[def.t.node].n}</span>`:`<span class="linkn" data-a="node" data-n="L:${def.t.line}">${LINES[def.t.line].n}</span>`;
@@ -3487,6 +3512,7 @@ function progHTML(uid){
   const back='';
   let h=`${crumb()}<div class="dhead"><span class="dic">${def.ally?'🤝':p.inh?'📜':'🏗'}</span><div><h3>${nm}</h3><div class="sub2">${def.ally?'Allied deal for':needsContract(def)?'New plant for':'Upgrade for'} ${tgt} · ${p.inh?'started before you took office':'ordered '+fmtDate(p.started)}${p.ct?` · ${BUILDERS[p.ct.b].ic} ${BUILDERS[p.ct.b].n} · ${CONTRACTS[p.ct.k].ic} ${CONTRACTS[p.ct.k].n}`:''}</div></div><span class="dsp"></span>${back}</div>
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}${live&&STAGE_WHY[STAGES[Math.min(p.stage,5)]]?`<div class="pwhy">${STAGE_WHY[STAGES[Math.min(p.stage,5)]]}</div>`:''}</div>
+   <div class="dsec"><h4>Progress</h4>${progStages(p,live)}</div>
    <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
    <div class="dsec"><h4>Permits <span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
   if(live&&ucaOK(p)){const rem=Math.round(p.dur[1]-p.prog);h=h.replace('<div class="dsec"><h4>Plan vs. actual</h4>',`<div class="dsec"><h4>Speed up contracting</h4><div class="ucab"><div><b>⚡ Undefinitized contract action</b><div class="mini">Let the contractor start now and settle the price later, as the Army did to replenish GMLRS and NASAMS. Contracting ends in about 4 weeks instead of ${rem}. Until the price is set the government carries the cost risk: the DoD Inspector General found $1.2 billion in profit never adjusted down.[c:ucaig]</div><div class="mini" style="margin-top:3px">Costs 10% of the price now, with a 1-in-4 chance of a cost overrun when construction starts.</div></div><button class="pbtn primary" data-a="uca" data-u="${p.uid}">Issue · ${money(ucaCost(p))}</button></div></div>`+'<div class="dsec"><h4>Plan vs. actual</h4>')}
