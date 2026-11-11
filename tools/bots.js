@@ -82,10 +82,13 @@ const res=await p.evaluate(({bot,scen,years})=>{
  // ---- reforms
  const NDAA=['acq','byrnes','ceDefense','qualReform','multiyear','acqWorkforce','pricefloor','itarReform','dpaMin','crAnomaly','dpaFund','antitrust'],BILLS=['nepaReform','workforce','judRev','expertVisa','jonesReform','tariffExempt'],EXEC=['rFAST','rNSR','rWOTUS','rITAR','rKnown'];
  // the reformer keeps enough Political Capital in hand for its next reform before it spends any on plant requests
- const reserve=()=>{if(!reform)return 0;const c=[];for(const id of NDAA){const R=RD[id];if(R&&reformAvail(R)&&!inReq(id))c.push(refReqCost(R))}if(!S.bill)for(const id of BILLS){const R=RD[id];if(R&&reformAvail(R)&&!inReq(id))c.push(reformCost(R))}return c.length?Math.min(...c.slice(0,2))+5:0};
- const reforms=()=>{for(const id of EXEC){const r=RD2[id];if(r&&!ruleOn(id)&&S.pc>=r.pc[0]+10){toggleRule(id);break}}
-   if(!S.bill)for(const id of BILLS){const R=RD[id];if(R&&reformAvail(R)&&!inReq(id)&&S.pc>=reformCost(R)+5&&(R.$||0)<=S.budget){introduce(id);break}}
-   for(const id of NDAA){const R=RD[id];if(R&&reformAvail(R)&&!inReq(id)&&S.pc>=refReqCost(R)+5&&(R.$||0)<=S.budget){refAdd(id);break}}};
+ // one agenda in priority order, NDAA provisions and stand-alone bills together; the reformer saves for the next item rather than skipping it
+ const AGENDA=['acq','byrnes','nepaReform','ceDefense','qualReform','multiyear','workforce','acqWorkforce','pricefloor','itarReform','judRev','dpaMin','crAnomaly','dpaFund','expertVisa','antitrust','jonesReform','tariffExempt'];
+ const costOf=R=>vehOf(R)==='ndaa'?refReqCost(R):reformCost(R);
+ const nextRef=()=>AGENDA.map(id=>RD[id]).find(R=>R&&reformAvail(R)&&!inReq(R.id)&&S.bill?.id!==R.id&&(vehOf(R)==='ndaa'||!S.bill));
+ const reserve=()=>{if(!reform)return 0;const R=nextRef();return R?costOf(R):0};
+ const reforms=()=>{const R=nextRef();if(R){if(S.pc>=costOf(R)&&(R.$||0)<=S.budget){if(vehOf(R)==='ndaa')refAdd(R.id);else introduce(R.id)}return}
+   for(const id of EXEC){const r=RD2[id];if(r&&!ruleOn(id)&&S.pc>=r.pc[0]+10){toggleRule(id);break}}};
  // ---- reporting
  const start=Object.fromEntries(Object.keys(LINES).map(c=>[c,production(false).out[c].yr]));
  const snap=()=>{const R=production(false),dn=S.done.filter(d=>d.plan&&!d.inh&&d.w>=PLAY0&&!PD[d.def].ally);

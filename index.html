@@ -2058,7 +2058,14 @@ function doCeasefire(){const E=S.enemy.eu;E.war=false;E.pm*=.85;S.ceasefire=true
 function log(m,cls=''){S.log.unshift({w:S.w,m,cls});if(S.log.length>250)S.log.pop()}
 function tmod(kind,id,mult,weeks,label){S.tmods.push({kind,id,mult,left:weeks,label})}
 function tm(kind,id){let m=1;for(const x of S.tmods)if(x.kind===kind&&x.id===id)m*=x.mult;return m}
-function cutOf(id){let c=S.cut[id];if(S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars'))c*=.2;return c} // COTS/de-minimis exceptions leave ~20%
+// Buyers and their suppliers hold stocks of imported materials and parts. When an export ban or sanction cuts a source, those stocks
+// carry production for a while: the flow that actually reaches plants falls to the new level over INV_WK weeks for a full cut.
+// When supply resumes it takes about RES_WK weeks for shipments to arrive. Both are estimates.
+const INV_WK=16,RES_WK=4;
+function invTick(){const E=S.cutEff=S.cutEff||{};for(const id in S.cut){const c=S.cut[id],e=E[id]??c;
+  E[id]=c<e?Math.max(c,e-1/INV_WK):Math.min(c,e+1/RES_WK)}}
+const cutNow=id=>S.cutEff?.[id]??S.cut[id];
+function cutOf(id){let c=cutNow(id);if(S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars'))c*=.2;return c} // COTS/de-minimis exceptions leave ~20%
 function plantMult(pl){return pl.issue?OPSD[pl.issue.id].mult:1}
 function plantsFor(kind,id){return S.plants.filter(p=>p.kind===kind&&p.target===id)}
 // Foreign supply comes in three classes. Allied: NATO members, Japan, South Korea, Australia and Israel, tied into US defense production
@@ -2927,7 +2934,7 @@ function tick(){
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
-  const R=production(true);S.lastOut=R.out;limTick(R.out);
+  invTick();const R=production(true);S.lastOut=R.out;limTick(R.out);
   for(const c in LINES)S.inv[c]=Math.max(0,S.inv[c]+R.out[c].yr/52-S.inv[c]*retRate(c)/52-(aidOn()?(F().aid?.[c]||0)*S.aidLvl/52:0));
   if(S.histMode)histTick();
   for(const c in S.ready)S.ready[c]+=(readyTarget(c,R).t-S.ready[c])/26;
@@ -3229,7 +3236,7 @@ function shortCauses(id,P){const p=P[id];let short=Math.max(0,p.need-p.avail0);c
   for(const [k,v] of [['cut',p.lost],['starved',starved],['issue',issue],['ramp',p.ramp]]){const x=Math.min(short,Math.max(0,v||0));o[k]=x;short-=x}
   o.cap=short;return o}
 // what fixing one node would give back, by end item: re-run the chain with that node fully supplied
-const bnKey=()=>[S.w,S.projects.length,S.plants.length,S.truce,S.dfars,S.spot.length,Object.values(S.cut).join(),JSON.stringify(S.noPrio||{}),JSON.stringify(S.ic),JSON.stringify(S.rules),S.mob].join('|'); // anything that moves supply this week
+const bnKey=()=>[S.w,S.projects.length,S.plants.length,S.truce,S.dfars,S.spot.length,Object.values(S.cut).join(),Object.values(S.cutEff||{}).map(v=>v.toFixed(3)).join(),JSON.stringify(S.noPrio||{}),JSON.stringify(S.ic),JSON.stringify(S.rules),S.mob].join('|'); // anything that moves supply this week
 function bnScan(){const key=bnKey();if(S._bnc?.key===key)return S._bnc.v;
   const R0=production(false),P=R0.P,ids=ORDER.filter(id=>P[id].need>1e-6&&P[id].cover<.999),v=[];
   for(const id of ids){const x={id,amt:P[id].need*1.3+1e-6,left:1};S.spot.push(x);let R1;try{R1=production(false)}finally{S.spot.splice(S.spot.indexOf(x),1)}
@@ -4160,6 +4167,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Stocks in the pipeline','Buyers and suppliers hold stocks of imported materials and parts. When an export ban or sanction cuts a source, those stocks carry production for a while: a full cut takes about 16 weeks to reach the plants in full. Shipments take about 4 weeks to resume once a ban is lifted. Both are estimates.'],
  ['How reforms clear delays','Each reform governs a class of delay (procurement, permitting, litigation, qualification, workforce, markets, funding, export controls). Once enacted, obstacles of that class strike less often (by 20–55%) and last less long (by 25–50%), on top of the stage time it saves. The sizes are estimates, set so that the full reform agenda roughly halves the time programs lose to process.'],
  ['Repeat plants and drone parts','Each repeat of the same plant costs 10% more than the last, up to 50% more. Defense orders can claim up to half of the drone parts (cells, motors, boards, fiber, thermal cores) that US civilian drone makers buy from onshore suppliers; that flow grows with the US-made share of the civilian drone market. Both are game estimates.'],
  ['Defense priority over civilian buyers','Rated defense orders come first by law (the Defense Priorities and Allocations System), and allies with security-of-supply arrangements honor priority requests. When an item is short, defense automatically takes what civilian buyers of US output would have had, and about half of what they would have had from allied plants; neutral and Chinese suppliers give no priority. The civilian share of each item’s market is an estimate. Civilian strain rises with the share of civilian supply taken.'],
