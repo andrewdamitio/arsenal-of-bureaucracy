@@ -639,6 +639,9 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+.ceilsec{background:#f7f1e1;border:1px solid #d6c79f;padding:10px 12px;border-radius:4px}.ceilsvg{display:block;width:100%;height:auto}.ceilsvg text{font:10.5px "Segoe UI",system-ui,sans-serif;fill:#7a6a48}.ceilsvg text.ax{font-weight:700;font-size:10px;fill:#6b5a35}.ceilsvg text.cend{font-weight:700;font-size:11px}.ceilsvg text.cmk{fill:#f3dc9a;font-weight:700;font-size:9.5px}.ceilsvg text.cdone{fill:#3f7a34;font-weight:700;font-size:12px}
+.clg{display:flex;flex-wrap:wrap;gap:4px 14px;font:12px "Segoe UI",system-ui,sans-serif;color:#4a3f2a;margin:4px 0 6px}.clg i{display:inline-block;width:16px;height:3px;vertical-align:3px;margin-right:5px}.clg i.dash{height:0;border-top:2px dashed}.clg i.dot3{height:0;border-top:2px dotted #5a4e38}
+.crows{display:flex;flex-direction:column;gap:5px;border-top:1px solid #ddd0ad;padding-top:6px}.crow{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:start}.cmkb{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#2b241a;color:#f3dc9a;font:700 10px "Segoe UI"}.cslips{color:#a3261c}
 .ctintro{margin:0 0 10px;padding:8px 12px;background:#f5eedb;border:1px solid #cbbd95;border-left:4px solid #b8860b;font-size:13px;line-height:1.5}.ctsec{margin:-2px 0 8px;font-size:12.5px;color:#5a4e38}.ctopt .ctd{display:block;font:12.5px/1.45 "Segoe UI",system-ui,sans-serif;color:#4a3f2a;margin:2px 0 6px;text-align:left;white-space:normal}
 .gmenu{width:min(520px,94vw);background:var(--panel);border:1px solid var(--brass);box-shadow:0 18px 50px rgba(0,0,0,.6);color:#e6dcc2;font:14px/1.5 "Segoe UI",system-ui,sans-serif}
 .gm-hd{display:flex;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);background:#22231c}.gm-hd span{font:700 13px "Segoe UI",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--brass2)}
@@ -1715,7 +1718,7 @@ const REFORMS=[
  {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Contract awards take 40% less time; protests, cost-accounting and prime objections −50%. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15;queueEvent('blitz')}},
  {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Block further prime mergers; dual-source key subsystems. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20;queueEvent('blitz')}},
  {id:'workforce',n:'Industrial Workforce Act',d:'Construction 15% faster where trades are short; labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
- {id:'expertVisa',n:'Allied Technical Expert Program',d:'+15 know-how in every node and line. Faster ramp-up, fewer production issues. Costs 0.5B.',pc:20,$:.5,wk:16,p:.75,on:()=>{for(const k in S.know)S.know[k]=Math.min(95,S.know[k]+15)}},
+ {id:'expertVisa',n:'Allied Technical Expert Program',d:'+15 know-how in every node and line. Faster ramp-up, fewer production issues. Costs 0.5B.',pc:20,$:.5,wk:16,p:.75,on:()=>{for(const k in S.know)S.know[k]=Math.min(95,S.know[k]+15);if(S.lab)for(const k in S.lab)S.lab[k]*=1.05}},
  {id:'slep',n:'Service-Life Extension Program',d:'Retirement of ships, subs and aircraft −40%. Costs 1B per year.',pc:25,wk:12,p:.75},
  {id:'readiness',n:'Fix the Maintenance Backlog',d:'More of what you own can fight: ships, subs & aircraft count +15%. Costs 3B.',pc:30,$:3,wk:20,p:.65,on:()=>{for(const c of ['surface','subs','aircraft'])S.q[c]*=1.15}},
  {id:'itarReform',fac:['US'],n:'License-Free Defense Trade with Japan & Korea',d:'Extend AUKUS-style ITAR exemptions. Export-control obstacles −50%.',pc:35,wk:20,p:.55},
@@ -2146,6 +2149,104 @@ const neutTop=id=>neutNames(id).split(', ')[0]||'';
 // a material you buy from neutral countries (at least 5% of what your plants use), picked in proportion to how much
 function nzPick(test){const c=ORDER.map(id=>[id,nodeSupply(id).neut/Math.max(S.nodes[id].scale,1e-9)]).filter(x=>x[1]>=.05);if(test)return c.length>0;if(!c.length)return null;
   let r=rand()*c.reduce((a,x)=>a+x[1],0);for(const x of c){r-=x[1];if(r<=0)return x[0]}return c[0][0]}
+// ---- workforce: the people who run each plant and line, counted in the output they can staff.
+// Each type of work starts with some slack over today's rated capacity and closes a staffing gap at its own pace a year,
+// as firms hire and train. Shipyards start with none and close a gap slowly: in 2022 GAO found the submarine base about 25% below
+// the staffing its schedules need, and Electric Boat hires about 5,000 a year against 10-20% attrition.[c:subwork][c:ebhire]
+// The other rates are game estimates (see Assumptions). Imports are not limited by US labor.
+const LAB_ARCH={yard:[1,.25],heavy:[1.02,.35],energetic:[1.05,.5],assembly:[1.1,.6],smelter:[1.1,.4],metal:[1.15,.6],fab:[1.2,.5],mine:[1.3,.7],refine:[1.3,.7]};
+const LAB_LINE={subs:[1,.25],surface:[1,.25],aircraft:[1.15,.5],interceptors:[1.1,.6],strike:[1.1,.6],a2a:[1.1,.6],fires:[1.1,.6],shells:[1.1,.5],drones:[1.6,2]};
+const labP=k=>k.startsWith('L:')?(LAB_LINE[k.slice(2)]||[1.5,1]):(LAB_ARCH[ND[k].arch]||[1.5,1]);
+const labKeys=()=>[...ORDER,...Object.keys(LINES).map(c=>'L:'+c)];
+function nodeStaff(id,full){const s=S.nodes[id],nm=tm('node',id),onsh=S.fac==='US'&&DRONE_PARTS.includes(id)?1+.2*(S.icOnshore||0):1;let v=s.base*tm('cap',id)*nm*onsh;
+  for(const pl of plantsFor('node',id))v+=pl.gain*(full?1:pl.yield*plantMult(pl))*nm;return v}
+function lineStaff(lid,full){let v=S.lines[lid].base;for(const pl of plantsFor('line',lid))v+=pl.gain*(full?1:pl.yield*plantMult(pl));return v}
+const staffOf=(k,full)=>k.startsWith('L:')?lineStaff(k.slice(2),full):nodeStaff(k,full);
+function labF(k,staff){if(S.histMode||!S.lab||S.lab[k]==null||staff<=1e-12)return 1;return Math.min(1,S.lab[k]/staff)}
+// a finished plant opens with the crew hired while it was built: a quarter of its rated output at a shipyard, all of it where labor is plentiful
+function labCrew(k,g){if(!S.lab||S.histMode)return;S.lab[k]=(S.lab[k]??0)+g*Math.min(1,labP(k)[1]*(S.labX?.[k]||1))}
+function labInit(){S.lab={};S.labX={};for(const k of labKeys())S.lab[k]=staffOf(k,true)*labP(k)[0];
+  const R=production(false);S.need0={};for(const id of ORDER)S.need0[id]=Math.max(R.P[id].need,S.nodes[id].scale*.05,1e-9);ceilRec(R,true)}
+// ---- ceilings: what each item's output is held to. Recorded every four weeks; projected to 2037 from the programs under way.
+const CEIL_K=['F','L','M','O','N','D','I','T'];
+function ceilVals(R,k){
+  if(k.startsWith('L:')){const c=k.slice(2),Lc=LINES[c],o=R.out[c],Fy=lineCap(c,true)*Lc.k,st=lineStaff(c),Ly=S.lab&&S.lab[k]!=null&&st>1e-12?Fy*S.lab[k]/st:null;
+    let m=Infinity;for(const x of o.lims||[])m=Math.min(m,x.f);
+    return {F:Fy,L:Ly,M:isFinite(m)?m*lineName(c)*Lc.k:null,O:o.yr,N:Math.max(0,reqOut(c,S.w)-allyOut(c,S.w)),D:isFinite(o.ordYr)?o.ordYr:null}}
+  const p=R.P[k],st=nodeStaff(k),Lv=S.lab&&S.lab[k]!=null&&st>1e-12?p.domF*S.lab[k]/st:null;
+  let M=Infinity;for(const i of ND[k].in)M=Math.min(M,R.P[i].avail0);
+  return {F:p.domF,L:Lv,M:ND[k].in.length?M:null,O:p.usedDom,I:p.usedExt+p.usedStock,T:p.usedDom+p.usedExt+p.usedStock,N:p.need}}
+const ceilRow=(w,v)=>[w,...CEIL_K.map(x=>{const y=v[x];return y==null||!isFinite(y)?null:+(+y).toPrecision(3)})];
+function ceilRec(R,force){if(S.histMode||!S.lab||(!force&&S.w%4))return;S.ceil=S.ceil||{};for(const k of labKeys())(S.ceil[k]=S.ceil[k]||[]).push(ceilRow(S.w,ceilVals(R,k)))}
+// each program's expected delivery is watched: when it moves later, the chart notes by how much and why
+function slipTick(){if(S.histMode)return;for(const p of S.projects){const e=S.w+remW(p);if(p.eta0==null){p.eta0=e;p.etaL=e;continue}
+  if(e>p.etaL+3){const why=p.obs.length?(p.obs[0].wait?'':'waiting on a decision: ')+V(OD[p.obs[0].id].n):p.pkg?'waiting for the NDAA':STAGE_L[STAGES[p.stage]]+' running slow';
+    const sl=(p.slips=p.slips||[]),last=sl[sl.length-1];if(last&&last.why===why&&S.w-last.w<=12){last.d+=e-p.etaL;last.w=S.w}else sl.push({w:S.w,d:e-p.etaL,why});p.etaL=e}
+  else if(e<p.etaL-3)p.etaL=e}}
+// finish a program in a projection copy, the way complete() would
+function pjFinish(p,t,added){const def=PD[p.def];if(!def||def.kind==='maint')return;const id=def.t.node;
+  if(def.kind&&def.kind!=='cap'){const s2=S.nodes[id];if(def.kind==='mod')s2.base=s2.base>1e-6?s2.base*1.15:s2.scale*.05;
+    if(def.kind==='know'&&S.lab){(S.labX=S.labX||{})[id]=(S.labX[id]||1)*1.75;S.lab[id]=(S.lab[id]||0)+nodeStaff(id,true)*.1}return}
+  const g=projGain(def,p.gm||1);if(def.ally){const ch=def.nt?S.nodes[id].neut:S.nodes[id].ally;ch.amt+=g;return}
+  const kind=def.t.line?'line':'node',target=def.t.line||id,pl={uid:uidN++,def:def.id,nm:def.n,kind,target,gain:g,yield:.2,issue:null,full:false,adv:p.adv||0,start:t};
+  labCrew(kind==='line'?'L:'+target:target,g);S.plants.push(pl);added.push({pl,y0:.2,w:t,rw:Math.max(8,rampWeeks(S.know[target]??40,.2,1))})}
+function ceilProj(){const c0=S._cpj;if(c0&&c0.w===S.w&&c0.n===S.projects.length&&c0.u===uidN)return c0;
+  const save=S,u=uidN,snap=JSON.stringify(S,(k,v)=>SAVE_SKIP.has(k)||k==='ceil'?undefined:v),out={};
+  const evs=S.projects.map(p=>({p,w:S.w+remW(p)})).filter(x=>x.w<=END_W).sort((a,b)=>a.w-b.w);
+  try{S=JSON.parse(snap);S.sim=1;S.queue=[];const added=[];
+    for(const pl of S.plants)if(!pl.full&&pl.yield<1)added.push({pl,y0:pl.yield,w:save.w,rw:Math.max(8,rampWeeks(S.know[pl.target]??40,pl.yield,pl.rampM||1))});
+    const pts=new Set();for(let t=save.w;t<=END_W;t+=13)pts.add(t);for(const e of evs)pts.add(e.w);pts.add(END_W);
+    let w=save.w,i=0;const ev2=evs.map(e=>({...e,p:S.projects.find(q=>q.uid===e.p.uid)}));
+    for(const t of [...pts].sort((a,b)=>a-b)){while(w<t){labTick();w++;S.w=w}
+      while(i<ev2.length&&ev2[i].w<=t){if(ev2[i].p)pjFinish(ev2[i].p,t,added);i++}
+      for(const a of added)a.pl.yield=Math.min(1,a.y0+(1-a.y0)*Math.max(0,t-a.w)/a.rw);
+      const R=production(false);for(const k of labKeys())(out[k]=out[k]||[]).push(ceilRow(t,ceilVals(R,k)))}}
+  catch(err){console.error(err)}finally{S=save;uidN=u}
+  S._cpj={w:S.w,n:S.projects.length,u:uidN,out};return S._cpj}
+const CEIL_S=[['F','Factory capacity','#2f62a0'],['L','Workforce','#c0762a'],['M','Materials','#3f7a34'],['D','Funded orders','#7a5fb0']];
+function ceilSec(k){if(S.fac!=='US')return '';if(!S.lab)return '<div class="dsec ceilsec"><h4>What holds output back, and when your work lands</h4><p class="mini">The chart starts when you take over in January 2027.</p></div>';
+  const isL=k.startsWith('L:'),c=isL?k.slice(2):null,u=isL?LINES[c].u+' a year':'% of the January 2027 defense need',nrm=isL?1:(S.need0?.[k]||1)/100;
+  const H0=(S.ceil?.[k]||[]),P0=ceilProj().out[k]||[],ix=CEIL_K.reduce((a,x,i)=>(a[x]=i+1,a),{});
+  const val=(r,x)=>{const v=r[ix[x]];return v==null?null:v/nrm};
+  const W=760,H=250,Lm=58,Rm=150,T=26,B=30,x0=PLAY0,x1=END_W,X=w=>Lm+(W-Lm-Rm)*(w-x0)/(x1-x0);
+  const all=[...H0,...P0];const ref=Math.max(1e-9,...all.flatMap(r=>['F','O','N','T','D'].map(x=>val(r,x)??0)));const top=ref*1.25,Y=v=>T+(H-T-B)*(1-Math.min(v,top)/top);
+  let g='';for(let q=0;q<=4;q++){const v=top*q/4;g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" stroke="#ddd0ad"/><text x="${Lm-5}" y="${Y(v)+3}" text-anchor="end">${isL?fmtN(v):fmt(v,0)+'%'}</text>`}
+  for(let y=2027;y<=2037;y+=2){const w=weekOf(y,0,1);g+=`<line x1="${X(w)}" x2="${X(w)}" y1="${H-B}" y2="${H-B+4}" stroke="#9c8a5c"/><text x="${X(w)}" y="${H-B+15}" text-anchor="middle">${y}</text>`}
+  g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${H-B}" y2="${H-B}" stroke="#9c8a5c"/><line x1="${X(S.w)}" x2="${X(S.w)}" y1="${T-6}" y2="${H-B}" stroke="#5a4a28" stroke-dasharray="2 3"/><text class="ax" x="${X(S.w)+4}" y="${H-B-5}">Today</text>`;
+  g+=`<text class="ax" transform="translate(12,${(T+H-B)/2}) rotate(-90)" text-anchor="middle">${isL?LINES[c].u+' a year':'% of 2027 need'}</text>`;
+  const path=(rows,x)=>{let d='',pen=false;for(const r of rows){const v=val(r,x);if(v==null){pen=false;continue}d+=(pen?'L':'M')+X(r[0]).toFixed(1)+','+Y(v).toFixed(1);pen=true}return d};
+  // output: a filled area, history solid, projection lighter
+  const area=(rows,x,fill,op)=>{const pts=rows.filter(r=>val(r,x)!=null);if(pts.length<2)return '';return `<path d="M${X(pts[0][0])},${Y(0)}${pts.map(r=>`L${X(r[0]).toFixed(1)},${Y(val(r,x)).toFixed(1)}`).join('')}L${X(pts.at(-1)[0])},${Y(0)}Z" fill="${fill}" opacity="${op}"/>`};
+  g+=area(H0,'O','#8a7a5a',.35)+area(P0,'O','#8a7a5a',.18);
+  if(!isL)g+=`<path d="${path(H0,'T')}" fill="none" stroke="#5a4e38" stroke-width="1.2" stroke-dasharray="1 3"/><path d="${path(P0,'T')}" fill="none" stroke="#5a4e38" stroke-width="1.2" stroke-dasharray="1 3" opacity=".6"/>`;
+  g+=`<path d="${path(H0,'N')}" fill="none" stroke="#b8402f" stroke-width="1.6" stroke-dasharray="6 3"/><path d="${path(P0,'N')}" fill="none" stroke="#b8402f" stroke-width="1.2" stroke-dasharray="6 3" opacity=".55"/>`;
+  const ser=CEIL_S.filter(([x])=>isL||x!=='D');
+  for(const [x,,col] of ser){g+=`<path d="${path(H0,x)}" fill="none" stroke="${col}" stroke-width="2.2"/><path d="${path(P0,x)}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="5 3" opacity=".9"/>`}
+  // end labels at 2037, nudged apart
+  {const last=P0.at(-1)||H0.at(-1);if(last){const labs=[...ser.map(([x,n,col])=>({n,col,v:val(last,x)})),{n:isL?'Requirement':'Defense need',col:'#b8402f',v:val(last,'N')},{n:isL?'Output':'US output',col:'#6b5a35',v:val(last,'O')}].filter(l=>l.v!=null).map(l=>({...l,y:Y(l.v)})).sort((a,b)=>a.y-b.y);
+    let pr=-99;for(const l of labs){if(l.y<pr+12)l.y=pr+12;pr=l.y}for(const l of labs)g+=`<text class="cend" x="${W-Rm+6}" y="${l.y+3.5}" fill="${l.col}">${l.n}${l.v>=top?' ↑':''}</text>`}}
+  // programs for this item: expected delivery, with the original plan when it has slipped
+  const mine=S.projects.filter(p=>{const d=PD[p.def];return d&&d.kind!=='maint'&&(isL?d.t.line===c:d.t.node===k)}).map(p=>({p,w:S.w+remW(p)})).sort((a,b)=>a.w-b.w);
+  const fin=S.done.filter(x=>{const d=PD[x.def];return d&&x.w>=PLAY0&&(isL?d.t.line===c:d.t.node===k)});
+  mine.forEach((m,i)=>{const xx=X(Math.min(m.w,x1)),x0p=m.p.eta0!=null&&m.p.eta0<m.w-3?X(Math.max(m.p.eta0,S.w)):null;
+    if(x0p!=null)g+=`<line x1="${x0p}" x2="${xx}" y1="${T-12}" y2="${T-12}" stroke="#a3261c" stroke-width="1.2"/><circle cx="${x0p}" cy="${T-12}" r="3" fill="none" stroke="#a3261c"/>`;
+    g+=`<line x1="${xx}" x2="${xx}" y1="${T-6}" y2="${H-B}" stroke="#2b241a" stroke-width=".6" opacity=".35"/><circle cx="${xx}" cy="${T-12}" r="7" fill="#2b241a"/><text class="cmk" x="${xx}" y="${T-8.5}" text-anchor="middle">${i+1}</text>`});
+  fin.forEach(x=>{g+=`<text class="cdone" x="${X(x.w)}" y="${T-8}" text-anchor="middle">✓</text>`});
+  const lg=[...ser.map(([x,n,col])=>`<span><i style="background:${col}"></i>${n}</span>`),`<span><i style="background:#8a7a5a;opacity:.5"></i>${isL?'Output':'US output'}</span>`,!isL?`<span><i class="dot3"></i>Total supply, with imports</span>`:'',`<span><i class="dash" style="border-color:#b8402f"></i>${isL?'Requirement':'Defense need'}</span>`].join('');
+  const sl=slipF(),rows=mine.map((m,i)=>{const p=m.p,d=PD[p.def],sl2=p.slips||[],late=p.eta0!=null?m.w-p.eta0:0;
+    return `<div class="crow"><b class="cmkb">${i+1}</b><div><span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span> <span class="mini">${d.ally?'allied deal':d.kind==='know'?'workforce program':d.kind==='mod'?'upgrade':'new capacity'} · now in ${STAGE_L[STAGES[p.stage]]?.toLowerCase()||'the request'}</span>
+      <div class="mini">Expected ${fmtDate(m.w)}${sl.f>1.05?`, or about ${fmtDate(S.w+Math.round(remW(p)*sl.f))} if it slips like your programs so far`:''}${late>3?` · <span class="redt">planned ${fmtDate(p.eta0)}, ${fmt(late/4.35,0)} months late</span>`:''}</div>
+      ${sl2.length?`<div class="mini cslips">${sl2.slice(-4).map(x=>`${fmtDate(x.w)}: +${Math.max(1,Math.round(x.d/4.35))} mo, ${x.why}`).join(' · ')}</div>`:''}</div></div>`}).join('');
+  const lf=isL?S._R.out[c].labF:S._R.P[k].lf;
+  return `<div class="dsec ceilsec"><h4>What holds output back, and when your work lands</h4>
+    <p class="mini" style="margin:0 0 6px">${isL?'The line makes no more than the lowest of its ceilings: factory capacity, the workers to run it, the materials its inputs allow, and the orders Congress has funded.':'US output is held to the lowest of three ceilings: factory capacity, the workers to run it, and the materials its inputs allow. Imports come on top.'} Solid lines are what happened; dashed lines are what to expect if every program lands when now expected. Numbered markers are your programs for this item; a red line back to a circle shows where one was first planned.${lf<.98?` <b class="redt">Workers now staff ${pct(lf)} of capacity; hiring closes the gap at about ${pct(labRate(k))} a year.</b>`:''}</p>
+    <svg class="ceilsvg" viewBox="0 0 ${W} ${H}">${g}</svg><div class="clg">${lg}</div>
+    ${rows?`<div class="crows">${rows}</div>`:`<p class="mini">No programs under way for this item.${fin.length?` ${fin.length} finished since January 2027 (✓ on the chart).`:''}</p>`}</div>`}
+
+// how fast a staffing gap closes, a share of the gap a year
+function labRate(k){let r=labP(k)[1];if(passed('workforce'))r*=1.5;if(passed('expertVisa'))r*=1.2;if(carveOn('cvHire'))r*=1.4;return r*(S.labX?.[k]||1)}
+function labTick(){if(S.histMode||!S.lab)return;for(const k of labKeys()){const T=staffOf(k,true),L=S.lab[k]??T;
+  if(L<T)S.lab[k]=L+(T-L)*Math.min(1,labRate(k)/52);else if(L>T*1.8)S.lab[k]=L-(L-T*1.8)*.01}}
 const ALLY_PRIO=.5,DRONE_CLAIM=.5,DIV_STRAIN=.12; // strain per week for each item whose whole civilian supply defense takes, weighted by the civilian share of its market; strain recovers 0.35 a week
 function nodeSupply(id){
   const s=S.nodes[id],c=NO_PRC?0:cutOf(id),mob=MOB[S.mob];
@@ -2153,6 +2254,7 @@ function nodeSupply(id){
   const onsh=S.fac==='US'&&DRONE_PARTS.includes(id)?1+.2*(S.icOnshore||0):1; // onshored drone supply chain: more US motors, cells, boards
   let dom=s.base*tm('cap',id)*nm*mob.dom*onsh*nshiftF(id),domPrc=0,name=s.base,ramp=0;
   for(const pl of plantsFor('node',id)){const raw=pl.gain*pl.yield*plantMult(pl)*mob.dom*nm;dom+=raw*(1-pl.adv*(1-c));domPrc+=raw*pl.adv*c;name+=pl.gain;if(!pl.full)ramp+=pl.gain*(1-pl.yield)}
+  const lf=labF(id,nodeStaff(id)),domF=dom;dom*=lf;domPrc*=lf;
   let allyMult=tm('ally',id);if(id==='shipyard'&&carveOn('cvJones'))allyMult*=1;
   let allyAmt=s.ally.amt+(id==='shipyard'&&carveOn('cvJones')?s.scale*.25:0);
   const bar=icBars(id),allyRaw=allyAmt*allyMult,ally=allyRaw*(1-s.ally.adv*(bar?1:1-c)),allyPrc=bar?0:allyRaw*s.ally.adv*c;
@@ -2166,10 +2268,10 @@ function nodeSupply(id){
   const drFlow=DRONE_PARTS.includes(id)&&!(S.noPrio?.[id]>S.w)?civM()*civS().share*(S.icOnshore||0)/LINES.drones.k:0;
   const civFull2=civFull+drFlow,civPool2=civPool+DRONE_CLAIM*drFlow;
   const div=0,ext=ally+neut+prc+spot;
-  return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,neut,prc,spot,div,civPool:civPool2,civFull:civFull2,ext,prcExtFrac:ext>0?(prc+allyPrc+neutPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(neutRaw-neut)+(prcRaw-prc),prcRaw,allyRaw,neutRaw};
+  return {dom,lf,domF,domPrcFrac:dom>0?domPrc/dom:0,ally,neut,prc,spot,div,civPool:civPool2,civFull:civFull2,ext,prcExtFrac:ext>0?(prc+allyPrc+neutPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(neutRaw-neut)+(prcRaw-prc),prcRaw,allyRaw,neutRaw};
 }
 function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors','strike','a2a','fires'].includes(lid))?1.1:1)*(S.shifts?.[lid]?SHIFT_M:1)}
-function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)*ruleLine(lid)}
+function lineCap(lid,noLab){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);if(!noLab)c*=labF('L:'+lid,c);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)*ruleLine(lid)}
 function lineName(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain;return c*lineMultOf(lid)}
 
 // Up to half of every line's capacity is shared evenly, in steps of 5%, so a deep shortage slows every line that needs the input
@@ -2218,7 +2320,7 @@ function production(commit){
   for(const q of RATION)for(const lid of S.order){const L=LINES[lid],want=caps[lid]*q-got[lid];if(want<=1e-12)continue;let n=want,b=null;const memo={};
     for(const i of L.in){const v=avail(i,memo);if(v<n-1e-9){n=v;b=i}}n=Math.max(0,n);if(b)bt[lid]=b;if(n>0){for(const i of L.in)take(i,n);got[lid]+=n}}
   for(const lid of S.order){const L=LINES[lid],capL=caps[lid],n=got[lid],memo={},bott=n<capL-1e-9?bt[lid]:null;
-    out[lid]={n,ordLim:caps[lid]<phys[lid]-1e-9,ordYr:ordOf(lid),physYr:phys[lid]*L.k,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[],lims:L.in.map(i=>({id:i,f:(n+avail(i,memo))/Math.max(lineName(lid),1e-9)})),capF:capL/Math.max(lineName(lid),1e-9)}}
+    out[lid]={n,labF:labF('L:'+lid,lineStaff(lid)),ordLim:caps[lid]<phys[lid]-1e-9,ordYr:ordOf(lid),physYr:phys[lid]*L.k,cap:capL,bott,yr:n*L.k,capYr:capL*L.k,chain:bott?chainOf(P,bott):[],lims:L.in.map(i=>({id:i,f:(n+avail(i,memo))/Math.max(lineName(lid),1e-9)})),capF:capL/Math.max(lineName(lid),1e-9)}}
   // PRC exposure (bottom-up)
   const expo={};
   for(const id of ORDER){const p=P[id];let inE=0;const ins=ND[id].in;if(ins.length)inE=ins.reduce((a,i)=>a+expo[i],0)/ins.length;
@@ -2396,7 +2498,7 @@ function endHistory(quiet){ // quiet: the instant run at game start, no handover
   S.log=S.log.filter(l=>!(l.w===PLAY0&&/envelope|funding/.test(l.m)));
   log(`${X.flag} January 2027: you take over. How close the 2025–26 replay came to the record: 📚 Sources → Model check.`,'ev');
   S.spendBy={};S.incBy={};S.lawLog=[];S.decN={you:0,auto:0};{const R0=production(false),o=R0.out;S.rec0={budget:S.budget,expo:S.exposure,out:Object.fromEntries(Object.keys(LINES).map(c=>[c,o[c].yr])),inv:{...S.inv},ally:Object.fromEntries(ORDER.map(id=>[id,R0.P[id].ally]))}}
-  {const R1=production(false);S.ord=Object.fromEntries(Object.keys(LINES).map(c=>[c,Math.round(lineCap(c)*LINES[c].k*1000)/1000]));S.ordBuy=[];S.procSp=0;S.procY=0}
+  labInit();{const R1=production(false);S.ord=Object.fromEntries(Object.keys(LINES).map(c=>[c,Math.round(lineCap(c)*LINES[c].k*1000)/1000]));S.ordBuy=[];S.procSp=0;S.procY=0}
   if(S.fac==='US')setTheater(S.rival||'pac');
   if(!S.scen&&S.fac==='US')S.modal='scenPick';
   S.resH=[];S._handT0=quiet?0:performance.now();S._flW=null;for(const k in FL)delete FL[k]; // handover starts from a clean slate, no flashes
@@ -2777,7 +2879,7 @@ function complete(p){
     log(`🔧 Completed: ${projName(p)}. Readiness will climb toward +${pct(def.eff)}.`,'good');toast(`🔧 <b>${projName(p)}</b><br><span class="dim">Maintenance capacity online</span>`,'good',{a:'prog',u:p.uid});return}
   if(def.kind&&def.kind!=='cap'){const id=def.t.node,s=S.nodes[id],fl=(S.nflags[id]=S.nflags[id]||{});fl[def.kind]=true;
     if(def.kind==='mod'){s.base=s.base>1e-6?s.base*1.15:s.scale*.05;S.know[id]=Math.min(95,S.know[id]+5)}
-    if(def.kind==='know')S.know[id]=Math.min(95,S.know[id]+20);
+    if(def.kind==='know'){S.know[id]=Math.min(95,S.know[id]+20);if(S.lab){(S.labX=S.labX||{})[id]=(S.labX[id]||1)*1.75;S.lab[id]=(S.lab[id]||0)+nodeStaff(id,true)*.1}}
     if(def.kind==='power')s.base*=1.05;if(def.kind==='test')S.know[id]=Math.min(95,S.know[id]+5);
     S.projects=S.projects.filter(x=>x!==p);S.done.push({def:p.def,nm:projName(p),w:S.w,weeks:S.w-p.started,g:0,plan,inh:p.inh,uid:p.uid,h:p.h,lost:p.lost,dur:p.dur,started:p.started,ct:p.ct,spent:p.spent});
     log(`✔ Completed: ${projName(p)} (${ND[id].n}).`,'good');toast(`✔ <b>${projName(p)}</b><br><span class="dim">${ND[id].n}</span>`,'good',{a:'prog',u:p.uid});return}
@@ -2793,7 +2895,7 @@ function complete(p){
   } else {
     const kind=def.t.node?'node':'line',target=def.t.node||def.t.line,kn=S.know[target];
     const tm=ctTerms(def,p.ct),y0=Math.min(.55,.05+kn*.003+tm.y0);
-    S.plants.push({uid:p.uid,def:p.def,nm:projName(p),kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w,rampM:tm.rampM,ops:permitsFor(def,'o').map((x,i)=>({id:x.id,next:S.w+Math.round(x.yrs*52*(.5+((p.uid*7+i*13)%10)/20)),last:null}))});
+    labCrew(kind==='line'?'L:'+target:target,g);S.plants.push({uid:p.uid,def:p.def,nm:projName(p),kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w,rampM:tm.rampM,ops:permitsFor(def,'o').map((x,i)=>({id:x.id,next:S.w+Math.round(x.yrs*52*(.5+((p.uid*7+i*13)%10)/20)),last:null}))});
     log(`🎗 Ribbon cutting: ${projName(p)}${p.inh?'':' after '+yrs(S.w-p.started)}. Output starts at ${pct(y0)} of nameplate.`,'good');
     toast(`🎗 <b>${projName(p)}</b> built<br><span class="dim">Ramping from ${pct(y0)} of nameplate</span>`,'good',{a:'prog',u:p.uid});
   }
@@ -3036,7 +3138,7 @@ function tick(){
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
-  invTick();const R=production(true);S.lastOut=R.out;
+  labTick();invTick();const R=production(true);S.lastOut=R.out;ceilRec(R);slipTick();
   if(!S.histMode){let pc=0;for(const c in LINES)pc+=R.out[c].yr/52*UC[c];S.procSp=(S.procSp||0)+pc;S.procY=(S.procY||0)+pc;fyLed('proc',pc);if(S.ordBuy){S.ordBuy.forEach(x=>x.left--);S.ordBuy=S.ordBuy.filter(x=>x.left>0)}}limTick(R.out);
   for(const c in LINES)S.inv[c]=Math.max(0,S.inv[c]+R.out[c].yr/52-S.inv[c]*retRate(c)/52-(aidOn()?(F().aid?.[c]||0)*S.aidLvl/52:0));
   if(S.histMode)histTick();
@@ -3223,7 +3325,7 @@ function previewOf(def,ct,wOn0){
   const wPlan=S.w+pkWait+dur.reduce((a,b)=>a+b,0),ramp=isPlant?rampWeeks(kn,Math.min(.55,.05+kn*.003+tm.y0),tm.rampM):0,wOn=wOn0??S.w+pkWait+build,wFull=wOn+ramp;
   // this week's output with the finished project at full rate
   const R0=S._R||production(false),g=projGain(def);let undo=()=>{};
-  if(isPlant){const pl={kind:def.t.node?'node':'line',target:tgt,gain:g,yield:1,issue:null,full:true,adv:0};S.plants.push(pl);undo=()=>S.plants.splice(S.plants.indexOf(pl),1)}
+  if(isPlant){const pl={kind:def.t.node?'node':'line',target:tgt,gain:g,yield:1,issue:null,full:true,adv:0},lk=def.t.node?tgt:'L:'+tgt,l0=S.lab?.[lk];labCrew(lk,g);S.plants.push(pl);undo=()=>{S.plants.splice(S.plants.indexOf(pl),1);if(S.lab&&l0!=null)S.lab[lk]=l0}}
   else if(def.ally){const ch=def.nt?S.nodes[tgt].neut:S.nodes[tgt].ally;ch.amt+=g;undo=()=>{ch.amt-=g}}
   else if(def.kind==='mod'||def.kind==='power'){const s=S.nodes[tgt],b0=s.base;s.base=def.kind==='mod'?(b0>1e-6?b0*1.15:s.scale*.05):b0*1.05;undo=()=>{s.base=b0}}
   let R1;try{R1=production(false)}finally{undo()}
@@ -3829,7 +3931,8 @@ function dossierHTML(id,P){
   {const i=main.indexOf('<!--AO-->'),j=main.indexOf('<!--/AO-->');if(i>=0&&j>i){const sec=main.slice(i+9,j),n=(sec.match(/data-a="launch"/g)||[]).length,open=!S.aoShut;
     main=main.slice(0,i)+main.slice(j+10);main=main.replace('<!--AOHERE-->',`<div class="aopts ${open?'open':''}"><button class="aotog" data-a="aotog">${open?'▾':'▸'} All ways to ${id.startsWith('L:')?'raise output':'increase supply'}${n?` · ${n} program${n===1?'':'s'}`:''} and short-term measures</button>${open?sec.replace('<div class="dsec" id="allopts"><h4>','<div class="dsec" id="allopts"><h4 style="display:none">'):''}</div>`)}}
   // page order: what limits it, what you can do, how it is supplied, what is coming, how you compare, then background
-  {let bg='',isv;for(const t of ['Situation','Why it matters','Where it comes from',"How it's made"]){const r=takeSec(main,t);main=r[0];bg+=r[1]}
+  {const q=main.indexOf('<div class="dsec">'),cs=ceilSec(id);main=q>=0?main.slice(0,q)+cs+main.slice(q):main+cs}
+   {let bg='',isv;for(const t of ['Situation','Why it matters','Where it comes from',"How it's made"]){const r=takeSec(main,t);main=r[0];bg+=r[1]}
    [main,isv]=takeSec(main,'In service');const wd=WMD.filter(x=>x.node===id),mk=(wd.length?`<div class="dsec"><h4>Where US imports come from</h4>${wd.map(x=>`<div class="wmsrc" style="margin:2px 0 6px"><b>${x.n}</b> (USGS, 2021–24): ${x.ln} <button class="btn sm" data-a="map" data-m="${x.k}">🌍 On the map</button></div>`).join('')}</div>`:'')+makersHTML(id,S._R.P),pk='<div class="dsec"><h4>Capacity pipeline';main=main.includes(pk)?main.replace(pk,mk+pk):main+mk;
    if(isv){const rk='<div class="dsec"><h4>Readiness';main=main.includes('<!--ISV-->')?main.replace('<!--ISV-->',isv):main.includes(rk)?main.replace(rk,isv+rk):main+isv}
    if(bg)main+=`<div class="dbg"><div class="dbgh">Background</div>${bg}</div>`}
@@ -4212,6 +4315,8 @@ const CITES=[
  {id:'twt',g:'Missiles, motors & engines',t:'Synopsis: ALQ-99 Band 5/6 Output Traveling Wave Tube',pub:'SAM.gov',d:'n.d.',url:'https://sam.gov/opp/a2c51a8da8084630b70de410bd625db2/view',use:'Teledyne described as the only known second-source maker for an ALQ-99 tube; other Navy TWTs bought sole-source.'},
  {id:'dfarsbr',g:'Missiles, motors & engines',t:'DFARS 225.7009-2 Restriction on ball and roller bearings',pub:'Acquisition.gov',d:'current',url:'https://www.acquisition.gov/node/35482/printable/pdf',use:'DoD may not acquire ball and roller bearings unless made in the US or Canada.'},
  // Ships, subs & readiness
+ {id:'subwork',g:'Workforce',t:'The submarine workforce crisis: admitting realities and restructuring long-term strategy',pub:'War on the Rocks',d:'Apr 2024',url:'https://warontherocks.com/2024/04/the-submarine-workforce-crisis-admitting-realities-and-restructuring-long-term-strategy/',use:'GAO found the submarine industrial base about 25% below the staffing its Virginia-class schedules need (Sep 2022); attrition at the big yards 10-20%, 30% or more in some trades. Shipyards start the game with no spare workforce.'},
+ {id:'ebhire',g:'Workforce',t:'Courant: Electric Boat hiring and building',pub:'Office of Rep. Joe Courtney',d:'2025',url:'https://courtney.house.gov/media-center/press-releases/icymi-courant-electric-boat-hiring-building',use:'Electric Boat hires about 5,000 a year and keeps 89% of new hires: the basis for how slowly a shipyard staffing gap closes.'},
  {id:'crsva',g:'Ships, submarines & readiness',t:'Navy Virginia-Class Submarine Program and AUKUS Submarine (Pillar 1) Project (RL32418)',pub:'Congressional Research Service',d:'Jan 2026',url:'https://www.everycrsreport.com/reports/RL32418.html',use:'Production ~1.1–1.2 boats/yr since 2022 vs 2.0 goal, then 2.33 for AUKUS; SIB funding since FY2018.'},
  {id:'bgov',g:'Ships, submarines & readiness',t:'Backlogged US defense industry crimps bid for more attack subs',pub:'Bloomberg Government',d:'2024',url:'https://news.bgov.com/bloomberg-government-news/lagging-industry-base-crimps-congress-bid-for-more-attack-subs',use:'Navy 45-day review: future Virginia deliveries 24–36 months late.'},
  {id:'workboat',g:'Ships, submarines & readiness',t:'GAO: Navy submarine maintenance delays cost $4.2 billion',pub:'WorkBoat (on GAO, Aug 2026)',d:'Aug 2026',url:'https://www.workboat.com/gao-navy-submarine-maintenance-delays-cost-4-2-billion',use:'~11% of SSN depot periods on time FY2016–25; two Virginias delivered in 2025, both >3 years late.'},
@@ -4284,6 +4389,7 @@ const ASSUMPTIONS=[
  ['Build times and what reforms do to them','Planned times by kind of plant are anchored on recent projects: the Mesquite shell plant (award to opening in 18 months, then no usable parts for two years), the Graham TNT plant (under 36 months planned), MP Materials’ magnet plant (3.5 years to commercial output, twice its plan) and the Stibnite mine (8–9 years of permitting, about 3 of construction). Obstacles add the delays real projects meet. An enacted reform shortens the stage it governs (contract awards, permitting, qualification, funding, ramp-up) by 15–65%; those sizes are estimates. Each program office runs about five orders at full speed.'],
  ['Raw-material supply shares','For the raw materials USGS reports, the domestic share is one minus net import reliance (reliance given as “more than 50%” is read as 62.5%, “more than 75%” as 87.5%), and imports are split between allied, neutral and Chinese or Russian sources by USGS import shares for 2021–24. China’s hold on world production appears as Chinese content inside allied and neutral supply: a share of it stops when Beijing cuts supply. That share is an estimate for each material (85% for gallium, because allied refiners purify Chinese primary gallium; 60% for neutral antimony, which is largely re-routed Chinese material).'],
  ['Civilian drone market','US civilian drone sales start at about 400,000 a year and grow 6% a year. US makers’ share moves over about two years toward a level set by the bans in force (shown in the Rulebook under Sourcing). At about 250,000 US-made civilian drones a year, the military drone base reaches full scale: drone line capacity +25%, drone plants 20% cheaper.'],
+ ['Workforce','Every plant and line has a workforce, counted in the output it can staff; domestic output is the lower of rated capacity and workforce. Firms hire toward the full rated capacity of what is built, closing a gap at a pace set by the kind of work: shipyards about 25% of the gap a year and with no slack at the start (sourced); forgings 35%, smelters 40%, energetics and fabs 50%, assembly and machining 60%, mines and refineries 70%, drone assembly 200% (game estimates). Starting slack over rated capacity runs from none (shipyards) to 30% (mines, refineries) and 60% (drones). A workforce program at a plant makes hiring there 75% faster and adds a first class of 10%; the Industrial Workforce Act makes hiring 50% faster everywhere, allied expert visas 20%, emergency hiring authority 40% while it lasts.'],
  ['New starts and offices','A new plant is paid for one of two ways: from your budget, starting now, or by requesting it in the next NDAA with Political Capital (about 2 PC plus 2.5 per $1B), in which case Congress pays if it funds it, from money it sets aside for requests (about $8B in an ordinary year, more or less with its appetite). The bill passes (the game passes it every 18 December, when recent NDAAs have been signed). Markup cuts fall hardest on plants that fix nothing holding output back and lightest on the worst bottlenecks, never absolutely, and Congress’s appetite swings from year to year (game estimates); money is charged only if funded. The bill also brings your annual industrial-base budget. Since the November 2025 overhaul, a portfolio acquisition executive runs each sector, not one office per plant; each office in the game staffs about three orders at full speed, and beyond that all its orders slow together (game estimate). Upgrades, workforce measures and allied deals are funded from existing accounts and start at once. After a shock (Chinese export bans, or a disaster at a plant), you can ask for an emergency supplemental: 30 PC, one a fiscal year, a vote in two to five months with a 75% chance of passing (game estimates); it adds $4B and funds every waiting new plant at once.[c:pl11850]'],
  ['Shared shortages','When an input is short, every line that needs it shares it evenly up to half of each line’s capacity, so no line stops outright. Beyond half, your priority order decides: higher lines fill to 80% first, then to 100% (a game simplification of how allocation boards and DPA ratings work).'],
  ['Mid-length fixes','Supplier shifts add 15% of existing domestic capacity over a 13-week hiring ramp for $0.08B a year each and raise equipment-problem odds at new plants by 30%. While any shifts run, each line or supplier faces about a 0.25% weekly chance of an outage, rising to 0.75% after a year of wear: worn equipment (−30% for 4–8 weeks), an injury and safety stand-down (−40% for 2–4 weeks), or, where explosives are handled, a fire (−65% for 10–20 weeks). Repairs reset some of the wear. Overtime is linked to a 61% higher injury rate[c:dembe05] (estimates, set against Scranton’s rise, which also needed a $400M modernization).[c:scranton24] An undefinitized contract action ends contracting in about 4 weeks for 10% of the price, with a 25% chance of a cost overrun at construction (estimates; the risk itself is documented by the DoD IG).[c:ucaig] Not offered as fast fixes because they were not fast in practice: buying an ally’s production (Japan’s PAC-3 export took about two years from the December 2023 rule change to first delivery)[c:jpac3] and restarting closed lines.'],
@@ -4846,12 +4952,12 @@ const LAYER_IC={LABOR:'👷',PERMIT:'🌿',QUAL:'🔬',GRID:'⚡',EXPERT:'🛠',
 function limWhy(id,c,R){const idle=ms=>{const m=ms.sort((a,b)=>a.mult-b.mult)[0];return {ic:'🚧',t:`idle: ${m.label.toLowerCase()}, ${m.left} wk left`}};
   const prob=pl=>{const od=OPSD[pl.issue.id];return {ic:LAYER_IC[od.layer]||'⚠',t:`${lc(od.n)} at ${pl.nm}`}};
   if(id.startsWith('L:')){const l=id.slice(2),dm=S.tmods.filter(m=>m.kind==='line'&&m.id===l&&m.mult<1),iss=S.plants.filter(p=>p.kind==='line'&&p.target===l&&p.issue);
-    if(dm.length)return idle(dm);if(iss.length)return prob(iss[0]);if(S.plants.some(p=>p.kind==='line'&&p.target===l&&!p.full))return {ic:'⏳',t:'new lines still ramping'};return null}
+    if(dm.length)return idle(dm);if(iss.length)return prob(iss[0]);{const o=R.out[l];if(o&&o.labF<.98)return {ic:'👷',t:`short of workers: staffed for ${pct(o.labF)} of the lines`}}if(S.plants.some(p=>p.kind==='line'&&p.target===l&&!p.full))return {ic:'⏳',t:'new lines still ramping'};return null}
   const P=R.P,p=P[id];if(!p||p.need<1e-6||p.cover>=.999)return null;if(p.starvedBy)return {ic:'⛓',t:`short of ${lc(ND[p.starvedBy].n)}`};
   const dm=S.tmods.filter(m=>(m.kind==='node'||m.kind==='cap')&&m.id===id&&m.mult<1);if(dm.length)return idle(dm);
   const cs=shortCauses(id,P),k=Object.entries(cs).sort((a,b)=>b[1]-a[1])[0]?.[0];
   if(k==='issue'){const pl=plantsFor('node',id).find(q=>q.issue);if(pl)return prob(pl)}
-  if(k==='cut')return {ic:'✂',t:'cut off by bans or controls'};if(k==='ramp')return {ic:'⏳',t:'new plants still ramping'};
+  if(k==='cut')return {ic:'✂',t:'cut off by bans or controls'};if(p.lf<.98)return {ic:'👷',t:`short of workers: staffed for ${pct(p.lf)} of US capacity`};if(k==='ramp')return {ic:'⏳',t:'new plants still ramping'};
   return {ic:'⚙',t:p.dom<1e-6?'no US plant: all imported':'not enough capacity'}}
 const unitP=v=>v>=1?'$'+fmt(v,1)+'B':v>=.001?'$'+fmt(v*1000,v>=.01?0:1)+'M':'$'+fmt(v*1e6,0)+'k';
 function ordSec(c,o){if(!S.ord)return '';const L=LINES[c],ord=ordOf(c),phys=o.physYr,gap=Math.max(0,phys-ord),q=ordReqs().find(x=>x.c===c),buys=(S.ordBuy||[]).filter(x=>x.c===c);
@@ -4864,7 +4970,7 @@ function ordSec(c,o){if(!S.ord)return '';const L=LINES[c],ord=ordOf(c),phys=o.ph
 function ladder(c,R,max=4){const o=R.out[c],oF=o.ordLim?(o.ordYr/LINES[c].k)/Math.max(lineName(c),1e-9):Infinity,steps=[...(o.lims||[]),{id:'L:'+c,f:Math.min(o.capF??1,oF),ord:o.ordLim}].sort((a,b)=>a.f-b.f);
   const shown0=steps.filter((x,k)=>x.f<=1+1e-9||k===steps.findIndex(y=>y.f>1+1e-9)),shown=shown0.slice(0,max),more=shown0.length-shown.length;
   return `<div class="lad"><span class="lad-h" data-tip="How much of the line’s rated capacity each input (and the line itself) allows, lowest first. Output stops at the first one; fixing it lifts output only to the next.">Limits, lowest first</span>${shown.map((x,k)=>{const isL=x.id.startsWith('L:'),st0=fixStat(x.id,c,R),st=x.f>1+1e-9&&st0.cls==='none'?{cls:'okish',t:'✓ enough'}:st0,ch=isL?[]:chainOf(R.P,x.id);
-    return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?(x.ord?'Funded orders':'Line capacity'):ND[x.id].n}</b><br>${x.ord?'Congress has funded fewer than the lines could make. ':''}Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?(x.ord?'Funded orders':'Line capacity'):ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em>${(()=>{const w=k===0&&(x.f<1-1e-9||isL)?limWhy(x.id,c,R):null;return w?`<span class="lad-w">${w.ic} ${w.t}</span>`:''})()}</span>`}).join('')}${more>0?`<span class="lad-more" data-a="node" data-n="L:${c}" data-tip="See every limit on the line’s page">+${more} more</span>`:''}</div>`}
+    return `${k?'<span class="ar">→</span>':''}<span class="lad-s ${k===0&&o.bott?'bind':''}" data-a="node" data-n="${x.id}" data-tip="${tipQ(`<b>${isL?(x.ord?'Funded orders':o.labF<.98?'Line workforce':'Line capacity'):ND[x.id].n}</b><br>${x.ord?'Congress has funded fewer than the lines could make. ':''}${isL&&!x.ord&&o.labF<.98?`Workers on hand staff ${pct(o.labF)} of the lines; hiring closes the gap at about ${pct(labRate('L:'+c))} a year. `:''}Allows ${pct(Math.min(x.f,9.99))} of the line’s capacity${ch.length>1?`<br>Itself short of ${ch.slice(1).map(i=>ND[i].n).join(' ← ')}`:''}${st.tip?`<br>Under way: ${st.tip}`:''}`)}"><b>${isL?(x.ord?'Funded orders':o.labF<.98?'Line workforce':'Line capacity'):ND[x.id].n}</b><i>${pct(Math.min(x.f,9.99))}</i><em class="${st.cls}">${st.t}</em>${(()=>{const w=k===0&&(x.f<1-1e-9||isL)?limWhy(x.id,c,R):null;return w?`<span class="lad-w">${w.ic} ${w.t}</span>`:''})()}</span>`}).join('')}${more>0?`<span class="lad-more" data-a="node" data-n="L:${c}" data-tip="See every limit on the line’s page">+${more} more</span>`:''}</div>`}
 // ---------- sufficiency: the coalition's output against what the plan requires, not parity with the rival ----------
 // US requirement per line (a year): public targets
 const REQ_US={
@@ -5335,7 +5441,7 @@ function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.bu
 function render(){if(!S){renderTitle();return}sbxFill();renderGame();renderModal();rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
-const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
+const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpj','_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
 const saveable=()=>S&&!S.replay&&!S.histMode&&!S.over&&!(S.w===PLAY0&&S.modal==='scenPick');
 function saveData(){const o={};for(const k in S)if(!SAVE_SKIP.has(k))o[k]=S[k];return JSON.stringify({v:1,at:Date.now(),uidN,S:o})}
 function saveGame(){if(!saveable())return false;try{localStorage.setItem(SAVE_K,saveData());S._svW=S.w;S._svAt=Date.now();return true}catch(e){S._svErr=String(e.message||e);return false}}
@@ -5346,7 +5452,7 @@ function loadData(txt){const d=JSON.parse(txt);if(!d||d.v!==1||!d.S||d.S.w==null
   for(const k in tm)if(!(k in cur)&&!SAVE_SKIP.has(k))cur[k]=tm[k];
   for(const id in cur.nodes)if(!cur.nodes[id].neut)cur.nodes[id].neut={amt:0,adv:0,src:''};
   S=cur;uidN=Math.max(uidN,d.uidN||1);S.speed=0;S.replay=false;S.histMode=false;S.sim=false;S.queue=S.queue||[];if(S.modal==='save')S.modal=null;
-  PJC.clear();viewKey='';S._vdirty=true;S._svW=S.w;S._svAt=d.at;scenUpdate();S._R=production(false)}
+  if(!S.lab&&!S.histMode)labInit();PJC.clear();viewKey='';S._vdirty=true;S._svW=S.w;S._svAt=d.at;scenUpdate();S._R=production(false)}
 function resumeSave(){let t=null;try{t=localStorage.getItem(SAVE_K)}catch(e){}if(!t)return false;
   try{loadData(t);render();toast(`<b>Resumed your game</b><br><span class="dim">${fmtDate(S.w)}${S.scen?' · '+SCD[S.scen].n:''}. ☰ Menu, top right, saves, loads or starts over.</span>`,'good');return true}
   catch(e){console.error(e);S=null;clearSave();return false}}
