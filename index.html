@@ -150,7 +150,8 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .sk text{font:12.5px "Segoe UI",system-ui,sans-serif;fill:#231d14;paint-order:stroke;stroke:#efe6cf;stroke-width:3.5px;stroke-linejoin:round;cursor:pointer}.sk text.ch{pointer-events:none}.sk .nd:hover text{fill:#000;text-decoration:underline}
 .sk text .sub{font-size:11.5px;fill:#5a4e38}
 .sk text.ch{font-weight:700;font-size:11.5px;fill:#5a4a28;letter-spacing:.07em}
-.skguide{font:12px/1.45 "Segoe UI",system-ui,sans-serif;color:#4a3f2a;padding:6px 14px 0;max-width:1100px}
+.billt td,.billt th{text-align:right}.billt td:first-child,.billt th:first-child{text-align:left}.billt .billsum td{border-top:2px solid #8a7850}
+.rec-tiles{font:12px/1.45 "Segoe UI",system-ui,sans-serif;color:#4a3f2a;padding:6px 14px 0;max-width:1100px}
 .sk .lk{transition:opacity .12s}.sk .nd{cursor:pointer}
 .sk.dim .lk{opacity:.06!important}.sk.dim .lk.hot{opacity:.85!important}.sk.dim .nd{opacity:.25}.sk.dim .nd.hot{opacity:1}
 .sklegend{display:flex;flex-wrap:wrap;gap:12px;font:12px "Segoe UI",system-ui,sans-serif;color:#5a4e38;padding:6px 14px}
@@ -1658,6 +1659,7 @@ const REFORMS=[
  {id:'nepaReform',fac:['US'],n:'SPEED Act (Permitting Overhaul)',d:'Passed the House 221–196 in Dec 2025; a Senate deal followed in Sep 2026. Deadlines with real remedies. Permitting takes 40% less time; impact-statement fights are half as likely.',pc:55,wk:26,p:.4},
  {id:'judRev',fac:['US'],n:'NEPA Litigation Reform',d:'Short statute of limitations; remand without vacatur. Lawsuits −50%.',pc:40,wk:20,p:.5},
  {id:'dpaMin',fac:['US'],n:'DPA Critical-Minerals Emergency',d:'Unlocks the emergency mine-permitting track: mine permits take 40% less time.',pc:25,wk:8,p:.9},
+ {id:'ibfPerm',fac:['US'],n:'Make the Industrial Base Fund Permanent',d:'Reconciliation pays about $3.8B a year for munitions production expansion and supply chains, and it ends after FY2029. This writes the same amount into base appropriations every year after that, so your budget stays at $9B instead of falling to $5.2B.',pc:35,wk:20,p:.6},
  {id:'dpaFund',fac:['US'],n:'Recapitalize DPA Title III',d:'+30% grant success against dumping. Costs $2B.',pc:20,$:2,wk:16,p:.75},
  {id:'pricefloor',n:'Strategic Price Floors & Offtake',d:'Generalize the MP-style $110/kg floor: private lenders fund 45% of mines, refineries and metal plants. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
  {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',d:'Firm orders years ahead: suppliers pay 40% of new munitions and missile plants themselves; funding and ramp-up take 40% less time; demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
@@ -2491,6 +2493,11 @@ function officeChips(lbl=true){const L=officeLoad();return `<span class="offs">$
 // Two currencies. The budget buys what starts now. Political Capital buys a place in the NDAA request: Congress pays
 // for what it funds with money it appropriates, on top of your budget. The bill also brings next year's budget.
 const PKG_CUT=.1,NSR_WK=6,FYOF=w=>{const d=dateOf(w);return d.getFullYear()+(d.getMonth()>=9?1:0)};
+// The industrial-base budget, anchored on FY2026: about $5.2B a year of base appropriations (submarine industrial base ~$2.5B, munitions capacity added by
+// appropriators ~$1.9B, solid rocket motors ~$0.65B, DPA Title III) plus ~$3.8B a year of reconciliation money (munitions production expansion $2.5B,
+// supply chains $1.3B) that ends after FY2029 unless Congress makes it permanent.[c:fy26recon][c:fy26approps]
+const IB_BASE=5.2,IB_RECON=3.8,IB_RECON_END=2029;
+const fyBud=w=>{if(S.fac!=='US')return F().fyBudget;const fy=FYOF(w);return IB_BASE+(fy<=IB_RECON_END||S.reforms?.ibfPerm==='passed'?IB_RECON:0)};
 const pkgItems=()=>S.projects.filter(p=>p.pkg),pkgSum=()=>pkgItems().reduce((a,p)=>a+p.req,0);
 // The NDAA has been signed in mid-to-late December for years (FY2026's on 18 December 2025); the game passes it, with
 // the new-start money, on that date every year.
@@ -2552,12 +2559,12 @@ function plusUpPick(){const P=S._R?.P||production(false).P;const c=PROJECTS.filt
 function enactPkg(src){const its=pkgOrd().filter(p=>p.pkg<S.w),nds=ndsReqs().filter(x=>x.pkg<S.w),rfs=refReqs().filter(x=>x.pkg<S.w),ors=ordReqs().filter(x=>x.pkg<S.w);if(!its.length&&!nds.length&&!rfs.length&&!ors.length)return;
   const fy=FYOF((its[0]||nds[0]||rfs[0]||ors[0]).pkg),got=[],lost=[],added=[];
   const drop=(p,why)=>{S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);lost.push(`${projName(p)} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${projName(p)} not funded, ${why}.`,'bad')};
-  const fund=p=>{p.spent=p.req;p.cong=1;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1})},room={r:src?Infinity:billTop(fy)};
+  const fund=p=>{p.spent=p.req;p.cong=1;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1});fyLed('cong',p.req)},room={r:src?Infinity:billTop(fy)};
   for(const p of its){const why=room.r<p.req-1e-9?'below the money line':rand()<cutP(p)?'cut in markup':null;
     if(why){if(why!=='cut in markup')room.r=-1;drop(p,why);continue}room.r-=p.req;fund(p);got.push(projName(p))}
   refEnact(got,lost,fy,room);ndsEnact(got,lost,fy,room);ordEnact(got,lost,fy);
   if(!src&&S.fac==='US'&&rand()<PLUS_OK){const d=plusUpPick();if(d){const c=projCost(d),p={uid:uidN++,def:d.id,stage:0,prog:d.dur[0],dur:[...d.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:0,plus:1};
-    S.projects.push(p);S.built[d.id]=(S.built[d.id]||0)+1;added.push(`${d.n} (a plus-up for a member’s district, ${money(c)} Congress added)`);log(`🏛 FY${fy%100} ${billN()}: Congress adds ${d.n}, unrequested.`,'ev')}}
+    S.projects.push(p);S.built[d.id]=(S.built[d.id]||0)+1;fyLed('cong',c);added.push(`${d.n} (a plus-up for a member’s district, ${money(c)} Congress added)`);log(`🏛 FY${fy%100} ${billN()}: Congress adds ${d.n}, unrequested.`,'ev')}}
   S.bills=S.bills||[];S.bills.unshift({fy,src:src||'',w:S.w,got,lost,added});S.bills.length=Math.min(S.bills.length,4);
   const n=got.length+added.length;
   log(`🏛 ${src||`FY${fy%100} ${billN()}`} enacted: ${got.length} of ${its.length+nds.length+rfs.length+ors.length} requested items funded${added.length?`, ${added.length} added`:''}.`,n?'good':'bad');
@@ -2572,7 +2579,7 @@ function ndsDrop(id){const x=ndsReqs().find(y=>y.id===id);if(x){S.pc+=x.pc||0;sp
 function ndsCut(id){const fy=pkgFY();return clamp(moodOf(fy).f*.08*cpF({t:{node:id}},fy),.02,.5)}
 function ndsEnact(got,lost,fy,room){const its=ndsReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.ndsReq=ndsReqs().filter(x=>!its.includes(x));
   for(const x of its){const n=ND[x.id].n,why=room.r<x.req-1e-9?'below the money line':rand()<ndsCut(x.id)?'cut in markup':null;
-    if(why){if(why!=='cut in markup')room.r=-1;lost.push(`Stockpile: ${n} (${why})`);continue}room.r-=x.req;S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*NDS_WK;got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
+    if(why){if(why!=='cut in markup')room.r=-1;lost.push(`Stockpile: ${n} (${why})`);continue}room.r-=x.req;fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*NDS_WK;got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
 function billAct(a,uid,d){const p=S.projects.find(x=>x.uid===+uid);if(!p||!p.pkg)return;const o=pkgOrd();o.forEach((x,i)=>x.pri=i);
   if(a==='mv'){const i=o.indexOf(p),j=i+(+d);if(j<0||j>=o.length)return;[o[i].pri,o[j].pri]=[o[j].pri,o[i].pri]}
   else if(a==='top'){p.pri=-1}
@@ -2850,7 +2857,7 @@ function refEnact(got,lost,fy,room){const its=refReqs().filter(x=>x.pkg<S.w);if(
   for(const x of its){const R=RD[x.id],n=rname(R);if(passed(x.id))continue;
     const why=room.r<x.req-1e-9?'below the money line':rand()<refPass(x)?null:x.rider?'stripped in conference':'dropped in conference';
     if(why){lost.push(`${n} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${n} ${why}.`,'bad');continue}
-    room.r-=x.req;S.reforms[x.id]='passed';refRescale(x.id);lawRec('Law',n);R.on?.();got.push(`Law: ${n}`);log(`✅ Enacted in the FY${fy%100} ${billN()}: ${n}.`,'good')}}
+    room.r-=x.req;fyLed('ref',x.req);S.reforms[x.id]='passed';refRescale(x.id);lawRec('Law',n);R.on?.();got.push(`Law: ${n}`);log(`✅ Enacted in the FY${fy%100} ${billN()}: ${n}.`,'good')}}
 function refStatus(R){if(passed(R.id))return 'Enacted';const q=refReqs().find(x=>x.id===R.id),v=vehOf(R);
   if(q)return `${q.rider?'Rider on':'In'} the FY${FYOF(q.pkg)} NDAA · ~${Math.round(refPass(q)*100)}% chance it survives conference`;
   if(S.bill?.id===R.id)return `Stand-alone bill on the floor · vote in ${S.bill.left} wk`;
@@ -2961,14 +2968,15 @@ function homeTick(lastOut){
 function tick(){
   if(S.over)return;
   pcPre();S.w++;
-  if(S.fac==='US'&&(S.histMode?fyStart():billNow())){gainB(F().fyBudget,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(F().fyBudget)}.`,'good');if(!S.histMode)S._yrDue=1}
+  if(S.fac==='US'&&(S.histMode?fyStart():billNow())){const fb=S.histMode?F().fyBudget:fyBud(S.w);gainB(fb,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(fb)}.`,'good');
+   if(!S.histMode&&FYOF(S.w)===IB_RECON_END+1)log(S.reforms?.ibfPerm==='passed'?`Reconciliation money ran out after FY${IB_RECON_END%100}; the permanent Industrial Base Fund keeps your budget at ${money(fb)}.`:`<b>Reconciliation money ran out after FY${IB_RECON_END%100}.</b> Your industrial-base budget falls by ${money(IB_RECON)} a year, to ${money(fb)}. A permanent Industrial Base Fund in the NDAA would restore it.`,S.reforms?.ibfPerm==='passed'?'good':'bad');if(!S.histMode)S._yrDue=1}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
   if(!S.histMode){enactPkg();suppTick();billAlertTick();cnTick();alTick();ruTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
   invTick();const R=production(true);S.lastOut=R.out;
-  if(!S.histMode){let pc=0;for(const c in LINES)pc+=R.out[c].yr/52*UC[c];S.procSp=(S.procSp||0)+pc;S.procY=(S.procY||0)+pc;if(S.ordBuy){S.ordBuy.forEach(x=>x.left--);S.ordBuy=S.ordBuy.filter(x=>x.left>0)}}limTick(R.out);
+  if(!S.histMode){let pc=0;for(const c in LINES)pc+=R.out[c].yr/52*UC[c];S.procSp=(S.procSp||0)+pc;S.procY=(S.procY||0)+pc;fyLed('proc',pc);if(S.ordBuy){S.ordBuy.forEach(x=>x.left--);S.ordBuy=S.ordBuy.filter(x=>x.left>0)}}limTick(R.out);
   for(const c in LINES)S.inv[c]=Math.max(0,S.inv[c]+R.out[c].yr/52-S.inv[c]*retRate(c)/52-(aidOn()?(F().aid?.[c]||0)*S.aidLvl/52:0));
   if(S.histMode)histTick();
   for(const c in S.ready)S.ready[c]+=(readyTarget(c,R).t-S.ready[c])/26;
@@ -3132,9 +3140,9 @@ function attachSankey(root=ov){
    DOSSIER — one page per node / end item, with navigation
    ===================================================================== */
 /* ---------- money and offices: what's binding, and reprogramming when the budget runs dry ---------- */
-function nextFunds(){const d=dateOf(S.w),y=d.getFullYear();if(!S.histMode)return {w:billW()+1,amt:F().fyBudget};
+function nextFunds(){const d=dateOf(S.w),y=d.getFullYear();if(!S.histMode)return {w:billW()+1,amt:fyBud(billW()+1)};
   let t=new Date(y,9,1);if(d>=t)t=new Date(y+1,9,1);
-  const w=Math.ceil((t-START)/(7*DAY));return {w,amt:F().fyBudget}}
+  const w=Math.ceil((t-START)/(7*DAY));return {w,amt:S.histMode?F().fyBudget:fyBud(w)}}
 const REPRO=.5,reproCost=()=>Math.round(10*Math.pow(1.6,S.repro||0));
 function reprogram(){const c=reproCost();if(S.pc<c)return;S.pc-=c;gainB(REPRO,'Reprogramming');spent('pc',c);spent('$',-REPRO);toast(`💵 <b>Reprogrammed +${money(REPRO)}</b><br><span class="dim">−${c} PC</span>`,'good');S.repro=(S.repro||0)+1;S.pages+=40;
   log(`${S.fac==='US'?'Reprogramming approved by the four defense committees':'Budget transfer approved'}: +${money(REPRO)} moved from other accounts (${c} PC).`,'ev')}
@@ -3995,6 +4003,8 @@ const CITES=[
  {id:'rfo',g:'US rulebook',t:'The Revolutionary FAR Overhaul: Where It Stands',pub:'FedCon',d:'2026',url:'https://fedcon.com/resources/insights/revolutionary-far-overhaul-status',use:'Running through class deviations; formal proposed rules began 23 Jun 2026; no final rules yet.'},
  {id:'protest35',g:'US rulebook',t:'FY2025 NDAA Increases the Threshold for DoD Task Order Protests',pub:'National Law Review',d:'2025',url:'https://natlawreview.com/article/fy2025-ndaa-increases-threshold-dod-task-order-protests-and-asks-gao-and-dod',use:'DoD task-order protests at GAO now require an order above $35M (was $25M).'},
  {id:'fy26approp',g:'US rulebook',t:'FY2026 Department of Defense Appropriations: In Brief',pub:'Congressional Research Service',d:'Apr 2026',url:'https://www.congress.gov/crs_external_products/R/PDF/R48891/R48891.1.pdf',use:'Enacted after a short lapse past 30 Jan 2026: $838.7B; $23.9B for selected missile and munitions programs; multiyear authority for critical munitions.'},
+ {id:'fy26recon',g:'US rulebook',t:'Reconciliation revealed how the Pentagon plans to spend all $152 billion in FY26',pub:'Breaking Defense',d:'Feb 2026',url:'https://breakingdefense.com/2026/02/reconciliation-revealed-how-the-pentagon-plans-to-spend-all-152-billion-in-fy26/',use:'Reconciliation lines for FY2026 include ~$2.5B for missile and munitions production expansion and ~$1.3B for industrial-base supply chains: the $3.8B a year in the game that ends after FY2029.'},
+ {id:'fy26approps',g:'US rulebook',t:'FY2026 Defense Appropriations: conferenced bill summary',pub:'Senate Appropriations Committee',d:'2026',url:'https://www.appropriations.senate.gov/imo/media/doc/fy26_defense_bill_summary_conferenced.pdf',use:'Adds $1.9B to accelerate production and increase capacity for munitions and $650M for solid rocket motor capacity. With the Navy’s ~$2.5B submarine industrial base request, the base of the game’s $5.2B a year.'},
  {id:'fy27cr',g:'US rulebook',t:'Overview of Continuing Appropriations for FY2027',pub:'Congressional Research Service',d:'2026',url:'https://www.congress.gov/crs-product/R49353',use:'FY2027 began on a CR through 11 Dec 2026: prior-year levels, no new starts, no production-rate increases.'},
  {id:'obbba',g:'US rulebook',t:'One Big Beautiful Bill Act Makes $150B Investment in Defense',pub:'Covington, Inside Government Contracts',d:'Jul 2025',url:'https://www.insidegovernmentcontracts.com/2025/07/one-big-beautiful-bill-act-makes-150b-investment-in-defense/',use:'About $150B through FY2029: ~$25B munitions, $8.2B Industrial Base Fund, $1B supporting up to $100B of Office of Strategic Capital loans.'},
  {id:'bam',g:'US rulebook',t:'Final Rule Amends FAR Part 25 Domestic Content Threshold Under the Buy American Act',pub:'Thompson Hine',d:'2022',url:'https://www.thompsonhine.com/insights/final-rule-amends-far-part-25-domestic-content-threshold-under-buy-american-act/',use:'Domestic content threshold 60% → 65% (2024) → 75% (2029).'},
@@ -4525,7 +4535,10 @@ function raceGauge(v){const W=128,H=72,cx=64,cy=64,r=52,a=f=>Math.PI*(1-Math.min
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#f3ead2" stroke-width="2.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4.5" fill="#dcc78e" stroke="#0d0e0b"/></svg>`}
 /* ---------- the Record: everything that changed since you took over in January 2027 ---------- */
 const JOBS_PER_B=1500; // direct manufacturing jobs per $1B of plant investment at full output (estimate)
-function spendB(x,k){x=+x||0;if(!x)return;S.budget-=x;if(!S.histMode)(S.spendBy=S.spendBy||{})[k]=(S.spendBy[k]||0)+x}
+function spendB(x,k){x=+x||0;if(!x)return;S.budget-=x;if(!S.histMode){(S.spendBy=S.spendBy||{})[k]=(S.spendBy[k]||0)+x;fyLed(k==='Programs'||k==='Allied deals'?'cap':k==='Reforms'?'ref':k==='Weapons bought now'?'buy':'oth',x)}}
+// what the whole effort costs, by fiscal year: cap = plants and deals from your budget; cong = plants Congress funded in the NDAA; nds = stockpile buys;
+// ref = reforms; oth = everything else from your budget; proc = weapons Congress buys on your orders; buy = weapons bought from your budget
+function fyLed(k,x){if(S.histMode||!x)return;const fy=FYOF(S.w),L=(S.fyLed=S.fyLed||{})[fy]=S.fyLed[fy]||{};L[k]=(L[k]||0)+x}
 function gainB(x,k){x=+x||0;if(!x)return;S.budget+=x;if(!S.histMode)(S.incBy=S.incBy||{})[k]=(S.incBy[k]||0)+x}
 function lawRec(kind,n){if(!S.histMode)(S.lawLog=S.lawLog||[]).push({w:S.w,kind,n})}
 function outSnap(){return {pc:S.pc,b:S.budget,st:S.strain,lev:S.lev,cut:{...S.cut},tm:S.tmods.length,gm:S.gmods.length,inv:{...S.inv},know:{...S.know},truce:S.truce,rules:{...S.rules},
@@ -4561,6 +4574,16 @@ function decRec(auto){if(!S.histMode){S.decN=S.decN||{you:0,auto:0};S.decN[auto?
 const sumV=o=>Object.values(o||{}).reduce((a,b)=>a+b,0);
 function jobsNow(){let j=0,more=0;for(const pl of S.plants)if(pl.start>=PLAY0){const v=projCost(PD[pl.def])*JOBS_PER_B;j+=v*Math.min(1,pl.yield);more+=v*(1-Math.min(1,pl.yield))}
   for(const p of S.projects)if(!PD[p.def].ally&&p.dur[3]>0&&p.started>=PLAY0)more+=projCost(PD[p.def])*JOBS_PER_B;return {j,more}}
+const BILL_COLS=[['cap','Plants & deals','from your budget'],['cong','Plants in the NDAA','Congress funded'],['nds','Stockpile','NDAA buys'],['ref','Reforms','and their costs'],['oth','Other','shifts, premiums, events'],['proc','Weapons','Congress buys on your orders'],['buy','Weapons','bought from your budget']];
+function billTable(){const L=S.fyLed||{},fys=Object.keys(L).map(Number).sort((a,b)=>a-b);if(!fys.length)return '';
+  const cols=BILL_COLS.filter(([k])=>fys.some(y=>(L[y][k]||0)>1e-6)),tot=y=>cols.reduce((a,[k])=>a+(L[y][k]||0),0),ib=y=>cols.filter(([k])=>k!=='proc'&&k!=='buy').reduce((a,[k])=>a+(L[y][k]||0),0);
+  const sum=k=>fys.reduce((a,y)=>a+(L[y][k]||0),0),all=fys.reduce((a,y)=>a+tot(y),0),allIb=fys.reduce((a,y)=>a+ib(y),0);
+  const c=v=>v>1e-6?money(v):'<span class="dim">—</span>',now=FYOF(S.w);
+  return `<div class="pdg">The bill <span class="mini" style="text-transform:none;letter-spacing:0">· everything the effort has cost, by fiscal year (Oct–Sep)</span></div>
+  <p class="mini" style="margin:0 0 6px">Building capacity is the small part. ${money(allIb)} has gone to the industrial base since January 2027, against ${money(sum('proc')+sum('buy'))} for the weapons it makes. Your industrial-base budget is ${money(IB_BASE+IB_RECON)} a year through FY${IB_RECON_END%100}; after that ${S.reforms?.ibfPerm==='passed'?'the permanent Industrial Base Fund keeps it there':`it falls to ${money(IB_BASE)} unless Congress makes the Industrial Base Fund permanent`}.</p>
+  <table class="ctable billt"><tr><th>Fiscal year</th>${cols.map(([k,n,d])=>`<th>${n}<br><span class="mini">${d}</span></th>`).join('')}<th>Industrial base</th><th>Total</th></tr>
+  ${fys.map(y=>`<tr><td><b>FY${y}</b>${y===now?' <span class="mini">so far</span>':''}</td>${cols.map(([k])=>`<td>${c(L[y][k]||0)}</td>`).join('')}<td><b>${c(ib(y))}</b></td><td><b>${c(tot(y))}</b></td></tr>`).join('')}
+  <tr class="billsum"><td><b>Since Jan 2027</b></td>${cols.map(([k])=>`<td><b>${c(sum(k))}</b></td>`).join('')}<td><b>${c(allIb)}</b></td><td><b>${c(all)}</b></td></tr></table>`}
 function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINES),yr=w=>dateOf(w).getFullYear();
   if(!r0)return '<p class="mini">The record starts when you take over in January 2027.</p>';
   const idx=raceIdx(R.out),idx0=raceIdx(null,PLAY0,c=>r0.out[c]??0),spent=sumV(S.spendBy),inc=sumV(S.incBy),J=jobsNow();
@@ -4584,6 +4607,7 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   h+=`<div class="rec-charts"><div class="acard"><div class="ah"><b>Share of the requirement · you + ${AL().short}</b></div>${lineChart({unit:'⟳ Output (flow), share of requirement',W:440,H:150,yMax:Math.max(1,...ser.map(x=>x[1]))*1.05,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1,c:'#5f9e4a',n:'Sufficient'}],series:[{pts:ser,c:'#2f62a0',wd:2.2,n:'Share of requirement'}]})}</div>
     <div class="acard"><div class="ah"><b>PRC and Russian content in what you build</b></div>${lineChart({unit:'Share of inputs',W:440,H:150,yMax:Math.max(.05,...ex.map(x=>x[1]))*1.1,yFmt:v=>pct(v),vf:v=>pct(v),series:[{pts:ex,c:'#b0453a',wd:2.2,n:'PRC / Russian content'}]})}</div>
     <div class="acard"><div class="ah"><b>Money spent since January 2027</b></div>${lineChart({unit:'Cumulative spending',W:440,H:150,yMax:Math.max(1,...sp.map(x=>x[1]))*1.08,yFmt:v=>'$'+fmt(v,0)+'B',vf:v=>money(v),series:[{pts:sp,c:'#8a6a1f',wd:2.2,n:'Spent'}]})}</div></div>`;
+  h+=billTable();
   // line by line
   h+=`<div class="pdg">Line by line</div><table class="ctable rec-lines"><tr><th>Line</th><th colspan="3">⟳ Output per year (flow)</th><th colspan="2">📦 In service (stock)</th></tr><tr class="sub"><th></th><th>Jan 2027</th><th>Now</th><th>${RV().n} now</th><th>Jan 2027</th><th>Now</th></tr>`+
     S.order.map(c=>{const o0=r0.out[c]??0,o1=R.out[c].yr,i0=r0.inv[c]??0,i1=S.inv[c];return `<tr><td>${lineIcon(c,18,'lic sm')}<span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span></td><td>${fmtN(o0)}</td><td><b>${fmtN(o1)}</b> ${d(o0,o1,v=>fmtN(v))}</td><td>~${fmtN(cnOut(c))}</td><td>${fmtN(i0)}</td><td><b>${fmtN(i1)}</b> ${d(i0,i1,v=>fmtN(v))}</td></tr>`}).join('')+`</table>`;

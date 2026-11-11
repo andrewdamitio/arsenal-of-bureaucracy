@@ -87,7 +87,7 @@ const res=await p.evaluate(({bot,scen,years})=>{
  const NDAA=['acq','byrnes','ceDefense','qualReform','multiyear','acqWorkforce','pricefloor','itarReform','dpaMin','crAnomaly','dpaFund','antitrust'],BILLS=['nepaReform','workforce','judRev','expertVisa','jonesReform','tariffExempt'],EXEC=['rFAST','rNSR','rWOTUS','rITAR','rKnown'];
  // the reformer keeps enough Political Capital in hand for its next reform before it spends any on plant requests
  // one agenda in priority order, NDAA provisions and stand-alone bills together; the reformer saves for the next item rather than skipping it
- const AGENDA=['acq','byrnes','nepaReform','ceDefense','qualReform','multiyear','workforce','acqWorkforce','pricefloor','itarReform','judRev','dpaMin','crAnomaly','dpaFund','expertVisa','antitrust','jonesReform','tariffExempt'];
+ const AGENDA=['acq','byrnes','nepaReform','ceDefense','qualReform','multiyear','ibfPerm','workforce','acqWorkforce','pricefloor','itarReform','judRev','dpaMin','crAnomaly','dpaFund','expertVisa','antitrust','jonesReform','tariffExempt'];
  const costOf=R=>vehOf(R)==='ndaa'?refReqCost(R):reformCost(R);
  const nextRef=()=>AGENDA.map(id=>RD[id]).find(R=>R&&reformAvail(R)&&!inReq(R.id)&&S.bill?.id!==R.id&&(vehOf(R)==='ndaa'||!S.bill));
  const reserve=()=>{if(!reform)return 0;const R=nextRef();return R?costOf(R):0};
