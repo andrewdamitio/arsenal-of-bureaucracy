@@ -611,7 +611,8 @@ body{background:
 .wmfoot{font-size:11.5px;color:#6b5a35;margin:8px 0 0;line-height:1.45}.wmload{height:340px;display:flex;align-items:center;justify-content:center;color:#6b5a35;border:1px dashed #c8b48a;font-size:13px}
 @media(max-width:900px){.wmwrap{grid-template-columns:1fr}.wmhd{flex-direction:column;align-items:stretch}}
 .evpre{font-size:13px;color:#5a4e38;border-top:1px solid #c8b48a;padding-top:6px;margin-top:8px}.evpre b{font:600 10.5px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#8a6d2e;margin-right:6px}
-.pintro{font-size:12px;color:#b9ad8c;padding:4px 10px 6px;line-height:1.4}.pool{grid-template-columns:18px minmax(0,1.3fr) 1fr 34px}.pool .pnm{font-size:11px;color:#cfc6ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pools{grid-template-columns:1fr}
+.pintro{font-size:12px;color:#b9ad8c;padding:4px 10px 6px;line-height:1.4}.pool{grid-template-columns:18px minmax(0,1.3fr) 1fr 34px}.pool .pup{grid-column:2/-1;font-size:10.5px;color:var(--dim);margin:-2px 0 3px;line-height:1.35}
+.xfst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}.xfst div{display:flex;flex-direction:column;padding:6px 10px;border:1px solid #cbbd95;background:#f7f1e1;border-radius:3px}.xfst b{font-size:18px;color:#2b241a}.xfst span{font-size:12px;color:#6b5a35}.pool .pnm{font-size:11px;color:#cfc6ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pools{grid-template-columns:1fr}
 .pwhy{font:400 13px/1.45 'Segoe UI',system-ui,sans-serif;color:#3d3426;margin-top:4px}.ledrec .lg{color:#2a2418}
 .billv{max-width:1180px;color:#2a2418;background:#efe6cf;padding:12px 18px;border:1px solid #a8925a}
 .bltt{margin:0 0 4px;font:400 24px var(--sten);letter-spacing:.03em;color:#2a2418}.bltop{border-bottom:2px solid #8a7850;margin-bottom:6px}
@@ -2670,8 +2671,41 @@ function ctTerms(def,ct){
 const ctCost=(def,ct)=>projCost(def)*ctTerms(def,ct).costM;
 const ctDur=(def,ct)=>{const t=ctTerms(def,ct);return planDur(def).map((d,i)=>Math.round(d*t.durM[i]))};
 /* ---------- shared national bottlenecks: projects in the same stage queue for the same scarce things ---------- */
+// ---- large power transformers: a lead time, not a queue. A new plant that needs a large transformer orders it when its contract is
+// awarded, and construction cannot finish until it arrives. In Q2 2025 a new large power transformer took about 128 weeks to deliver
+// (generator step-up units about 143), against 12-18 months before 2020; about 80% are imported, and Cleveland-Cliffs is the only US
+// maker of the grain-oriented electrical steel they need.[c:woodmac25][c:goes] The easing after 2028 as announced factories open is a game estimate.
+const XF_TAGS=['greenfield','smelter','energetic','power'],XF_RES_WK=16,XF_RES_N=12,XF_RES_C=.5,XF_RES_PC=6,XF_CO_C=1,XF_CO_PC=6,XF_DPA_PC=[12,6];
+const xfNeeds=def=>!!def&&!def.ally&&needsContract(def)&&XF_TAGS.some(t=>def.tags.includes(t));
+const xfS=()=>(S.xfm=S.xfm||{dpa:false,res:0,resIn:[],co:null});
+function xfMarket(w=S.w){const y=(w-PLAY0)/52;return Math.max(80,128-6*Math.max(0,y-1.5))}
+function xfCoF(w=S.w){const c=xfS().co;if(c==null)return 1;return 1-.25*clamp((w-c-104)/52,0,1)}
+function xfLead(w=S.w){return Math.round(xfMarket(w)*xfCoF(w)*(xfS().dpa?.6:1))}
+// order when the contract is awarded: from the reserve if it holds a unit, otherwise from the makers
+function xfOrder(p){if(S.histMode||p.inh||p.xf||!xfNeeds(PD[p.def])||!p.dur[3]||p.stage<2||p.stage>3)return;const X=xfS();
+  if(X.res>=1){X.res--;p.xf={ord:S.w,due:S.w+XF_RES_WK,res:1}}else p.xf={ord:S.w,due:S.w+xfLead()}}
+const xfHold=p=>!!p.xf&&S.w<p.xf.due;
+function xfTick(){if(S.histMode)return;const X=xfS();
+  for(const u of X.resIn)if(u.w<=S.w){X.res++;u.done=1}X.resIn=X.resIn.filter(u=>!u.done);
+  // spare units go to the programs that would otherwise wait longest
+  if(X.res>=1){const wait=S.projects.filter(p=>p.xf&&!p.xf.res&&p.xf.due-S.w>XF_RES_WK).sort((a,b)=>b.xf.due-a.xf.due);
+    for(const p of wait){if(X.res<1)break;X.res--;p.xf={...p.xf,due:S.w+XF_RES_WK,res:1};log(`⚡ ${projName(p)} takes a large power transformer from the strategic reserve: due ${fmtDate(p.xf.due)}.`,'good')}}}
+function xfAct(k){const X=xfS();
+  if(k==='dpa'){const c=XF_DPA_PC[X.dpa?1:0];if(S.pc<c)return;S.pc-=c;X.dpa=!X.dpa;
+    if(X.dpa){for(const p of S.projects)if(p.xf&&!p.xf.res)p.xf.due=S.w+Math.round((p.xf.due-S.w)*.6);S.strain=clamp(S.strain+4,0,100);lawRec('Executive action','DPA priority ratings for defense transformer orders');log('⚡ DPA priority ratings for defense transformer orders: defense orders move to the front of the makers\' queues. Utilities\' own projects slip.','ev')}
+    else log('⚡ DPA priority for transformers lifted.','ev')}
+  if(k==='res'&&!X.resBought&&S.pc>=XF_RES_PC&&S.budget>=XF_RES_C){S.pc-=XF_RES_PC;spendB(XF_RES_C,'Programs');X.resBought=S.w;const L=xfLead();
+    for(let i=0;i<XF_RES_N;i++)X.resIn.push({w:S.w+Math.round(L*(.5+.5*i/(XF_RES_N-1)))});log(`⚡ Strategic transformer reserve ordered: ${XF_RES_N} large transformers, arriving over ${Math.round(L/4.35)} months (${money(XF_RES_C)}).`,'ev')}
+  if(k==='co'&&X.co==null&&S.pc>=XF_CO_PC&&S.budget>=XF_CO_C){S.pc-=XF_CO_PC;spendB(XF_CO_C,'Programs');X.co=S.w;log(`⚡ DPA Title III awards to US transformer makers and electrical-steel lines (${money(XF_CO_C)}): lead times fall from about ${fmtDate(S.w+104)}.`,'ev')}}
+function xfPanel(){const X=xfS(),L=xfLead(),wait=S.projects.filter(p=>xfHold(p)||(p.xf&&STAGES[p.stage]==='build')),inc=X.resIn.length;
+  return `<h3 class="bltt" style="margin-top:16px">Large power transformers</h3><p class="mini" style="margin:2px 0 8px">Every new energetics plant, smelter and greenfield site needs a large power transformer, ordered when its contract is awarded; construction cannot finish until it arrives. A new order now takes <b>${L} weeks</b> (about ${fmt(L/52,1)} years), against 12-18 months before 2020. About 80% are imported, and one US company makes the electrical steel inside them.[c:woodmac25][c:goes]</p>
+   <div class="xfst"><div><b>${L} wk</b><span>lead time for a new order</span></div><div><b>${wait.length}</b><span>of your programs waiting on one</span></div><div><b>${X.res}</b><span>in the reserve${inc?` · ${inc} on the way`:''}</span></div></div>
+   <table class="ctable lev rbt"><colgroup><col style="width:120px"><col style="width:44%"><col></colgroup>
+    <tr class="${X.dpa?'rlon':''}"><td><button class="tog ${X.dpa?'on':''}" data-a="xf" data-k="dpa" ${S.pc>=XF_DPA_PC[X.dpa?1:0]?'':'disabled'}><i></i></button></td><td><b>DPA priority ratings for defense transformer orders</b><div class="mini">Executive action · ${X.dpa?'in force · reverse':'adopt'} for ${XF_DPA_PC[X.dpa?1:0]} PC</div></td><td>${fxChips(['defense orders jump the queue: lead time ×0.6, including orders already placed'],['utilities\' interconnections slip (+4 strain)'])}</td></tr>
+    <tr class="${X.resBought?'rlon':''}"><td>${X.resBought?'<span class="rkind">Ordered</span>':`<button class="btn sm" data-a="xf" data-k="res" ${S.pc>=XF_RES_PC&&S.budget>=XF_RES_C?'':'disabled'}>${money(XF_RES_C)} · ${XF_RES_PC} PC</button>`}</td><td><b>Strategic transformer reserve</b><div class="mini">Buy ${XF_RES_N} spare units ahead of need. They arrive over the next lead time; after that, a program that needs one gets it in ${XF_RES_WK} weeks.</div></td><td>${fxChips([`${XF_RES_N} programs skip the queue`],['the units themselves wait in the same queue first'])}</td></tr>
+    <tr class="${X.co!=null?'rlon':''}"><td>${X.co!=null?'<span class="rkind">Funded</span>':`<button class="btn sm" data-a="xf" data-k="co" ${S.pc>=XF_CO_PC&&S.budget>=XF_CO_C?'':'disabled'}>${money(XF_CO_C)} · ${XF_CO_PC} PC</button>`}</td><td><b>Co-fund US transformer and electrical-steel capacity</b><div class="mini">DPA Title III awards to transformer makers and grain-oriented electrical steel lines, as with the Defense Logistics Agency's 2026 steel contract with Cleveland-Cliffs.[c:goesdla] New lines open in two to three years.</div></td><td>${fxChips(['lead time −25% for everyone, phased in during the third year'],['slow: nothing changes for two years'])}</td></tr>
+   </table>`}
 const POOLS={
- xfmr:{n:'Large power transformers',ic:'⚡',stage:'build',layer:'GRID',tags:['greenfield','smelter','energetic','power'],cap:{US:4}},
  tools:{n:'Heavy machine tools & presses',ic:'⚙',stage:'build',layer:'EXPERT',tags:['metal','heavy','line','assembly','refine'],cap:{US:10}},
  trades:{n:'Skilled trades',ic:'👷',stage:'build',layer:'LABOR',tags:['labor','shipyard','heavy','energetic','mine'],cap:{US:7}},
  ranges:{n:'Test ranges & qualification slots',ic:'🎯',stage:'qual',layer:'QUAL',tags:['energetic','assembly','line'],cap:{US:4}},
@@ -2834,7 +2868,7 @@ function policyBody(){if(S.fac!=='US')return agendaHTML();
   const ex=DOMAINS.map(D=>{const rs=RULES.filter(r=>r.dom===D.id&&isExec(r));return rs.length?`<tr class="pdom"><td colspan="3">${D.n}</td></tr>`+rs.map(ruleRow).join(''):''}).join('');
   const on=RULES.filter(r=>isExec(r)&&ruleOn(r.id)).length;
   return `<div class="polv"><div class="billv"><h3 class="bltt">Executive actions</h3><p class="mini" style="margin:2px 0 8px">Rules the administration can adopt, finalize or reverse for Political Capital. They take effect at once, but the next administration can undo them, and proposed rules invite lawsuits. ${on} in force now.</p>
-    <table class="ctable lev rbt"><colgroup><col style="width:56px"><col style="width:44%"><col></colgroup>${ex}</table></div>
+    <table class="ctable lev rbt"><colgroup><col style="width:56px"><col style="width:44%"><col></colgroup>${ex}</table>${xfPanel()}</div>
     <div class="billv"><h3 class="bltt">Stand-alone bills</h3><p class="mini" style="margin:2px 0 8px">Laws written by committees other than Armed Services: permitting, courts, shipping, immigration and trade. One goes to the floor at a time on its own vote, or rides the NDAA as a long-shot rider. Permanent once enacted.</p><div class="ndaaref polref">${agendaHTML('bills')}</div>
       <h3 class="bltt" style="margin-top:16px">Emergency powers</h3><p class="mini" style="margin:2px 0 8px">Issued by the executive in weeks. Each lasts a set time, many need a declared national emergency, and some can be struck down in court.</p><div class="ndaaref polref">${emergHTML()}</div></div></div>`}
 function agendaHTML(mode){const nd=mode!=='bills'&&S.fac==='US';
@@ -2929,7 +2963,7 @@ function refRescale(id){for(const p of S.projects){const def=PD[p.def];for(const
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
-  pmark(p,{st:p.stage});
+  pmark(p,{st:p.stage});xfOrder(p);
   if(p.uca&&STAGES[p.stage]==='build'&&!S.histMode&&rand()<.25)spawnObs(p,'costOverrun',true);
   p.prog=0;p.sched=[];const st=STAGES[p.stage],D=p.dur[p.stage],def=PD[p.def];
   if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(c>0&&rand()<c)p.sched.push({id:o.id,at:Math.floor(rand()*D)})}
@@ -3033,7 +3067,7 @@ function projectsTick(){
     p.qf=1;if(PS){const st=STAGES[p.stage];for(const k of poolsOf(PD[p.def]))if(POOLS[k].stage===st&&PS[k].f<p.qf){p.qf=PS[k].f;p.qk=k}
       if(p.qf<1){S.ledger[POOLS[p.qk].layer].wk+=rate*(1-p.qf);plose(p,POOLS[p.qk].layer,rate*(1-p.qf));rate*=p.qf}}
     p.of=1;if(OL&&staffed(p)){p.of=OL[officeOf(PD[p.def])].f;if(p.of<1){S.ledger.PROCURE.wk+=rate*(1-p.of);plose(p,'PROCURE',rate*(1-p.of));rate*=p.of}}
-    p.prog+=rate;if(p.prog>=p.dur[p.stage]){p.stage++;enterStage(p)}
+    p.prog+=rate;if(p.prog>=p.dur[p.stage]){if(STAGES[p.stage]==='build'&&xfHold(p)){p.prog=p.dur[p.stage];S.ledger.GRID.wk++;plose(p,'GRID',1);continue}p.stage++;enterStage(p)}
   }
 }
 function opsMatch(o,pl){const def=PD[pl.def];if(o.manual)return false;if(o.icOff&&icOn(o.icOff))return false;if(o.kind&&o.kind!==pl.kind)return false;return !o.tags||o.tags.some(t=>def.tags.includes(t)||t===pl.target)}
@@ -3210,7 +3244,7 @@ function tick(){
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
-  labTick();invTick();const R=production(true);S.lastOut=R.out;ceilRec(R);slipTick();
+  labTick();xfTick();invTick();const R=production(true);S.lastOut=R.out;ceilRec(R);slipTick();
   if(!S.histMode){let pc=0;for(const c in LINES)pc+=R.out[c].yr/52*UC[c];S.procSp=(S.procSp||0)+pc;S.procY=(S.procY||0)+pc;fyLed('proc',pc);if(S.ordBuy){S.ordBuy.forEach(x=>x.left--);S.ordBuy=S.ordBuy.filter(x=>x.left>0)}}limTick(R.out);
   for(const c in LINES)S.inv[c]=Math.max(0,S.inv[c]+R.out[c].yr/52-S.inv[c]*retRate(c)/52-(aidOn()?(F().aid?.[c]||0)*S.aidLvl/52:0));
   if(S.histMode)histTick();
@@ -3394,7 +3428,8 @@ function previewOf(def,ct,wOn0){
   const tm=ctTerms(def,ct),dur=ct?ctDur(def,ct):planDur(def),build=dur.reduce((a,b)=>a+b,0)*slipF().f;
   const tgt=def.t.node||def.t.line,kn=S.know[tgt]??40,isPlant=needsContract(def);
   const pkWait=isPlant&&!S.histMode?(ct&&ct.now?-Math.max(0,dur[0]-NSR_WK):Math.max(0,pkgWhen()-S.w-dur[0])):0;
-  const wPlan=S.w+pkWait+dur.reduce((a,b)=>a+b,0),ramp=isPlant?rampWeeks(kn,Math.min(.55,.05+kn*.003+tm.y0),tm.rampM):0,wOn=wOn0??S.w+pkWait+build,wFull=wOn+ramp;
+  const xfx=isPlant&&!S.histMode&&xfNeeds(def)&&dur[3]>0?Math.max(0,dur[0]+dur[1]+(xfS().res>=1?XF_RES_WK:xfLead())-(dur[0]+dur[1]+dur[2]+dur[3])):0;
+  const wPlan=S.w+pkWait+dur.reduce((a,b)=>a+b,0)+xfx,ramp=isPlant?rampWeeks(kn,Math.min(.55,.05+kn*.003+tm.y0),tm.rampM):0,wOn=wOn0??S.w+pkWait+build+xfx,wFull=wOn+ramp;
   // this week's output with the finished project at full rate
   const R0=S._R||production(false),g=projGain(def);let undo=()=>{};
   if(isPlant){const pl={kind:def.t.node?'node':'line',target:tgt,gain:g,yield:1,issue:null,full:true,adv:0},lk=def.t.node?tgt:'L:'+tgt,l0=S.lab?.[lk];labCrew(lk,g);S.plants.push(pl);undo=()=>{S.plants.splice(S.plants.indexOf(pl),1);if(S.lab&&l0!=null)S.lab[lk]=l0}}
@@ -3502,7 +3537,7 @@ function progStages(p,live){const def=PD[p.def],stEv=(p.h||[]).filter(e=>e.st!=n
   if(live&&p.dur[p.stage]){const st=STAGES[p.stage],pl=p.dur[p.stage],f=Math.min(1,p.prog/pl),ms=(def.ally&&MILES_ALLY[st])||MILES[st]||[],wait=p.obs[0]?.wait||0,stEnd=S.w+wait+Math.max(0,pl-p.prog);
     let firstOpen=true;const ml=ms.map(([n,t])=>{const ok=f>=t-1e-9,curM=!ok&&firstOpen;if(!ok)firstOpen=false;return `<li class="${ok?'ok':curM?'now':''}">${ok?'✓':curM?'▶':'○'} ${n}</li>`}).join('');
     det=`<div class="pdet"><div class="pdh"><b>${STEP_N[st]}</b> · ${pct(f)} done · week ${Math.floor(p.prog)} of ${pl}${p.obs.length?` · <span class="redt">${p.obs[0].wait?'paused':'stopped'}: ${V(OD[p.obs[0].id].n)}</span>`:''}</div>
-      <div class="pbar"><i style="width:${(f*100).toFixed(1)}%"></i></div><ul class="pmiles">${ml}</ul>
+      <div class="pbar"><i style="width:${(f*100).toFixed(1)}%"></i></div><ul class="pmiles">${ml}</ul>${p.xf?`<div class="mini">⚡ Large power transformer: ${p.xf.res?'from the strategic reserve':'ordered '+fmtDate(p.xf.ord)}, ${S.w>=p.xf.due?'<span class="okt">delivered</span>':`due <b>${fmtDate(p.xf.due)}</b>${st==='build'&&f>=1?' · <span class="redt">construction is done except energizing; waiting on it</span>':''}`}</div>`:xfNeeds(def)&&p.stage<2&&!p.inh?`<div class="mini">⚡ Needs a large power transformer, ordered at contract award: about ${xfLead()} weeks at today's lead time.</div>`:''}
       <div class="mini">This stage should finish about <b>${fmtDate(stEnd)}</b>; the whole program about <b>${fmtDate(S.w+remW(p))}</b>${slipF().f>1.05?`, or ${fmtDate(S.w+Math.round(remW(p)*slipF().f))} if it slips like your programs so far`:''}.</div></div>`}
   return `<div class="psteps">${cells}</div>${det}`}
 function progHTML(uid){
@@ -4114,7 +4149,11 @@ function stockBody(){
 const OUTLAY={approp:[0,0],contract:[0,.05],permit:[.05,.12],build:[.12,.8],qual:[.8,.95],ramp:[.95,1]};
 function billedFrac(p){const st=STAGES[Math.min(p.stage,5)],[a,b]=OUTLAY[st],f=a+(b-a)*Math.min(1,p.prog/Math.max(1,p.dur[p.stage]));return p.b0?p.b0+(1-p.b0)*f:f}
 function billRate(p){if(p.obs.length)return 0;const st=STAGES[Math.min(p.stage,5)],[a,b]=OUTLAY[st];let r=1;if(st==='approp'&&S.cr>0)r=passed('crAnomaly')?.5:0;for(const g of S.gmods)if(g.stages.includes(st))r*=g.mult;return (p.spent||0)*(1-(p.b0||0))*(b-a)/Math.max(1,p.dur[p.stage])*52*r}
-function remW(p){let r=Math.max(0,p.dur[p.stage]-p.prog)+(p.pkg?Math.max(0,pkgWhen()-S.w-p.dur[0]):0);for(let i=p.stage+1;i<STAGES.length;i++)r+=p.dur[i];for(const o of p.obs)r+=o.wait||0;return r}
+function remW(p){let r=(p.pkg?Math.max(0,pkgWhen()-S.w-p.dur[0]):0);for(const o of p.obs)r+=o.wait||0;const nx=!p.xf&&!p.inh&&!S.histMode&&xfNeeds(PD[p.def])&&p.dur[3]>0&&p.stage<2;
+  for(let i=p.stage;i<STAGES.length;i++){r+=i===p.stage?Math.max(0,p.dur[i]-p.prog):p.dur[i];
+    if(i===1&&nx)p._xfo=r; // weeks until the contract is awarded and the transformer is ordered
+    if(i===3){if(p.xf)r=Math.max(r,p.xf.due-S.w);else if(nx)r=Math.max(r,(p._xfo??0)+(xfS().res>=1?XF_RES_WK:xfLead()))}}
+  return r}
 function slipF(){const d=S.done.filter(x=>x.plan>0&&!x.inh);if(d.length<2)return {f:1.6,n:d.length,assumed:true};return {f:Math.max(1,d.reduce((a,x)=>a+x.weeks/x.plan,0)/d.length),n:d.length}}
 function billing(projs){let ob=0,bi=0,rate=0,stall=0,funded=0;for(const p of projs){const s=p.spent||0;ob+=s;bi+=s*billedFrac(p);rate+=billRate(p);if(p.obs.length)stall+=s;if(STAGES[p.stage]==='approp')funded+=s}return {ob,bi,rate,stall,funded}}
 const PIPE_SEG=[['prod','Producing','#2f62a0'],['starved','Idle: inputs short','#9cb5d1'],['offline','Offline: equipment problems & disruptions','#b0453a'],['spares','Diverted to spare parts','#8a7cc0'],['ramp','Built, still ramping','#5f9e4a'],['qual','In qualification / first article','#9cc48a'],['build','Under construction','#d9a441'],['permit','Siting & permitting','#e8cf8c'],['contract','Contracting','#c9b98f'],['approp','Funded, awaiting appropriation','#efe4c6']];
@@ -4329,6 +4368,9 @@ const CITES=[
  {id:'gearbox',g:'Missiles, motors & engines',t:'Here are the biggest weaknesses in America’s defense sector',pub:'Defense News',d:'Jun 2019',url:'https://www.defensenews.com/pentagon/2019/06/27/here-are-the-biggest-weaknesses-in-americas-defense-sector/',use:'2016 gearbox supplier bankruptcies put Apache, V-22 and CH-53K at risk.'},
  {id:'yardquit',g:'Workforce',t:'US Navy’s new warship is plagued by worker turnover',pub:'Bloomberg',d:'Apr 2024',url:'https://www.bloomberg.com/news/articles/2024-04-12/warship-maker-can-t-keep-enough-skilled-workers-to-build-navy-s-new-vessel',use:'Turnover at Fincantieri Marinette on the Constellation frigate.'},
  {id:'ua120',g:'Munitions & energetics',t:'Ukraine halts use of faulty mortar rounds',pub:'The Defense Post',d:'Nov 2024',url:'https://thedefensepost.com/2024/11/27/ukraine-halts-faulty-ammunition-russia/',use:'A lot of 120mm rounds suspended pending investigation.'},
+ {id:'woodmac25',g:'Workforce',t:'Supply shortages and an inflexible market give rise to high power transformer lead times',pub:'Wood Mackenzie',d:'2025',url:'https://www.woodmac.com/news/opinion/supply-shortages-and-an-inflexible-market-give-rise-to-high-power-transformer-lead-times/',use:'Q2 2025: new power transformers took about 128 weeks to deliver and generator step-up units about 143; prices up 60-80% since 2020. The game starts transformer orders at 128 weeks.'},
+ {id:'goes',g:'Workforce',t:'Reshoring electrical equipment: transformer and breaker backlogs',pub:'Manufacturing Dive',d:'2025',url:'https://www.manufacturingdive.com/news/reshore-electrical-equipment-backlogs-transformer-breaker-nema-cleveland-cliffs/749292',use:'About 80% of high-voltage transformers are imported; Cleveland-Cliffs is the only US maker of grain-oriented electrical steel.'},
+ {id:'goesdla',g:'Workforce',t:'Cleveland-Cliffs confirms $400 million Pentagon contract for electrical steel',pub:'SMM News',d:'Jul 2026',url:'https://news.metal.com/newscontent/103999355-cleveland-cliffs-confirms-400-million-pentagon-contract-for-electrical-steel',use:'A $400M Defense Logistics Agency contract for grain-oriented electrical steel: the precedent for co-funding transformer capacity.'},
  {id:'xfmr',g:'Workforce',t:'Electric transformer shortage (NREL, NIAC)',pub:'Utility Dive',d:'2024',url:'https://www.utilitydive.com/news/electric-transformer-shortage-nrel-niac/738947/',use:'Power transformer lead times ~120 weeks in 2024.'},
  {id:'dclabor',g:'Workforce',t:'Private jets, huge raises and man camps: how data center builders are luring workers in short supply',pub:'Bisnow',d:'2025',url:'https://www.bisnow.com/national/news/data-center-development/data-center-building-frenzy-constant-pressure-to-get-servers-on-131862',use:'Electricians and trades bid away by data-center construction.'},
  {id:'siop',g:'Ships, submarines & readiness',t:'Navy cost estimates on shipyard modernization “wildly off,” GAO tells Congress',pub:'USNI News',d:'May 2022',url:'https://news.usni.org/2022/05/11/navy-cost-estimates-on-shipyard-modernization-wildly-off-gao-tells-congress',use:'First three dry-dock projects up more than $4B.'},
@@ -4487,6 +4529,7 @@ const ASSUMPTIONS=[
  ['Build times and what reforms do to them','Planned times by kind of plant are anchored on recent projects: the Mesquite shell plant (award to opening in 18 months, then no usable parts for two years), the Graham TNT plant (under 36 months planned), MP Materials’ magnet plant (3.5 years to commercial output, twice its plan) and the Stibnite mine (8–9 years of permitting, about 3 of construction). Obstacles add the delays real projects meet. An enacted reform shortens the stage it governs (contract awards, permitting, qualification, funding, ramp-up) by 15–65%; those sizes are estimates. Each program office runs about five orders at full speed.'],
  ['Raw-material supply shares','For the raw materials USGS reports, the domestic share is one minus net import reliance (reliance given as “more than 50%” is read as 62.5%, “more than 75%” as 87.5%), and imports are split between allied, neutral and Chinese or Russian sources by USGS import shares for 2021–24. China’s hold on world production appears as Chinese content inside allied and neutral supply: a share of it stops when Beijing cuts supply. That share is an estimate for each material (85% for gallium, because allied refiners purify Chinese primary gallium; 60% for neutral antimony, which is largely re-routed Chinese material).'],
  ['Civilian drone market','US civilian drone sales start at about 400,000 a year and grow 6% a year. US makers’ share moves over about two years toward a level set by the bans in force (shown in the Rulebook under Sourcing). At about 250,000 US-made civilian drones a year, the military drone base reaches full scale: drone line capacity +25%, drone plants 20% cheaper.'],
+ ['Large power transformers','New energetics plants, smelters and greenfield sites need a large power transformer, ordered at contract award; construction cannot finish until it arrives. The lead time starts at 128 weeks (Wood Mackenzie, Q2 2025) and, as a game estimate, eases by about 6 weeks a year from mid-2028 to a floor of 80 as announced factories open. DPA priority ratings cut it to 60% for defense orders; a strategic reserve of 12 units supplies one in 16 weeks; co-funding US capacity cuts it 25% for everyone from the third year. Programs begun before 2027 and the 2025-26 replay are unaffected.'],
  ['Workforce','Every plant and line has a workforce, counted in the output it can staff; domestic output is the lower of rated capacity and workforce. Firms hire toward the full rated capacity of what is built, closing a gap at a pace set by the kind of work: shipyards about 25% of the gap a year and with no slack at the start (sourced); forgings 35%, smelters 40%, energetics and fabs 50%, assembly and machining 60%, mines and refineries 70%, drone assembly 200% (game estimates). Starting slack over rated capacity runs from none (shipyards) to 30% (mines, refineries) and 60% (drones). A workforce program at a plant makes hiring there 75% faster and adds a first class of 10%; the Industrial Workforce Act makes hiring 50% faster everywhere, allied expert visas 20%, emergency hiring authority 40% while it lasts.'],
  ['New starts and offices','A new plant is paid for one of two ways: from your budget, starting now, or by requesting it in the next NDAA with Political Capital (about 2 PC plus 2.5 per $1B), in which case Congress pays if it funds it, from money it sets aside for requests (about $8B in an ordinary year, more or less with its appetite). The bill passes (the game passes it every 18 December, when recent NDAAs have been signed). Markup cuts fall hardest on plants that fix nothing holding output back and lightest on the worst bottlenecks, never absolutely, and Congress’s appetite swings from year to year (game estimates); money is charged only if funded. The bill also brings your annual industrial-base budget. Since the November 2025 overhaul, a portfolio acquisition executive runs each sector, not one office per plant; each office in the game staffs about three orders at full speed, and beyond that all its orders slow together (game estimate). Upgrades, workforce measures and allied deals are funded from existing accounts and start at once. After a shock (Chinese export bans, or a disaster at a plant), you can ask for an emergency supplemental: 30 PC, one a fiscal year, a vote in two to five months with a 75% chance of passing (game estimates); it adds $4B and funds every waiting new plant at once.[c:pl11850]'],
  ['Shared shortages','When an input is short, every line that needs it shares it evenly up to half of each line’s capacity, so no line stops outright. Beyond half, your priority order decides: higher lines fill to 80% first, then to 100% (a game simplification of how allocation boards and DPA ratings work).'],
@@ -5334,7 +5377,16 @@ function renderGame(){
   }
   // ---- projects + plants
   let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Development Pipeline</span></h2><div class="pintro">Plants, allied deals and upgrades you have started. Each passes through up to six stages: fund, contract, permit, build, qualify, market. Hover a stage for what it means.</div><div class="pkgrow" data-tip="${tipQ(`Two ways to pay for a new plant: build it now from your budget, or request it in the annual ${billN()} with Political Capital, and Congress pays if it funds it. The bill passes every 18 December and brings next year’s budget.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress votes ~${fmtDate(pkgWhen())}<span class="r">${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
-  const PSu=poolState(),capH=`<h2>What slows your programs</h2><div class="pintro">Program offices and a few shared resources serve every program at once. Past capacity, everything using them slows down.</div><div class="sect"><span>Program offices</span><span></span></div><div style="padding:4px 10px">${officeChips(false)}</div><div class="sect"><span>Shared resources</span><span>in use / room</span></div><div class="pools">${Object.entries(PSu).map(([k,v])=>{const m=Math.max(v.cap,v.d,1);return `<div class="pool ${v.d>v.cap?'over':''}" data-tip="<b>${POOLS[k].n}</b><br>${v.d} project${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} · room for ${fmt(v.cap,1)}${v.d>v.cap?`<br>each moves at ×${fmt(v.f,2)}`:''}"><span class="pic">${POOLS[k].ic}</span><span class="pnm">${POOLS[k].n}</span><div class="nb"><i style="width:${v.d/m*100}%;background:${v.d>v.cap?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,v.cap/m*100)}%"></span></div><b>${v.d}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>`;
+  const PSu=poolState(),OLd=officeLoad(),POOL_UP={tools:'Nothing raises it yet: machine-tool makers have their own backlogs.',trades:`Industrial Workforce Act +2${passed('workforce')?' ✓':''} · emergency hiring authority +1${carveOn('cvHire')?' ✓':''}`,ranges:`each test-range project +0.5 · emergency qualification authority +1${carveOn('cvQual')?' ✓':''}`};
+  const bar=(n,cap)=>{const m=Math.max(cap,n,1);return `<div class="nb"><i style="width:${n/m*100}%;background:${n>cap+1e-9?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,cap/m*100)}%"></span></div>`};
+  const xfw=S.projects.filter(p=>p.xf&&STAGES[p.stage]==='build').length,X=xfS();
+  const capH=`<h2>What slows your programs</h2><div class="pintro">Your programs share people and equipment. When more programs need them than there is room for, every one of those programs slows down. The bar shows programs using each now; the mark is the room.</div>
+   <div class="sect"><span>Acquisition offices</span><span>programs / room</span></div><div class="sub" style="padding:4px 10px">One office per sector runs the contracts for your new programs. Each has staff for about ${fmt(officeCap(),0)} at full speed${passed('acqWorkforce')?'':'; Hire Acquisition Workforce adds 2 per office'}. Programs begun before 2027 and requests still waiting on the NDAA don't count.</div>
+   <div class="pools">${Object.entries(OFFICES).map(([k,o])=>{const v=OLd[k];return `<div class="pool ${v.f<1?'over':''}" data-tip="${tipQ(`<b>${o.n} office</b><br>${v.n} program${v.n===1?'':'s'} running, staff for about ${fmt(v.cap,0)}.${v.f<1?` Every program here moves at ${pct(v.f)} speed.`:''}`)}"><span class="pic">${o.ic}</span><span class="pnm">${o.n}</span>${bar(v.n,v.cap)}<b>${v.n}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>
+   <div class="sect"><span>Shared resources</span><span>programs / room</span></div>
+   <div class="pools">${Object.entries(PSu).map(([k,v])=>`<div class="pool ${v.d>v.cap?'over':''}" data-tip="${tipQ(`<b>${POOLS[k].n}</b><br>${v.d} program${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} need${v.d===1?'s':''} it; room for ${fmt(v.cap,1)}.${v.d>v.cap?` Each moves at ×${fmt(v.f,2)}.`:''}`)}"><span class="pic">${POOLS[k].ic}</span><span class="pnm">${POOLS[k].n}</span>${bar(v.d,v.cap)}<b>${v.d}/${fmt(v.cap,0)}</b><div class="pup">Raise it: ${POOL_UP[k]||'—'}</div></div>`).join('')}</div>
+   <div class="sect"><span>⚡ Large power transformers</span><span>lead time</span></div><div class="sub" style="padding:4px 10px">A new order takes <b>${xfLead()} weeks</b>. ${xfw} of your programs ${xfw===1?'is':'are'} building toward one; ${X.res} in the reserve. Cut the wait on the <span class="linkn" data-a="view" data-v="policy">Policy tab</span>.</div>`;
+
   if(!S.projects.length)pr+=`<div class="empty">No active projects. The industrial base is resting.</div>`;
   const needsYou=p=>p.obs.length&&!p.obs[0].wait?0:1; // projects waiting on a decision float to the top
   for(const p of [...S.projects].sort((a,b)=>needsYou(a)-needsYou(b))){
@@ -5675,6 +5727,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'nshift':toggleNShift(b.dataset.n);break;
     case 'uca':doUCA(b.dataset.u);break;
     case 'ne':declareNE();break;
+    case 'xf':xfAct(b.dataset.k);break;
     case 'aid':setAid(+b.dataset.v);break;
     case 'prio':togglePrio(b.dataset.n);break;
     case 'spot':spotBuy(b.dataset.n);break;
