@@ -2720,7 +2720,7 @@ function xfPanel(){const X=xfS(),L=xfLead(),wait=S.projects.filter(p=>xfHold(p)|
 // ---- builder commitment: the private builder's willingness to keep going, 0-100. It opens where the contract and the rules put it,
 // falls while the program is stalled, late, unfunded or without orders, and recovers with steady progress. Below 30 the builder asks for
 // relief; below 8 it walks. All rates are game estimates (see Assumptions).
-const COM_ASK=30,COM_WALK=8,lcAll=n=>String(n).replace(/[A-Z][a-z]+/g,w=>w.toLowerCase());
+const COM_ASK=30,COM_WALK=8,lcAll=n=>String(n).replace(/\b[A-Z][a-z]+\b/g,w=>w.toLowerCase());
 // weeks behind plan, counted from when the program was funded (the wait for the NDAA vote is not the program's delay)
 const fundWk=p=>p.cong?(p.h||[]).find(e=>e.funded)?.w??null:null;
 function behindOf(p,now=S.w){const f=fundWk(p),planDone=p.dur.slice(0,p.stage).reduce((a,b)=>a+b,0)+p.prog;return f!=null?(now-f)-(planDone-p.dur[0]):now-(p.started??now)-planDone}
