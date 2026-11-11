@@ -561,6 +561,7 @@ body{background:
 .rcpt-b{display:flex;gap:6px;margin-top:8px}.rcpt-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:1px solid #8a7850;background:#2b241a;color:#f0dfae;font:700 13px "Segoe UI",sans-serif;line-height:1;cursor:pointer;padding:0}.rcpt-x:hover{background:#a03a30;color:#fff}
 @keyframes rcin{0%{opacity:0;transform:translateY(-14px) scale(.97)}100%{opacity:1;transform:none}}
 /* sufficiency */
+.rc-spk{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25}.rc-spk em{font-style:normal}.rc-spk i{display:inline-block;width:12px;height:0;vertical-align:3px;margin:0 3px 0 6px}.rc-spk i.b{border-top:2px solid #5f8fc4;margin-left:0}.rc-spk i.r{border-top:2px dashed #d9a441}
 .rc-rb .nb .rc-req{position:absolute;top:-4px;bottom:-4px;width:3px;background:#e8c14a;box-shadow:0 0 0 1px #000a;z-index:1}.rc-al{color:#a3c66e}.nb i.rc-up,.rc-leg i.rc-up{background:repeating-linear-gradient(135deg,#9cc0e8 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px #9cc0e8;opacity:1}
 .rc-leg{display:flex;flex-wrap:wrap;gap:14px;margin:2px 8px 4px;font:600 11px var(--disp);letter-spacing:.06em;text-transform:uppercase;color:#a8a48e}.rc-leg span{display:flex;align-items:center;gap:5px}.rc-leg i{display:inline-block;width:14px;height:9px}
 /* streamlining */
@@ -2201,7 +2202,7 @@ function pjFinish(p,t,added){const def=PD[p.def];if(!def||def.kind==='maint')ret
 // Project every item to 2037. alt (optional): {def, w} adds a program you might start, delivering at week w;
 // {drop: uid} leaves out a program under way. Without alt this is the status quo, cached for the week.
 function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def.id+'@'+alt.w):'';
-  const ok=c=>c&&c.w===S.w&&c.n===S.projects.length&&c.u===uidN;
+  const ok=c=>c&&(c.w===S.w||(S.speed>0&&S.w-c.w>0&&S.w-c.w<6))&&c.n===S.projects.length&&c.u===uidN;
   if(!alt&&ok(S._cpj))return S._cpj;if(alt){if(!ok(S._cpjX))S._cpjX={w:S.w,n:S.projects.length,u:uidN,m:{}};if(S._cpjX.m[key])return S._cpjX.m[key]}
   const save=S,u=uidN,snap=JSON.stringify(S,(k,v)=>SAVE_SKIP.has(k)||k==='ceil'?undefined:v),out={};
   let evs=S.projects.filter(p=>!alt||alt.drop==null||p.uid!==alt.drop).map(p=>({uid:p.uid,w:S.w+remW(p)}));
@@ -5259,7 +5260,7 @@ function onOrder(c){const k=LINES[c].k;let v=0;for(const q of S.projects){const 
 function raceSpark(c){const hs=S.hist.filter(h=>h.prod&&h.w%4===0),pts=hs.map(h=>[h.w,h.prod[c]+allyOut(c,h.w),reqOut(c,h.w)]);pts.push([S.w,(S._R?.out[c].yr??0)+allyOut(c),reqOut(c)]);
   if(pts.length<2)return '';const W=120,H=30,w0=pts[0][0],mx=Math.max(1e-9,...pts.map(p=>Math.max(p[1],p[2])));
   const X=w=>((w-w0)/Math.max(1,S.w-w0)*W).toFixed(1),Y=v=>(H-2-v/mx*(H-4)).toFixed(1),pl=i=>pts.map(p=>`${X(p[0])},${Y(p[i])}`).join(' ');
-  return `<div class="rc-spw"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Since 2025: you plus allies against the requirement (gold)</title><polyline points="${pl(2)}" fill="none" stroke="#d9a441" stroke-width="1.5" stroke-dasharray="3 2"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span>⟳ you + allies vs. requirement</span></div>`}
+  return `<div class="rc-spw" data-tip="${tipQ(`<b>Output against the requirement since 2025</b><br>Blue: what you and ${AL().n} make a year.<br>Gold dashed: the requirement, which rises as ${RV().n} builds more.<br>Where blue sits under gold, you are short.`)}"><svg class="rc-rspark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><title>Since 2025: you plus allies against the requirement (gold)</title><polyline points="${pl(2)}" fill="none" stroke="#d9a441" stroke-width="1.5" stroke-dasharray="3 2"/><polyline points="${pl(1)}" fill="none" stroke="#5f8fc4" stroke-width="1.5"/></svg><span class="rc-spk"><em><i class="b"></i>you + allies, since 2025</em><em><i class="r"></i>requirement</em></span></div>`}
 function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f,A=AL();
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
   const enough=cs.filter(c=>suffLine(c,out[c].yr)>=.999).length;
@@ -5708,12 +5709,14 @@ document.addEventListener('keydown',e=>{
   if(!S||S.over||QJ||e.target.tagName==='INPUT')return;
   if((e.key==='k'&&(e.ctrlKey||e.metaKey))||e.key==='/'){e.preventDefault();qjOpen();return}
   if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();navBackG();render();return}
-  if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed)S.modal=S.modal==='end'?S.modal:null;render()}
+  if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed&&!LIVE_M.has(S.modal))S.modal=S.modal==='end'?S.modal:null;render()}
   else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VIEWS.findIndex(v=>v[0]===(S.view||'cmd'));S.view=VIEWS[(i+(e.shiftKey?VIEWS.length-1:1))%VIEWS.length][0];render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
   else if(e.key==='Escape'&&S._rcpt&&!S._rcpt.gone&&performance.now()-S._rcpt.t0<RCPT_MS){S._rcpt.gone=true;renderReceipt()}
   else if(e.key==='Escape'&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
 });
+// item and program pages are for reading: time can run while one is open
+const LIVE_M=new Set(['node','prog']);
 const MS=[0,1000,500,190,60],RENDER_MS=[0,0,0,120,150];let acc=0,last=performance.now(),lastR=0,dirtyR=false;
 function loop(now){
   const dt=now-last;last=now;
@@ -5724,8 +5727,8 @@ function loop(now){
       while(S.replay&&S.speed&&acc>=REPLAY_MS[S.speed]&&!(S._reel&&now-S._reel.t0<REEL_HOLD)){acc-=REPLAY_MS[S.speed];S._reel=null;tick();S.queue=[];ticked=true;if(S.w>=PLAY0)endHistory()}
       if(ticked)render()}
     requestAnimationFrame(loop);return}
-  if(S&&!S.over&&S.speed>0&&!S.queue.length&&!S.modal){acc+=Math.min(dt,500);let ticked=false;
-    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over){acc-=MS[S.speed];tick();sbxFill();ticked=true}
+  if(S&&!S.over&&S.speed>0&&!S.queue.length&&(!S.modal||LIVE_M.has(S.modal))){acc+=Math.min(dt,500);let ticked=false;
+    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over&&(!S.modal||LIVE_M.has(S.modal))){acc-=MS[S.speed];tick();sbxFill();ticked=true}
     if(ticked){dirtyR=true;if(S.w-(S._svW??-99)>=4)saveGame()}
     if(dirtyR&&(S.queue.length||S.over||!S.speed||now-lastR>=RENDER_MS[S.speed])){render();lastR=now;dirtyR=false}}
   else{acc=0;if(dirtyR&&S){render();lastR=now;dirtyR=false}}
