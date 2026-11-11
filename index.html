@@ -524,7 +524,7 @@ body{background:
 .rcpt-ic{position:absolute;left:14px;top:14px;font-size:32px;line-height:1}
 .rcpt-lab{display:inline-block;font:400 12px var(--sten);letter-spacing:.12em;text-transform:uppercase;color:#a3261c;border:2px solid #a3261c;padding:0 6px;transform:rotate(-2deg);margin-bottom:4px}.rcpt.ok .rcpt-lab{color:#2f6a24;border-color:#2f6a24}
 .rcpt-t{font:700 21px var(--disp);letter-spacing:.02em;line-height:1.1;margin-bottom:4px}.rcpt-l{font-size:13px;margin-top:2px}.rcpt-l .amb{color:#8a5a10;font-weight:600}.rcpt-l .okt{font-weight:600}
-.rcpt-b{display:flex;gap:6px;margin-top:8px}
+.rcpt-b{display:flex;gap:6px;margin-top:8px}.rcpt-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:1px solid #8a7850;background:#2b241a;color:#f0dfae;font:700 13px "Segoe UI",sans-serif;line-height:1;cursor:pointer;padding:0}.rcpt-x:hover{background:#a03a30;color:#fff}
 @keyframes rcin{0%{opacity:0;transform:translateY(-14px) scale(.97)}100%{opacity:1;transform:none}}
 /* sufficiency */
 .rc-rb .nb .rc-req{position:absolute;top:-4px;bottom:-4px;width:3px;background:#e8c14a;box-shadow:0 0 0 1px #000a;z-index:1}.rc-al{color:#a3c66e}.nb i.rc-up,.rc-leg i.rc-up{background:repeating-linear-gradient(135deg,#9cc0e8 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px #9cc0e8;opacity:1}
@@ -5128,7 +5128,7 @@ function receipt(o){if(!S||S.sim||S.histMode)return;S._rcpt={...o,t0:performance
 function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=document.createElement('div');el.id='receipt';document.body.appendChild(el)}
   const r=S?._rcpt,age=r?performance.now()-r.t0:1e9;if(!r||age>RCPT_MS||r.gone){if(el.innerHTML)el.innerHTML='';el.dataset.k='';return}
   el.classList.toggle('out',age>RCPT_MS-600);if(el.dataset.k===r.k)return;el.dataset.k=r.k;
-  el.innerHTML=cz(`<div class="rcpt ${r.ok?'ok':'meh'}"><span class="rcpt-ic">${r.ic}</span><div class="rcpt-lab">${r.lab}</div><div class="rcpt-t">${r.title}</div>${r.lines.filter(Boolean).map(x=>`<div class="rcpt-l">${x}</div>`).join('')}<div class="rcpt-b">${r.act?`<button class="pbtn sm primary" ${r.act} data-rc="1">${r.actL||'Open →'}</button>`:''}<button class="pbtn sm" data-a="rcptx">Dismiss</button></div></div>`)}
+  el.innerHTML=cz(`<div class="rcpt ${r.ok?'ok':'meh'}"><button class="rcpt-x" data-a="rcptx" title="Close (Esc)" aria-label="Close">✕</button><span class="rcpt-ic">${r.ic}</span><div class="rcpt-lab">${r.lab}</div><div class="rcpt-t">${r.title}</div>${r.lines.filter(Boolean).map(x=>`<div class="rcpt-l">${x}</div>`).join('')}<div class="rcpt-b">${r.act?`<button class="pbtn sm primary" ${r.act} data-rc="1">${r.actL||'Open →'}</button>`:''}</div></div>`)}
 // does a supply move on this item touch a line's current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function render(){if(!S)newGame(PLAYABLE[0]);renderGame();renderModal();rehover();renderReceipt()}
@@ -5283,6 +5283,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed)S.modal=S.modal==='end'?S.modal:null;render()}
   else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VIEWS.findIndex(v=>v[0]===(S.view||'cmd'));S.view=VIEWS[(i+(e.shiftKey?VIEWS.length-1:1))%VIEWS.length][0];render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
+  else if(e.key==='Escape'&&S._rcpt&&!S._rcpt.gone&&performance.now()-S._rcpt.t0<RCPT_MS){S._rcpt.gone=true;renderReceipt()}
   else if(e.key==='Escape'&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
 });
 const MS=[0,1000,500,190,60],RENDER_MS=[0,0,0,120,150];let acc=0,last=performance.now(),lastR=0,dirtyR=false;
