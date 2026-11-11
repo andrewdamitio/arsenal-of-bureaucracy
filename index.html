@@ -144,14 +144,16 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .paper .intro{columns:1;color:var(--paperInk);border:0;margin:0;padding:0}.paper .intro .gold{color:#6b4f1a}
 .xl{width:min(1320px,100%)}
 .sktool{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:8px 14px 0;font:12px "Segoe UI",system-ui,sans-serif}
-.sktool .pbtn{font-size:11.5px;padding:2px 7px}.sktool .pbtn.on{background:#3a3020;color:var(--brass2)}
-.sktool .lab{color:#6b5a35;margin:0 4px 0 8px;font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.06em}
+.sktool .pbtn{font-size:12px;padding:3px 9px}.sktool .pbtn.on{background:#3a3020;color:var(--brass2)}
+.sktool .lab{color:#6b5a35;margin:0 4px 0 8px;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.06em;min-width:92px}
 .sk{display:block;width:100%;height:auto;background:#efe6cf;border:1px solid #cbbd95}
-.sk text{font:10.5px "Segoe UI",system-ui,sans-serif;fill:#2b241a;paint-order:stroke;stroke:#efe6cf;stroke-width:3px;cursor:pointer}.sk text.ch{pointer-events:none}.sk .nd:hover text{fill:#000;text-decoration:underline}
-.sk text.ch{font-weight:700;font-size:11px;fill:#5a4a28;letter-spacing:.06em}
+.sk text{font:12.5px "Segoe UI",system-ui,sans-serif;fill:#231d14;paint-order:stroke;stroke:#efe6cf;stroke-width:3.5px;stroke-linejoin:round;cursor:pointer}.sk text.ch{pointer-events:none}.sk .nd:hover text{fill:#000;text-decoration:underline}
+.sk text .sub{font-size:11.5px;fill:#5a4e38}
+.sk text.ch{font-weight:700;font-size:11.5px;fill:#5a4a28;letter-spacing:.07em}
+.skguide{font:12px/1.45 "Segoe UI",system-ui,sans-serif;color:#4a3f2a;padding:6px 14px 0;max-width:1100px}
 .sk .lk{transition:opacity .12s}.sk .nd{cursor:pointer}
 .sk.dim .lk{opacity:.06!important}.sk.dim .lk.hot{opacity:.85!important}.sk.dim .nd{opacity:.25}.sk.dim .nd.hot{opacity:1}
-.sklegend{display:flex;flex-wrap:wrap;gap:10px;font:11px "Segoe UI",system-ui,sans-serif;color:#5a4e38;padding:6px 14px}
+.sklegend{display:flex;flex-wrap:wrap;gap:12px;font:12px "Segoe UI",system-ui,sans-serif;color:#5a4e38;padding:6px 14px}
 .sklegend i{display:inline-block;width:10px;height:10px;margin-right:4px;vertical-align:-1px;border-radius:2px}
 #views{display:flex;gap:3px;align-items:center;padding:4px 8px 0;height:30px}
 .vbtn{background:#24221a;color:#cfc6ad;border:1px solid var(--line);border-bottom:none;padding:4px 12px;font:600 12px "Segoe UI",system-ui,sans-serif;cursor:pointer;border-radius:4px 4px 0 0}
@@ -161,7 +163,9 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 #main.vmode{grid-template-columns:minmax(0,1fr) 390px}
 .vpaper{background:var(--paper) linear-gradient(#efe6cf,#e2d5b4)!important;color:var(--paperInk);font:13px/1.45 "Segoe UI",system-ui,sans-serif;padding:0 12px 12px;border-color:var(--brass)!important}
 .vhead{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;padding:8px 0 6px;margin-bottom:6px;background:linear-gradient(#efe6cf,#ebe1c6);border-bottom:2px solid #8a7850}
-.vhead b{font:700 18px Georgia}.vhead .ic{font-size:20px}.rng{display:flex;gap:3px}
+.vhead b{font:700 18px Georgia}.vhead .ic{font-size:20px;display:flex;color:#5a4a28}
+.vic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;margin-right:5px;flex:none}.vbtn .vic{opacity:.85}
+#main.vmode.vwide{grid-template-columns:minmax(0,1fr) 330px}.rng{display:flex;gap:3px}
 .lgi{cursor:pointer;user-select:none}.lgi:hover{text-decoration:underline}.lgi.off{opacity:.38;text-decoration:line-through}
 #tip{position:fixed;z-index:200;display:none;pointer-events:none;background:#1d1b15f2;color:#ece4cc;border:1px solid var(--brass);padding:6px 9px;font:12px/1.4 "Segoe UI",system-ui,sans-serif;max-width:320px;box-shadow:0 4px 14px #000a;border-radius:3px}
 #tip .th{font-weight:700;color:var(--brass2);margin-bottom:3px}#tip .cr{color:#f0a090;font-weight:600}
@@ -3056,7 +3060,7 @@ function sankeyFlows(R,focus,mode,attr){const alpha=attr==='va'?.5:0;
 function sankeySVG(R,focus,mode,attr){
   const {links}=sankeyFlows(R,focus,mode,attr);
   if(!links.length)return '<div class="empty" style="color:#6b5a35">Nothing flows here this week.</div>';
-  const W=1260,H=640,top=26,pad=5,nodeW=11,left=8,right=265;
+  const W=1200,top=34,pad=6,nodeW=14,left=8,right=250,LS=16;
   const vin={},vout={};for(const l of links){vout[l.s]=(vout[l.s]||0)+l.v;vin[l.t]=(vin[l.t]||0)+l.v}
   const ids=[...new Set(links.flatMap(l=>[l.s,l.t]))];
   const colOf=id=>id.startsWith('S:')?0:id.startsWith('L:')?5:ND[id].t;
@@ -3064,6 +3068,7 @@ function sankeySVG(R,focus,mode,attr){
   const ghost={};for(const id of ids)if(id.startsWith('L:')){const l=id.slice(2),o=R.out[l];const per=o.n>1e-9?val(id)/o.n:lineUnitWeight(l,mode);ghost[id]=Math.max(0,(o.cap-o.n))*per*(focus==='all'||focus===id?1:0)}
   const ghostFull={...ghost};for(const id in ghost)ghost[id]=Math.min(ghost[id],.6*Math.max(val(id),1e-12));
   const cols=[[],[],[],[],[],[]];for(const id of ids)cols[colOf(id)].push(id);
+  const H=Math.max(720,top+14+Math.max(...cols.map(c=>c.length))*LS);
   const srcOrder=Object.keys(SRC);cols[0].sort((a,b)=>srcOrder.indexOf(a)-srcOrder.indexOf(b));
   cols[5].sort((a,b)=>S.order.indexOf(a.slice(2))-S.order.indexOf(b.slice(2)));
   for(let c=1;c<5;c++)cols[c].sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b));
@@ -3081,15 +3086,15 @@ function sankeySVG(R,focus,mode,attr){
   const so={},to={};
   for(const id of ids){(outL[id]||[]).sort((a,b)=>cy(a.t)-cy(b.t));let o=0;for(const l of outL[id]||[]){l.y0=pos[id].y+o;o+=l.v*k}
     (inL[id]||[]).sort((a,b)=>cy(a.s)-cy(b.s));let i2=0;for(const l of inL[id]||[]){l.y1=pos[id].y+i2;i2+=l.v*k}}
-  const labY={};cols.forEach(col=>{const arr=col.map(id=>({id,y:pos[id].y+(pos[id].h+pos[id].g)/2+3.5})).sort((a,b)=>a.y-b.y);let prev=-1e9;for(const a of arr){if(a.y<prev+11.5)a.y=prev+11.5;prev=a.y}
-    let lim=H-4;for(let i=arr.length-1;i>=0;i--){if(arr[i].y>lim)arr[i].y=lim;lim=arr[i].y-11.5}for(const a of arr)labY[a.id]=a.y});
+  const labY={};cols.forEach(col=>{const arr=col.map(id=>({id,y:pos[id].y+(pos[id].h+pos[id].g)/2+4.5})).sort((a,b)=>a.y-b.y);let prev=-1e9;for(const a of arr){if(a.y<prev+LS)a.y=prev+LS;prev=a.y}
+    let lim=H-4;for(let i=arr.length-1;i>=0;i--){if(arr[i].y>lim)arr[i].y=lim;lim=arr[i].y-LS}for(const a of arr)labY[a.id]=a.y});
   const total=cols[5].reduce((s,id)=>s+val(id),0)||links.filter(l=>l.s.startsWith('S:')).reduce((s,l)=>s+l.v,0);
   const P=R.P;const mix=(e)=>{const a=[138,133,120],b=[192,72,58];return `rgb(${a.map((x,i)=>Math.round(x+(b[i]-x)*Math.min(1,e*1.3))).join(',')})`};
   const nameOf=id=>id.startsWith('S:')?SRC[id].n:id.startsWith('L:')?LINES[id.slice(2)].n:ND[id].n;
   const nodeCol=id=>{if(id.startsWith('S:'))return SRC[id].c;if(id.startsWith('L:')){const o=R.out[id.slice(2)],r=o.n/Math.max(o.cap,1e-9);return r>=.999?'#6a8f5a':r>=.8?'#d9a441':'#d0503f'}
     const st=nodeStatus(P[id]);return {ok:'#6a8f5a',idle:'#6a8f5a',tight:'#d9a441',short:'#d0503f',cut:'#8a1f15'}[st]};
   let svg=`<svg class="sk" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="skh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#f0c4ba"/><rect width="3" height="6" fill="#d0503f"/></pattern></defs>`;
-  ['Sources','T1 · Raw','T2 · Materials','T3 · Components','T4 · Subsystems','T5 · End items'].forEach((t,c)=>{svg+=`<text class="ch" x="${colX(c)}" y="15">${t.toUpperCase()}</text>`});
+  ['Sources','Tier 1 · Raw','Tier 2 · Processed','Tier 3 · Components','Tier 4 · Subsystems','End items'].forEach((t,c)=>{svg+=`<text class="ch" x="${colX(c)}" y="18">${t.toUpperCase()}</text>`});svg+=`<line x1="0" x2="${W}" y1="25" y2="25" stroke="#cbbd95"/>`;
   links.forEach((l,i)=>{const a=pos[l.s],b=pos[l.t],x0=a.x+nodeW,x1=b.x,w=Math.max(.6,l.v*k),xm=(x0+x1)/2;
     const col=l.s.startsWith('S:')?SRC[l.s].c:mix(P[l.s]?.expo||0);
     svg+=`<path class="lk" data-s="${l.s}" data-t="${l.t}" d="M${x0},${l.y0}C${xm},${l.y0} ${xm},${l.y1} ${x1},${l.y1}L${x1},${l.y1+w}C${xm},${l.y1+w} ${xm},${l.y0+w} ${x0},${l.y0+w}Z" fill="${col}" opacity=".42" data-tip="${nameOf(l.s)} → ${nameOf(l.t)}<br><b>${pct(l.v/total)}</b> of this view's value"></path>`});
@@ -3102,9 +3107,10 @@ function sankeySVG(R,focus,mode,attr){
       svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"></rect>`;
       if(cut)svg+=`<path d="M${p.x-1},${yb-2} l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4 l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4" stroke="#efe6cf" stroke-width="3" fill="none"><title>Idle capacity, shortened to fit</title></path>`}
     const ty=labY[id],cyy=p.y+(p.h+p.g)/2;
-    if(Math.abs(ty-3.5-cyy)>5)svg+=`<path d="M${p.x+nodeW},${cyy}L${p.x+nodeW+3},${ty-3.5}" stroke="#8a7850" stroke-width=".6" fill="none"/>`;
-    svg+=`<rect x="${p.x+nodeW+2}" y="${ty-10}" width="${Math.min(isL?250:160,nameOf(id).length*5.6+8)}" height="12" fill="transparent"/>`;
-    svg+=isL?`<text x="${p.x+nodeW+5}" y="${ty}">${nameOf(id)} · ${pct(R.out[id.slice(2)].n/Math.max(R.out[id.slice(2)].cap,1e-9))} of cap</text>`:`<text x="${p.x+nodeW+4}" y="${ty}">${nameOf(id)}</text>`;
+    if(Math.abs(ty-4.5-cyy)>5)svg+=`<path d="M${p.x+nodeW},${cyy}L${p.x+nodeW+3},${ty-4.5}" stroke="#8a7850" stroke-width=".6" fill="none"/>`;
+    svg+=`<rect x="${p.x+nodeW+2}" y="${ty-12}" width="${Math.min(isL?240:175,nameOf(id).length*6.8+8)}" height="15" fill="transparent"/>`;
+    const gap=(W-left-right-nodeW)/5-nodeW-10,mx=Math.floor(gap/6.1),nm0=nameOf(id),nm=!isL&&nm0.length>mx?nm0.slice(0,mx-1).trimEnd()+'…':nm0;
+    svg+=isL?`<text x="${p.x+nodeW+5}" y="${ty-6}"><tspan font-weight="600">${nm}</tspan><tspan x="${p.x+nodeW+5}" dy="15" class="sub">${pct(R.out[id.slice(2)].n/Math.max(R.out[id.slice(2)].cap,1e-9))} of capacity in use</tspan></text>`:`<text x="${p.x+nodeW+4}" y="${ty}">${nm}</text>`;
     svg+=`</g>`}
   svg+='</svg>';
   const sv=k2=>links.filter(l=>l.s===k2).reduce((s,l)=>s+l.v,0),st=Object.keys(SRC).reduce((s,k2)=>s+sv(k2),0)||1;
@@ -4291,10 +4297,26 @@ function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 /* =====================================================================
    MAIN-SCREEN VIEWS
    ===================================================================== */
-const VIEWS=[['cmd','🏛 Command'],['bn','⛓ Bottlenecks'],['flow','⇶ Flows'],['imports','🌍 Imports'],['allies','🤝 Allies'],['ndaa','🏛 NDAA & Congress'],['arsenal','📈 Stocks & needs'],['rec','📊 Record'],['rules','⚖ Rulebook'],['src','📚 Sources']];
+const VIC={cmd:'M3 10l9-6 9 6M5 9.5V20h14V9.5M10 20v-5h4v5',
+ bn:'M3 4h18l-7 8.5V19l-4 2v-8.5z',
+ flow:'M3 4v16M21 4v16M3 7c9 0 9 9 18 9M3 14c8 0 9-7 18-7M3 18c9 0 9 1 18 1',
+ imports:'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c3.2 3 3.2 15 0 18M12 3c-3.2 3-3.2 15 0 18',
+ allies:'M12 3l8 3v6c0 4.8-3.4 7.9-8 9-4.6-1.1-8-4.2-8-9V6zM8.5 12l2.5 2.5 4.5-5',
+ ndaa:'M3 9l9-5 9 5M5 9.5v8.5M9.7 9.5v8.5M14.3 9.5v8.5M19 9.5v8.5M3 20.5h18',
+ arsenal:'M4 20V11M10 20V5M16 20v-7M2.5 20.5h19',
+ rec:'M6 3h9l4 4v14H6zM14.5 3v4.5H19M9 12h7M9 16h7',
+ rules:'M12 4v16M8 20h8M5 7h14M5 7l-3 6.5a3 3 0 006 0zM19 7l-3 6.5a3 3 0 006 0z',
+ src:'M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5zM4 20.5A2.5 2.5 0 006.5 23H20v-5',
+ fac:'M3 21V11l6 3.5V11l6 3.5V5h4v16zM2 21h20',
+ permits:'M8 3.5h8V7H8zM7 5H5v16h14V5h-2M8.5 12h7M8.5 16h4.5',
+ pipe:'M3 21h18M6 21V8h4v13M10 11h8v10M6 8l2-4 2 4',
+ ready:'M14.5 6.5a4 4 0 00-5.4 5.1L3.5 17.2l3.3 3.3 5.6-5.6a4 4 0 005.1-5.4l-2.6 2.6-2.4-.6-.6-2.4z',
+ find:'M10.5 4a6.5 6.5 0 110 13 6.5 6.5 0 010-13zM15.3 15.3L21 21'};
+const vic=(k,sz=14)=>VIC[k]?`<svg class="vic" width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true"><path d="${VIC[k]}"/></svg>`:'';
+const VIEWS=[['cmd','Command'],['bn','Bottlenecks'],['flow','Supply flows'],['imports','Imports'],['allies','Allies'],['ndaa','NDAA & Congress'],['arsenal','Stocks & needs'],['rec','Record'],['rules','Rulebook'],['src','Sources']];
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
-function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">🔍 Find</button></div>`}
+function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">${vic('find')}Find</button></div>`}
 function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   const foreign=id=>{const x=srcSplit(id,P),t=x.dom+x.ally+x.neut+x.spot+x.prc;return t>1e-9?(x.ally+x.neut+x.spot+x.prc)/t:0};
   const keep=id=>f==='all'||(f==='short'&&P[id].need>1e-6&&P[id].cover<.999)||(f==='foreign'&&foreign(id)>.5)||(f==='barred'&&!!allyBar(id));
@@ -4312,20 +4334,21 @@ function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   return h+`</table><div class="sleg" style="margin-top:6px"><span><i style="background:${SRC_C.dom}"></i>US-made</span><span><i style="background:${SRC_C.ally}"></i>Allied</span><span><i style="background:${SRC_C.spot}"></i>Spot / diverted</span><span><i style="background:${SRC_C.prc}"></i>PRC / Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span><span class="mini">US-made, allied, PRC and cut-off shares add up to 100% of supply. Allied includes spot purchases. The bar's black tick is this week's demand.</span></div>`}
 function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat',fv=S.flowV||'diag';
-  const vt=`<div class="sktool" style="padding-top:0"><span class="lab">View</span><button class="pbtn ${fv==='diag'?'on':''}" data-a="flowv" data-v="diag">⇶ Flow diagram</button><button class="pbtn ${fv==='table'?'on':''}" data-a="flowv" data-v="table">▤ Where it's made</button></div>`;
+  const vt=`<div class="sktool" style="padding-top:0"><span class="lab">Display</span><button class="pbtn ${fv==='diag'?'on':''}" data-a="flowv" data-v="diag" data-tip="Material flowing from raw sources through each tier of the supply chain into end items">Flow diagram</button><button class="pbtn ${fv==='table'?'on':''}" data-a="flowv" data-v="table" data-tip="A table of every item: what share is made at home, by allies, by neutral countries and by China or Russia">Sourcing table</button></div>`;
   if(fv==='table')return vt+madeBody();
-  return vt+`<div class="sktool" style="padding-top:0"><span class="lab">Focus</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All end items</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">${ND[f].n}</button>`:''}
-     <span class="lab">Width</span><button class="pbtn ${m==='det'?'on':''}" data-a="flowm" data-m="det" data-tip="Weight each end item by its deterrence value">Deterrence value</button><button class="pbtn ${m==='out'?'on':''}" data-a="flowm" data-m="out" data-tip="Weight each end item by output relative to the US base rate">Output volume</button>
-     <span class="lab">Attribution</span><button class="pbtn ${at==='mat'?'on':''}" data-a="flowa" data-m="mat" data-tip="Trace physical dependence all the way down to raw sources">Material origin</button><button class="pbtn ${at==='va'?'on':''}" data-a="flowa" data-m="va" data-tip="Credit each domestic manufacturing step with half the value of its output">Value added</button></div>
+  return vt+`<div class="sktool" style="padding-top:0"><span class="lab">End item</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">${ND[f].n}</button>`:''}
+     </div><div class="sktool"><span class="lab">Band width</span><button class="pbtn ${m==='det'?'on':''}" data-a="flowm" data-m="det" data-tip="Each end item counts by how much it adds to deterrence, so a submarine outweighs a shell">Deterrence value</button><button class="pbtn ${m==='out'?'on':''}" data-a="flowm" data-m="out" data-tip="Each end item counts by its output relative to the 2027 US production rate">Output volume</button>
+     <span class="lab">Credit value to</span><button class="pbtn ${at==='mat'?'on':''}" data-a="flowa" data-m="mat" data-tip="All value traced down to where the raw material came from">Raw-material origin</button><button class="pbtn ${at==='va'?'on':''}" data-a="flowa" data-m="va" data-tip="Each domestic manufacturing step keeps half the value of its output; the rest traces upstream">Each manufacturing step</button></div>
+    <div class="skguide">Read left to right: raw sources feed four tiers of the supply chain, which feed the end items on the right. A band's width is its share of ${m==='det'?'deterrence value':'output'}; its tint shows China or Russia content. Bar colour: <b style="color:#4f7a40">green</b> supplied, <b style="color:#a87a1a">amber</b> tight, <b style="color:#b8402f">red</b> short. Hover to trace a chain; click to open its page.</div>
     ${f!=='all'?(()=>{const isL=f.startsWith('L:'),nm=isL?LINES[f.slice(2)].n:ND[f].n,ic=isL?lineIcon(f.slice(2),22,'lic'):ND[f].ic;
       return `<div class="flfocus"><span class="ffi">${ic}</span><div><div class="ffk">Selected</div><b>${nm}</b><span class="mini">${isL?'Everything it is made from, traced back to raw sources.':'Its inputs back to raw sources, and the end items it feeds. Everything else is hidden.'}</span></div><span class="dsp"></span><button class="pbtn sm" data-a="node" data-n="${f}">Open its page →</button><button class="pbtn sm" data-a="flow" data-f="all">Show all end items</button></div>`})():''}
     <div style="padding:8px 0 0">${sankeySVG(S._R||production(false),f,m,at)}</div>
 `;
 }
 function viewHTML(){
-  const T={allies:['🤝','Allies','who builds alongside you, what counts toward your requirement, the deals you can strike, and what hits them at home'],imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','Rulebook & permits','who can change what, what each rule does to your programs, and every permit your plants hold'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply Flows','this week\'s actual flows'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
+  const T={allies:['🤝','Allies','who builds alongside you, what counts toward your requirement, the deals you can strike, and what hits them at home'],imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','Rulebook & permits','who can change what, what each rule does to your programs, and every permit your plants hold'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply flows','this week\'s flows, from raw sources to end items'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
   const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?(S.view='rules',S.rbTab='docket',rulesBody()):S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='allies'?alliesBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML()}</div></div>`:S.view==='pipe'?facBody():readyBody();
-  return `<div class="vhead"><span class="ic">${T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  return `<div class="vhead"><span class="ic">${VIC[S.view]?vic(S.view,22):T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -5024,7 +5047,7 @@ function renderGame(){
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
   document.body.classList.toggle('replaying',!!S.replay);
-  const db=decBar();document.body.classList.toggle('hasdec',!!db);app.innerHTML=cz(top+viewStrip()+db+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+reelHTML();
+  const db=decBar();document.body.classList.toggle('hasdec',!!db);app.innerHTML=cz(top+viewStrip()+db+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode${S.view==='flow'?' vwide':''}"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+reelHTML();
   mountLog(lg);
   ['supply','needs','right'].forEach((id,i)=>{const el=document.getElementById(id);if(el&&sc[i]!=null)el.scrollTop=sc[i]});
   if(S._rtTop){const el=document.getElementById('right');if(el)el.scrollTop=0;S._rtTop=false}
