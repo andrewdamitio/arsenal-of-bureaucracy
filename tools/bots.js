@@ -80,7 +80,7 @@ const res=await p.evaluate(({bot,scen,years})=>{
      if(spotKind(r.id)&&S.spot.filter(x=>x.id===r.id).length<2&&S.budget>=spotCost(r.id)+3){spotBuy(r.id);stop++}}
    const out=R0.out;for(const D of ALLY_DEALS)if(alDealOk(D)&&S.pc>=D.pc+15+reserve()&&S.budget>=(D.$||0)+1&&suffLine(D.c,out[D.c].yr)<1){alDeal(D.id);deals++}};
  // ---- reforms
- const NDAA=['acq','ceDefense','qualReform','multiyear','acqWorkforce','pricefloor','itarReform','byrnes','dpaMin','crAnomaly','dpaFund','antitrust'],BILLS=['nepaReform','workforce','judRev','expertVisa','jonesReform','tariffExempt'],EXEC=['rFAST','rNSR','rWOTUS','rITAR','rKnown'];
+ const NDAA=['acq','byrnes','ceDefense','qualReform','multiyear','acqWorkforce','pricefloor','itarReform','dpaMin','crAnomaly','dpaFund','antitrust'],BILLS=['nepaReform','workforce','judRev','expertVisa','jonesReform','tariffExempt'],EXEC=['rFAST','rNSR','rWOTUS','rITAR','rKnown'];
  // the reformer keeps enough Political Capital in hand for its next reform before it spends any on plant requests
  const reserve=()=>{if(!reform)return 0;const c=[];for(const id of NDAA){const R=RD[id];if(R&&reformAvail(R)&&!inReq(id))c.push(refReqCost(R))}if(!S.bill)for(const id of BILLS){const R=RD[id];if(R&&reformAvail(R)&&!inReq(id))c.push(reformCost(R))}return c.length?Math.min(...c.slice(0,2))+5:0};
  const reforms=()=>{for(const id of EXEC){const r=RD2[id];if(r&&!ruleOn(id)&&S.pc>=r.pc[0]+10){toggleRule(id);break}}
@@ -101,7 +101,7 @@ const res=await p.evaluate(({bot,scen,years})=>{
    if(act){problems();if(reform&&i%2===0)reforms();if(i%4===0)build()}
    if(S.w===mid||S.w===dl||i===52*years-1||S.over)marks.push(snap())}
  return {marks,mid:S.scenMid?{verdict:S.scenMid.verdict,floors:S.scenMid.floors,of:S.scenMid.of,test:S.scenMid.test.ok}:null,scen:S.scenRes?{verdict:S.scenRes.verdict,met:S.scenRes.met,of:S.scenRes.ms.length,floors:S.scenRes.ms.filter(x=>x.ok||x.half).length,test:S.scenRes.test.ok}:null,
-   modelCheck:(()=>{try{const r=btRows();return {ok:r.filter(b=>b.ok).length,of:r.length,miss:r.filter(b=>!b.ok).map(b=>b.n)}}catch(e){return null}})(),lost:Object.fromEntries(Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk).slice(0,5).map(([k,v])=>[LAYERS[k].n,Math.round(v.wk)])),passed:Object.keys(S.reforms).filter(k=>S.reforms[k]==='passed')}},{bot,scen,years});
+   modelCheck:(()=>{try{const r=btRows();return {ok:r.filter(b=>b.ok).length,of:r.length,miss:r.filter(b=>!b.ok).map(b=>b.n)}}catch(e){return null}})(),lost:Object.fromEntries(Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk).slice(0,5).map(([k,v])=>[LAYERS[k].n,Math.round(v.wk)])),passed:Object.keys(S.reforms).filter(k=>S.reforms[k]==='passed'),orders:[...S.done.filter(d=>!d.inh&&d.w>=PLAY0).map(d=>d.def),...S.projects.filter(q=>!q.inh).map(q=>q.def+(q.pkg?'(req)':''))]}},{bot,scen,years});
 res.bot=bot;res.seed=seed;res.secs=Math.round((Date.now()-t0)/1000);res.errors=errs;
 require('fs').writeFileSync(OUT+'/bot_'+bot+'_'+scen+'_'+seed+'.json',JSON.stringify(res));
 const m=res.marks,L=m[m.length-1];console.log(`${bot} seed ${seed} ${scen}: share ${m.map(x=>x.share+'%').join(' → ')} | finished ${L.finished} of ${L.started} started (avg ${L.avgYears} yr vs plan ${L.planYears}) | reforms ${L.reforms} | ${res.mid?'2030: '+res.mid.floors+'/'+res.mid.of+' floors':''}${res.scen?' · 2035: '+res.scen.met+'/'+res.scen.of+' targets, '+res.scen.floors+' floors':''} | ${res.secs}s${errs.length?' ERRORS '+errs[0]:''}`);

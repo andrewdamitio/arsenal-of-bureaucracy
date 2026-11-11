@@ -2361,6 +2361,15 @@ function elecOdds(){return clamp(.45+Math.min(.2,fullPlants()*.02)-(S.strain>50?
 function nextElec(){for(let w=S.w;w<S.w+120;w++){const d=dateOf(w);if(d.getMonth()===10&&d.getDate()<=7&&d.getFullYear()%2===0)return w}return null}
 
 /* ---------- projects ---------- */
+// Each reform governs a class of delay. c: how often its obstacles strike; w: how long they last. Estimates, sized so that the
+// reform agenda, passed, roughly halves the time lost to process (the standing test checks this).
+const REF_LAYER=[
+ {r:'acq',L:['PROCURE','PRIME'],c:.55,w:.6},{r:'acqWorkforce',L:['PROCURE'],c:.8,w:.7},{r:'antitrust',L:['PRIME'],c:.5,w:.7},
+ {r:'nepaReform',L:['PERMIT'],c:.5,w:.6},{r:'judRev',L:['LEGAL'],c:.45,w:.5},{r:'ceDefense',L:['PERMIT','LEGAL'],c:.5,w:.7,tags:['brownfield']},{r:'dpaMin',L:['PERMIT','LEGAL'],c:.6,w:.6,tags:['mine']},
+ {r:'qualReform',L:['QUAL'],c:.5,w:.55},{r:'workforce',L:['LABOR'],c:.55,w:.7},{r:'expertVisa',L:['EXPERT','LABOR'],c:.7,w:.75},
+ {r:'multiyear',L:['MARKET','FISCAL'],c:.6,w:.7},{r:'pricefloor',L:['MARKET'],c:.5,w:.7},{r:'crAnomaly',L:['FISCAL'],c:.7,w:.6},{r:'dpaFund',L:['FISCAL','MARKET'],c:.8,w:.75},
+ {r:'itarReform',L:['ALLIED'],c:.55,w:.6}];
+function refLayer(o,def,k){let m=1;for(const x of REF_LAYER)if(x.L.includes(o.layer)&&passed(x.r)&&(!x.tags||(def&&x.tags.some(t=>def.tags.includes(t)))))m*=x[k];return m}
 function obsChance(o,def){
   if(!facOk(o))return 0;
   if(def.nt){if(!o.al&&!o.ntOnly)return 0}
@@ -2375,10 +2384,10 @@ function obsChance(o,def){
   if(o.layer==='PRIME')c*=Math.max(.2,S.lev/60);
   const nf=def.t.node?(S.nflags[def.t.node]||{}):{};if(o.layer==='LABOR'&&nf.know)c*=.6;if(o.layer==='QUAL'&&nf.test)c*=.5;if(o.layer==='GRID'&&nf.power)c*=.3;
   if(o.id==='dump'&&def.tags.includes('smelter')&&passed('tariffExempt'))c*=1.4;
-  c*=icObsMult(o,def)*ruleChance(o,def);
+  c*=icObsMult(o,def)*ruleChance(o,def)*refLayer(o,def,'c');
   return Math.min(1,c);
 }
-function waitMult(o,def){let m=ruleWait(o,def);if(o.wm)for(const r in o.wm)if(active(r))m*=o.wm[r];if(o.layer==='QUAL'&&carveOn('cvQual'))m*=.6;if(o.layer==='QUAL'&&icOn('icLabs'))m*=1.1;return m}
+function waitMult(o,def){let m=ruleWait(o,def)*refLayer(o,def,'w');if(o.wm)for(const r in o.wm)if(active(r))m*=o.wm[r];if(o.layer==='QUAL'&&carveOn('cvQual'))m*=.6;if(o.layer==='QUAL'&&icOn('icLabs'))m*=1.1;return m}
 function optP(o,opt){let p=opt.p??1;if(opt.grant){if(passed('dpaFund'))p+=.3;if(carveOn('cvDPA3'))p+=.4}return Math.min(1,p)}
 function optOk(opt){return (!opt.req||passed(opt.req))&&(opt.pc||0)<=S.pc&&(opt.$||0)<=S.budget+1e-9}
 /* ---------- contracting: who builds it, on what terms ---------- */
@@ -4151,6 +4160,7 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['How reforms clear delays','Each reform governs a class of delay (procurement, permitting, litigation, qualification, workforce, markets, funding, export controls). Once enacted, obstacles of that class strike less often (by 20–55%) and last less long (by 25–50%), on top of the stage time it saves. The sizes are estimates, set so that the full reform agenda roughly halves the time programs lose to process.'],
  ['Repeat plants and drone parts','Each repeat of the same plant costs 10% more than the last, up to 50% more. Defense orders can claim up to half of the drone parts (cells, motors, boards, fiber, thermal cores) that US civilian drone makers buy from onshore suppliers; that flow grows with the US-made share of the civilian drone market. Both are game estimates.'],
  ['Defense priority over civilian buyers','Rated defense orders come first by law (the Defense Priorities and Allocations System), and allies with security-of-supply arrangements honor priority requests. When an item is short, defense automatically takes what civilian buyers of US output would have had, and about half of what they would have had from allied plants; neutral and Chinese suppliers give no priority. The civilian share of each item’s market is an estimate. Civilian strain rises with the share of civilian supply taken.'],
  ['Build times and what reforms do to them','Planned times by kind of plant are anchored on recent projects: the Mesquite shell plant (award to opening in 18 months, then no usable parts for two years), the Graham TNT plant (under 36 months planned), MP Materials’ magnet plant (3.5 years to commercial output, twice its plan) and the Stibnite mine (8–9 years of permitting, about 3 of construction). Obstacles add the delays real projects meet. An enacted reform shortens the stage it governs (contract awards, permitting, qualification, funding, ramp-up) by 15–65%; those sizes are estimates. Each program office runs about five orders at full speed.'],
