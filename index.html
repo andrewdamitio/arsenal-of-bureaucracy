@@ -1287,7 +1287,7 @@ function civPanel(){const c=civS(),t=civTarget(),o=S.icOnshore||0,v=civM()*c.sha
   return `<div class="sect"><span>US civilian drone market</span><span>game estimate</span></div><div class="civp">
    <div class="civt"><div><b>${fmtN(civM())}</b><span>civilian drones sold a year</span></div><div><b>${pct(c.share)}</b><span>made by US firms, heading to ${pct(t)}</span></div><div><b>${fmtN(v)}</b><span>US-made a year</span></div></div>
    <div class="mini"><b>What sets the US share</b></div>${civParts().map(([n,x])=>`<div class="civr"><span>${n}</span><b class="${x>=0?'green':'red'}">${x>=0?'+':'−'}${Math.round(Math.abs(x)*100)} pts</b></div>`).join('')}
-   <div class="mini" style="margin-top:6px"><b>What it does for the military.</b> US makers are at <b>${pct(o)}</b> of the scale that makes military drones cheap: drone line capacity +${pct(.25*o)}, drone and drone-part plants −${pct(.2*o)} in cost, fewer “no demand signal” stalls, and faster know-how. Bans that raise the share cost civilian strain and, at first, drone output while barred parts are replaced.</div>
+   <div class="mini" style="margin-top:6px"><b>What it does for the military.</b> US makers are at <b>${pct(o)}</b> of the scale that makes military drones cheap: drone line capacity +${pct(.25*o)}, drone and drone-part plants −${pct(.2*o)} in cost, fewer “no demand signal” stalls, and faster know-how. Defense orders can also claim up to half of the cells, motors, boards, fiber and thermal cores that US civilian drone makers buy onshore: enough for about <b>${fmtN(DRONE_CLAIM*v*o)}</b> military drones a year now. Bans that raise the share cost civilian strain and, at first, drone output while barred parts are replaced.</div>
    <div class="mini" style="margin-top:4px">In 2021 DJI made about 54% of US commercial drones and 94% of consumer ones.[c:djishare] Market size and shares are game estimates.</div></div>`}
 function icPanel(){if(S.fac!=='US')return '';
   return civPanel()+`<div class="sect"><span>Import controls · FCC & trade powers</span><span>${IC.filter(c=>icOn(c.id)).length} of ${IC.length} in force</span></div>`+IC.map(c=>{const on=icOn(c.id),cost=c.pc[on?1:0];
@@ -1646,8 +1646,8 @@ const REFORMS=[
  {id:'judRev',fac:['US'],n:'NEPA Litigation Reform',d:'Short statute of limitations; remand without vacatur. Lawsuits −50%.',pc:40,wk:20,p:.5},
  {id:'dpaMin',fac:['US'],n:'DPA Critical-Minerals Emergency',d:'Unlocks the emergency mine-permitting track: mine permits take 40% less time.',pc:25,wk:8,p:.9},
  {id:'dpaFund',fac:['US'],n:'Recapitalize DPA Title III',d:'+30% grant success against dumping. Costs $2B.',pc:20,$:2,wk:16,p:.75},
- {id:'pricefloor',n:'Strategic Price Floors & Offtake',d:'Generalize the MP-style $110/kg floor. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
- {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',d:'Firm orders years ahead: funding for munitions work and ramp-up to full orders take 40% less time; demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
+ {id:'pricefloor',n:'Strategic Price Floors & Offtake',d:'Generalize the MP-style $110/kg floor: private lenders fund 45% of mines, refineries and metal plants. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
+ {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',d:'Firm orders years ahead: suppliers pay 40% of new munitions and missile plants themselves; funding and ramp-up take 40% less time; demand-signal obstacles −75%; shell, interceptor & strike lines +10%.',pc:30,wk:20,p:.7},
  {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Contract awards take 40% less time; protests, cost-accounting and prime objections −50%. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15;queueEvent('blitz')}},
  {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Block further prime mergers; dual-source key subsystems. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20;queueEvent('blitz')}},
  {id:'workforce',n:'Industrial Workforce Act',d:'Construction 15% faster where trades are short; labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
@@ -1661,7 +1661,7 @@ const REFORMS=[
  {id:'crAnomaly',fac:['US'],n:'New-Start Authority Under CRs',d:'Projects in Appropriation progress at half speed during a CR instead of stopping.',pc:25,wk:12,p:.6},
  {id:'qualReform',n:'Qualification by Similarity',d:'Accept test data from similar items: qualification of munitions work takes 45% less time; qualification obstacles −50–60%.',pc:20,wk:16,p:.7},
  {id:'tariffExempt',fac:['US'],n:'Exempt Allied Metals from §232',d:'+allied aluminum supply; no tariff spats. But domestic smelters face 40% more price-collapse risk.',pc:15,wk:8,p:.7,on:()=>{const s=S.nodes.al_primary;s.ally.amt+=s.scale*.3}},
- {id:'acqWorkforce',n:'Hire Acquisition Workforce',d:'Adds staff to every portfolio office: each runs about one more order at full speed. Costs 0.5B.',pc:20,$:.5,wk:12,p:.85,on:()=>{S.slots+=3}},
+ {id:'acqWorkforce',n:'Hire Acquisition Workforce',d:'Adds staff to every portfolio office: each runs two more orders at full speed. Costs 0.5B.',pc:20,$:.5,wk:12,p:.85,on:()=>{S.slots+=6}},
  
  
  
@@ -1832,12 +1832,12 @@ const EVENTS=[
  {id:'ukraine',pre:"2022–24: the United States sent Ukraine more than 70 drawdown packages from its own stocks.[c:pda24]",p:.004,once:false,cond:()=>!S.ceasefire,ic:'🇺🇦',t:'Ukraine Requests Emergency Transfers',body:"Kyiv asks for an emergency drawdown from your stocks. Every round fired there is one Russia can't fire later — and one not in your own magazines.",
   o:[{l:'Send them (−200k shells, −300 interceptors; Russia −12% shells; +5 PC)',fx:()=>{S.inv.shells=Math.max(0,S.inv.shells-2e5);S.inv.interceptors=Math.max(0,S.inv.interceptors-300);S.enemy.eu.inv.shells*=.88;S.pc+=5}},{dflt:1,l:'Decline (−6 PC)',pc:6}]},
  // home front
- {id:'diversion',manual:true,once:false,ic:'🏭',t:'Civilian Shortages from DPA Priority',
-  body:()=>`${CIV[ND[S._div]?.cv||'general']} (Diverted: ${ND[S._div]?.n}.)`,
-  o:()=>[{l:'Hold the line (−8 PC, strain +5)',pc:8,fx:()=>{S.strain+=5}},{l:`Release ${ND[S._div].n} from DPA priority`,fx:()=>{S.prio[S._div]=false;log(`DPA priority released: ${ND[S._div].n}.`)}}]},
+ {id:'diversion',manual:true,once:false,ic:'🏭',t:'Civilian Shortages from Defense Priority',
+  body:()=>`${CIV[ND[S._div]?.cv||'general']} Rated defense orders for ${ND[S._div]?.n.toLowerCase()} are filled first, and civilian buyers are getting what is left.`,
+  o:()=>[{l:'Hold the line (−8 PC, strain +5)',pc:8,fx:()=>{S.strain+=5}},{l:`Let civilian buyers keep their ${ND[S._div].n.toLowerCase()} for a year (defense goes short instead)`,fx:()=>{(S.noPrio=S.noPrio||{})[S._div]=S.w+52;log(`Defense priority waived for a year: ${ND[S._div].n}.`)}}]},
  {id:'strainCrisis',manual:true,once:false,ic:'📉',t:'Guns vs. Butter Backlash',
   body:"Inflation, shortages, and overtime fatigue dominate the news. Polls show the public turning against the rearmament program. Something has to give.",
-  o:()=>[{l:'Stay the course (−30 PC)',pc:30},{l:'Release all DPA priorities and end extra shifts',fx:()=>{for(const k in S.prio)S.prio[k]=false;for(const k in S.shifts)S.shifts[k]=false;S.strain-=15}}]},
+  o:()=>[{l:'Stay the course (−30 PC)',pc:30},{l:'Give civilian buyers their supply back for six months and end extra shifts (defense goes short)',fx:()=>{S.noPrio=S.noPrio||{};for(const k of S.divIds||[])S.noPrio[k]=S.w+26;for(const k in S.shifts)S.shifts[k]=false;S.strain-=15}}]},
  {id:'enjoin',manual:true,once:false,ic:'⚖',t:'Court Challenges a Carve-Out',
   body:()=>`A court is asked to enjoin "${cname(CD[S._enj])}." Plaintiffs argue the emergency is neither an emergency nor yours to declare.`,
   o:()=>[{l:'Appeal and defend it (−10 PC, 60% it survives)',pc:10,fx:()=>{if(rand()>=.6)endCarve(S._enj,'struck down on appeal')}},{l:'Let it lapse',fx:()=>endCarve(S._enj,'enjoined')}]},
@@ -2075,6 +2075,7 @@ const neutTop=id=>neutNames(id).split(', ')[0]||'';
 // a material you buy from neutral countries (at least 5% of what your plants use), picked in proportion to how much
 function nzPick(test){const c=ORDER.map(id=>[id,nodeSupply(id).neut/Math.max(S.nodes[id].scale,1e-9)]).filter(x=>x[1]>=.05);if(test)return c.length>0;if(!c.length)return null;
   let r=rand()*c.reduce((a,x)=>a+x[1],0);for(const x of c){r-=x[1];if(r<=0)return x[0]}return c[0][0]}
+const ALLY_PRIO=.5,DRONE_CLAIM=.5,DIV_STRAIN=.12; // strain per week for each item whose whole civilian supply defense takes, weighted by the civilian share of its market; strain recovers 0.35 a week
 function nodeSupply(id){
   const s=S.nodes[id],c=NO_PRC?0:cutOf(id),mob=MOB[S.mob];
   const nm=tm('node',id);
@@ -2087,9 +2088,14 @@ function nodeSupply(id){
   const neutRaw=s.neut.amt*tm('neut',id)*(NEUT_MIRROR?allyMult:1),neut=neutRaw*(1-s.neut.adv*(bar?1:1-c)),neutPrc=bar?0:neutRaw*s.neut.adv*c;
   const prcRaw=s.prc.amt*tm('prc',id),prc=prcRaw*c;
   let spot=0;for(const x of S.spot)if(x.id===id)spot+=x.amt;
-  const div=S.prio[id]?(ND[id].civ||0)*s.scale*.4:0;
-  const ext=ally+neut+prc+spot+div;
-  return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,neut,prc,spot,div,ext,prcExtFrac:ext>0?(prc+allyPrc+neutPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(neutRaw-neut)+(prcRaw-prc),prcRaw,allyRaw,neutRaw};
+  // what civilian buyers take from the same US and allied plants: defense can claim it when short (allies honor about half such requests; neutrals and China none)
+  const civ=ND[id].civ||0,civFull=civ>0&&civ<1&&!(S.noPrio?.[id]>S.w)?(dom+ally*ALLY_PRIO)*civ/(1-civ):0,civPool=Math.min(civFull,(dom+ally*ALLY_PRIO)*1.5);
+  // US makers of civilian drones buy the same cells, motors, boards, fiber and thermal cores. As that supply chain comes onshore,
+  // defense orders can claim up to half of its flow (counted in drones a year, converted to this item's units)
+  const drFlow=DRONE_PARTS.includes(id)&&!(S.noPrio?.[id]>S.w)?civM()*civS().share*(S.icOnshore||0)/LINES.drones.k:0;
+  const civFull2=civFull+drFlow,civPool2=civPool+DRONE_CLAIM*drFlow;
+  const div=0,ext=ally+neut+prc+spot;
+  return {dom,domPrcFrac:dom>0?domPrc/dom:0,ally,neut,prc,spot,div,civPool:civPool2,civFull:civFull2,ext,prcExtFrac:ext>0?(prc+allyPrc+neutPrc)/ext:0,name,ramp,lost:(allyRaw-ally)+(neutRaw-neut)+(prcRaw-prc),prcRaw,allyRaw,neutRaw};
 }
 function lineMultOf(lid){return ((active('multiyear')&&['shells','interceptors','strike','a2a','fires'].includes(lid))?1.1:1)*(S.shifts?.[lid]?SHIFT_M:1)}
 function lineCap(lid){let c=S.lines[lid].base;for(const pl of plantsFor('line',lid))c+=pl.gain*pl.yield*plantMult(pl);return c*lineMultOf(lid)*tm('line',lid)*(S.spares&&S.spares[lid]?.85:1)*icLineMult(lid)*ruleLine(lid)}
@@ -2107,8 +2113,13 @@ function production(commit){
     const d=Math.max(0,Math.min(rem,p.domRem,lim));
     p.domRem-=d;p.usedDom+=d;for(const i of ND[id].in)take(i,d);rem-=d;
     if(rem>1e-12){const s=Math.min(rem,p.stockRem);p.stockRem-=s;p.usedStock+=s;rem-=s}p.unmet+=rem};
+  // rated defense orders come first: where an item is short, defense takes what civilian buyers would have had, up to the pool, before any stockpile is touched
+  let need=needCalc(P),divLoad=0;
+  {let any=false;for(const id of ORDER){const p=P[id];if(p.civPool<=1e-12)continue;const short=need[id]-(avail(id,{})-p.stockRem);
+     if(short>1e-9){const d=Math.min(p.civPool,short);p.div=d;p.ext+=d;p.extRem+=d;any=true;divLoad+=d/Math.max(p.civFull,1e-9)*(ND[id].civ||0)}}
+   if(any)need=needCalc(P)}
   // coverage snapshot before allocation
-  const need=needCalc(P);const memo0={};const avail0={};for(const id of ORDER)avail0[id]=avail(id,memo0);
+  const memo0={};const avail0={};for(const id of ORDER)avail0[id]=avail(id,memo0);
   for(const id of ORDER){const p=P[id];p.need=need[id];p.avail0=avail0[id];p.cover=need[id]>1e-6?avail0[id]/need[id]:9;
     let lim=Infinity,li=null;for(const i of ND[id].in)if(avail0[i]<lim){lim=avail0[i];li=i}
     p.starvedBy=(li&&lim<p.dom-1e-6&&p.cover<.999)?li:null}
@@ -2128,7 +2139,7 @@ function production(commit){
   let num=0,den=0;for(const lid in out){const L=LINES[lid];const e=L.in.reduce((a,i)=>a+expo[i],0)/L.in.length;out[lid].expo=e;num+=out[lid].n*e;den+=out[lid].n}
   const exposure=den?num/den:0;
   for(const id of ORDER)P[id].expo=expo[id];
-  if(commit){for(const id of ORDER)if(S.stock[id]!=null)S.stock[id]=P[id].stockRem;S.exposure=exposure}
+  if(commit){for(const id of ORDER)if(S.stock[id]!=null)S.stock[id]=P[id].stockRem;S.exposure=exposure;S.divLoad=divLoad;S.divIds=ORDER.filter(id=>P[id].div>1e-9)}
   return {P,out,exposure};
 }
 function needCalc(P){
@@ -2399,12 +2410,18 @@ function poolCap(k){let c=POOLS[k].cap[S.fac];
   return c}
 const poolsOf=def=>def.ally?[]:Object.keys(POOLS).filter(k=>!POOLS[k].tags||POOLS[k].tags.some(t=>def.tags.includes(t)));
 function poolState(){const o={};for(const k in POOLS){const P=POOLS[k],n=S.projects.filter(p=>STAGES[p.stage]===P.stage&&!p.obs.length&&poolsOf(PD[p.def]).includes(k)).length,cap=poolCap(k);o[k]={d:n,cap,f:n>cap?cap/n:1}}return o}
+// Reforms that bring private money in. With firm multiyear orders, suppliers pay part of a new plant themselves, as in the 2026 munitions
+// framework agreements; with a price floor and offtake, lenders fund mines and refineries, as with MP Materials in 2025. The shares are estimates.
+const REF_COST=[
+ {r:'multiyear',m:.6,fit:d=>!d.ally&&['mun','msl'].includes(officeOf(d)),t:'suppliers pay 40% of new munitions and missile plants'},
+ {r:'pricefloor',m:.55,fit:d=>!d.ally&&d.tags.includes('dumpable'),t:'private lenders fund 45% of mines, refineries and metal plants'}];
 function projCost(def){
   let c=def.cost;
   if(def.tags.includes('prime'))c*=1+(S.lev-50)/100;
-  c*=1+.25*(S.built[def.id]||0);
+  c*=1+Math.min(.5,.1*(S.built[def.id]||0)); // each repeat of the same plant costs 10% more, up to +50%: the best sites and crews go first
   for(const m of S.costMods)c*=m.mult;
   c*=ruleCost(def);
+  for(const x of REF_COST)if(passed(x.r)&&x.fit(def))c*=x.m; // private capital comes in behind firm orders and price floors
   if(icOn('ic232')&&droneRel(def))c*=.85; // onshoring program: duty-free equipment for new US drone plants
   if(S.fac==='US'&&droneRel(def))c*=1-.2*(S.icOnshore||0); // civilian scale makes drone parts and tooling cheaper
   if(icOn('icGrid')&&['mod','power'].includes(def.kind))c*=1.1;
@@ -2420,7 +2437,7 @@ const OFF_L={shells:'mun',interceptors:'msl',strike:'msl',a2a:'msl',fires:'msl',
 function officeOf(def){if(def.t.line)return OFF_L[def.t.line]||'mat';for(const k in OFF_N)if(OFF_N[k].includes(def.t.node))return k;return 'mat'}
 const officeCap=()=>S.slots/3,staffed=p=>!p.inh&&!p.pkg;
 function officeLoad(){const o={};for(const k in OFFICES)o[k]={n:0,cap:officeCap()};for(const p of S.projects)if(staffed(p))o[officeOf(PD[p.def])].n++;for(const k in o)o[k].f=o[k].n>o[k].cap+1e-9?o[k].cap/o[k].n:1;return o}
-const OFF_TIP='Since the November 2025 acquisition overhaul, one portfolio acquisition executive runs each sector: every plant, upgrade and deal in it. Each has staff for about five orders at full speed; past that, all of its orders slow down together. The Hire Acquisition Workforce reform adds staff to every office.';
+const OFF_TIP='Since the November 2025 acquisition overhaul, one portfolio acquisition executive runs each sector: every plant, upgrade and deal in it. Each has staff for about five orders at full speed; past that, all of its orders slow down together. The Hire Acquisition Workforce reform adds staff for two more in every office.';
 function officeChips(lbl=true){const L=officeLoad();return `<span class="offs">${lbl?'<span class="offl">Offices</span>':''}${Object.entries(OFFICES).map(([k,o])=>`<span class="offc ${L[k].f<1?'over':L[k].n>=L[k].cap-1e-9?'full':''}" data-tip="${tipQ(`<b>${o.ic} ${o.n} office</b><br>${L[k].n} order${L[k].n===1?'':'s'} running, staff for about ${fmt(L[k].cap,0)} at full speed.${L[k].f<1?` <span style='color:#e8a090'>Every order here moves at ${pct(L[k].f)} speed.</span>`:''}<br><br>${OFF_TIP}`)}">${o.ic} ${L[k].n}/${fmt(L[k].cap,0)}</span>`).join('')}</span>`}
 // New plants are new starts: they need the annual NDAA and appropriations. An order joins the next request and waits for
 // enactment (every 18 December); markup cuts depend on how much each item matters, and money is charged only if funded.
@@ -2872,12 +2889,13 @@ const spotAct=id=>S.spot.filter(x=>x.id===id),spotLine=id=>{const a=spotAct(id);
 function spotBuy(id){const k=spotKind(id);if(!k)return;const c=spotCost(id);if(S.budget<c)return;spendB(c,'Emergency purchases');S.spot.push({id,amt:S.nodes[id].scale*.25,left:26});log(`${SPOT_L[k][0]} ${SPOT_L[k][2]}: ${ND[id].n} (${money(c)}).`);spent('$',c);
   {const v=nodeVerdict(id);receipt({ic:SPOT_L[k][0],lab:k==='ally'?'Allied order placed':'Purchase ordered',title:ND[id].n,ok:v?.ok,act:`data-a="node" data-n="${id}"`,actL:'Open the item →',
     lines:['+25% of normal supply, arriving now and lasting 26 weeks.',v?`<span class="${v.ok?'okt':'amb'}">${v.t.replace('Aims at','Eases')}.</span>`:'',`${money(c)} spent.`]})}}
-function togglePrio(id){if(S.prio[id]){S.prio[id]=false;log(`DPA priority released: ${ND[id].n}.`);toast(`<b>DPA priority released</b><br><span class="dim">${ND[id].n}</span>`);return}if(S.pc<5)return;S.pc-=5;S.prio[id]=true;S.waivers++;log(`🏭 DPA priority rating: ${ND[id].n} diverted from civilian customers.`,'ev');spent('pc',5);toast(`🏭 <b>DPA priority: ${ND[id].n}</b><br><span class="dim">−5 PC · civilian supply diverted to defense</span>`,'good')}
+const prioOff=id=>S.noPrio?.[id]>S.w;
+function togglePrio(id){S.noPrio=S.noPrio||{};if(prioOff(id)){delete S.noPrio[id];log(`🏭 Defense priority restored: ${ND[id].n}.`,'ev')}else{S.noPrio[id]=S.w+52;log(`Defense priority waived for a year: ${ND[id].n}. Civilian buyers keep their supply.`)}}
 function setAid(v){if(v===S.aidLvl)return;if(v<S.aidLvl){const c=Math.round(10*(S.aidLvl-v)/.5);if(S.pc<c)return;S.pc-=c}S.aidLvl=v;log(`🇺🇦 Aid to Ukraine set to ${v===1?'full':v===.5?'half':'stopped'}.`,'ev')}
 function framework(lid){if(S.fw[lid])return;const tgt=lineName(lid)*2;S.fw[lid]={target:tgt,due:S.w+156,start:S.w};S.pc+=12;log(`📣 Framework agreement announced: ${LINES[lid].n} to ${fmtN(tgt*LINES[lid].k)}/yr within three years.`,'ev')}
 function homeTick(lastOut){
-  const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
-  S.strain=clamp(S.strain+MOB[S.mob].strain+nPrio.reduce((a,k)=>a+(ND[k].civ||0)*.35,0)-.35,0,100);
+  const nPrio=S.divIds||[]; // items where defense orders are taking civilian supply
+  S.strain=clamp(S.strain+MOB[S.mob].strain+(S.divLoad||0)*DIV_STRAIN-.35,0,100);
   {const a=S.pc;S.pc=Math.min(250,Math.max(0,S.pc+pcRate()));S._pcInc=S.pc-a}
   if(nPrio.length&&rand()<.006*nPrio.length*(.5+S.strain/50)&&!S.queue.some(q=>q.ev==='diversion')){S._div=nPrio[Math.floor(rand()*nPrio.length)];queueEvent('diversion')}
   if(S.strain>=80&&!S.strainHit){S.strainHit=true;queueEvent('strainCrisis')}if(S.strain<60)S.strainHit=false;
@@ -2963,7 +2981,7 @@ function gameOver(why){
    externally sourced supply carries its value in from its source.
    ===================================================================== */
 const SRC={'S:dva':{n:'Domestic value added',c:'#3f7a34'},'S:dom':{n:'Domestic mining & primary',c:'#5f9e4a'},'S:ally':{n:'Allied imports',c:'#5f8fc4'},'S:neut':{n:'Neutral imports',c:'#c2a04e'},'S:prc':{n:'PRC / Russia imports',c:'#b0453a'},
-  'S:spot':{n:'Spot-market purchases',c:'#8a7cc0'},'S:div':{n:'Civilian diversion (DPA)',c:'#c08a3a'},'S:stock':{n:'Stockpile drawdown',c:'#b8a040'}};
+  'S:spot':{n:'Spot-market purchases',c:'#8a7cc0'},'S:div':{n:'Taken from civilian buyers (defense priority)',c:'#c08a3a'},'S:stock':{n:'Stockpile drawdown',c:'#b8a040'}};
 function lineUnitWeight(l,mode){if(mode==='out')return 1;let v=0;for(const t of S.theaters)v+=VAL[l][t]*F().alloc[t][l]*S.q[l];return LINES[l].k/52*v}
 function sankeyFlows(R,focus,mode,attr){const alpha=attr==='va'?.5:0;
   const P=R.P,out=R.out;const E={},V={};
@@ -3202,7 +3220,7 @@ function shortCauses(id,P){const p=P[id];let short=Math.max(0,p.need-p.avail0);c
   for(const [k,v] of [['cut',p.lost],['starved',starved],['issue',issue],['ramp',p.ramp]]){const x=Math.min(short,Math.max(0,v||0));o[k]=x;short-=x}
   o.cap=short;return o}
 // what fixing one node would give back, by end item: re-run the chain with that node fully supplied
-const bnKey=()=>[S.w,S.projects.length,S.plants.length,S.truce,S.dfars,S.spot.length,Object.values(S.cut).join(),Object.keys(S.prio).filter(k=>S.prio[k]).join(),JSON.stringify(S.ic),JSON.stringify(S.rules),S.mob].join('|'); // anything that moves supply this week
+const bnKey=()=>[S.w,S.projects.length,S.plants.length,S.truce,S.dfars,S.spot.length,Object.values(S.cut).join(),JSON.stringify(S.noPrio||{}),JSON.stringify(S.ic),JSON.stringify(S.rules),S.mob].join('|'); // anything that moves supply this week
 function bnScan(){const key=bnKey();if(S._bnc?.key===key)return S._bnc.v;
   const R0=production(false),P=R0.P,ids=ORDER.filter(id=>P[id].need>1e-6&&P[id].cover<.999),v=[];
   for(const id of ids){const x={id,amt:P[id].need*1.3+1e-6,left:1};S.spot.push(x);let R1;try{R1=production(false)}finally{S.spot.splice(S.spot.indexOf(x),1)}
@@ -3251,7 +3269,7 @@ function bnBody(){
       <div><h5>What you could do</h5>${levs.map(d=>`<div class="bnc"><button class="pbtn sm" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${d.nt?'🌐 ':d.ally?'🤝 ':''}${d.n}</button> <span class="mini">${money(projCost(d))} · ~${yrs(planDur(d).reduce((a,b)=>a+b,0))}</span></div>`).join('')}
        ${S.nodes[id].base>0?`<div class="bnc"><button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':'⏩ Supplier shifts'}</button> <span class="mini">${money(NSHIFT_C)}/yr · +15% in ~3 mo</span></div>`:''}
        ${spotKind(id)?`<div class="bnc"><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?'Buy more':SPOT_L[spotKind(id)][1]}</button> <span class="mini">${money(spotCost(id))} · 26 wk</span>${spotLine(id)}</div>`:`<div class="bnc mini">${spotNone(id)}</div>`}
-       ${n.civ?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release DPA priority':'🏭 DPA priority'}</button></div>`:''}</div></div></div>`}).join('');
+       ${p.div>1e-9?`<div class="bnc mini">🏭 Defense orders already take ${pct(p.div/Math.max(p.need,1e-9))} of need from civilian buyers</div>`:prioOff(id)?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}">🏭 Restore defense priority</button></div>`:''}</div></div></div>`}).join('');
   return h}
 /* ---------- getting around: one back stack for every jump, and a finder for everything ---------- */
 const NAV_ACTS=new Set(['pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
@@ -3325,7 +3343,7 @@ function raisePanel(id,P){
       <div class="rmeta">${money(projCost(d))} · ${v.isPlant?'First output':'Online'} ${yr(v.wOn)}${v.isPlant&&v.wFull<END_W?`, full rate ${yr(v.wFull)}`:''}</div>
       ${d.req&&!passed(d.req)?`<span class="mini redt">🔒 Needs ${rname(RD[d.req])}</span>`:launchBtn(d,1)}</div>`};
   const quick=isL?`<button class="pbtn sm" data-a="shift" data-l="${l}">${S.shifts[l]?'⏩ Stop extra shifts':`⏩ Fund extra shifts · ${money(SHIFT_C)}/yr`}</button>`
-    :`${S.nodes[id].base>0?`<button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':`⏩ Supplier shifts · ${money(NSHIFT_C)}/yr`}</button>`:''}${spotKind(id)?`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?`Buy more (${Math.max(...spotAct(id).map(x=>x.left))} wk left)`:SPOT_L[spotKind(id)][1]} · ${money(spotCost(id))}</button>`:`<span class="mini">Nothing to buy on the market; capacity has to be built.</span>`}${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'🏭 Release DPA priority':'🏭 DPA priority · 5 PC'}</button>`:''}`;
+    :`${S.nodes[id].base>0?`<button class="pbtn sm" data-a="nshift" data-n="${id}">${nshiftOn(id)?'⏩ Stop supplier shifts':`⏩ Supplier shifts · ${money(NSHIFT_C)}/yr`}</button>`:''}${spotKind(id)?`<button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${SPOT_L[spotKind(id)][0]} ${spotAct(id).length?`Buy more (${Math.max(...spotAct(id).map(x=>x.left))} wk left)`:SPOT_L[spotKind(id)][1]} · ${money(spotCost(id))}</button>`:`<span class="mini">Nothing to buy on the market; capacity has to be built.</span>`}${ND[id].civ?`<button class="pbtn sm" data-a="prio" data-n="${id}" data-tip="${tipQ(prioOff(id)?'Defense priority is waived for this item until '+fmtDate(S.noPrio[id])+': civilian buyers keep their supply and defense goes short.':'Rated defense orders come first by law: when this item is short, defense takes what civilian buyers of US and allied output would have had. Waive it to ease civilian strain; defense then goes short.')}">${prioOff(id)?'🏭 Restore defense priority':'🏭 Waive defense priority'}</button>`:''}`;
   return `<div class="raise"><div class="raiseh"><b>⬆ ${head}</b><span class="dsp"></span><span class="mini">${status}</span></div>
     ${under.length?`<div class="mini" style="margin:2px 0 4px">Under way: ${under.map(q=>{const [t,c]=progStatus(q,true);return `<span class="linkn" data-a="prog" data-u="${q.uid}">${projName(q)}</span> <span class="${c}">${t.replace(/^\S+\s/,'')}</span>`}).join(' · ')}</div>`:''}
     ${opts.length?`<div class="rcards">${opts.map(card).join('')}</div>`:'<p class="mini">Every build option is already under way or done.</p>'}
@@ -3679,7 +3697,7 @@ function dossierHTML(id,P){
        ${spotKind(id)==='market'?`<tr><td><b>💸 Emergency spot purchase</b><div class="mini">Bought on the commercial market. Non-Chinese prices run several times higher when PRC supply is cut (game estimate: 1.6–7×).</div></td><td>+25% of normal supply for 26 weeks${spotLine(id)}</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${spotAct(id).length?'Buy more':'Buy'}</button></td></tr>`
         :spotKind(id)==='ally'?`<tr><td><b>🤝 Emergency buy from allied producers</b><div class="mini">No civilian market, but allied defense plants make it. They sell from their own orders at a premium, as Poland and Korea have with TNT and shells.${S.nodes[id].ally.src?' '+S.nodes[id].ally.src+'.':''}</div></td><td>+25% of normal supply for 26 weeks${spotLine(id)}</td><td>${money(spotCost(id))}</td><td>now</td><td><button class="pbtn sm" data-a="spot" data-n="${id}" ${S.budget>=spotCost(id)?'':'disabled'}>${spotAct(id).length?'Buy more':'Buy'}</button></td></tr>`
         :`<tr><td><b>🚫 No emergency purchase</b><div class="mini">${spotNone(id)}</div></td><td>—</td><td>—</td><td>—</td><td></td></tr>`}
-       ${n.civ?`<tr><td><b>🏭 DPA priority rating</b><div class="mini">${CIV[n.cv||'general']}</div></td><td>+${pct(n.civ*.4*s.scale/Math.max(p.need,s.scale*.5))} of need from civilian customers · strain +${fmt(n.civ*.35,2)}/wk</td><td>${S.prio[id]?'—':'5 PC'}</td><td>now</td><td><button class="pbtn sm" data-a="prio" data-n="${id}" ${!S.prio[id]&&S.pc<5?'disabled':''}>${S.prio[id]?'Release':'Divert'}</button></td></tr>`:''}
+       ${n.civ?`<tr><td><b>🏭 Defense priority (DPA ratings)</b><div class="mini">${CIV[n.cv||'general']}</div></td><td>${prioOff(id)?'Waived: civilian buyers keep their supply':p.div>1e-9?`Taking ${pct(p.div/Math.max(p.need,1e-9))} of need from civilian buyers now`:`Automatic when short: up to ${pct(p.civPool/Math.max(p.need,s.scale*.5))} of need from civilian buyers of US and allied output`}</td><td>free</td><td>now</td><td><button class="pbtn sm" data-a="prio" data-n="${id}">${prioOff(id)?'Restore':'Waive'}</button></td></tr>`:''}
        ${S.fac==='US'?(ndsOk(id)?(()=>{const q=ndsReqs().find(x=>x.id===id),wk=(S.stock[id]||0)/Math.max(s.scale,1e-9);return `<tr><td><b>📦 Stockpile buy</b><div class="mini">Requested in the annual NDAA: about ${NDS_WK} weeks of demand, held in the National Defense Stockpile and drawn down only when supply falls short.${wk>0?` Holds ${fmt(wk,0)} weeks now.`:''}</div></td><td>+${NDS_WK} weeks of demand</td><td>${money(NDS_C)}, paid by Congress</td><td>Congress, ~${fmtDate(pkgWhen())}</td><td>${q?`<span class="lbu" data-a="bill"><b>✓ In the FY${pkgFY()} request</b><span>Work the bill →</span></span>`:`<button class="pbtn sm" data-a="ndsadd" data-n="${id}" ${S.pc>=REQ_PC(NDS_C)?'':'disabled'}>Request in the FY${pkgFY()} NDAA · ${REQ_PC(NDS_C)} PC</button>`}</td></tr>`})():''):`<tr><td><b>📦 Stockpile</b><div class="mini">Strategic Stockpiling Strategy reform buys buffers of gallium, germanium, heavy REEs, antimony, tungsten.</div></td><td>${S.stock[id]>0?'Buffer held':'—'}</td><td colspan="3">${passed('nds')?'Enacted':'Via the legislative agenda'}</td></tr>`}</table></div>
      <!--/AO--><div class="dsec"><h4>Capacity pipeline — domestic, as share of need</h4>${(()=>{const np=nodePipe(id,P);return stackBar(np.seg,v=>pct(v),1,'Need')+(np.blocked>0?`<p class="mini redt">${pct(np.blocked)} of need is stuck behind an obstacle.</p>`:'')})()}
       ${act.length?`<div class="lgrp">Projects</div>${projTable(act)}`:''}${plants.length?`<div class="lgrp">Plants</div>${plantsTable(plants)}`:''}</div>
@@ -4133,6 +4151,8 @@ const CITES=[
 ];
 const CITE_IX=Object.fromEntries(CITES.map((c,i)=>[c.id,i]));
 const ASSUMPTIONS=[
+ ['Repeat plants and drone parts','Each repeat of the same plant costs 10% more than the last, up to 50% more. Defense orders can claim up to half of the drone parts (cells, motors, boards, fiber, thermal cores) that US civilian drone makers buy from onshore suppliers; that flow grows with the US-made share of the civilian drone market. Both are game estimates.'],
+ ['Defense priority over civilian buyers','Rated defense orders come first by law (the Defense Priorities and Allocations System), and allies with security-of-supply arrangements honor priority requests. When an item is short, defense automatically takes what civilian buyers of US output would have had, and about half of what they would have had from allied plants; neutral and Chinese suppliers give no priority. The civilian share of each item’s market is an estimate. Civilian strain rises with the share of civilian supply taken.'],
  ['Build times and what reforms do to them','Planned times by kind of plant are anchored on recent projects: the Mesquite shell plant (award to opening in 18 months, then no usable parts for two years), the Graham TNT plant (under 36 months planned), MP Materials’ magnet plant (3.5 years to commercial output, twice its plan) and the Stibnite mine (8–9 years of permitting, about 3 of construction). Obstacles add the delays real projects meet. An enacted reform shortens the stage it governs (contract awards, permitting, qualification, funding, ramp-up) by 15–65%; those sizes are estimates. Each program office runs about five orders at full speed.'],
  ['Raw-material supply shares','For the raw materials USGS reports, the domestic share is one minus net import reliance (reliance given as “more than 50%” is read as 62.5%, “more than 75%” as 87.5%), and imports are split between allied, neutral and Chinese or Russian sources by USGS import shares for 2021–24. China’s hold on world production appears as Chinese content inside allied and neutral supply: a share of it stops when Beijing cuts supply. That share is an estimate for each material (85% for gallium, because allied refiners purify Chinese primary gallium; 60% for neutral antimony, which is largely re-routed Chinese material).'],
  ['Civilian drone market','US civilian drone sales start at about 400,000 a year and grow 6% a year. US makers’ share moves over about two years toward a level set by the bans in force (shown in the Rulebook under Sourcing). At about 250,000 US-made civilian drones a year, the military drone base reaches full scale: drone line capacity +25%, drone plants 20% cheaper.'],
@@ -4366,7 +4386,7 @@ function nodeRow(id,P){
   const p=P[id],n=ND[id],st=nodeStatus(p),tot=p.ext+p.dom+p.stockRem;
   const base=Math.max(p.need,p.ext+p.dom+p.lost,.0001)*1.05,W=x=>Math.min(100,x/base*100);
   const domUse=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));
-  return `<div class="nrow trc" data-a="node" data-n="${id}"><div class="top"><span class="nm">${n.ic} ${n.n}</span><span>${n.ss?`<span class="tag ss" data-tip="<b>Sole source</b><br>${tipQ(n.ss)}">SS</span> `:''}${S.prio[id]?'<span class="tag dpa">DPA</span> ':''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?'<span class="tag ban" title="DFARS: PRC-linked supply unusable">DFARS</span> ':''}${stTag(st)} <span class="tag kh" data-tip="<b>Know-how</b><br>How experienced the workforce is, 0–100. Higher means faster ramp-up and fewer production problems.">KH ${Math.round(S.know[id])}</span></span></div>
+  return `<div class="nrow trc" data-a="node" data-n="${id}"><div class="top"><span class="nm">${n.ic} ${n.n}</span><span>${n.ss?`<span class="tag ss" data-tip="<b>Sole source</b><br>${tipQ(n.ss)}">SS</span> `:''}${p.div>1e-9?'<span class="tag dpa" data-tip="Defense orders are taking supply that civilian buyers would have had.">DPA</span> ':''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?'<span class="tag ban" title="DFARS: PRC-linked supply unusable">DFARS</span> ':''}${stTag(st)} <span class="tag kh" data-tip="<b>Know-how</b><br>How experienced the workforce is, 0–100. Higher means faster ramp-up and fewer production problems.">KH ${Math.round(S.know[id])}</span></span></div>
    <div class="bar"><i style="left:0;width:${W(domUse)}%;background:var(--green)"></i><i style="left:${W(domUse)}%;width:${W(p.ally+p.spot+p.div)}%;background:var(--blue)"></i><i style="left:${W(domUse+p.ally+p.spot+p.div)}%;width:${W(p.neut)}%;background:#c2a04e"></i><i style="left:${W(domUse+p.ally+p.spot+p.div+p.neut)}%;width:${W(p.prc)}%;background:#a03a30"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
    <div class="nums"><span>Cover <b class="${st==='ok'?'green':st==='tight'?'amber':'red'}">${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'}</b></span>${p.need>1e-6?`<span>Dom ${pct(domUse/p.need)}</span><span>Ally ${pct(p.ally/p.need)}</span>${p.neut/p.need>.005?`<span>Neut ${pct(p.neut/p.need)}</span>`:''}<span>PRC ${pct(p.prc/p.need)}</span>`:''}${p.starvedBy?`<span class="red">Starved by ${ND[p.starvedBy].n}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
 }
@@ -4914,8 +4934,8 @@ function renderGame(){
   if(allyDone.length)fc+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
   // ---- right
   // home front
-  const nPrio=Object.keys(S.prio).filter(k=>S.prio[k]);
-  const pY=S.pcY||{inc:0,sp:0,ev:0},ew=nextElec(),eo=elecOdds(),nPr=Object.keys(S.prio).filter(k=>S.prio[k]);
+  const nPrio=S.divIds||[];
+  const pY=S.pcY||{inc:0,sp:0,ev:0},ew=nextElec(),eo=elecOdds(),nPr=S.divIds||[];
   const sParts=[...nPr.length?[[`DPA diversions from civilian customers (${nPr.length})`,nPr.reduce((a,k)=>a+(ND[k].civ||0)*.35,0)]]:[],...(icOn('icRevoke')&&S.w-(S.icSince?.icRevokeW||0)<26?[['Grounded drone fleets',.6]]:[]),['Recovery as supply returns to normal',-.35]];
   const soon=[...(S.ne?[[`National emergency renewal (${NE_RENEW} PC)`,S.ne.since+52*Math.ceil((S.w-S.ne.since+1)/52)]]:[]),...CARVES.filter(C=>carveOn(C.id)&&S.carve[C.id].left<=13).map(C=>[`Carve-out expires: ${cname(C)}`,S.w+S.carve[C.id].left]),...(ew?[[`Election Day`,ew]]:[]),...(S.fac==='US'?[[`Congress votes on the FY${pkgFY()} ${billN()}`,billW()]]:[])].sort((x,y)=>x[1]-y[1]);
   let home=`<h2>Home Front <span class="r dim">PC ${rate>=0?'+':''}${fmt(rate*52,0)}/yr</span></h2>
@@ -4932,8 +4952,8 @@ function renderGame(){
   home+=`
    ${F().aid&&!S.ceasefire?`<div class="sect"><span>Aid to Ukraine</span><span>${fmtN((F().aid.shells||0)*S.aidLvl)} shells/yr leave your stocks</span></div><div class="mob">${[[1,'Full'],[.5,'Half'],[0,'Stop']].map(([v,l])=>`<button class="btn ${S.aidLvl===v?'on':''}" data-a="aid" data-v="${v}" ${v<S.aidLvl&&S.pc<Math.round(10*(S.aidLvl-v)/.5)?'disabled':''} data-tip="${l} aid: ${fmtN(F().aid.shells*v)} shells and ${fmtN(F().aid.interceptors*v)} interceptors a year to Ukraine.${v<S.aidLvl?` Cutting costs ${Math.round(10*(S.aidLvl-v)/.5)} PC.`:''}">${l}</button>`).join('')}</div>`:''}
    ${S.fac==='US'?`<div class="sect"><span>Import controls & regulations</span><span class="linkn" data-a="view" data-v="rules" style="color:#dcc78e">⚖ Rulebook →</span></div>`:''}
-   <div class="sect"><span>DPA priority diversions (${nPrio.length})</span><span>${nPrio.length?'':'click a node to divert'}</span></div>
-   ${nPrio.map(id=>`<div class="prow"><span class="linkn" style="color:#8db4e0" data-a="node" data-n="${id}">${ND[id].n}</span><button class="btn sm" data-a="prio" data-n="${id}">release</button></div>`).join('')}
+   <div class="sect"><span>Defense orders taking civilian supply (${nPrio.length})</span><span>${nPrio.length?'automatic when short':'none now'}</span></div>
+   ${nPrio.map(id=>`<div class="prow"><span class="linkn" style="color:#8db4e0" data-a="node" data-n="${id}">${ND[id].n}</span><button class="btn sm" data-a="prio" data-n="${id}" data-tip="Waive defense priority on this item for a year: civilian buyers keep their supply and defense goes short.">waive</button></div>`).join('')}
    <div class="sect"><span>Emergency carve-outs</span><span>fast · temporary · fragile</span></div>
    ${S.fac==='US'?`<div class="ref ${S.ne?'act':''}"><span class="nm">🚨 National emergency on the defense industrial base</span>${S.ne?`<span class="sub green">since ${fmtDate(S.ne.since)}</span>`:`<button class="btn sm" data-a="ne" ${S.pc>=NE_COST?'':'disabled'}>${NE_COST} PC · declare</button>`}<span class="d">The legal trigger for emergency permitting, the Jones Act waiver, emergency qualification and hiring. Renewed each year (${NE_RENEW} PC); lapses if you can’t.</span></div>`:''}`;
   for(const C of CARVES.filter(facOk)){const on=carveOn(C.id),c=carveCost(C),k=S.carve[C.id];
@@ -5068,7 +5088,7 @@ function whyOff(b){
     case 'intro':{const R=RD[d.r];if(S.bill)return `One bill at a time — ${rname(RD[S.bill.id])} is still being voted on.`;if(R.req&&!passed(R.req))return `Pass ${rname(RD[R.req])} first.`;if(S.pc<reformCost(R))return needPC(reformCost(R));if((R.$||0)>S.budget)return needM(R.$);break}
     case 'whip':return S.bill?.whips>=3?'Every vote that can be whipped has been.':needPC(10);
     case 'spot':return needM(spotCost(d.n));
-    case 'prio':return needPC(5);
+
     case 'rule':{const r=RD2[d.r];return needPC(r.pc[ruleOn(r.id)?1:0])}
     case 'ic':{const c=ICD[d.c],on=icOn(c.id);if(!on&&c.req&&!icOn(c.req))return `Needs “${ICD[c.req].n}” in force first.`;return needPC(c.pc[on?1:0])}
     case 'repro':return needPC(reproCost());
