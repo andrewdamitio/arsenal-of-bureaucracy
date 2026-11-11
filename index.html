@@ -133,6 +133,24 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .toast.good{border-color:var(--green);background:#1b2a17}
 @keyframes tin{from{transform:translateX(30px);opacity:0}}
 #start{max-width:1020px;margin:0 auto;padding:30px 20px;text-align:center}
+#title{max-width:1180px;margin:0 auto;padding:34px 22px 40px;color:#e6dcc2;font:14px/1.5 "Segoe UI",system-ui,sans-serif}
+#title .ti-head{text-align:center;margin-bottom:18px}#title h1{font:700 46px Georgia;letter-spacing:.14em;color:var(--brass2);margin:0}#title h1 small{font-size:22px;font-style:italic;color:var(--dim);letter-spacing:0}
+#title .ti-tag{font:italic 16px Georgia;color:var(--dim);margin-top:4px}
+.ti-point{background:var(--paper) linear-gradient(#efe6cf,#e2d5b4);color:#2b241a;border:1px solid var(--brass);padding:14px 20px;margin:0 auto 18px;max-width:920px;box-shadow:inset 4px 0 0 #b8860b}.ti-point p{margin:0 0 7px}.ti-point p:last-child{margin:0}
+.ti-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);gap:18px;align-items:start}
+.ti-card{border:1px solid var(--brass);background:var(--panel);padding:16px 18px}.ti-card h2{font:700 13px "Segoe UI",system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--brass2);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.ti-save{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.ti-save div{display:flex;flex-direction:column}.ti-save span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}.ti-save b{font-size:15px;color:#f0e6c8}
+.ti-btn{display:block;width:100%;margin:0 0 8px;padding:9px 12px;font:600 14px "Segoe UI",system-ui,sans-serif;background:#2a2c24;color:#e6dcc2;border:1px solid var(--line);border-radius:4px;cursor:pointer}.ti-btn:hover{background:#34372c}
+.ti-btn.primary{background:#b8860b;color:#1c1a14;border-color:#d4a63a;font-size:15px}.ti-btn.primary:hover{background:#cf9a1c}
+.ti-none{color:var(--dim);font-style:italic;margin:4px 0 12px}.ti-note{font-size:12px;color:var(--dim);margin:6px 0 0}
+.ti-mode{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:12px}.ti-mode>span:first-child{font:700 11px "Segoe UI";letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}.ti-mdesc{font-size:12.5px;color:#cfc6ad;flex:1 1 260px}
+.seg.dark{background:#22231c;border-color:var(--brass)}.seg.dark button{color:#e6dcc2}.seg.dark button+button{border-left-color:var(--line)}.seg.dark button:hover{background:#34372c}.seg.dark button.on{background:#b8860b;color:#1c1a14}
+.ti-opts{display:flex;flex-direction:column;gap:8px}
+.ti-opt{display:flex;align-items:flex-start;gap:12px;text-align:left;background:#24261f;border:1px solid var(--line);border-radius:4px;padding:11px 14px;cursor:pointer;color:#e6dcc2;font:13px/1.45 "Segoe UI",system-ui,sans-serif}
+.ti-opt:hover{border-color:var(--brass);background:#2c2f26}.ti-oic{font-size:24px;line-height:1;flex:none;width:30px;text-align:center}
+.ti-otx{display:flex;flex-direction:column;flex:1}.ti-otx b{font:700 16px Georgia;color:var(--brass2)}.ti-osub{font-size:12px;color:#d4b46a;margin:1px 0 3px}.ti-obody{color:#b9b19a;font-size:12.5px}
+.ti-go{flex:none;align-self:center;font:600 13px "Segoe UI";color:var(--brass2);opacity:.6}.ti-opt:hover .ti-go{opacity:1}
+@media(max-width:860px){.ti-cols{grid-template-columns:1fr}#title h1{font-size:30px}}
 #start h1{font:700 44px Georgia;letter-spacing:.14em;color:var(--brass2);margin:0}
 #start .tag2{font:italic 16px Georgia;color:var(--dim);margin:6px 0 24px}
 .fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,560px));justify-content:center;gap:18px;text-align:left}
@@ -151,7 +169,18 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .sk text .sub{font-size:11.5px;fill:#5a4e38}
 .sk text.ch{font-weight:700;font-size:11.5px;fill:#5a4a28;letter-spacing:.07em}
 .billt td,.billt th{text-align:right}.billt td:first-child,.billt th:first-child{text-align:left}.billt .billsum td{border-top:2px solid #8a7850}
-.rec-tiles{font:12px/1.45 "Segoe UI",system-ui,sans-serif;color:#4a3f2a;padding:6px 14px 0;max-width:1100px}
+.skctl{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;align-items:center;padding:10px 14px;margin:2px 0 4px;background:#f5eedb;border:1px solid #cbbd95;border-radius:4px}
+.skctl .lab{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#6b5a35}
+.skctl .sublab{font:600 12px "Segoe UI",system-ui,sans-serif;color:#6b5a35}
+.skctl .row2{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}.skctl .row2 .seg+.sublab{margin-left:12px}
+.seg{display:inline-flex;border:1px solid #9c8a5c;border-radius:5px;overflow:hidden;background:#fbf7ec;width:max-content}
+.seg button,.chips button{font:600 12.5px "Segoe UI",system-ui,sans-serif;color:#3a3020;background:transparent;border:0;padding:5px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+.seg button+button{border-left:1px solid #cbbd95}
+.chips{display:flex;flex-wrap:wrap;gap:5px}.chips button{background:#fbf7ec;border:1px solid #cbbd95;border-radius:5px;padding:4px 10px}
+.seg button:hover,.chips button:hover{background:#efe3c4}
+.seg button.on,.chips button.on{background:#3a3020;color:#f3dc9a;border-color:#3a3020}
+.chips button .lic{flex:none}
+.skguide{grid-column:1/-1;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif;color:#4a3f2a;border-top:1px solid #ddd0ad;padding-top:8px}
 .sk .lk{transition:opacity .12s}.sk .nd{cursor:pointer}
 .sk.dim .lk{opacity:.06!important}.sk.dim .lk.hot{opacity:.85!important}.sk.dim .nd{opacity:.25}.sk.dim .nd.hot{opacity:1}
 .sklegend{display:flex;flex-wrap:wrap;gap:12px;font:12px "Segoe UI",system-ui,sans-serif;color:#5a4e38;padding:6px 14px}
@@ -4344,12 +4373,13 @@ function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   return h+`</table><div class="sleg" style="margin-top:6px"><span><i style="background:${SRC_C.dom}"></i>US-made</span><span><i style="background:${SRC_C.ally}"></i>Allied</span><span><i style="background:${SRC_C.spot}"></i>Spot / diverted</span><span><i style="background:${SRC_C.prc}"></i>PRC / Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span><span class="mini">US-made, allied, PRC and cut-off shares add up to 100% of supply. Allied includes spot purchases. The bar's black tick is this week's demand.</span></div>`}
 function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat',fv=S.flowV||'diag';
-  const vt=`<div class="sktool" style="padding-top:0"><span class="lab">Display</span><button class="pbtn ${fv==='diag'?'on':''}" data-a="flowv" data-v="diag" data-tip="Material flowing from raw sources through each tier of the supply chain into end items">Flow diagram</button><button class="pbtn ${fv==='table'?'on':''}" data-a="flowv" data-v="table" data-tip="A table of every item: what share is made at home, by allies, by neutral countries and by China or Russia">Sourcing table</button></div>`;
-  if(fv==='table')return vt+madeBody();
-  return vt+`<div class="sktool" style="padding-top:0"><span class="lab">End item</span><button class="pbtn ${f==='all'?'on':''}" data-a="flow" data-f="all">All</button>${S.order.map(l=>`<button class="pbtn ${f==='L:'+l?'on':''}" data-a="flow" data-f="L:${l}">${LINES[l].n}</button>`).join('')}${f!=='all'&&!f.startsWith('L:')?`<button class="pbtn on">${ND[f].n}</button>`:''}
-     </div><div class="sktool"><span class="lab">Band width</span><button class="pbtn ${m==='det'?'on':''}" data-a="flowm" data-m="det" data-tip="Each end item counts by how much it adds to deterrence, so a submarine outweighs a shell">Deterrence value</button><button class="pbtn ${m==='out'?'on':''}" data-a="flowm" data-m="out" data-tip="Each end item counts by its output relative to the 2027 US production rate">Output volume</button>
-     <span class="lab">Credit value to</span><button class="pbtn ${at==='mat'?'on':''}" data-a="flowa" data-m="mat" data-tip="All value traced down to where the raw material came from">Raw-material origin</button><button class="pbtn ${at==='va'?'on':''}" data-a="flowa" data-m="va" data-tip="Each domestic manufacturing step keeps half the value of its output; the rest traces upstream">Each manufacturing step</button></div>
-    <div class="skguide">Read left to right: raw sources feed four tiers of the supply chain, which feed the end items on the right. A band's width is its share of ${m==='det'?'deterrence value':'output'}; its tint shows China or Russia content. Bar colour: <b style="color:#4f7a40">green</b> supplied, <b style="color:#a87a1a">amber</b> tight, <b style="color:#b8402f">red</b> short. Hover to trace a chain; click to open its page.</div>
+  const B=(on,at2,lab,tip,ic)=>`<button class="${on?'on':''}" ${at2}${tip?` data-tip="${tip}"`:''}>${ic||''}<span>${lab}</span></button>`;
+  const vt=`<div class="skctl"><span class="lab">Display</span><div class="seg">${B(fv==='diag','data-a="flowv" data-v="diag"','Flow diagram','Material flowing from raw sources through each tier of the supply chain into end items')}${B(fv==='table','data-a="flowv" data-v="table"','Sourcing table','Every item: what share is made at home, by allies, by neutral countries and by China or Russia')}</div>`;
+  if(fv==='table')return vt+'</div>'+madeBody();
+  return vt+`<span class="lab">End item</span><div class="chips">${B(f==='all','data-a="flow" data-f="all"','All end items')}${S.order.map(l=>B(f==='L:'+l,`data-a="flow" data-f="L:${l}"`,LINES[l].n,'',lineIcon(l,16,'lic sm'))).join('')}${f!=='all'&&!f.startsWith('L:')?B(1,'',ND[f].n):''}</div>
+     <span class="lab">Measure</span><div class="row2"><span class="sublab">Band width</span><div class="seg">${B(m==='det','data-a="flowm" data-m="det"','Deterrence value','Each end item counts by how much it adds to deterrence, so a submarine outweighs a shell')}${B(m==='out','data-a="flowm" data-m="out"','Output volume','Each end item counts by its output relative to the 2027 US production rate')}</div>
+     <span class="sublab">Credit value to</span><div class="seg">${B(at==='mat','data-a="flowa" data-m="mat"','Raw-material origin','All value traced down to where the raw material came from')}${B(at==='va','data-a="flowa" data-m="va"','Each manufacturing step','Each domestic manufacturing step keeps half the value of its output; the rest traces upstream')}</div></div>
+     <div class="skguide"><b>How to read it.</b> Left to right: raw sources feed four tiers of the supply chain, which feed the end items on the right. A band's width is its share of ${m==='det'?'deterrence value':'output'}; its tint shows China or Russia content. Bars: <b style="color:#4f7a40">green</b> supplied, <b style="color:#a87a1a">amber</b> tight, <b style="color:#b8402f">red</b> short. Hover to trace a chain; click to open its page.</div></div>
     ${f!=='all'?(()=>{const isL=f.startsWith('L:'),nm=isL?LINES[f.slice(2)].n:ND[f].n,ic=isL?lineIcon(f.slice(2),22,'lic'):ND[f].ic;
       return `<div class="flfocus"><span class="ffi">${ic}</span><div><div class="ffk">Selected</div><b>${nm}</b><span class="mini">${isL?'Everything it is made from, traced back to raw sources.':'Its inputs back to raw sources, and the end items it feeds. Everything else is hidden.'}</span></div><span class="dsp"></span><button class="pbtn sm" data-a="node" data-n="${f}">Open its page →</button><button class="pbtn sm" data-a="flow" data-f="all">Show all end items</button></div>`})():''}
     <div style="padding:8px 0 0">${sankeySVG(S._R||production(false),f,m,at)}</div>
@@ -4432,6 +4462,22 @@ function linkify(m){const pn=S.projects.length+S.done.length+S.gone.length;if(LK
 const stTag=s=>({ok:'<span class="tag ok">ok</span>',tight:'<span class="tag tight">tight</span>',short:'<span class="tag short">short</span>',cut:'<span class="tag cut">cut</span>',idle:'<span class="tag t">idle</span>'}[s]);
 
 const PLAYABLE=['US']; // the game is the US defense industrial base; Europe appears as allies
+let TMODE='std';
+function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k='';document.getElementById('receipt')?.remove();const tb=document.getElementById('toasts');if(tb)tb.innerHTML='';document.body.classList.remove('hasdec');const sv=savedInfo(),ago=sv?Math.max(0,Math.round((Date.now()-sv.at)/60000)):0,agoT=ago<1?'just now':ago<60?ago+' min ago':ago<1440?Math.round(ago/60)+' h ago':Math.round(ago/1440)+' days ago';
+  const opt=(id,ic,n,sub,body)=>`<button class="ti-opt" data-a="tnew" data-s="${id}"><span class="ti-oic">${ic}</span><span class="ti-otx"><b>${n}</b><span class="ti-osub">${sub}</span>${body?`<span class="ti-obody">${body}</span>`:''}</span><span class="ti-go">Start ›</span></button>`;
+  app.innerHTML=cz(`<div id="title"><div class="ti-head"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="ti-tag">Rebuilding the US defense industrial base, January 2027 to 2037</div></div>
+   <div class="ti-point"><p><b>You run the effort to rearm the United States.</b> China and Russia are out-producing the US in munitions, ships and missiles. You must close the gap with an industrial base that has withered, suppliers that move slowly, and critical minerals that come from the same rivals you are racing.</p>
+   <p><b>Money is rarely what stops you.</b> Contracts, permits, lawsuits, qualification, a short workforce and Beijing's export controls are. Each year's NDAA is your chance to fund plants, order weapons and change the rules.</p>
+   <p><b>The reforms you pass decide whether you make it.</b> Every number is drawn from public sources you can check in the game.</p></div>
+   <div class="ti-cols"><section class="ti-card"><h2>Continue</h2>${sv?`<div class="ti-save"><div><span>Game date</span><b>${fmtDate(sv.w)}</b></div><div><span>Mandate</span><b>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'}</b></div><div><span>Mode</span><b>${sv.sandbox?'Sandbox':'Standard'}</b></div><div><span>Saved</span><b>${agoT}</b></div></div>
+       <button class="ti-btn primary" data-a="tcont">Continue your game ›</button>`:`<p class="ti-none">No saved game in this browser.</p>`}
+     <button class="ti-btn" data-a="saveul">Load a save file</button>
+     <p class="ti-note">The game saves itself in this browser as you play. Starting a new game replaces that save; download a file from the save menu first to keep it.</p></section>
+   <section class="ti-card ti-new"><h2>New game</h2>
+     <div class="ti-mode"><span>Mode</span><div class="seg dark"><button class="${TMODE==='std'?'on':''}" data-a="tmode" data-m="std"><span>Standard</span></button><button class="${TMODE==='sbx'?'on':''}" data-a="tmode" data-m="sbx"><span>Sandbox</span></button></div>
+       <span class="ti-mdesc">${TMODE==='sbx'?'No budget or Political Capital limits: build and pass anything, and see what time, permits and suppliers still hold back.':'A real budget and Political Capital: every plant, order and reform competes for them.'}</span></div>
+     <div class="ti-opts">${SCENS.map(sc=>opt(sc.id,sc.ic,sc.n,`Halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}`,sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,''))).join('')}
+       ${opt('open','🏁','Open race','No mandate · play to 2037','Set your own priorities and measure yourself against China and Russia year by year.')}</div></section></div></div>`)}
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
    <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2037 (2025–26 replayed)</div>
@@ -4963,8 +5009,8 @@ function renderGame(){
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
     ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Opens the bottleneck analysis.`,'view','data-v="bn"')}
-    ${res(`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Opens the Home tab.`,'rtab','data-t="home"')}
-    ${res(`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
+    ${res(S.sandbox?'∞':`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Opens the Home tab.`,'rtab','data-t="home"')}
+    ${res(S.sandbox?'∞':`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,S.sandbox?'Budget · sandbox':`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.`,'rtab','data-t="prog"')}
     ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,`FY${pkgFY()%100} request`,`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br>Click to work the bill.<br><br>${OFF_TIP}`,'bill','',over.length?'rwarn':'')})()}
     ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>Each takes its default after ${DECIDE_WK} weeks. Opens the first one.`:'Nothing is waiting on you.',S.inbox?.length?'evdo':firstStuck?'prog':'rtab',S.inbox?.length?`data-e="${S.inbox[0].ev}"`:firstStuck?`data-u="${firstStuck.uid}"`:'data-t="prog"',dpn?'ralert':'rquiet')}
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short','<b>End-item lines below capacity</b><br>Opens the bottleneck analysis.','view','data-v="bn"',shortL?'rwarn':'')}
@@ -5218,7 +5264,8 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
   el.innerHTML=cz(`<div class="rcpt ${r.ok?'ok':'meh'}"><button class="rcpt-x" data-a="rcptx" title="Close (Esc)" aria-label="Close">✕</button><span class="rcpt-ic">${r.ic}</span><div class="rcpt-lab">${r.lab}</div><div class="rcpt-t">${r.title}</div>${r.lines.filter(Boolean).map(x=>`<div class="rcpt-l">${x}</div>`).join('')}<div class="rcpt-b">${r.act?`<button class="pbtn sm primary" ${r.act} data-rc="1">${r.actL||'Open →'}</button>`:''}</div></div>`)}
 // does a supply move on this item touch a line's current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
-function render(){if(!S)newGame(PLAYABLE[0]);renderGame();renderModal();rehover();renderReceipt()}
+function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.budget=9999}}
+function render(){if(!S){renderTitle();return}sbxFill();renderGame();renderModal();rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
 const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
@@ -5226,7 +5273,7 @@ const saveable=()=>S&&!S.replay&&!S.histMode&&!S.over&&!(S.w===PLAY0&&S.modal===
 function saveData(){const o={};for(const k in S)if(!SAVE_SKIP.has(k))o[k]=S[k];return JSON.stringify({v:1,at:Date.now(),uidN,S:o})}
 function saveGame(){if(!saveable())return false;try{localStorage.setItem(SAVE_K,saveData());S._svW=S.w;S._svAt=Date.now();return true}catch(e){S._svErr=String(e.message||e);return false}}
 function clearSave(){try{localStorage.removeItem(SAVE_K)}catch(e){}}
-function savedInfo(){try{const t=localStorage.getItem(SAVE_K);if(!t)return null;const d=JSON.parse(t);return {at:d.at,w:d.S.w,fac:d.S.fac,scen:d.S.scen}}catch(e){return null}}
+function savedInfo(){try{const t=localStorage.getItem(SAVE_K);if(!t)return null;const d=JSON.parse(t);return {at:d.at,w:d.S.w,fac:d.S.fac,scen:d.S.scen,sandbox:!!d.S.sandbox}}catch(e){return null}}
 function loadData(txt){const d=JSON.parse(txt);if(!d||d.v!==1||!d.S||d.S.w==null)throw new Error('Not an Arsenal of Bureaucracy save file.');
   const cur=d.S;newGame(cur.fac);const tm=S; // fields added to the game since the save was made start from a fresh game's values
   for(const k in tm)if(!(k in cur)&&!SAVE_SKIP.has(k))cur[k]=tm[k];
@@ -5239,7 +5286,7 @@ function resumeSave(){let t=null;try{t=localStorage.getItem(SAVE_K)}catch(e){}if
 function saveDownload(){const t=saveData(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));
   const d=dateOf(S.w);a.download=`arsenal-${S.fac.toLowerCase()}-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function saveUpload(){const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
-  i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{const old=S;try{loadData(t);S.modal=null;saveGame();render();toast(`💾 <b>Save loaded</b><br><span class="dim">${fmtDate(S.w)}</span>`,'good')}catch(e){S=old;S._svMsg=e.message||'That file could not be read.';render()}})};i.click()}
+  i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{const old=S;try{loadData(t);S.modal=null;saveGame();render();toast(`💾 <b>Save loaded</b><br><span class="dim">${fmtDate(S.w)}</span>`,'good')}catch(e){S=old;if(S){S._svMsg=e.message||'That file could not be read.';render()}else{renderTitle();alert(e.message||'That file could not be read.')}}})};i.click()}
 function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S._svAt)/60000)):null,can=saveable()||S.over;
   const t=(v,l)=>`<div class="yrt"><b>${v}</b><span>${l}</span></div>`;
   const when=!ok?'Not yet':ago<1?'Just now':ago<60?ago+' min ago':'Over an hour ago';
@@ -5248,7 +5295,7 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
    <p class="mini">The game saves itself every four game weeks and whenever you close the tab, and picks up where you left off. A browser save lives only on this computer, and clearing site data erases it: download a file to keep a copy or to move the game.</p>
    ${S._svErr?`<p class="redt mini">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="redt mini">${S._svMsg}</p>`:''}
 </div>
-   <div class="ft svft"><button class="pbtn primary" data-a="savedl" ${can?'':'disabled'}>⬇ Download save file</button><button class="pbtn" data-a="saveul">⬆ Load a save file</button><button class="pbtn danger" data-a="savenew" data-tip="Starts over now. This game's browser save is replaced; download a file first to keep it.">New game</button></div></div>`}
+   <div class="ft svft"><button class="pbtn primary" data-a="savedl" ${can?'':'disabled'}>⬇ Download save file</button><button class="pbtn" data-a="saveul">⬆ Load a save file</button><button class="pbtn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="pbtn danger" data-a="savenew" data-tip="Starts over now. This game's browser save is replaced; download a file first to keep it.">New game</button></div></div>`}
 window.addEventListener('pagehide',()=>saveGame());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame()});
 let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
@@ -5259,6 +5306,11 @@ document.addEventListener('pointerdown',e=>{
   if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
   if(a==='start'){newGame(b.dataset.f);render();return}
+  if(a==='tmode'){TMODE=b.dataset.m;renderTitle();return}
+  if(a==='tcont'){if(!resumeSave())renderTitle();return}
+  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.modal=null;S.queue=[];if(b.dataset.s==='open')S.scenSkip=true;else chooseScen(b.dataset.s);sbxFill();render();saveGame();return}
+  if(a==='saveul'&&!S){saveUpload();return}
+  if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
   if(a==='skip'){if(S.replay){endHistory();render()}return}
   if(S.replay&&REPLAY_LOCK.has(a))return;
@@ -5387,14 +5439,14 @@ function loop(now){
       if(ticked)render()}
     requestAnimationFrame(loop);return}
   if(S&&!S.over&&S.speed>0&&!S.queue.length&&!S.modal){acc+=Math.min(dt,500);let ticked=false;
-    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over){acc-=MS[S.speed];tick();ticked=true}
+    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over){acc-=MS[S.speed];tick();sbxFill();ticked=true}
     if(ticked){dirtyR=true;if(S.w-(S._svW??-99)>=4)saveGame()}
     if(dirtyR&&(S.queue.length||S.over||!S.speed||now-lastR>=RENDER_MS[S.speed])){render();lastR=now;dirtyR=false}}
   else{acc=0;if(dirtyR&&S){render();lastR=now;dirtyR=false}}
   requestAnimationFrame(loop);
 }
 window.addEventListener('resize',()=>{if(S&&S.modal)renderModal()});
-if(!resumeSave())render();requestAnimationFrame(loop);
+renderTitle();requestAnimationFrame(loop);
 </script>
 </body>
 </html>
