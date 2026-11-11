@@ -1024,6 +1024,13 @@ const NODES=[
   dp:{n:'Submarine Module Yard',g:.3,c:3}},
 ];
 const ND=Object.fromEntries(NODES.map(n=>[n.id,n]));
+// Names in sentence case: ordinary words after the first are lowercase; acronyms, symbols and mixed-case terms (NdFeB, GaN, T-R) keep their capitals.
+const KEEPW=new Set(['Army','Navy','Virginia','Tomahawk','PAC','THAAD']);
+const ordW=w=>{w=w.replace(/^[(]+|[,;:.)]+$/g,'');return w.length>2&&/^[A-Z][a-z]+$/.test(w)&&!KEEPW.has(w)};
+function sentCase(n){return n.split(' ').map((w,i)=>w.split(/([-\/])/).map((p,j)=>(i===0&&j===0)||!ordW(p)?p:p.toLowerCase()).join('')).join(' ')}
+// a name inside a sentence: its first letter is lowercase too, unless it is an acronym or proper name
+const lc=n=>{if(n==null)return '';const w=String(n).split(/[ \-\/]/)[0];return ordW(w)?n[0].toLowerCase()+n.slice(1):n};
+for(const n of NODES)n.n=sentCase(n.n);
 /* ---------- DOSSIER CONTENT: process chain, world sourcing, named producers ----------
    Shares are from USGS MCS 2025/26 and the research pass unless marked as estimates. */
 const INFO={
@@ -1153,6 +1160,7 @@ const LINES={
  a2a:         {n:'Air-to-Air Missiles',u:'air-to-air missiles',k:1200,in:['srm','rf_seeker','imu','warhead','actuators','thermal_bat']},
  fires:       {n:'Army Precision Fires',u:'rockets & missiles',k:12000,in:['srm','imu','warhead','actuators','composites','fuzes']},
 };
+for(const c in LINES)LINES[c].n=sentCase(LINES[c].n);
 const VAL={a2a:{pac:.4,eu:.3},fires:{pac:.04,eu:.08},shells:{pac:.0003,eu:.002},interceptors:{pac:1.2,eu:1},strike:{pac:1.5,eu:1},aircraft:{pac:10,eu:10},surface:{pac:80,eu:20},subs:{pac:250,eu:80},drones:{pac:.002,eu:.012}};
 const THEATERS={pac:'Indo-Pacific',eu:'European Theater'};
 const STAGES=['approp','contract','permit','build','qual','ramp'];
@@ -1695,8 +1703,8 @@ const SHIFT_M=1.15,SHIFT_C=.15;
 // overtime and another shift at existing supplier plants: +15% of existing domestic capacity, phased in over ~13 weeks of hiring
 const NSHIFT_M=.15,NSHIFT_C=.08,NSHIFT_RAMP=13;
 const nshiftOn=id=>!!S.nshift?.[id],nshiftF=id=>nshiftOn(id)?1+NSHIFT_M*Math.min(1,(S.w-S.nshift[id].since)/NSHIFT_RAMP):1;
-function toggleNShift(id){S.nshift=S.nshift||{};if(S.nshift[id]){delete S.nshift[id];log(`⏩ Extra shifts end at ${ND[id].n.toLowerCase()} suppliers.`);toast(`⏩ <b>Supplier shifts ended</b><br><span class="dim">${ND[id].n}</span>`);return}
-  if(!(S.nodes[id].base>0)||S.budget<NSHIFT_C/4)return;S.nshift[id]={since:S.w};log(`⏩ Overtime and extra shifts funded at ${ND[id].n.toLowerCase()} suppliers (${money(NSHIFT_C)}/yr).`,'ev');
+function toggleNShift(id){S.nshift=S.nshift||{};if(S.nshift[id]){delete S.nshift[id];log(`⏩ Extra shifts end at ${lc(ND[id].n)} suppliers.`);toast(`⏩ <b>Supplier shifts ended</b><br><span class="dim">${ND[id].n}</span>`);return}
+  if(!(S.nodes[id].base>0)||S.budget<NSHIFT_C/4)return;S.nshift[id]={since:S.w};log(`⏩ Overtime and extra shifts funded at ${lc(ND[id].n)} suppliers (${money(NSHIFT_C)}/yr).`,'ev');
   {const v=nodeVerdict(id);receipt({ic:'⏩',lab:'Shifts funded',title:`${ND[id].n} suppliers`,ok:v?.ok,act:`data-a="node" data-n="${id}"`,actL:'Open the item →',
     lines:['+15% of existing US capacity, phased in over about three months of hiring.',v?`<span class="${v.ok?'okt':'amb'}">${v.t.replace('Aims at','Eases')}.</span>`:'',`${money(NSHIFT_C)} a year while it runs.`,'<span class="amb">Risk: tired crews and harder-run machines break down more. Expect lost weeks, more often the longer it runs.</span>']})}}
 // Running plants harder breaks things. Each week shifts run, a line or supplier may lose output to worn equipment, an injury
@@ -1712,8 +1720,8 @@ function shiftRisk(){if(S.histMode)return;const run=[];for(const l in S.shifts)i
     if(ev.ic!=='⛑'){if(k==='line')S.shiftW[id]=S.w;else S.nshift[id].since=Math.min(S.w,S.nshift[id].since+26)}
     log(`${ev.ic} ${nm}: ${ev.l.toLowerCase()} after running extra shifts. Output −${pct(1-ev.m)} for ${ev.w} weeks.`,'bad');
     toast(`${ev.ic} <b>${nm}</b><br><span class="dim">${ev.l} · −${pct(1-ev.m)} for ${ev.w} wk</span>`,'bad',{a:'node',n:k==='line'?'L:'+id:id})}}
-function toggleShift(lid){if(S.shifts[lid]){S.shifts[lid]=false;if(S.shiftW)delete S.shiftW[lid];log(`⏩ Extra shifts end at the ${LINES[lid].n.toLowerCase()} lines.`);toast(`⏩ <b>Extra shifts ended</b><br><span class="dim">${LINES[lid].n}</span>`);return}
-  if(S.budget<SHIFT_C/4)return;S.shifts[lid]=true;(S.shiftW=S.shiftW||{})[lid]=S.w;log(`⏩ Extra shifts funded at the ${LINES[lid].n.toLowerCase()} lines (${money(SHIFT_C)}/yr).`,'ev');toast(`⏩ <b>Extra shifts funded: ${LINES[lid].n}</b><br><span class="dim">${money(SHIFT_C)}/yr from the budget · +${Math.round((SHIFT_M-1)*100)}% line capacity · more breakdowns and accidents the longer it runs</span>`,'good')}
+function toggleShift(lid){if(S.shifts[lid]){S.shifts[lid]=false;if(S.shiftW)delete S.shiftW[lid];log(`⏩ Extra shifts end at the ${lc(LINES[lid].n)} lines.`);toast(`⏩ <b>Extra shifts ended</b><br><span class="dim">${LINES[lid].n}</span>`);return}
+  if(S.budget<SHIFT_C/4)return;S.shifts[lid]=true;(S.shiftW=S.shiftW||{})[lid]=S.w;log(`⏩ Extra shifts funded at the ${lc(LINES[lid].n)} lines (${money(SHIFT_C)}/yr).`,'ev');toast(`⏩ <b>Extra shifts funded: ${LINES[lid].n}</b><br><span class="dim">${money(SHIFT_C)}/yr from the budget · +${Math.round((SHIFT_M-1)*100)}% line capacity · more breakdowns and accidents the longer it runs</span>`,'good')}
 const DFARS_NODES=['ndpr','hree','magnets','tungsten','wha','tantalum','tantcap','bearings'];
 
 /* ---------- EVENTS ---------- */
@@ -1740,7 +1748,7 @@ const EVENTS=[
  {id:'nzBan',p:.003,once:false,cond:()=>!S.tmods.some(m=>m.kind==='neut'&&m.label==='Export ban')&&nzPick(true),ic:'🌐',fx:()=>{S._nz=nzPick()},
   t:()=>`${neutTop(S._nz)||'A Supplier Country'} Halts Raw ${ND[S._nz].n} Exports`,
   pre:'January 2020: Indonesia banned nickel ore exports two years ahead of schedule to force smelting at home.[c:idnickel] February 2025: Congo suspended cobalt exports, then replaced the ban with quotas that October.[c:drccobalt]',
-  body:()=>{const id=S._nz,sh=nodeSupply(id).neut/Math.max(S.nodes[id].scale,1e-9);return `${neutTop(id)||'A neutral supplier'} stops exports of unprocessed ${ND[id].n.toLowerCase()} so that buyers have to build processing plants there. Neutral countries supply about ${pct(sh)} of what your plants use. They answer to their own governments, not to an alliance.`},
+  body:()=>{const id=S._nz,sh=nodeSupply(id).neut/Math.max(S.nodes[id].scale,1e-9);return `${neutTop(id)||'A neutral supplier'} stops exports of unprocessed ${lc(ND[id].n)} so that buyers have to build processing plants there. Neutral countries supply about ${pct(sh)} of what your plants use. They answer to their own governments, not to an alliance.`},
   o:()=>{const id=S._nz,lost=S.nodes[id].neut.amt*.6;return [
    {l:'Co-finance a processing plant there (−$0.3B: supply returns within half a year)',$:.3,fx:()=>tmod('neut',id,.4,26,'Export ban')},
    {l:'Buy on the open market at a premium (−$0.15B: half the loss is covered for a year)',$:.15,fx:()=>{tmod('neut',id,.4,52,'Export ban');S.spot.push({id,amt:lost*.5,left:52})}},
@@ -1757,7 +1765,7 @@ const EVENTS=[
    {l:'Offer Foreign Military Financing (−$0.4B; Taiwan’s output −10% for 26 weeks)',$:.4,fx:()=>alHit('tw','*',.9,26,'budget freeze')},
    {dflt:1,l:'Let Taiwan’s politics run its course (Taiwan’s output −30% for a year)',fx:()=>alHit('tw','*',.7,52,'budget freeze')}]},
  {id:'ruRung',manual:1,once:false,ic:FLAGS.ru,t:()=>RU_RUNGS[S._ruR].n,pre:()=>RU_RUNGS[S._ruR].pre,
-  body:()=>{const r=RU_RUNGS[S._ruR];return `<p>${r.d}</p><p><b>What it hits:</b> ${r.hits.map(([m,c,mm,wk])=>`${m==='*'?'every European ally':ALLY_MEM.eu.find(x=>x.k===m).n}, ${c==='*'?'all lines':LINES[c].n.toLowerCase()} −${pct(1-mm)} for ${wk} weeks`).join('; ')}. Less of their output counts toward your requirement while it lasts.</p><p class="mini">Step ${S._ruR+1} of ${RU_RUNGS.length} in Moscow’s campaign; pressure ${Math.round(ruS().heat)}/100. The Allies tab shows it.</p>`},
+  body:()=>{const r=RU_RUNGS[S._ruR];return `<p>${r.d}</p><p><b>What it hits:</b> ${r.hits.map(([m,c,mm,wk])=>`${m==='*'?'every European ally':ALLY_MEM.eu.find(x=>x.k===m).n}, ${c==='*'?'all lines':lc(LINES[c].n)} −${pct(1-mm)} for ${wk} weeks`).join('; ')}. Less of their output counts toward your requirement while it lasts.</p><p class="mini">Step ${S._ruR+1} of ${RU_RUNGS.length} in Moscow’s campaign; pressure ${Math.round(ruS().heat)}/100. The Allies tab shows it.</p>`},
   o:()=>[{dflt:1,l:'Absorb it',fx:()=>ruApply(S._ruR,1,'absorbed')},
    {l:'Pay to harden plants and rail with the allies (−$0.3B: losses halved, pressure −4)',$:.3,fx:()=>{ruApply(S._ruR,.5,'hardened');ruS().heat=Math.max(0,ruS().heat-4)}},
    {l:'Attribute it publicly and expel diplomats (+6 PC from the hawks; pressure +8)',fx:()=>{ruApply(S._ruR,1,'attributed');S.pc+=6;ruS().heat=Math.min(100,ruS().heat+8)}}]},
@@ -1770,7 +1778,7 @@ const EVENTS=[
 
  {id:'thaw',pre:"November 2025: Beijing suspended its mineral bans as part of a trade deal.[c:truce]",p:.0025,once:false,cond:()=>Object.values(S.cut).some(v=>v<.7),ic:'🤝',t:'Partial Thaw',
   fx:()=>{const ids=Object.keys(S.cut).filter(k=>S.cut[k]<.7);const id=ids[Math.floor(rand()*ids.length)];S.cut[id]=Math.min(1,S.cut[id]+.35);S._thaw=id;cnS().heat=Math.max(0,cnS().heat-5)},
-  body:()=>`Beijing quietly grants a batch of export licenses for ${ND[S._thaw].n.toLowerCase()}. Supply partly resumes — at prices that remind everyone who holds the switch.`,o:[{l:'Take what we can get.'}]},
+  body:()=>`Beijing quietly grants a batch of export licenses for ${lc(ND[S._thaw].n)}. Supply partly resumes — at prices that remind everyone who holds the switch.`,o:[{l:'Take what we can get.'}]},
  {id:'pcbDisrupt',pre:"August 2022: PLA drills around Taiwan forced ships to reroute, adding up to three days to voyages.[c:tw22]",p:.004,once:false,cond:()=>!S.tmods.some(m=>m.id==='pcb'),ic:'▦',t:'Strait Tensions Delay Board Shipments',
   body:"PLA exercises around Taiwan close sea lanes and reroute shipping. Chinese and Taiwanese board deliveries fall 30% for six weeks.",
   fx:()=>{tmod('prc','pcb',.7,6,'Strait tensions');tmod('ally','pcb',.7,6,'Strait tensions');S.pc+=4},o:[{l:'Hope it passes.'}]},
@@ -1834,8 +1842,8 @@ const EVENTS=[
   o:[{l:'Send them (−200k shells, −300 interceptors; Russia −12% shells; +5 PC)',fx:()=>{S.inv.shells=Math.max(0,S.inv.shells-2e5);S.inv.interceptors=Math.max(0,S.inv.interceptors-300);S.enemy.eu.inv.shells*=.88;S.pc+=5}},{dflt:1,l:'Decline (−6 PC)',pc:6}]},
  // home front
  {id:'diversion',manual:true,once:false,ic:'🏭',t:'Civilian Shortages from Defense Priority',
-  body:()=>`${CIV[ND[S._div]?.cv||'general']} Rated defense orders for ${ND[S._div]?.n.toLowerCase()} are filled first, and civilian buyers are getting what is left.`,
-  o:()=>[{l:'Hold the line (−8 PC, strain +5)',pc:8,fx:()=>{S.strain+=5}},{l:`Let civilian buyers keep their ${ND[S._div].n.toLowerCase()} for a year (defense goes short instead)`,fx:()=>{(S.noPrio=S.noPrio||{})[S._div]=S.w+52;log(`Defense priority waived for a year: ${ND[S._div].n}.`)}}]},
+  body:()=>`${CIV[ND[S._div]?.cv||'general']} Rated defense orders for ${lc(ND[S._div]?.n)} are filled first, and civilian buyers are getting what is left.`,
+  o:()=>[{l:'Hold the line (−8 PC, strain +5)',pc:8,fx:()=>{S.strain+=5}},{l:`Let civilian buyers keep their ${lc(ND[S._div].n)} for a year (defense goes short instead)`,fx:()=>{(S.noPrio=S.noPrio||{})[S._div]=S.w+52;log(`Defense priority waived for a year: ${ND[S._div].n}.`)}}]},
  {id:'strainCrisis',manual:true,once:false,ic:'📉',t:'Guns vs. Butter Backlash',
   body:"Inflation, shortages, and overtime fatigue dominate the news. Polls show the public turning against the rearmament program. Something has to give.",
   o:()=>[{l:'Stay the course (−30 PC)',pc:30},{l:'Give civilian buyers their supply back for six months and end extra shifts (defense goes short)',fx:()=>{S.noPrio=S.noPrio||{};for(const k of S.divIds||[])S.noPrio[k]=S.w+26;for(const k in S.shifts)S.shifts[k]=false;S.strain-=15}}]},
@@ -1854,7 +1862,7 @@ EVENTS.push(
  // ---- operating-plant disruptions
  {id:'strike',pre:"May 2025: 3,000 machinists struck Pratt & Whitney's F-35 engine plants for three weeks. Boeing's 2024 strike lasted seven.[c:pwstrike]",p:.0035,once:false,cond:()=>!S.tmods.some(m=>m.kind==='line'&&m.label==='Strike'),ic:'✊',t:'Strike Shuts a Prime Contractor Plant',
   fx:()=>{S._ln=pick(['aircraft','interceptors','strike','surface','subs'])},
-  body:()=>`Machinists walk out at a major ${LINES[S._ln].n.toLowerCase()} plant over wages and pensions. In 2024 a machinists' strike shut Boeing's commercial jet lines for about seven weeks.`,
+  body:()=>`Machinists walk out at a major ${lc(LINES[S._ln].n)} plant over wages and pensions. In 2024 a machinists' strike shut Boeing's commercial jet lines for about seven weeks.`,
   o:()=>[{l:'Let bargaining run (line −70% for 8 weeks)',fx:()=>tmod('line',S._ln,.3,8,'Strike')},
    {l:'Underwrite a settlement (−0.4B; −70% for 3 weeks; prime leverage +3)',$:.4,fx:()=>{tmod('line',S._ln,.3,3,'Strike');S.lev+=3}},
    S.fac==='US'?{l:'Seek a Taft-Hartley injunction (−20 PC, civilian strain +8; 2 weeks)',pc:20,fx:()=>{tmod('line',S._ln,.3,2,'Strike');S.strain+=8}}:{l:'Government-brokered mediation (−12 PC; 4 weeks)',pc:12,fx:()=>tmod('line',S._ln,.3,4,'Strike')}]},
@@ -1870,7 +1878,7 @@ EVENTS.push(
    {l:S.fac==='US'?'Presidential paramount-interest exemption (−18 PC; no curtailment for now)':'Ministerial derogation (−15 PC; no curtailment for now)',pc:S.fac==='US'?18:15,fx:()=>{S.waivers++}}]},
  {id:'cyber',pre:"March 2020: ransomware at Visser Precision, a parts supplier to Lockheed Martin and Boeing, leaked missile-part drawings.[c:visser]",p:.003,once:false,ic:'💻',t:'Ransomware Hits a Sole-Source Supplier',
   fx:()=>{S._cy=pick(['micro','fuzes','thermal_bat','imu','castings','pcb','actuators','composites','blades'])},
-  body:()=>`Ransomware encrypts the ERP system and machine controllers at a sub-tier supplier of ${ND[S._cy].n} — the only qualified source for several programs.`,
+  body:()=>`Ransomware encrypts the ERP system and machine controllers at a sub-tier supplier of ${lc(ND[S._cy].n)} — the only qualified source for several programs.`,
   o:[{l:'Rebuild from clean backups (−80% for 6 weeks)',fx:()=>tmod('node',S._cy,.2,6,'Cyberattack')},{l:'Bring in government incident-response teams (−6 PC; 3 weeks)',pc:6,fx:()=>tmod('node',S._cy,.2,3,'Cyberattack')}]},
  {id:'storm',pre:"August 2005: Katrina flooded Ingalls, and the Navy expected its programs there to slip about six months.[c:katrina]",p:.0025,once:false,cond:()=>{const m=dateOf(S.w).getMonth();return m>=7&&m<=9},ic:'🌀',t:'Hurricane Hits the Gulf Coast',
   body:{US:"A major hurricane floods a Gulf Coast shipyard and shuts in petrochemical and acid plants — as Katrina did to Pascagoula in 2005."},
@@ -1878,7 +1886,7 @@ EVENTS.push(
   o:[{l:'Rebuild.'},{l:'Emergency reconstruction funding (−0.4B; damage clears twice as fast)',$:.4,fx:()=>{for(const m of S.tmods)if(/Storm|Flood/.test(m.label))m.left=Math.ceil(m.left/2)}}]},
  {id:'insolvency',pre:"2016: gearbox suppliers' bankruptcies put the Apache, V-22 and CH-53K at risk, the Pentagon's industrial base report found.[c:gearbox]",p:.003,once:false,ic:'📉',t:'Sole-Source Supplier Files for Bankruptcy',
   fx:()=>{S._in=pick(['fuzes','thermal_bat','castings','sub_parts','propulsion','primers','composites','blades','fpa','ir_optics'])},
-  body:()=>`A small supplier of ${ND[S._in].n} files for bankruptcy after a decade of low-rate, stop-start orders. A DoD review found 98% of second- and third-tier munitions suppliers were single or sole source.[c:dn2018]`,
+  body:()=>`A small supplier of ${lc(ND[S._in].n)} files for bankruptcy after a decade of low-rate, stop-start orders. A DoD review found 98% of second- and third-tier munitions suppliers were single or sole source.[c:dn2018]`,
   o:()=>[{l:S.fac==='US'?'Rescue it with DPA Title III (−0.3B)':'Rescue it with an EDIP grant (−0.3B)',$:.3},
    {l:'Let it fail (domestic capacity −20% permanently; know-how −8)',fx:()=>{S.nodes[S._in].base*=.8;S.know[S._in]=Math.max(0,S.know[S._in]-8)}},
    {l:'Broker a sale to an allied acquirer (−8 PC; that capacity becomes allied)',pc:8,fx:()=>{const n=S.nodes[S._in],a=n.base*.2;n.base-=a;n.ally.amt+=a}}]},
@@ -1888,7 +1896,7 @@ EVENTS.push(
   o:[{l:'Fund mentoring & documentation (−0.1B; know-how −4)',$:.1,fx:()=>{S.know[S._rt]=Math.max(0,S.know[S._rt]-4)}},{l:'Accept it (know-how −12)',fx:()=>{S.know[S._rt]=Math.max(0,S.know[S._rt]-12)}}]},
  {id:'recall',pre:"November 2024: Ukraine suspended a lot of defective 120mm mortar rounds.[c:ua120]",p:.0025,once:false,ic:'🔍',t:'Lot Suspension',
   fx:()=>{S._rc=pick(['interceptors','strike','shells'])},
-  body:()=>`A component defect turns up in a production lot of ${LINES[S._rc].n.toLowerCase()}. Fielded rounds from affected lots are suspended pending inspection, and the line stops for root-cause analysis.`,
+  body:()=>`A component defect turns up in a production lot of ${lc(LINES[S._rc].n)}. Fielded rounds from affected lots are suspended pending inspection, and the line stops for root-cause analysis.`,
   o:[{l:'Full inspection (inventory −5%; line −50% for 6 weeks)',fx:()=>{S.inv[S._rc]*=.95;tmod('line',S._rc,.5,6,'Lot suspension')}},{l:'Deviation waiver (−8 PC; inventory −2%; 2 weeks)',pc:8,fx:()=>{S.inv[S._rc]*=.98;tmod('line',S._rc,.5,2,'Lot suspension');S.waivers++}}]},
  // ---- construction-wide disruptions
  {id:'transformers',pre:"2024: large power transformers took about 120 weeks to deliver, up from about 50 in 2021.[c:xfmr]",p:.0035,once:false,cond:()=>!gmodOn('Transformer backlog'),ic:'🔌',t:'Transformer & Switchgear Backlog',
@@ -2023,7 +2031,7 @@ function cnDrivers(){const r=[],U=S.fac==='US',c=cnS();cnBase(c);
   r.push(['Rivalry, and Beijing’s own plan to keep its lead in processing',3]);
   if(S.scen==='taiwan')r.push(['Military pressure around Taiwan',5]);
   if(U&&ruleOn('rAffil')&&!c.affil0)r.push(['The Affiliates Rule in force',12]);
-  const ic=U?IC.filter(x=>x.id!=='icAllyEx'&&icOn(x.id)&&!(c.ic0||[]).includes(x.id)):[];if(ic.length)r.push([`New US import controls on Chinese drones and electronics: ${ic.map(x=>x.n.toLowerCase()).join('; ')}`,3*ic.length]);
+  const ic=U?IC.filter(x=>x.id!=='icAllyEx'&&icOn(x.id)&&!(c.ic0||[]).includes(x.id)):[];if(ic.length)r.push([`New US import controls on Chinese drones and electronics: ${ic.map(x=>lc(x.n)).join('; ')}`,3*ic.length]);
   const rp=cnReplaced();if(rp.length)r.push([`Your plants replacing Chinese supply: ${rp.map(id=>ND[id].n).join(', ')}`,2*Math.min(rp.length,6)]);
   if(S.truce)r.push(['The truce in force',-4]);
   if(c.talkTo>S.w)r.push(['Talks under way',-10]);
@@ -2516,7 +2524,7 @@ function billSev(def){const R=S._R||production(false),P=R.P;
   const gapOf=c=>clamp(1-R.out[c].yr/Math.max(usReq(c),1e-9),0,1);
   if(def.t.line){const c=def.t.line,o=R.out[c],g=gapOf(c);return limOf(o,c)==='L:'+c&&g>0?{s:.45+.55*g,why:`${LINES[c].n} is held back by its own line capacity`}:{s:.15*g,why:g>0?`${LINES[c].n} is short, but its inputs, not the line, limit it`:`${LINES[c].n} meets its share`}}
   const id=def.t.node,hit=S.order.filter(c=>R.out[c].bott&&R.out[c].chain.includes(id));
-  if(hit.length){const g=Math.max(...hit.map(gapOf));return {s:Math.min(1,.45+.55*g+.05*(hit.length-1)),why:`Holds back ${hit.map(c=>LINES[c].n.toLowerCase()).slice(0,2).join(' and ')}${hit.length>2?` and ${hit.length-2} more`:''}`}}
+  if(hit.length){const g=Math.max(...hit.map(gapOf));return {s:Math.min(1,.45+.55*g+.05*(hit.length-1)),why:`Holds back ${hit.map(c=>lc(LINES[c].n)).slice(0,2).join(' and ')}${hit.length>2?` and ${hit.length-2} more`:''}`}}
   const cv=P[id]?.cover??1;return {s:cv<1?.3*(1-cv):0,why:cv<1?`${ND[id].n} is short, but it is not what limits output today`:`${ND[id].n} is not short`}}
 // The committees have their own priorities, set by members' districts and the year's headlines, not your list. They
 // become clear in the chairman's marks about seven weeks before the bill: two sectors they back, one they question.
@@ -2787,7 +2795,7 @@ function opsMatch(o,pl){const def=PD[pl.def];if(o.manual)return false;if(o.icOff
 const SITE_F=.35;
 function siteTags(k){if(k.startsWith('L:')){const l=k.slice(2);return ['line','assembly',...(['shells','fires'].includes(l)?['energetic']:[]),...(['surface','subs'].includes(l)?['shipyard']:[])]}
   return [...new Set([...(ARCH[ND[k].arch]?.tags||[]),...(ND[k].tags||[]),k])]}
-const siteName=k=>k.startsWith('L:')?`Existing ${LINES[k.slice(2)].n.toLowerCase()} lines`:`Existing ${ND[k].n.toLowerCase()} plants`;
+const siteName=k=>k.startsWith('L:')?`Existing ${lc(LINES[k.slice(2)].n)} lines`:`Existing ${lc(ND[k].n)} plants`;
 function sitesInit(){S.sites={};const keys=[...ORDER.filter(id=>S.nodes[id].base>.02*S.nodes[id].scale),...Object.keys(LINES).filter(l=>S.lines[l].base>0).map(l=>'L:'+l)];
   for(const k of keys){const tg=siteTags(k),ops=PERMITS.filter(x=>(x.f||'US')===S.fac&&x.ph==='o'&&(x.all||x.tags.some(t=>tg.includes(t))));
     S.sites[k]={ops:ops.map(x=>({id:x.id,next:S.w+1+Math.floor(rand()*x.yrs*52),last:null})),contest:null}}}
@@ -2917,7 +2925,7 @@ function crisisOpts(id,place){const c=S.cres[id];
 const spotKind=id=>allyBar(id)?null:ND[id].civ>0&&ND[id].t<=3?'market':S.nodes[id].ally.amt/Math.max(S.nodes[id].scale,1e-9)>=.05?'ally':null;
 const SPOT_L={market:['💸','Spot purchase','Emergency spot purchase'],ally:['🤝','Allied emergency buy','Emergency buy from allied producers']};
 function spotCost(id){const u=nodeSupply(id);const cutFrac=(u.prcRaw+u.allyRaw+u.neutRaw)>0?u.lost/(u.prcRaw+u.allyRaw+u.neutRaw):0;return .12*(1+4*cutFrac)*(spotKind(id)==='ally'?1.5:1)}
-function spotNone(id){const b=allyBar(id);if(b)return `Barred by law: ${RD2[b.r].n} (${RD2[b.r].since}). Foreign supply for defense work needs ${b.fix}.`;return `No market to buy from: ${ND[id].n.toLowerCase()} ${/s$/.test(ND[id].n)?'are':'is'} built to order by a few defense suppliers, and no ally has spare output. Only new capacity helps.`}
+function spotNone(id){const b=allyBar(id);if(b)return `Barred by law: ${RD2[b.r].n} (${RD2[b.r].since}). Foreign supply for defense work needs ${b.fix}.`;return `No market to buy from: ${lc(ND[id].n)} ${/s$/.test(ND[id].n)?'are':'is'} built to order by a few defense suppliers, and no ally has spare output. Only new capacity helps.`}
 // what you just spent floats off its counter in the top bar for a moment
 function spent(k,v){(S._sp=S._sp||{})[k]={v,t0:performance.now()}}
 function spentTag(k){const x=S._sp?.[k];if(!x)return '';const el=performance.now()-x.t0;if(el>2600)return '';return `<i class="spentf ${v0(x.v)}" style="animation-delay:${-Math.round(el)}ms">${x.v<0?'+':'−'}${k==='$'?money(Math.abs(x.v)):Math.abs(x.v)+' PC'}</i>`}
@@ -2938,9 +2946,9 @@ function homeTick(lastOut){
   if(S.strain>=80&&!S.strainHit){S.strainHit=true;queueEvent('strainCrisis')}if(S.strain<60)S.strainHit=false;
   icTick();
   if(S.ne&&(S.w-S.ne.since)%52===0&&S.w>S.ne.since){if(S.pc>=NE_RENEW){S.pc-=NE_RENEW;log(`🚨 National emergency continued for another year (${NE_RENEW} PC).`)}else endNE('lapses: no political capital to continue it')}
-  for(const id in S.nshift||{}){if(S.budget>=NSHIFT_C/52)spendB(NSHIFT_C/52,'Extra shifts');else{delete S.nshift[id];log(`⏩ Extra shifts at ${ND[id].n.toLowerCase()} suppliers end: the budget ran out.`,'bad')}}
+  for(const id in S.nshift||{}){if(S.budget>=NSHIFT_C/52)spendB(NSHIFT_C/52,'Extra shifts');else{delete S.nshift[id];log(`⏩ Extra shifts at ${lc(ND[id].n)} suppliers end: the budget ran out.`,'bad')}}
   shiftRisk();
-  for(const lid in S.shifts)if(S.shifts[lid]){if(S.budget>=SHIFT_C/52)spendB(SHIFT_C/52,'Extra shifts');else{S.shifts[lid]=false;log(`⏩ Extra shifts at the ${LINES[lid].n.toLowerCase()} lines end: the budget ran out.`,'bad')}}
+  for(const lid in S.shifts)if(S.shifts[lid]){if(S.budget>=SHIFT_C/52)spendB(SHIFT_C/52,'Extra shifts');else{S.shifts[lid]=false;log(`⏩ Extra shifts at the ${lc(LINES[lid].n)} lines end: the budget ran out.`,'bad')}}
   for(const x of S.spot)if(spotKind(x.id)==='ally'){S.allyGrow=S.allyGrow||{};S.allyGrow[x.id]=Math.min(ALLY_GROW_WK,(S.allyGrow[x.id]||0)+1/Math.max(1,S.spot.filter(y=>y.id===x.id).length))}
   S.spot.forEach(x=>x.left--);S.spot=S.spot.filter(x=>x.left>0);
   for(const lid in S.fw){const f=S.fw[lid];if(S.w>=f.due){const got=lastOut[lid]?.n||0,r=got/f.target;S.queue.push({sys:'fw',lid,r});S.pc+=r>=.7?10:-20;if(r<.7)S.pc+=0;delete S.fw[lid]}}
@@ -2990,7 +2998,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)
     return `<tr><td>${LINES[c].n}</td><td class="num">${fmtN(x)}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num ${ch>.005?'okt':ch<-.005?'redt':'mini'}">${Math.abs(ch)<.005?'—':(ch>0?'+':'−')+pct(Math.abs(ch))}</td><td class="num">${fmtN(rv)}</td><td class="num ${y>=rv?'okt':'redt'}">${rv>0?pct(y/rv):'—'}</td></tr>`}).join('');
   const li=(t,xs)=>xs.length?`<div class="yrl"><b>${t}</b><span>${xs.join(' · ')}</span></div>`:'';
   const bl=r.bill,sc=S.scen&&SCD[S.scen],nxW=sc?(S.w<sc.mid?sc.mid:sc.dl):null,dlY=sc&&nxW>S.w?yrs(nxW-S.w):null,nx=CN_RUNGS[cnS().rung],sp=b.spend-a.spend,inc=b.inc-a.inc;
-  const lim=r.lim.map(([id,cs])=>`${ND[id].n} hold${/s$/.test(ND[id].n.replace(/\s*\(.*\)$/,''))?'':'s'} back ${cs.map(c=>LINES[c].n.toLowerCase()).join(', ')}`);
+  const lim=r.lim.map(([id,cs])=>`${ND[id].n} hold${/s$/.test(ND[id].n.replace(/\s*\(.*\)$/,''))?'':'s'} back ${cs.map(c=>lc(LINES[c].n)).join(', ')}`);
   return `<div class="paper wide yrp"><div class="hd"><span class="ic">📅</span>${r.y}: the year in review</div><div class="bd">
    <div class="yrts">${tile(pct(b.race),'of the requirement, you + allies',d(a.race*100,b.race*100,v=>fmt(v,0)+' pt'))}${tile(`${b.suff}/${Object.keys(LINES).length}`,'lines sufficient',d(a.suff,b.suff,v=>String(v)))}${tile(r.cleared.length,`bottleneck${r.cleared.length===1?'':'s'} cleared this year`)}${tile(`${cnS().rung}/${CN_RUNGS.length}`,'Beijing’s escalation steps',d(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
    <table class="ctable yrtab"><tr><th>Output per year</th><th class="num">A year ago</th><th class="num">Now</th><th class="num">Change</th><th class="num">${RV().n}</th><th class="num">You vs. ${RV().n}</th></tr>${rows}</table>
@@ -3088,7 +3096,7 @@ function sankeySVG(R,focus,mode,attr){
   for(const id of ids){const p=pos[id],isL=id.startsWith('L:');
     const act=id.startsWith('S:')?'':isL?`data-a="flow" data-f="${id}"`:`data-a="node" data-n="${id}"`;
     let tip=nameOf(id)+` — ${pct(val(id)/total)} of this view`;
-    if(isL){const o=R.out[id.slice(2)];tip+=` · output ${pct(o.n/Math.max(o.cap,1e-9))} of capacity${o.cap>o.n*1.001?`<br><span style="color:#e8a090">Hatched: ${pct(1-o.n/Math.max(o.cap,1e-9))} of capacity idle${o.bott?`, short of ${ND[o.bott].n}`:''}</span>`:''}`}else if(!id.startsWith('S:'))tip+=` · cover ${pct(Math.min(P[id].cover,9.99))} · PRC exposure ${pct(P[id].expo)}`;
+    if(isL){const o=R.out[id.slice(2)];tip+=` · output ${pct(o.n/Math.max(o.cap,1e-9))} of capacity${o.cap>o.n*1.001?`<br><span style="color:#e8a090">Hatched: ${pct(1-o.n/Math.max(o.cap,1e-9))} of capacity idle${o.bott?`, short of ${lc(ND[o.bott].n)}`:''}</span>`:''}`}else if(!id.startsWith('S:'))tip+=` · cover ${pct(Math.min(P[id].cover,9.99))} · PRC exposure ${pct(P[id].expo)}`;
     svg+=`<g class="nd" data-id="${id}" ${act} data-tip="${tip.replace(' — ','<br>')}"><rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${p.h}" fill="${nodeCol(id)}" stroke="#2b241a" stroke-width=".5"/>`;
     if(p.g>0.5){const o=R.out[id.slice(2)],cut=ghostFull[id]>ghost[id]*1.001,yb=p.y+p.h+p.g;
       svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"></rect>`;
@@ -3365,10 +3373,10 @@ const fxChips=(up=[],dn=[])=>`<span class="fx">${up.map(t=>`<span class="up">▲
 function raisePanel(id,P){
   const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>w>=END_W?'after 2037':dateOf(w).getFullYear();
   let head,status,pool;
-  if(isL){const o=S._R.out[l];head=`Raise output of ${LINES[l].n}`;
+  if(isL){const o=S._R.out[l];head=`Raise output of ${lc(LINES[l].n)}`;
     status=o.bott?`<span class="redt">Running at ${pct(o.n/Math.max(o.cap,1e-9))} of capacity. ${ND[o.bott].n} is short.</span>`:`<span class="okt">Running at capacity.</span> More output needs more line capacity.`;
     pool=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint')}
-  else{const n=ND[id],p=P[id],short=Math.max(0,p.need-p.avail0);head=`Increase supply of ${n.n}`;
+  else{const n=ND[id],p=P[id],short=Math.max(0,p.need-p.avail0);head=`Increase supply of ${lc(n.n)}`;
     status=p.need<1e-6?'Nothing you build uses it right now.':short>1e-9?`<span class="redt">Short by ${pct(short/p.need)} of what your lines need.</span>`:`<span class="okt">Covered (${pct(Math.min(p.cover,9.99))} of need).</span> More supply adds margin against cuts.`;
     pool=leversFor(id).filter(d=>!d.kind||d.kind==='cap'||d.kind==='mod'||d.ally)}
   const under=S.projects.filter(q=>isL?PD[q.def].t.line===l:PD[q.def].t.node===id);
@@ -3511,8 +3519,8 @@ function srcBar(id,P,x,y,w,h){const s=srcSplit(id,P),sc=w*.8/Math.max(s.need,1e-
   if(s.need>1e-6)o+=`<line x1="${(x+s.need*k).toFixed(1)}" x2="${(x+s.need*k).toFixed(1)}" y1="${y-3}" y2="${y+h+3}" stroke="#2b241a" stroke-width="2"/>`;return o}
 // what limits an item this one feeds: this item itself, or something else
 function feedWhy(c,id){const R=S._R;if(!R)return null;
-  if(c.startsWith('L:')){const o=R.out[c.slice(2)];if(!o.bott)return null;const ch=o.chain;return ch.includes(id)?{me:1,t:'⛓ held back by this item'}:{t:`held back by ${ND[ch.at(-1)].n}`}}
-  const p=R.P[c];if(!p.starvedBy||p.cover>=.999)return null;const ch=chainOf(R.P,c).slice(1);return ch.includes(id)?{me:1,t:'⛓ starved by this item'}:{t:`short of ${ND[ch.at(-1)].n}`}}
+  if(c.startsWith('L:')){const o=R.out[c.slice(2)];if(!o.bott)return null;const ch=o.chain;return ch.includes(id)?{me:1,t:'⛓ held back by this item'}:{t:`held back by ${lc(ND[ch.at(-1)].n)}`}}
+  const p=R.P[c];if(!p.starvedBy||p.cover>=.999)return null;const ch=chainOf(R.P,c).slice(1);return ch.includes(id)?{me:1,t:'⛓ starved by this item'}:{t:`short of ${lc(ND[ch.at(-1)].n)}`}}
 function supplyWeb(id,P){
   const isL=id.startsWith('L:'),l=isL?id.slice(2):null,o=isL?S._R.out[l]:null,ins=isL?LINES[l].in:ND[id].in,cons=isL?[]:CONSUMERS[id];
   const bind=isL?o.bott:P[id].starvedBy,RH=40,top=26,n=Math.max(ins.length,cons.length,isL?3:1,2),H=top+n*RH+8,W=1000;
@@ -3536,12 +3544,12 @@ function supplyWeb(id,P){
   // what it feeds, or for an end item, the output against your rival
   const RX=CX+CW;
   if(isL){const rv=cnOut(l),ry=cy0+ch/2;
-    g+=`<text x="${RX+22}" y="${ry-22}" class="swbig">${fmtN(o.yr)}<tspan class="swm"> /yr built</tspan></text><text x="${RX+22}" y="${ry-4}" class="swm">of ${fmtN(o.capYr)}/yr line capacity${o.bott?` · held back by ${ND[o.bott].n}`:''}</text>
+    g+=`<text x="${RX+22}" y="${ry-22}" class="swbig">${fmtN(o.yr)}<tspan class="swm"> /yr built</tspan></text><text x="${RX+22}" y="${ry-4}" class="swm">of ${fmtN(o.capYr)}/yr line capacity${o.bott?` · held back by ${lc(ND[o.bott].n)}`:''}</text>
       <text x="${RX+22}" y="${ry+18}" class="swm">${RV().f} ${RV().n} ~${fmtN(rv)}/yr · ${rv>o.yr*1.1?`${fmt(rv/Math.max(o.yr,1e-9),1)}× yours`:rv<o.yr*.9?'you out-build it':'at parity'}</text>`}
   else{const dem=c=>c.startsWith('L:')?S._R.out[c.slice(2)].cap:(P[c]?.need||0),tot=Math.max(1e-9,cons.reduce((a,c)=>a+dem(c),0));let sy2=cy0+ch/2-cons.reduce((a,c)=>a+3+15*dem(c)/tot+4,0)/2;
     cons.forEach((c,k)=>{const y=rowY(k,cons.length),t=3+15*dem(c)/tot,ty=sy2+t/2;sy2+=t+4;const isLn=c.startsWith('L:'),nm=isLn?LINES[c.slice(2)].n:ND[c].n,st=isLn?(S._R.out[c.slice(2)].n<S._R.out[c.slice(2)].cap-1e-6?'tight':'ok'):nodeStatus(P[c]);
       g+=`<path d="M${RX},${ty.toFixed(1)} C${RX+90},${ty.toFixed(1)} ${RX+90},${y+16} ${RX+170},${y+16}" fill="none" stroke="#8a7440" stroke-opacity=".4" stroke-width="${t.toFixed(1)}"/>`;
-      g+=`<g class="swr" data-a="node" data-n="${c}" data-tip="${tipQ(`<b>${nm}</b><br>Takes ${pct(dem(c)/tot)} of demand for ${ND[id].n}`)}"><rect x="${RX+172}" y="${y+2}" width="${W-RX-172}" height="${RH-6}" fill="transparent"/><circle cx="${RX+180}" cy="${y+16}" r="4" fill="${ST_C[st]}"/><text x="${RX+190}" y="${y+(feedWhy(c,id)?15:20)}" class="swn">${nm}${isLn?' 🏭':''}</text>${(()=>{const fw=feedWhy(c,id);return fw?`<text x="${RX+190}" y="${y+29}" class="swm ${fw.me?'swme':'swsib'}">${fw.t}</text>`:''})()}<text x="${W-2}" y="${y+20}" text-anchor="end" class="swp">${pct(dem(c)/tot)}</text></g>`})}
+      g+=`<g class="swr" data-a="node" data-n="${c}" data-tip="${tipQ(`<b>${nm}</b><br>Takes ${pct(dem(c)/tot)} of demand for ${lc(ND[id].n)}`)}"><rect x="${RX+172}" y="${y+2}" width="${W-RX-172}" height="${RH-6}" fill="transparent"/><circle cx="${RX+180}" cy="${y+16}" r="4" fill="${ST_C[st]}"/><text x="${RX+190}" y="${y+(feedWhy(c,id)?15:20)}" class="swn">${nm}${isLn?' 🏭':''}</text>${(()=>{const fw=feedWhy(c,id);return fw?`<text x="${RX+190}" y="${y+29}" class="swm ${fw.me?'swme':'swsib'}">${fw.t}</text>`:''})()}<text x="${W-2}" y="${y+20}" text-anchor="end" class="swp">${pct(dem(c)/tot)}</text></g>`})}
   const leg=[['US-made',SRC_C.dom],['Allied',SRC_C.ally],['Neutral',SRC_C.neut],['Spot / diverted',SRC_C.spot],['PRC / Russia',SRC_C.prc]].map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join('')+`<span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span>`;
   return `<div class="swhd"><span class="linkn" data-a="flow" data-f="${id}">⇶ Open in Flows</span></div>
     <svg class="sweb" viewBox="0 0 ${W} ${H}" width="100%"><defs><pattern id="swh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#e6dbbd"/><line x1="0" y1="0" x2="0" y2="5" stroke="#b0453a" stroke-width="2.5"/></pattern><pattern id="swi" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#d8ccaa"/><line x1="0" y1="0" x2="0" y2="6" stroke="#8a8672" stroke-width="2"/></pattern></defs>${g}</svg>
@@ -4300,7 +4308,7 @@ function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   let h=`<div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('all','Everything')}${btn('short','Short now')}${btn('foreign','Mostly foreign')}${btn('barred','Allies barred by law')}</div>
    <table class="ctable mdt"><colgroup><col style="width:22%"><col style="width:28%"><col><col><col><col><col><col><col style="width:18%"></colgroup><tr><th>Item</th><th>Supply against demand</th><th>US-made</th><th>Allied</th><th>Neutral</th><th>PRC / Russia</th><th>Cut off</th><th>Demand covered</th><th>Allied sources · limits</th></tr>`;
   for(let t=1;t<=4;t++){const ids=NODES.filter(n=>n.t===t&&keep(n.id)).map(n=>n.id);if(!ids.length)continue;h+=`<tr class="grp"><td colspan="9">T${t} · ${TIERS[t]}</td></tr>`+ids.map(row).join('')}
-  if(f==='all'||f==='short'){const ls=S.order.filter(l=>f==='all'||R.out[l].bott);if(ls.length)h+=`<tr class="grp"><td colspan="9">T5 · ${TIERS[5]} · final assembly is in US plants</td></tr>`+ls.map(l=>{const o=R.out[l];return `<tr class="trc" data-n="L:${l}"><td><span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span></td><td><div class="mdbar"><i style="left:0;width:${(o.n/Math.max(o.cap,1e-9)*100).toFixed(1)}%;background:${SRC_C.dom}"></i></div></td><td class="mdv" colspan="6">${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity</td><td class="mdn">${o.bott?`short of ${ND[o.bott].n}`:'at capacity'}</td></tr>`}).join('')}
+  if(f==='all'||f==='short'){const ls=S.order.filter(l=>f==='all'||R.out[l].bott);if(ls.length)h+=`<tr class="grp"><td colspan="9">T5 · ${TIERS[5]} · final assembly is in US plants</td></tr>`+ls.map(l=>{const o=R.out[l];return `<tr class="trc" data-n="L:${l}"><td><span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span></td><td><div class="mdbar"><i style="left:0;width:${(o.n/Math.max(o.cap,1e-9)*100).toFixed(1)}%;background:${SRC_C.dom}"></i></div></td><td class="mdv" colspan="6">${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity</td><td class="mdn">${o.bott?`short of ${lc(ND[o.bott].n)}`:'at capacity'}</td></tr>`}).join('')}
   return h+`</table><div class="sleg" style="margin-top:6px"><span><i style="background:${SRC_C.dom}"></i>US-made</span><span><i style="background:${SRC_C.ally}"></i>Allied</span><span><i style="background:${SRC_C.spot}"></i>Spot / diverted</span><span><i style="background:${SRC_C.prc}"></i>PRC / Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span><span class="mini">US-made, allied, PRC and cut-off shares add up to 100% of supply. Allied includes spot purchases. The bar's black tick is this week's demand.</span></div>`}
 function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat',fv=S.flowV||'diag';
@@ -4408,7 +4416,7 @@ function optCost(od,o){
 }
 function failTip(o,od){if(!o.fail)return '';const f=o.fail;return ` If it fails: ${f.spawn?'triggers a new obstacle':f.cancel?'project mothballed':f.adv?'PRC dependence added':f.gain?'output reduced':Math.round((f.wait||0)*waitMult(od))+' wk'}.`}
 function obsBlock(od,inst,action,uid,extra=''){
-  const more=`${remedies(od)}${(()=>{const D=LAYER_DOM(od.layer);return D&&S.fac==='US'?`<div style="margin:4px 0 0;font-size:11px"><span class="linkn" data-a="rbgo" data-d="${D.id}" style="color:inherit">⚖ How ${D.n.toLowerCase()} works →</span></div>`:''})()}`;
+  const more=`${remedies(od)}${(()=>{const D=LAYER_DOM(od.layer);return D&&S.fac==='US'?`<div style="margin:4px 0 0;font-size:11px"><span class="linkn" data-a="rbgo" data-d="${D.id}" style="color:inherit">⚖ How ${lc(D.n)} works →</span></div>`:''})()}`;
   let h=`<div class="obs" style="border-left-color:${LAYERS[od.layer].c}"><div class="ot"><b>${inst.wait>0?'⏳':'⛔'} ${V(od.n)}</b>${chip(od.layer)}${extra}</div><p>${V(od.t)}</p>`;
   if(inst.wait>0)h+=`<div class="waiting">${inst.label} — <b>${inst.wait}</b> wk remaining${inst.after==='cancel'?' <span class="red">(project will be mothballed)</span>':''}</div><div class="prog" style="margin:5px 0 0"><i style="width:${(1-inst.wait/inst.total)*100}%;background:${LAYERS[od.layer].c}"></i></div>`;
   else{const dk=defOpt(od);
@@ -4429,7 +4437,7 @@ function nodeRow(id,P){
   const domUse=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));
   return `<div class="nrow trc" data-a="node" data-n="${id}"><div class="top"><span class="nm">${n.ic} ${n.n}</span><span>${n.ss?`<span class="tag ss" data-tip="<b>Sole source</b><br>${tipQ(n.ss)}">SS</span> `:''}${p.div>1e-9?'<span class="tag dpa" data-tip="Defense orders are taking supply that civilian buyers would have had.">DPA</span> ':''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?'<span class="tag ban" title="DFARS: PRC-linked supply unusable">DFARS</span> ':''}${stTag(st)} <span class="tag kh" data-tip="<b>Know-how</b><br>How experienced the workforce is, 0–100. Higher means faster ramp-up and fewer production problems.">KH ${Math.round(S.know[id])}</span></span></div>
    <div class="bar"><i style="left:0;width:${W(domUse)}%;background:var(--green)"></i><i style="left:${W(domUse)}%;width:${W(p.ally+p.spot+p.div)}%;background:var(--blue)"></i><i style="left:${W(domUse+p.ally+p.spot+p.div)}%;width:${W(p.neut)}%;background:#c2a04e"></i><i style="left:${W(domUse+p.ally+p.spot+p.div+p.neut)}%;width:${W(p.prc)}%;background:#a03a30"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
-   <div class="nums"><span>Cover <b class="${st==='ok'?'green':st==='tight'?'amber':'red'}">${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'}</b></span>${p.need>1e-6?`<span>Dom ${pct(domUse/p.need)}</span><span>Ally ${pct(p.ally/p.need)}</span>${p.neut/p.need>.005?`<span>Neut ${pct(p.neut/p.need)}</span>`:''}<span>PRC ${pct(p.prc/p.need)}</span>`:''}${p.starvedBy?`<span class="red">Starved by ${ND[p.starvedBy].n}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
+   <div class="nums"><span>Cover <b class="${st==='ok'?'green':st==='tight'?'amber':'red'}">${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'}</b></span>${p.need>1e-6?`<span>Dom ${pct(domUse/p.need)}</span><span>Ally ${pct(p.ally/p.need)}</span>${p.neut/p.need>.005?`<span>Neut ${pct(p.neut/p.need)}</span>`:''}<span>PRC ${pct(p.prc/p.need)}</span>`:''}${p.starvedBy?`<span class="red">Starved by ${lc(ND[p.starvedBy].n)}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
 }
 /* ---------- defense needs: per end item, what the campaign requires vs what you have and build ---------- */
 function needsProj(R){if(S._np?.w===S.w)return S._np.pj;const prod={};for(const c in LINES)prod[c]=R.out[c].yr;const pj=project(prod,true);S._np={w:S.w,pj};return pj}
@@ -4511,7 +4519,7 @@ function outDiff(a){const r=[],add=(n,tag,v,good)=>r.push({n,tag,v,good}),sg=x=>
   for(const g of S.gmods.slice(a.gm))add(g.label||'Every program','PROGRAMS',`${sg(g.mult-1)}${pct(Math.abs(g.mult-1))} for ${g.left} wk`,g.mult>1);
   for(const c in S.inv){const d=S.inv[c]-(a.inv[c]??0);if(Math.abs(d)>=Math.max(1,(a.inv[c]||0)*.002))add(`${LINES[c].n} in service`,'STOCKS',`${sg(d)}${fmtN(Math.abs(d))}`,d>0)}
   for(const k in S.know){const d=S.know[k]-(a.know[k]??S.know[k]);if(Math.abs(d)>=1)add(`Know-how: ${nm(k)}`,'KNOW-HOW',`${sg(d)}${Math.round(Math.abs(d))}`,d>0)}
-  for(const k in S.ally||{}){const h=S.ally[k].hit.slice(a.ah[k]||0),M=[...ALLY_MEM.pac,...ALLY_MEM.eu].find(x=>x.k===k);for(const x of h)add(`${M?.n||k}: ${x.c==='*'?'all lines':LINES[x.c].n.toLowerCase()}`,'ALLY',`−${pct(1-x.m)} for ${x.left} wk`,false)}
+  for(const k in S.ally||{}){const h=S.ally[k].hit.slice(a.ah[k]||0),M=[...ALLY_MEM.pac,...ALLY_MEM.eu].find(x=>x.k===k);for(const x of h)add(`${M?.n||k}: ${x.c==='*'?'all lines':lc(LINES[x.c].n)}`,'ALLY',`−${pct(1-x.m)} for ${x.left} wk`,false)}
   if(cnS().rung!==a.cn.r)add('Beijing’s escalation','BEIJING',`step ${a.cn.r} → ${cnS().rung}`,cnS().rung<a.cn.r);
   {const d=cnS().heat-a.cn.h;if(Math.abs(d)>=.5)add('Pressure on Beijing to escalate','BEIJING',`${sg(d)}${Math.round(Math.abs(d))}`,d<0)}
   if(S.ru&&a.ru){const d=S.ru.heat-a.ru.h;if(Math.abs(d)>=.5)add('Pressure behind Moscow’s campaign','MOSCOW',`${sg(d)}${Math.round(Math.abs(d))}`,d<0)}
@@ -4673,18 +4681,19 @@ function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
 // why a limit is short when it isn't waiting on an input: plants idle, plant problems, ramping, cut off, or simply too little capacity
 const LAYER_IC={LABOR:'👷',PERMIT:'🌿',QUAL:'🔬',GRID:'⚡',EXPERT:'🛠',LEGAL:'⚖'};
 function limWhy(id,c,R){const idle=ms=>{const m=ms.sort((a,b)=>a.mult-b.mult)[0];return {ic:'🚧',t:`idle: ${m.label.toLowerCase()}, ${m.left} wk left`}};
-  const prob=pl=>{const od=OPSD[pl.issue.id];return {ic:LAYER_IC[od.layer]||'⚠',t:`${od.n.toLowerCase()} at ${pl.nm}`}};
+  const prob=pl=>{const od=OPSD[pl.issue.id];return {ic:LAYER_IC[od.layer]||'⚠',t:`${lc(od.n)} at ${pl.nm}`}};
   if(id.startsWith('L:')){const l=id.slice(2),dm=S.tmods.filter(m=>m.kind==='line'&&m.id===l&&m.mult<1),iss=S.plants.filter(p=>p.kind==='line'&&p.target===l&&p.issue);
     if(dm.length)return idle(dm);if(iss.length)return prob(iss[0]);if(S.plants.some(p=>p.kind==='line'&&p.target===l&&!p.full))return {ic:'⏳',t:'new lines still ramping'};return null}
-  const P=R.P,p=P[id];if(!p||p.need<1e-6||p.cover>=.999)return null;if(p.starvedBy)return {ic:'⛓',t:`short of ${ND[p.starvedBy].n}`};
+  const P=R.P,p=P[id];if(!p||p.need<1e-6||p.cover>=.999)return null;if(p.starvedBy)return {ic:'⛓',t:`short of ${lc(ND[p.starvedBy].n)}`};
   const dm=S.tmods.filter(m=>(m.kind==='node'||m.kind==='cap')&&m.id===id&&m.mult<1);if(dm.length)return idle(dm);
   const cs=shortCauses(id,P),k=Object.entries(cs).sort((a,b)=>b[1]-a[1])[0]?.[0];
   if(k==='issue'){const pl=plantsFor('node',id).find(q=>q.issue);if(pl)return prob(pl)}
   if(k==='cut')return {ic:'✂',t:'cut off by bans or controls'};if(k==='ramp')return {ic:'⏳',t:'new plants still ramping'};
   return {ic:'⚙',t:p.dom<1e-6?'no US plant: all imported':'not enough capacity'}}
+const unitP=v=>v>=1?'$'+fmt(v,1)+'B':v>=.001?'$'+fmt(v*1000,v>=.01?0:1)+'M':'$'+fmt(v*1e6,0)+'k';
 function ordSec(c,o){if(!S.ord)return '';const L=LINES[c],ord=ordOf(c),phys=o.physYr,gap=Math.max(0,phys-ord),q=ordReqs().find(x=>x.c===c),buys=(S.ordBuy||[]).filter(x=>x.c===c);
   const step=L.k<10?.5:L.k<2000?50:L.k<50000?1000:10000,add=Math.max(step,Math.ceil(gap/step)*step);
-  return `<div class="dsec ordsec"><h4>Orders</h4><div class="ordrow"><div><b>${fmtN(ord)}</b><span>a year funded by Congress</span></div><div><b>${fmtN(phys)}</b><span>a year the lines could make</span></div><div><b>${money(UC[c]*1000)}</b><span>per thousand · ${money(UC[c])} each</span></div></div>
+  return `<div class="dsec ordsec"><h4>Orders</h4><div class="ordrow"><div><b>${fmtN(ord)}</b><span>a year funded by Congress</span></div><div><b>${fmtN(phys)}</b><span>a year the lines could make</span></div><div><b>${unitP(UC[c])}</b><span>each, at recent prices</span></div></div>
    <p class="mini">Lines build only what is ordered and paid for. ${gap>step*.5?`<b class="redt">${fmtN(gap)} a year of capacity has no orders</b> and sits idle.`:'Orders cover the lines’ capacity.'}${buys.length?` Bought from the budget: +${fmtN(buys.reduce((a,x)=>a+x.add,0))} a year, ${Math.max(...buys.map(x=>x.left))} weeks left.`:''}</p>
    <div class="ordb">${q?`<span class="okt mini">🏛 +${fmtN(q.add)} a year requested in the FY${FYOF(q.pkg)} NDAA (Congress votes ~${fmtDate(pkgWhen())}) </span><button class="btn sm" data-a="orddrop" data-c="${c}">Withdraw</button>`:
      `<button class="pbtn sm primary" data-a="ordadd" data-c="${c}" data-v="${add}" ${S.pc>=ordPC(c,add)?'':'disabled'}>🏛 Request +${fmtN(add)} a year in the FY${pkgFY()} NDAA · ${ordPC(c,add)} PC</button>`}
@@ -4780,7 +4789,7 @@ function alHitM(k,c,w){if(w<S.w-1)return 1;let m=1;for(const h of alS(k).hit)if(
 function alMemOut(m,c,w=S.w){let v=alBase(c,w)*(m.sh[c]||0);
   for(const id in alS(m.k).deals){const D=ADD[id],x=S.ally[m.k].deals[id];if(D.c===c&&D.add)v+=D.add*Math.min(1,Math.max(0,(w-x.w0)/D.ramp))}
   return v*alHitM(m.k,c,w)}
-function alHit(k,c,m,wk,why){alS(k).hit.push({c,m,left:wk,why});const M=alMem().find(x=>x.k===k);log(`${AFLAG[k]||''} ${M?M.n:k}: ${why} (${c==='*'?'all lines':LINES[c].n.toLowerCase()} −${pct(1-m)} for ${wk} weeks).`,'bad')}
+function alHit(k,c,m,wk,why){alS(k).hit.push({c,m,left:wk,why});const M=alMem().find(x=>x.k===k);log(`${AFLAG[k]||''} ${M?M.n:k}: ${why} (${c==='*'?'all lines':lc(LINES[c].n)} −${pct(1-m)} for ${wk} weeks).`,'bad')}
 function alTick(){for(const k in S.ally||{}){const s=S.ally[k];s.hit.forEach(h=>h.left--);s.hit=s.hit.filter(h=>h.left>0)}}
 function alDealOk(D){return S.fac==='US'&&D.t===(S.rival||'pac')&&!alS(D.m).deals[D.id]&&S.pc>=D.pc&&S.budget>=(D.$||0)}
 function alDeal(id){const D=ADD[id];if(!D||!alDealOk(D))return;S.pc-=D.pc;spent('pc',D.pc);if(D.$){spendB(D.$,'Allied deals');spent('$',D.$)}
@@ -4842,7 +4851,7 @@ function alliesBody(){if(S.fac!=='US')return '<p class="mini">The allies view co
   h+=`<div class="alcards">${mem.map(m=>{const s=alS(m.k),hits=s.hit.filter(x=>x.left>0),rows=cs.filter(c=>(m.sh[c]||0)>0||ALLY_DEALS.some(D=>D.m===m.k&&D.c===c&&s.deals[D.id]));
     const deals=ALLY_DEALS.filter(D=>D.m===m.k&&D.t===rv);
     return `<div class="alc"><div class="alch">${AFLAG[m.k]}<b>${m.n}</b><span class="mini">${m.who}</span></div>
-     ${hits.length?`<div class="alhit">${hits.map(x=>`⚠ ${x.why}: ${x.c==='*'?'all lines':LINES[x.c].n.toLowerCase()} −${pct(1-x.m)} · ${x.left} wk left`).join('<br>')}</div>`:''}
+     ${hits.length?`<div class="alhit">${hits.map(x=>`⚠ ${x.why}: ${x.c==='*'?'all lines':lc(LINES[x.c].n)} −${pct(1-x.m)} · ${x.left} wk left`).join('<br>')}</div>`:''}
      <table class="ctable alt"><tr><th>Line</th><th class="num">Builds now</th><th class="num">Share of allied</th></tr>${rows.map(c=>{const v=alMemOut(m,c),t=tot(c);return `<tr><td>${LINES[c].n}</td><td class="num"><b>${fmtN(v)}</b>/yr</td><td class="num">${t>0?pct(v/t):'—'}</td></tr>`}).join('')}</table>
      ${deals.length?`<div class="aldh">Deals</div>${deals.map(D=>{const x=s.deals[D.id],r=x&&D.ramp?Math.min(1,(S.w-x.w0)/D.ramp):1;
        return `<div class="ald ${x?'on':''}"><div><b>${D.n}</b><div class="mini">${D.d}</div><div class="mini alpre"><b>Precedent</b> ${D.pre}</div></div>
@@ -5068,7 +5077,7 @@ function renderModal(){
       </div><div class="ft"><button class="pbtn primary" data-a="recgo">📊 See the full record</button><button class="pbtn" data-a="restart">Play again</button></div></div>`;
   } else if(S.queue.length){
     const q=S.queue[0];
-    if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${L.n.toLowerCase()}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
+    if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${lc(L.n)}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else if(q.sys==='outcome'){html=outHTML(q)}
     else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in Conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
