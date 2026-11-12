@@ -641,6 +641,8 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+.turnbtn{font:700 13px "Segoe UI",system-ui,sans-serif;padding:7px 14px;border-radius:4px;border:1px solid #d4a63a;background:#b8860b;color:#1c1a14;cursor:pointer;white-space:nowrap;margin-left:6px}.turnbtn:hover{background:#cf9a1c}.turnbtn.blocked{background:#5a2a20;border-color:#a3261c;color:#f3c9bd}
+.trls{display:flex;flex-direction:column;gap:2px;margin:4px 0}.trl{font-size:12.5px;padding:2px 0;border-bottom:1px dotted #d6c79f}.trl.bad{color:#7a2a1c}.trl.good{color:#2f5a24}
 .vhead .vsub{margin-right:8px}.vhead .vsub button{padding:4px 12px}
 .comrow{display:flex;align-items:center;gap:10px}.combar{position:relative;flex:1;max-width:420px;height:12px;background:#e4d8b8;border-radius:6px;overflow:visible}.combar i{display:block;height:100%;border-radius:6px}.combar span{position:absolute;top:-3px;bottom:-3px;width:2px;background:#2b241a}
 .comby{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:12px}.comby span{padding:1px 7px;border-radius:10px;border:1px solid #d6c79f;background:#f7f1e1}.comby .dn b{color:#a3261c}.comby .up b{color:#2f5a24}
@@ -3112,7 +3114,7 @@ function startProject(id,ct,mode){
   const def=PD[id],c=ct?ctCost(def,ct):projCost(def),pk=mode==='pkg'&&!S.histMode;if(!canStart(def,c))return;
   if(!pk&&S.budget<c-1e-9)return;const rk=REQ_PC(c);if(pk){if(S.pc<rk)return;S.pc-=rk;spent('pc',rk)}
   if(!pk)spendB(c,'Programs');S.built[id]=(S.built[id]||0)+1;
-  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):planDur(def),sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
+  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):planDur(def),sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};refStageCredit(def,def.dur);refMoneyCredit(def,c);if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
@@ -3120,7 +3122,7 @@ function startProject(id,ct,mode){
     receipt({ic:def.nt?'🌐':def.ally?'🤝':pk?'🏛':'🏗',lab:def.nt?'Offtake signed with a neutral supplier':def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:pk?'Track the request →':'Open the program →',
       lines:[`Raises <b>${tgt}</b>.${pk?` ${rk} Political Capital spent. Congress votes on the FY${FYOF(p.pkg)} ${billN()} ~${fmtDate(pkgWhen())}; if it funds the plant, Congress pays the ${money(c)}, not your budget. It is likelier to cut it the less it holds back output.`:pv.isPlant?` The ${OFFICES[officeOf(def)].n} office runs the contract, permits and construction.`:''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far${pk?'':` · ${money(c)} committed`}.`]})}
 }
-const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x};
+const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x;refCredit(p,l,x)};
 // start work before the price is settled: contracting ends in ~4 weeks, the government carries the cost risk
 const ucaCost=p=>projCost(PD[p.def])*.1;
 function ucaOK(p){const def=PD[p.def];return !def.ally&&STAGES[p.stage]==='contract'&&!p.uca&&p.dur[1]-p.prog>6&&!p.obs.length}
@@ -3144,8 +3146,8 @@ const REF_STAGE=[
 const refFits=(x,def)=>(!x.dom||!def.ally)&&(!x.ally||def.ally)&&(!x.tags||x.tags.some(t=>def.tags.includes(t)));
 const stageM=(def,st)=>{let m=1;for(const x of REF_STAGE)if(x.st===st&&passed(x.r)&&refFits(x,def))m*=x.m;return Math.max(.25,m)};
 const planDur=def=>def.dur.map((d,i)=>d?Math.max(1,Math.round(d*stageM(def,STAGES[i]))):0);
-function refRescale(id){for(const p of S.projects){const def=PD[p.def];for(const x of REF_STAGE){if(x.r!==id||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(!p.dur[i])continue;
-  if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*x.m));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*x.m))}}}PJC.clear()}
+function refRescale(id){for(const p of S.projects){const def=PD[p.def];for(const x of REF_STAGE){if(x.r!==id||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(!p.dur[i])continue;const d0=p.dur[i];
+  if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*x.m));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*x.m))}if(!S.histMode)(S.refW=S.refW||{})[id]=(S.refW[id]||0)+Math.max(0,d0-p.dur[i])}}PJC.clear()}
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
@@ -3293,7 +3295,7 @@ function plantsTick(){sitesTick();
 /* ---------- reforms & carve-outs ---------- */
 function introduce(id){
   const R=RD[id];if(S.bill||!reformAvail(R)||inReq(id)||vehOf(R)==='ndaa')return;const c=reformCost(R);if(S.pc<c||(R.$||0)>S.budget)return;
-  S.pc-=c;spendB(R.$||0,'Reforms');S.bill={id,left:R.wk,total:R.wk,boost:0,whips:0};log(`📜 Introduced: ${rname(R)}.`,'ev');R.onStart?.();
+  S.pc-=c;(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+c;spendB(R.$||0,'Reforms');S.bill={id,left:R.wk,total:R.wk,boost:0,whips:0};log(`📜 Introduced: ${rname(R)}.`,'ev');R.onStart?.();
 }
 function whip(){if(!S.bill||S.pc<10||S.bill.whips>=3)return;S.pc-=10;S.bill.whips++;S.bill.boost+=.1}
 // Reforms the Armed Services and defense appropriations committees write ride the annual bill: they go into the request for
@@ -3306,7 +3308,7 @@ const refReqs=()=>(S.refReq=S.refReq||[]),inReq=id=>refReqs().some(x=>x.id===id)
 function refPass(x){const R=RD[x.id],m=moodOf(FYOF(x.pkg)).f;return x.rider?clamp(R.p*.35/m,.05,.4):clamp((R.p+.2)/Math.sqrt(m),.25,.95)}
 function refReqCost(R,rider){return Math.round(reformCost(R)*(rider?RIDER_F:.8))}
 function refAdd(id,rider){const R=RD[id];if(!R||!reformAvail(R)||inReq(id)||S.bill?.id===id)return;const k=refReqCost(R,rider);if(S.pc<k)return;S.pc-=k;spent('pc',k);
-  refReqs().push({id,pc:k,rider:!!rider,req:R.$||0,pkg:pkgW()});log(`🏛 ${rider?'Attached as a rider to':'Added to'} the FY${pkgFY()} NDAA: ${rname(R)} (${k} PC).`,'ev')}
+  refReqs().push({id,pc:k,rider:!!rider,req:R.$||0,pkg:pkgW()});(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+k;log(`🏛 ${rider?'Attached as a rider to':'Added to'} the FY${pkgFY()} NDAA: ${rname(R)} (${k} PC).`,'ev')}
 function refDrop(id){const x=refReqs().find(y=>y.id===id);if(!x)return;S.pc+=x.pc;spent('pc',-x.pc);S.refReq=refReqs().filter(y=>y!==x)}
 function refEnact(got,lost,fy,room){const its=refReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.refReq=refReqs().filter(x=>!its.includes(x));
   for(const x of its){const R=RD[x.id],n=rname(R);if(passed(x.id))continue;
@@ -3449,6 +3451,59 @@ function tick(){
   if(S.w>=END_W)gameOver(null);
 }
 /* ---------- the year in review: the turn of each year, right after the annual bill ---------- */
+// ---- two-month turns. A turn ends at the start of January, March, May, July, September or November, so December's NDAA vote
+// falls in the November-December turn. Time runs only inside a turn, and stops whenever a decision is waiting: no decision is
+// ever taken by default while you play in turns. Continuous play is a setting in the Menu.
+const TURN_M=[0,2,4,6,8,10],TURN=()=>S&&!S.histMode&&!S.replay&&S.turnMode!==false;
+function turnEndW(w=S.w){const d=dateOf(w+2);let y=d.getFullYear(),m=TURN_M.find(x=>x>d.getMonth());if(m==null){y++;m=0}let t=weekOf(y,m,1);if(t<=w)t=w+1;return Math.min(t,END_W)}
+// the label of the turn that starts at week w: taken at its middle, since a turn can start a few days before the 1st
+function turnLabel(w=S.w){w=Math.round((w+turnEndW(w))/2);const d=dateOf(w),m=d.getMonth()-d.getMonth()%2;return `${MON[m]}–${MON[m+1]} ${d.getFullYear()}`}
+function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)out[c]=R.out[c].yr;
+  return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
+function turnGo(){if(!TURN()||S.over)return;if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
+  if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
+function turnDone(){S.speed=0;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap()};if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
+function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
+  if(S.over)return '';
+  return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next turn ▸ ${turnLabel(S.w)}`}</button>`}
+function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=>w>w0&&w<=b.w,yr=w=>dateOf(w).getFullYear();
+  const tile=(v,l,dl)=>`<div class="yrt"><b>${v}</b><span>${l}</span>${dl?`<i>${dl}</i>`:''}</div>`,d=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<.05?'<span class="mini">no change</span>':`<span class="${(v>0)===(good>0)?'okt':'redt'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</span>`};
+  const rows=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0;if(Math.abs(y-x)<=Math.max(1e-9,x*.005))return '';return `<tr><td>${LINES[c].n}</td><td class="num">${fmtN(x)}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num ${y>x?'okt':'redt'}">${y>x?'+':'−'}${fmtN(Math.abs(y-x))}</td></tr>`}).join('');
+  const done=S.done.filter(x=>inW(x.w)&&!x.inh),gone=S.gone.filter(x=>inW(x.w)),stages=[];
+  for(const p of S.projects)for(const e of p.h||[])if(e.st!=null&&inW(e.w)&&e.st>0)stages.push(`${projName(p)} → ${STEP_N[STAGES[e.st]].toLowerCase()}`);
+  const evs=S.log.filter(l=>inW(l.w)&&(l.cls==='good'||l.cls==='bad'||l.cls==='ev')).slice(0,10).map(l=>`<div class="trl ${l.cls}"><span class="mini">${fmtDate(l.w)}</span> ${linkify(l.m)}</div>`).join('');
+  const n0=b.w,n1=turnEndW(n0),inN=w=>w>=n0&&w<n1,sc=S.scen&&SCD[S.scen],ahead=[];
+  if(S.fac==='US'&&inN(pkgWhen()))ahead.push(`🏛 Congress votes on the FY${pkgFY()} ${billN()} around ${fmtDate(pkgWhen())}. Order the request on the NDAA tab before then.`);
+  else if(S.fac==='US'&&inN(pkgWhen()-CP_WK))ahead.push(`🏛 The committees publish their marks around ${fmtDate(pkgWhen()-CP_WK)}: you will see which sectors they back.`);
+  if(sc&&inN(sc.mid))ahead.push(`🎯 ${sc.n}: the halfway floors are judged ${fmtDate(sc.mid)}.`);if(sc&&inN(sc.dl))ahead.push(`🎯 ${sc.n}: the real targets are judged ${fmtDate(sc.dl)}.`);
+  if(S.bill)ahead.push(`📜 ${rname(RD[S.bill.id])}: the floor vote is in ${S.bill.left} weeks.`);
+  for(const p of S.projects){const e=S.w+remW(p);if(inN(e))ahead.push(`🏗 ${projName(p)} is expected to finish around ${fmtDate(e)}.`)}
+  if(FYOF(n1)===IB_RECON_END+1&&FYOF(n0)<=IB_RECON_END)ahead.push('💵 Reconciliation money ends with this fiscal year.');
+  return `<div class="paper wide yrp"><div class="hd"><span class="ic">🗓</span>${turnLabel(w0)}: turn report</div><div class="bd">
+   <div class="yrts">${tile(pct(b.race),'of the requirement, you + allies',d(a.race*100,b.race*100,v=>fmt(v,1)+' pt'))}${tile(`${b.short}/${S.order.length}`,'lines short',d(a.short,b.short,v=>String(Math.round(v)),-1))}${tile(money(S.budget),'in your budget',d(a.budget,b.budget,v=>money(v)))}${tile(Math.floor(S.pc),'Political Capital',d(a.pc,b.pc,v=>fmt(v,0)))}</div>
+   ${rows?`<table class="ctable yrtab"><tr><th>Output per year</th><th class="num">Two months ago</th><th class="num">Now</th><th class="num">Change</th></tr>${rows}</table>`:'<p class="mini">No end item changed its output this turn.</p>'}
+   <h5 class="yrh">This turn</h5>
+   ${done.length?`<div class="yrl"><b>🏭 Finished</b><span>${done.map(x=>x.nm).join(' · ')}</span></div>`:''}${gone.length?`<div class="yrl"><b>✖ Lost</b><span class="redt">${gone.map(x=>`${x.nm} (${x.cancelled||'cancelled'})`).join(' · ')}</span></div>`:''}${stages.length?`<div class="yrl"><b>▶ Moved on</b><span>${stages.slice(0,8).join(' · ')}</span></div>`:''}
+   ${evs?`<div class="trls">${evs}</div>`:'<p class="mini">A quiet two months.</p>'}
+   <h5 class="yrh">Next turn: ${turnLabel(n0)}</h5>
+   ${ahead.length?ahead.slice(0,8).map(x=>`<div class="trl">${x}</div>`).join(''):'<p class="mini">Nothing scheduled. A good time to start programs or push a reform.</p>'}
+   </div><div class="ft"><button class="pbtn" data-a="close">Close</button><button class="pbtn primary" data-a="turn">Next turn ▸ ${turnLabel(n0)}</button></div></div>`}
+
+// ---- what each reform was worth, built up during play: delay avoided, schedule cut, money saved, Political Capital spent
+function refCredit(p,l,x){if(S.histMode||!p||p.pkg||!x)return;const def=PD[p.def];if(!def)return;
+  const fs=REF_LAYER.filter(e=>e.L.includes(l)&&passed(e.r)&&(!e.tags||e.tags.some(t=>def.tags.includes(t))));if(!fs.length)return;
+  let M=1,lnM=0;for(const e of fs){M*=e.c*e.w;lnM+=Math.log(1/(e.c*e.w))}const tot=x*(1/M-1);
+  for(const e of fs)(S.refW=S.refW||{})[e.r]=(S.refW[e.r]||0)+tot*Math.log(1/(e.c*e.w))/lnM}
+function refStageCredit(def,dur0){if(S.histMode)return;for(const x of REF_STAGE){if(!passed(x.r)||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(dur0[i])(S.refW=S.refW||{})[x.r]=(S.refW[x.r]||0)+dur0[i]*(1-x.m)}}
+function refMoneyCredit(def,c){if(S.histMode)return;for(const x of REF_COST)if(passed(x.r)&&x.fit(def))(S.refM=S.refM||{})[x.r]=(S.refM[x.r]||0)+c*(1/x.m-1)}
+function refWorthHTML(full){const ids=REFORMS.filter(R=>passed(R.id)).map(R=>R.id);
+  if(!ids.length)return full?'<p class="mini">You passed no reforms. Every week your programs lost, they lost under the rules as you found them.</p>':'';
+  const rows=ids.map(id=>({id,R:RD[id],w:S.refW?.[id]||0,m:S.refM?.[id]||0,pc:S.refPC?.[id]||0,at:(S.lawLog||[]).find(x=>x.n===rname(RD[id]))?.w})).sort((a,b)=>b.w-a.w||b.m-a.m);
+  const tw=rows.reduce((a,x)=>a+x.w,0),tm=rows.reduce((a,x)=>a+x.m,0),tp=rows.reduce((a,x)=>a+x.pc,0);
+  return `<p class="mini" style="margin:0 0 6px">Counted as you played: weeks your programs did not lose because a reform made a problem rarer or shorter, or a stage faster; money it took off plants. Programs run in parallel, so program-weeks add up faster than calendar time. Estimates from the game's own rules.</p>
+   <table class="ctable"><tr><th>Reform</th><th>Enacted</th><th class="num">PC spent</th><th class="num">Delay avoided</th><th class="num">Money saved</th></tr>
+   ${rows.map(x=>`<tr><td><b>${rname(x.R)}</b><div class="mini">${x.R.d.split('. ')[0]}.</div></td><td>${x.at?fmtDate(x.at):'—'}</td><td class="num">${x.pc?Math.round(x.pc):'—'}</td><td class="num">${x.w>=1?`<b>${Math.round(x.w).toLocaleString()}</b> program-weeks`:'<span class="mini">no measured delay</span>'}</td><td class="num">${x.m>=.01?money(x.m):'—'}</td></tr>`).join('')}
+   <tr class="billsum"><td><b>All reforms</b></td><td></td><td class="num"><b>${Math.round(tp)||'—'}</b></td><td class="num"><b>${Math.round(tw).toLocaleString()}</b> program-weeks (about ${fmt(tw/52,1)} program-years)</td><td class="num"><b>${tm>=.01?money(tm):'—'}</b></td></tr></table>`}
 function yrSnap(){const out=(S._R||production(false)).out,o={};for(const c in LINES)o[c]=out[c].yr;
   return {w:S.w,race:raceIdx(out),out:o,suff:Object.keys(LINES).filter(c=>suffLine(c,out[c].yr,S.w)>=1).length,
     spend:sumV(S.spendBy||{}),inc:sumV(S.incBy||{}),laws:(S.lawLog||[]).length,cn:{heat:cnS().heat,rung:cnS().rung},pc:S.pc}}
@@ -5187,7 +5242,7 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   h+=`<div class="rec-charts"><div class="acard"><div class="ah"><b>Share of the requirement · you + ${AL().short}</b></div>${lineChart({unit:'⟳ Output (flow), share of requirement',W:440,H:150,yMax:Math.max(1,...ser.map(x=>x[1]))*1.05,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1,c:'#5f9e4a',n:'Sufficient'}],series:[{pts:ser,c:'#2f62a0',wd:2.2,n:'Share of requirement'}]})}</div>
     <div class="acard"><div class="ah"><b>PRC and Russian content in what you build</b></div>${lineChart({unit:'Share of inputs',W:440,H:150,yMax:Math.max(.05,...ex.map(x=>x[1]))*1.1,yFmt:v=>pct(v),vf:v=>pct(v),series:[{pts:ex,c:'#b0453a',wd:2.2,n:'PRC / Russian content'}]})}</div>
     <div class="acard"><div class="ah"><b>Money spent since January 2027</b></div>${lineChart({unit:'Cumulative spending',W:440,H:150,yMax:Math.max(1,...sp.map(x=>x[1]))*1.08,yFmt:v=>'$'+fmt(v,0)+'B',vf:v=>money(v),series:[{pts:sp,c:'#8a6a1f',wd:2.2,n:'Spent'}]})}</div></div>`;
-  h+=billTable();
+  h+=billTable();if(REFORMS.some(R=>passed(R.id)))h+=`<div class="pdg">What your reforms were worth so far</div>${refWorthHTML(false)}`;
   // line by line
   h+=`<div class="pdg">Line by line</div><table class="ctable rec-lines"><tr><th>Line</th><th colspan="3">⟳ Output per year (flow)</th><th colspan="2">📦 In service (stock)</th></tr><tr class="sub"><th></th><th>Jan 2027</th><th>Now</th><th>${RV().n} now</th><th>Jan 2027</th><th>Now</th></tr>`+
     S.order.map(c=>{const o0=r0.out[c]??0,o1=R.out[c].yr,i0=r0.inv[c]??0,i1=S.inv[c];return `<tr><td>${lineIcon(c,18,'lic sm')}<span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span></td><td>${fmtN(o0)}</td><td><b>${fmtN(o1)}</b> ${d(o0,o1,v=>fmtN(v))}</td><td>~${fmtN(cnOut(c))}</td><td>${fmtN(i0)}</td><td><b>${fmtN(i1)}</b> ${d(i0,i1,v=>fmtN(v))}</td></tr>`}).join('')+`</table>`;
@@ -5554,7 +5609,7 @@ function renderGame(){
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
     <button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>Event decisions always stop the clock. This covers program problems (permits, protests, audits).<br>On: the clock stops when one appears.<br>Off: they wait ${DECIDE_WK} weeks in the decisions bar, then the default is taken.`)}"><i></i>Pause on problems</button>
     ${res('☰ Menu',S._svAt?'Saved':'Not saved',`<b>Menu</b><br>Save, load, main menu or a new game.<br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}`,'savem','',S._svErr?'rwarn':'rquiet rmenu')}
-    <div class="date">${fmtDate(S.w)}</div>${[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
+    <div class="date">${fmtDate(S.w)}</div>${TURN()?turnCtl():[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
   let sup=`<h2>Supply Chain</h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
@@ -5699,13 +5754,15 @@ function renderModal(){
   const P=S._R?.P||production(false).P;const build=()=>{let html='';
   if(S.modal==='end'){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
-    html=`<div class="paper"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
+    html=`<div class="paper wide yrp"><div class="hd"><span class="ic">🏛</span>After-Action Report · ${fmtDate(S.w)}</div><div class="bd">
       <div class="stamp" style="font-size:24px">${S.verdict}</div>${S.overWhy?`<p>${S.overWhy}</p>`:''}
       ${S.scenRes?`<p><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} in January 2035 (${S.scenRes.met} of ${S.scenRes.ms.length} mandates; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}<p>With ${AL().n}, you meet <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of what the plan requires across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
       <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}'s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
-      <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Pages: <b>${S.pages.toLocaleString()}</b>. Exceptions: <b>${S.waivers}</b>.</p>
-      <p><b>Where the time went</b> (${fmt(tot,0)} project/plant-weeks):</p>
+      <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. Programs abandoned or cut: <b>${S.gone.length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Waivers and exceptions: <b>${S.waivers}</b>.</p>
+      <h5 class="yrh">What your reforms were worth</h5>${refWorthHTML(true)}
+      <h5 class="yrh">The bill</h5>${billTable()||'<p class="mini">Nothing was spent.</p>'}
+      <h5 class="yrh">Where the time went <span class="mini">(${fmt(tot,0)} program-weeks lost)</span></h5>
       ${L.filter(x=>x[1].wk>0).map(([k,v])=>`<div style="display:flex;justify-content:space-between;font-size:13px;border-bottom:1px dotted #a89770"><span>${LAYERS[k].n}</span><span>${fmt(v.wk,0)} wk · ${Math.round(v.wk/Math.max(1,tot)*100)}%</span></div>`).join('')}
       </div><div class="ft"><button class="pbtn primary" data-a="recgo">📊 See the full record</button><button class="pbtn" data-a="restart">Play again</button></div></div>`;
   } else if(S.queue.length){
@@ -5717,6 +5774,8 @@ function renderModal(){
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
       const nq=S.queue.filter(x=>x.ev&&!x.read).length;
       html=`<div class="paper evp"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}${nq>1?`<span class="evq">${fmtDate(S.w)} · 1 of ${nq}</span>`:''}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${V(e.pre)}</p>`:''}${q.read||opts.length<2?'':pjChart(evProject(q))}</div><div class="ft">${opts.map((o,k)=>{const [t,d]=optSplit(V(o.l));return `<button class="pbtn evo" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}><b>${opts.length>1&&!q.read?`<i class="evk" style="background:${PJ_COL[k%PJ_COL.length]}">${String.fromCharCode(65+k)}</i>`:''}${t}</b>${d?`<span>${d}</span>`:''}</button>`}).join('')}${q.read?'':`<p class="evnote">The clock is stopped until you decide.</p>`}</div></div>`}
+  } else if(S.modal==='turn'&&S.trnRep){
+    html=turnHTML();
   } else if(S.modal==='scenPick'){
     html=scenPickHTML();
   } else if(S.modal==='scenMid'&&S.scenMid){
@@ -5834,6 +5893,7 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
    <div class="gm-bd"><div class="ti-save gm-info">${t('Game date',fmtDate(S.w))}${t('Mandate',S.scen?SCD[S.scen].n:'Open race')}${t('Mode',S.sandbox?'Sandbox':'Standard')}${t('Last saved',ok?when+' · '+fmtDate(S._svW):'Not yet')}</div>
    <button class="ti-btn primary" data-a="close">Resume ›</button>
    <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
+   <button class="ti-btn" data-a="tmode" data-tip="Two-month turns stop for every decision. Continuous play runs week by week and takes the default when a decision times out.">${S.turnMode===false?'Continuous play · switch to two-month turns':'Two-month turns · switch to continuous play'}</button>
    <div class="gm-row"><button class="ti-btn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="ti-btn gm-danger" data-a="savenew" data-tip="Starts over from the title screen. This game's browser save is replaced; download a file first to keep it.">New game</button></div>
    <p class="ti-note">The game saves itself in this browser every four game weeks and when you close the tab. Clearing site data erases it, so download a file to keep a copy or move the game to another computer.</p>
    ${S._svErr?`<p class="gm-err">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="gm-err">${S._svMsg}</p>`:''}</div></div>`}
@@ -5860,6 +5920,9 @@ document.addEventListener('pointerdown',e=>{
   S._vdirty=true;
   switch(a){
     case 'speed':S.speed=+b.dataset.s;if(S.speed)S.lastSpeed=S.speed;break;
+    case 'turn':turnGo();break;
+    case 'tpause':S.speed=0;break;
+    case 'tmode':S.turnMode=S.turnMode===false;S.speed=0;S.turnEnd=null;break;
     case 'ap':S.autoPause=!S.autoPause;break;
     case 'tab':S.tab=b.dataset.t==='bott'?'bott':+b.dataset.t;S.view='cmd';if(S.modal&&S.modal!=='end'&&!S.queue.length)S.modal=null;break;
     case 'ptab':S.ptab=+b.dataset.t;break;
@@ -5915,8 +5978,8 @@ document.addEventListener('pointerdown',e=>{
     case 'arsenal':S.view=({stock:'arsenal',pipe:'fac',ready:'ready'})[b.dataset.t]||'arsenal';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
-    case 'close':if(S.billAlert){S.billAlert=null;S.speed=S.billSpd||1;S.billSpd=null}
-if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;break;
+    case 'close':if(S.billAlert){S.billAlert=null;S.speed=TURN()?0:(S.billSpd||1);S.billSpd=null}
+if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;if(S._trnDue&&S.trnRep){S._trnDue=0;S.modal='turn'}break;
     case 'launch':{const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id)}break}
     case 'ct':S.ct[b.dataset.g]=b.dataset.v;break;
     case 'ctgo':startProject(S.ct.id,{b:S.ct.b,k:S.ct.k},b.dataset.m||'pkg');S.modal=S.ctBack||null;S.ct=null;break;
@@ -5965,8 +6028,10 @@ document.addEventListener('keydown',e=>{
   if(!S||S.over||QJ||e.target.tagName==='INPUT')return;
   if((e.key==='k'&&(e.ctrlKey||e.metaKey))||e.key==='/'){e.preventDefault();qjOpen();return}
   if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();navBackG();render();return}
+  if(e.code==='Space'&&TURN()){e.preventDefault();if(S.speed)S.speed=0;else turnGo();render();return}
   if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed&&!LIVE_M.has(S.modal))S.modal=S.modal==='end'?S.modal:null;render()}
   else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VGROUPS.findIndex(g=>g.includes(S.view||'cmd'));S.view=VGROUPS[(i+(e.shiftKey?VGROUPS.length-1:1))%VGROUPS.length][0];render()}
+  else if('1234'.includes(e.key)&&TURN()){S.tspd=+e.key;if(S.speed)S.speed=S.tspd;render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
   else if(e.key==='Escape'&&S._rcpt&&!S._rcpt.gone&&performance.now()-S._rcpt.t0<RCPT_MS){S._rcpt.gone=true;renderReceipt()}
   else if(e.key==='Escape'&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
@@ -5983,8 +6048,9 @@ function loop(now){
       while(S.replay&&S.speed&&acc>=REPLAY_MS[S.speed]&&!(S._reel&&now-S._reel.t0<REEL_HOLD)){acc-=REPLAY_MS[S.speed];S._reel=null;tick();S.queue=[];ticked=true;if(S.w>=PLAY0)endHistory()}
       if(ticked)render()}
     requestAnimationFrame(loop);return}
+  if(S&&TURN()&&S.speed>0&&(S.turnEnd==null||decisionsPending()))S.speed=0;
   if(S&&!S.over&&S.speed>0&&!S.queue.length&&(!S.modal||LIVE_M.has(S.modal))){acc+=Math.min(dt,500);let ticked=false;
-    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over&&(!S.modal||LIVE_M.has(S.modal))){acc-=MS[S.speed];tick();sbxFill();ticked=true}
+    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over&&(!S.modal||LIVE_M.has(S.modal))){acc-=MS[S.speed];tick();sbxFill();ticked=true;if(TURN()&&S.turnEnd!=null&&S.w>=S.turnEnd){turnDone();acc=0;break}if(TURN()&&decisionsPending()){S.speed=0;acc=0;break}}
     if(ticked){dirtyR=true;if(S.w-(S._svW??-99)>=4)saveGame()}
     if(dirtyR&&(S.queue.length||S.over||!S.speed||now-lastR>=RENDER_MS[S.speed])){render();lastR=now;dirtyR=false}}
   else{acc=0;if(dirtyR&&S){render();lastR=now;dirtyR=false}}
