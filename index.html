@@ -641,6 +641,7 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+.lpair{display:inline-flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.pvwin{width:min(980px,96vw)}.pvwin .ft.ctft{display:flex!important;flex-direction:row!important;align-items:stretch;gap:10px;padding:12px 18px 14px;border-top:1px solid #cdb98a}.pvwin .ft.ctft .ctback{flex:0 0 auto;width:auto}.pvwin .ft.ctft .primary{flex:1;max-width:none;display:flex;flex-direction:column;align-items:flex-start}
 #decbar.dbturn{display:flex;align-items:stretch;gap:12px;min-height:58px;height:auto;margin:6px 8px 0;padding:8px 12px;background:linear-gradient(#5a2a16,#3e1d10);border:2px solid #e0a03a;box-shadow:0 0 0 1px #000a,0 0 18px rgba(224,160,58,.35);animation:dbpulse 2.4s ease-in-out infinite}
 @keyframes dbpulse{0%,100%{box-shadow:0 0 0 1px #000a,0 0 10px rgba(224,160,58,.25)}50%{box-shadow:0 0 0 1px #000a,0 0 22px rgba(224,160,58,.55)}}
 .dbturn .dbhead{display:flex;flex-direction:column;justify-content:center;min-width:250px;color:#f3e2c0}.dbturn .dbhead b{font:700 17px Georgia,serif;color:#ffd27a}.dbturn .dbhead span{font:12px "Segoe UI",system-ui,sans-serif;opacity:.9}
@@ -5765,7 +5766,16 @@ const pill=(id,P)=>{const st=nodeStatus(P[id]);return `<span class="npill np-${s
 const launchVerb=d=>d.ally?'Sign deal':needsContract(d)?'Build plant':'Start';
 function launchBtn(d,big){const q=S.projects.find(x=>x.def===d.id);if(q){const [t,cl]=progStatus(q,true);
     return `<span class="lbu" data-a="prog" data-u="${q.uid}" data-tip="Ordered. Open it to follow contract, permits and construction."><b>✓ Ordered</b><span class="${cl}">${t.replace(/^\S+\s/,'')}</span></span>`}
-  return `<button class="pbtn ${big?'primary':'sm'}" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${launchVerb(d)}${big?' →':''}</button>`}
+  return `<span class="lpair"><button class="pbtn ${big?'':'sm'} lcl" data-a="pvopen" data-p="${d.id}" data-tip="See what it would do, when, and what stands in the way, before you commit.">Look closer</button><button class="pbtn ${big?'primary':'sm'}" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}>${launchVerb(d)}${big?' →':''}</button></span>`}
+function pvHTML(id){const d=PD[id];if(!d)return '';const c=projCost(d),tgt=d.t.node?ND[d.t.node].n:LINES[d.t.line].n,lk=d.req&&!passed(d.req),kind=d.nt?'Neutral supply':d.ally?'Allied supply':d.kind==='maint'?'Yard and depot work':KIND_L[d.kind||'cap']||'New capacity';
+  const plan=planDur(d),tot=plan.reduce((a,b)=>a+b,0),stp=STAGES.map((st,i)=>plan[i]?`${STEP_N[st]} ${plan[i]} wk`:'').filter(Boolean).join(' → ');
+  const why=likely(d).map(l=>LAYERS[l].n);
+  return `<div class="paper wide pvwin"><div class="hd"><span class="ic">🔎</span>${d.n}<span class="cttag">${tgt}</span></div><div class="bd">
+   <p class="ctintro"><b>${kind}.</b> ${d.d||''}</p>
+   <div class="yrts">${[[money(c),'cost'+(needsContract(d)?', from your budget or Congress':'')],[`~${yrs(tot)}`,'planned time'+(d.ally?'':', before ramp-up')],[why.length||'Few',why.length===1?'kind of delay likely':'kinds of delay likely']].map(([v,l])=>`<div class="yrt"><b>${v}</b><span>${l}</span></div>`).join('')}</div>
+   <div class="dsec"><h4>Planned schedule</h4><p class="mini" style="margin:0">${stp}${why.length?`. Likely to be slowed by: ${why.map(x=>lcAll(x)).join(', ')}.`:'.'}</p></div>
+   <div class="dsec"><h4>What it would do</h4>${previewHTML(d,needsContract(d)?ctDefault(d):null)}</div></div>
+   <div class="ft ctft"><button class="pbtn ctback" data-a="pvback">← Back</button>${lk?`<span class="mini redt">🔒 Needs ${rname(RD[d.req])} first</span>`:`<button class="pbtn primary" data-a="launch" data-p="${d.id}" ${canStart(d)?'':'disabled'}><b>${launchVerb(d)} →</b><span class="mini">${needsContract(d)?'Next: choose the builder and contract terms, then how to pay.':d.ally?'Signs now: '+money(c)+' from your budget.':'Starts now: '+money(c)+' from your budget.'}</span></button>`}</div></div>`}
 const CSEG=[['plant','🏗','New plants','Built at home: from your budget now, or requested in the NDAA with Political Capital. Then contract, permits and construction.'],
   ['ally','🤝','Allied deals','You pay a producer in an allied country to make more for you. Faster, no plant of your own; the supply sits abroad and depends on that ally.'],
   ['other','⚙','Upgrades, workforce & upkeep','Improves plants and people you already have. No new start: it begins as soon as you fund it.']];
@@ -5802,6 +5812,8 @@ function renderModal(){
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
       const nq=S.queue.filter(x=>x.ev&&!x.read).length;
       html=`<div class="paper evp"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}${nq>1?`<span class="evq">${fmtDate(S.w)} · 1 of ${nq}</span>`:''}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${V(e.pre)}</p>`:''}${q.read||opts.length<2?'':pjChart(evProject(q))}</div><div class="ft">${opts.map((o,k)=>{const [t,d]=optSplit(V(o.l));return `<button class="pbtn evo" data-a="evopt" data-k="${k}" ${(o.pc||0)>S.pc||(o.$||0)>S.budget?'disabled':''}><b>${opts.length>1&&!q.read?`<i class="evk" style="background:${PJ_COL[k%PJ_COL.length]}">${String.fromCharCode(65+k)}</i>`:''}${t}</b>${d?`<span>${d}</span>`:''}</button>`}).join('')}${q.read?'':`<p class="evnote">The clock is stopped until you decide.</p>`}</div></div>`}
+  } else if(S.modal==='pv'&&S.pvId){
+    html=pvHTML(S.pvId);
   } else if(S.modal==='turn'&&S.trnRep){
     html=turnHTML();
   } else if(S.modal==='scenPick'){
@@ -5930,7 +5942,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
 document.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
+  if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
@@ -6008,7 +6020,9 @@ document.addEventListener('pointerdown',e=>{
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
     case 'close':if(S.billAlert){S.billAlert=null;S.speed=TURN()?0:(S.billSpd||1);S.billSpd=null}
 if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;if(S._trnDue&&S.trnRep){S._trnDue=0;S.modal='turn'}break;
-    case 'launch':{const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id)}break}
+    case 'pvopen':S.pvBack={m:S.modal,sel:S.sel,selP:S.selP};S.pvId=b.dataset.p;S.modal='pv';S.speed=0;break;
+    case 'pvback':{const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;if(k.selP)S.selP=k.selP;S.pvBack=null;break}
+    case 'launch':{if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id)}break}
     case 'ct':S.ct[b.dataset.g]=b.dataset.v;break;
     case 'ctgo':startProject(S.ct.id,{b:S.ct.b,k:S.ct.k},b.dataset.m||'pkg');S.modal=S.ctBack||null;S.ct=null;break;
     case 'ctback':S.modal=S.ctBack||null;S.ct=null;break;
@@ -6062,7 +6076,7 @@ document.addEventListener('keydown',e=>{
   else if('1234'.includes(e.key)&&TURN()){S.tspd=+e.key;if(S.speed)S.speed=S.tspd;render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
   else if(e.key==='Escape'&&S._rcpt&&!S._rcpt.gone&&performance.now()-S._rcpt.t0<RCPT_MS){S._rcpt.gone=true;renderReceipt()}
-  else if(e.key==='Escape'&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
+  else if(e.key==='Escape'&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
 });
 // item and program pages are for reading: time can run while one is open
 const LIVE_M=new Set(['node','prog']);
