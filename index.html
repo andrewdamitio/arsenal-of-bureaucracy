@@ -641,6 +641,7 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+.vhead .vsub{margin-right:8px}.vhead .vsub button{padding:4px 12px}
 .comrow{display:flex;align-items:center;gap:10px}.combar{position:relative;flex:1;max-width:420px;height:12px;background:#e4d8b8;border-radius:6px;overflow:visible}.combar i{display:block;height:100%;border-radius:6px}.combar span{position:absolute;top:-3px;bottom:-3px;width:2px;background:#2b241a}
 .comby{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:12px}.comby span{padding:1px 7px;border-radius:10px;border:1px solid #d6c79f;background:#f7f1e1}.comby .dn b{color:#a3261c}.comby .up b{color:#2f5a24}
 .comchip{margin-left:6px;font:700 10px "Segoe UI",system-ui,sans-serif;padding:1px 6px;border-radius:8px;background:#5a4a1a;color:#f3dc9a;white-space:nowrap}.comchip.bad{background:#7a2a1c;color:#fff}
@@ -3817,7 +3818,7 @@ function bnBody(){
 const NAV_ACTS=new Set(['pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
 // where Back goes, in words
 function backLbl(){const t=S.navH?.at(-1);if(!t)return '';if(t.modal==='node'&&t.sel)return t.sel.startsWith('L:')?LINES[t.sel.slice(2)]?.n:ND[t.sel]?.n;
-  if(t.modal==='prog'){const r=progRec(t.selP);return r?(r.p.nm||PD[r.p.def].n):'the program'}if(t.modal)return 'the previous page';return (VIEWS.find(v=>v[0]===t.view)?.[1]||'the map').replace(/^\S+\s/,'')}
+  if(t.modal==='prog'){const r=progRec(t.selP);return r?(r.p.nm||PD[r.p.def].n):'the program'}if(t.modal)return 'the previous page';return SUBN[t.view]||(VIEWS.find(v=>v[0]===t.view)?.[1]||'the map')}
 const crumb=()=>S.navH?.length?`<div class="crumb"><span data-a="goback" data-tip="Alt+←">← ${backLbl()||'Back'}</span></div>`:'';
 const navSnap=()=>({view:S.view,modal:S.modal,sel:S.sel,selP:S.selP,rtab:S.rtab});
 function navPush(){const s=navSnap(),t=S.navH?.at(-1);if(t&&JSON.stringify(t)===JSON.stringify(s))return;(S.navH=S.navH||[]).push(s);if(S.navH.length>40)S.navH.shift()}
@@ -4831,10 +4832,15 @@ const VIC={cmd:'M3 10l9-6 9 6M5 9.5V20h14V9.5M10 20v-5h4v5',
  ready:'M14.5 6.5a4 4 0 00-5.4 5.1L3.5 17.2l3.3 3.3 5.6-5.6a4 4 0 005.1-5.4l-2.6 2.6-2.4-.6-.6-2.4z',
  find:'M10.5 4a6.5 6.5 0 110 13 6.5 6.5 0 010-13zM15.3 15.3L21 21'};
 const vic=(k,sz=14)=>VIC[k]?`<svg class="vic" width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true"><path d="${VIC[k]}"/></svg>`:'';
-const VIEWS=[['cmd','Command'],['bn','Bottlenecks'],['flow','Supply flows'],['imports','Imports'],['allies','Allies'],['ndaa','NDAA'],['policy','Policy'],['arsenal','Stocks & needs'],['rec','Record'],['rules','Rulebook'],['src','Sources']];
+// seven tabs; a tab that holds two views shows a switch under its title. Views keep their own ids, so every link still works.
+const VIEWS=[['cmd','Command'],['bn','Supply chain'],['imports','Abroad'],['ndaa','NDAA'],['policy','Rules & policy'],['arsenal','Results'],['src','Sources']];
+const VGROUPS=[['cmd'],['bn','flow'],['imports','allies'],['ndaa'],['policy','rules'],['arsenal','rec'],['src']];
+const SUBN={bn:'Bottlenecks',flow:'Supply flows',imports:'Raw material imports',allies:'Allies',policy:'Policy actions',rules:'Laws in force & permits',arsenal:'Stocks & needs',rec:'The record'};
+const vGroup=v=>VGROUPS.find(g=>g.includes(v==='permits'?'rules':v==='fac'||v==='pipe'||v==='ready'?'arsenal':v))||[v];
+const vSubStrip=()=>{const g=vGroup(S.view);return g.length<2?'':`<div class="seg vsub">${g.map(v=>`<button class="${S.view===v?'on':''}" data-a="view" data-v="${v}"><span>${SUBN[v]}</span></button>`).join('')}</div>`};
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
-function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>`<button class="vbtn ${S.view===k?'on':''}" data-a="view" data-v="${k}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">${vic('find')}Find</button></div>`}
+function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>{const g=vGroup(k),on=g.includes(S.view);return `<button class="vbtn ${on?'on':''}" data-a="view" data-v="${on?S.view:(S.vlast?.[k]&&g.includes(S.vlast[k])?S.vlast[k]:k)}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`}).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">${vic('find')}Find</button></div>`}
 function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   const foreign=id=>{const x=srcSplit(id,P),t=x.dom+x.ally+x.neut+x.spot+x.prc;return t>1e-9?(x.ally+x.neut+x.spot+x.prc)/t:0};
   const keep=id=>f==='all'||(f==='short'&&P[id].need>1e-6&&P[id].cover<.999)||(f==='foreign'&&foreign(id)>.5)||(f==='barred'&&!!allyBar(id));
@@ -4867,7 +4873,7 @@ function flowBody(){
 function viewHTML(){
   const T={allies:['🤝','Allies','who builds alongside you, what counts toward your requirement, the deals you can strike, and what hits them at home'],imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','Rulebook','the laws in force, how each process works, and every permit your plants hold'],policy:['🖋','Policy','executive actions, emergency powers and stand-alone bills'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply flows','this week\'s flows, from raw sources to end items'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
   const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?(S.view='rules',S.rbTab='docket',rulesBody()):S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='allies'?alliesBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML('ndaa')}</div></div>`:S.view==='policy'?policyBody():S.view==='pipe'?facBody():readyBody();
-  return `<div class="vhead"><span class="ic">${VIC[S.view]?vic(S.view,22):T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${!['flow','src','rules','bn','permits','fac','rec','ndaa','policy','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  return `<div class="vhead"><span class="ic">${VIC[S.view]?vic(S.view,22):T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${vSubStrip()}${!['flow','src','rules','bn','permits','fac','rec','ndaa','policy','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -5864,7 +5870,7 @@ document.addEventListener('pointerdown',e=>{
     case 'map':if(b.dataset.m)S.wmat=b.dataset.m;S.view='imports';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'flow':S.flowFocus=b.dataset.f||'all';S.view='flow';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'cite':S.view='src';S.citeHi=b.dataset.c;S._citeScroll=true;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'view':S.view=b.dataset.v;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'view':S.view=b.dataset.v;{const g=vGroup(S.view);(S.vlast=S.vlast||{})[g[0]]=S.view}if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'ser':S.hide=S.hide||{};S.hide[b.dataset.k]=!S.hide[b.dataset.k];break;
     case 'range':S.range=b.dataset.r;break;
     case 'flowm':S.flowMode=b.dataset.m;break;
@@ -5961,7 +5967,7 @@ document.addEventListener('keydown',e=>{
   if((e.key==='k'&&(e.ctrlKey||e.metaKey))||e.key==='/'){e.preventDefault();qjOpen();return}
   if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();navBackG();render();return}
   if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed&&!LIVE_M.has(S.modal))S.modal=S.modal==='end'?S.modal:null;render()}
-  else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VIEWS.findIndex(v=>v[0]===(S.view||'cmd'));S.view=VIEWS[(i+(e.shiftKey?VIEWS.length-1:1))%VIEWS.length][0];render()}
+  else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VGROUPS.findIndex(g=>g.includes(S.view||'cmd'));S.view=VGROUPS[(i+(e.shiftKey?VGROUPS.length-1:1))%VGROUPS.length][0];render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
   else if(e.key==='Escape'&&S._rcpt&&!S._rcpt.gone&&performance.now()-S._rcpt.t0<RCPT_MS){S._rcpt.gone=true;renderReceipt()}
   else if(e.key==='Escape'&&closable()){if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
