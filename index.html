@@ -641,6 +641,12 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+#decbar.dbturn{display:flex;align-items:stretch;gap:12px;min-height:58px;height:auto;margin:6px 8px 0;padding:8px 12px;background:linear-gradient(#5a2a16,#3e1d10);border:2px solid #e0a03a;box-shadow:0 0 0 1px #000a,0 0 18px rgba(224,160,58,.35);animation:dbpulse 2.4s ease-in-out infinite}
+@keyframes dbpulse{0%,100%{box-shadow:0 0 0 1px #000a,0 0 10px rgba(224,160,58,.25)}50%{box-shadow:0 0 0 1px #000a,0 0 22px rgba(224,160,58,.55)}}
+.dbturn .dbhead{display:flex;flex-direction:column;justify-content:center;min-width:250px;color:#f3e2c0}.dbturn .dbhead b{font:700 17px Georgia,serif;color:#ffd27a}.dbturn .dbhead span{font:12px "Segoe UI",system-ui,sans-serif;opacity:.9}
+.dbturn .dbs{align-items:center}.dbc.dbbig{height:auto;min-height:44px;max-width:380px;padding:6px 10px;background:#f3e7c4;border:1px solid #c9a227;color:#2b241a}.dbc.dbbig:hover{background:#fff3d0}
+.dbc.dbbig .dbt b{font:700 14px Georgia,serif;color:#2b241a}.dbc.dbbig .dbt span{color:#5a4e38}.dbc.dbbig.first{border:2px solid #ffd27a}
+.dbgo{margin-left:8px;font:700 12.5px "Segoe UI",system-ui,sans-serif;background:#3a3020;color:#f3dc9a;padding:5px 10px;border-radius:4px;white-space:nowrap}
 .turnbtn{font:700 13px "Segoe UI",system-ui,sans-serif;padding:7px 14px;border-radius:4px;border:1px solid #d4a63a;background:#b8860b;color:#1c1a14;cursor:pointer;white-space:nowrap;margin-left:6px}.turnbtn:hover{background:#cf9a1c}.turnbtn.blocked{background:#5a2a20;border-color:#a3261c;color:#f3c9bd}
 .trls{display:flex;flex-direction:column;gap:2px;margin:4px 0}.trl{font-size:12.5px;padding:2px 0;border-bottom:1px dotted #d6c79f}.trl.bad{color:#7a2a1c}.trl.good{color:#2f5a24}
 .vhead .vsub{margin-right:8px}.vhead .vsub button{padding:4px 12px}
@@ -2054,8 +2060,11 @@ EVENTS.push(
   body:"Data centers, chip fabs, and LNG terminals are hiring every electrician and pipefitter within 300 miles of your sites, at wages your contracts don't cover.",
   o:()=>[{l:`Accept it (domestic construction −${carveOn('cvHire')?20:40}% for 39 weeks)`,fx:()=>gmod(carveOn('cvHire')?.8:.6,39,'Construction labor crunch')},{l:'Fund wage premiums (−0.4B; −15%)',$:.4,fx:()=>gmod(.85,39,'Construction labor crunch')},{l:'Defer civilian megaprojects under DPA (−12 PC, civilian strain +10; no slowdown)',pc:12,fx:()=>{S.strain+=10}}]},
  {id:'overrun',pre:"2022: GAO found the Navy's first three shipyard dry-dock projects had grown by more than $4 billion.[c:siop]",p:.003,once:false,cond:()=>S.projects.some(p=>STAGES[p.stage]==='build'&&!PD[p.def].ally),ic:'💰',t:'Construction Cost Shock',
-  body:"Steel, equipment, and labor inflation push estimates at completion up 25–40% across your construction portfolio. Every plant still being built needs more money — or less plant.",
-  fx:()=>spawnWhere(p=>STAGES[p.stage]==='build'&&!PD[p.def].ally,'costOverrun'),o:[{l:'Understood.'}]},
+  body:()=>{const ps=S.projects.filter(p=>STAGES[p.stage]==='build'&&!PD[p.def].ally);return `Steel, equipment, and labor inflation push estimates at completion up 25–40% across your construction portfolio: ${ps.length} plant${ps.length===1?'':'s'} still being built (${ps.slice(0,4).map(projName).join(', ')}${ps.length>4?` and ${ps.length-4} more`:''}). Each needs more money, or less plant.`},
+  o:()=>{const ps=S.projects.filter(p=>STAGES[p.stage]==='build'&&!PD[p.def].ally),n=ps.length,c=+(.4*n).toFixed(1);
+   return [{dflt:1,l:`Pay the overruns (${money(c)} for all ${n})`,$:c,fx:()=>{}},
+    {l:'Descope every plant (each makes 80% of plan)',fx:()=>{for(const p of S.projects)if(STAGES[p.stage]==='build'&&!PD[p.def].ally)p.gm=(p.gm||1)*.8}},
+    {l:'Wait for a reprogramming (every plant pauses about 20 weeks)',fx:()=>{for(const p of S.projects)if(STAGES[p.stage]==='build'&&!PD[p.def].ally&&!p.obs.some(i=>i.id==='costOverrun')){const od=OD.costOverrun,w=Math.round(20*waitMult(od,PD[p.def]));p.obs.push({id:'costOverrun',wait:w,total:w,label:'Waiting for a reprogramming'});pmark(p,{ob:'costOverrun'})}}}]}},
  {id:'vacatur',pre:"April 2020: a federal court in Montana vacated Nationwide Permit 12.[c:nwp12]",p:.0025,once:false,cond:()=>S.projects.some(p=>STAGES[p.stage]==='permit'),ic:'⚖',t:{US:'Court Vacates a Nationwide Permit'},
   body:{US:"A federal court vacates a general permit that industrial projects relied on — as a court did to a nationwide pipeline-crossing permit in 2020. Every project still in permitting must re-apply individually."},
   fx:()=>{spawnWhere(p=>STAGES[p.stage]==='permit','reapply');if(carveOn('cvPermit')&&rand()<.5)endCarve('cvPermit','struck down');},o:[{l:'Re-file everything.'}]},
@@ -3214,7 +3223,11 @@ function decList(){const L=[];
   for(const p of S.projects){const o=p.obs[0];if(o&&!o.wait)L.push({a:'prog',d:`data-u="${p.uid}"`,ic:'⛔',t:V(OD[o.id].n),sub:projName(p),due:o.due})}
   for(const pl of S.plants){const o=pl.issue;if(o&&!o.wait)L.push({a:'prog',d:`data-u="${pl.uid}"`,ic:'⚠',t:OPSD[o.id].n,sub:pl.nm,due:o.due})}
   return L.sort((a,b)=>dLeft(a.due)-dLeft(b.due))}
+// open the first waiting decision, as if its card were clicked
+function decOpenFirst(){if(S.modal||S.queue.length)return;const x=decList()[0];if(!x)return;const v=(x.d.match(/="([^"]*)"/)||[])[1];
+  if(x.a==='prog'){S.modal='prog';S.selP=v;S.progBack=null}else if(x.a==='evdo'){const it=(S.inbox||[]).find(y=>y.ev===v);S.inbox=(S.inbox||[]).filter(y=>y.ev!==v);S.queue.unshift({ev:v,fxDone:1,due:it?.due})}}
 function decBar(){const L=decList();if(!L.length)return '';
+  if(TURN())return `<div id="decbar" class="dbturn"><div class="dbhead"><b>${L.length===1?'A decision is waiting':L.length+' decisions are waiting'}</b><span>The turn is paused until you decide. Nothing is decided for you.</span></div><div class="dbs">${L.map((x,i)=>`<button class="dbc dbbig ${i===0?'first':''}" data-a="${x.a}" ${x.d}><span class="dbi">${x.ic}</span><span class="dbt"><b>${x.t}</b><span>${x.sub}</span></span><span class="dbgo">Decide ›</span></button>`).join('')}</div></div>`;
   return `<div id="decbar"><span class="dbl">📬 <b>${L.length}</b> decision${L.length>1?'s':''}</span><div class="dbs">${L.map(x=>{const l=dLeft(x.due);return `<button class="dbc ${l<=2?'hot':''} ${l>=DECIDE_WK-1?'fresh':''}" data-a="${x.a}" ${x.d} data-tip="<b>${tipQ(x.t)}</b><br>${tipQ(x.sub)}<br>${l} wk left; then the default is taken"><span class="dbi">${x.ic}</span><span class="dbt"><b>${x.t}</b><span>${x.sub}</span></span><span class="dbk"><span class="dtb"><i style="width:${l/DECIDE_WK*100}%"></i></span><b>${l} wk</b></span></button>`}).join('')}</div></div>`}
 function autoDecide(){
   S.inbox=(S.inbox||[]).filter(x=>{if(S.w<x.due)return true;const e=ED[x.ev],os=V(e.o)||[],k=defOpt({o:os});if(k>=0){evApply(os[k]);log(`⏱ No decision in time. ${V(e.t)} → ${V(os[k].l)}`,'ev')}return false});
@@ -4888,7 +4901,7 @@ const VIC={cmd:'M3 10l9-6 9 6M5 9.5V20h14V9.5M10 20v-5h4v5',
  find:'M10.5 4a6.5 6.5 0 110 13 6.5 6.5 0 010-13zM15.3 15.3L21 21'};
 const vic=(k,sz=14)=>VIC[k]?`<svg class="vic" width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true"><path d="${VIC[k]}"/></svg>`:'';
 // seven tabs; a tab that holds two views shows a switch under its title. Views keep their own ids, so every link still works.
-const VIEWS=[['cmd','Command'],['bn','Supply chain'],['imports','Abroad'],['ndaa','NDAA'],['policy','Rules & policy'],['arsenal','Results'],['src','Sources']];
+const VIEWS=[['cmd','Command'],['bn','Supply chain'],['imports','Abroad'],['ndaa','NDAA'],['policy','Rules & policy'],['arsenal','Stocks & needs'],['src','Sources']];
 const VGROUPS=[['cmd'],['bn','flow'],['imports','allies'],['ndaa'],['policy','rules'],['arsenal','rec'],['src']];
 const SUBN={bn:'Bottlenecks',flow:'Supply flows',imports:'Raw material imports',allies:'Allies',policy:'Policy actions',rules:'Laws in force & permits',arsenal:'Stocks & needs',rec:'The record'};
 const vGroup=v=>VGROUPS.find(g=>g.includes(v==='permits'?'rules':v==='fac'||v==='pipe'||v==='ready'?'arsenal':v))||[v];
@@ -5052,8 +5065,8 @@ function obsBlock(od,inst,action,uid,extra=''){
   let h=`<div class="obs" style="border-left-color:${LAYERS[od.layer].c}"><div class="ot"><b>${inst.wait>0?'⏳':'⛔'} ${V(od.n)}</b>${chip(od.layer)}${extra}</div><p>${V(od.t)}</p>`;
   if(inst.wait>0)h+=`<div class="waiting">${inst.label} — <b>${inst.wait}</b> wk remaining${inst.after==='cancel'?' <span class="red">(project will be mothballed)</span>':''}</div><div class="prog" style="margin:5px 0 0"><i style="width:${(1-inst.wait/inst.total)*100}%;background:${LAYERS[od.layer].c}"></i></div>`;
   else{const dk=defOpt(od);
-    if(dk>=0)h+=dTimer(inst.due,V(od.o[dk].l));
-    h+=`<div class="ochoose">Choose how to get past it. Each way trades time against Political Capital, money and risk.${dk>=0?' If you do nothing, the outlined choice happens when the timer runs out.':''}</div><div class="opts">${od.o.map((o,k)=>`<button class="btn opt ${k===dk?'dflt':''}" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'}><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span><span class="ox">${optExplain(od,o)}</span></button>`).join('')}</div>`;}
+    if(dk>=0&&!TURN())h+=dTimer(inst.due,V(od.o[dk].l));
+    h+=`<div class="ochoose">Choose how to get past it. Each way trades time against Political Capital, money and risk.${dk>=0&&!TURN()?' If you do nothing, the outlined choice happens when the timer runs out.':TURN()?' The turn waits for your choice.':''}</div><div class="opts">${od.o.map((o,k)=>`<button class="btn opt ${k===dk?'dflt':''}" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'}><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span><span class="ox">${optExplain(od,o)}</span></button>`).join('')}</div>`;}
   return h+more+`</div>`;
 }
 function spark(t){
@@ -6049,8 +6062,10 @@ function loop(now){
       if(ticked)render()}
     requestAnimationFrame(loop);return}
   if(S&&TURN()&&S.speed>0&&(S.turnEnd==null||decisionsPending()))S.speed=0;
+  // a turn that stopped for a decision opens it, once per stop
+  if(S&&TURN()&&S.turnEnd!=null&&!S.speed&&decisionsPending()&&!S.modal&&!S.queue.length&&S._decAuto!==S.w){S._decAuto=S.w;decOpenFirst();render()}
   if(S&&!S.over&&S.speed>0&&!S.queue.length&&(!S.modal||LIVE_M.has(S.modal))){acc+=Math.min(dt,500);let ticked=false;
-    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over&&(!S.modal||LIVE_M.has(S.modal))){acc-=MS[S.speed];tick();sbxFill();ticked=true;if(TURN()&&S.turnEnd!=null&&S.w>=S.turnEnd){turnDone();acc=0;break}if(TURN()&&decisionsPending()){S.speed=0;acc=0;break}}
+    while(acc>=MS[S.speed]&&S.speed>0&&!S.queue.length&&!S.over&&(!S.modal||LIVE_M.has(S.modal))){acc-=MS[S.speed];tick();sbxFill();ticked=true;if(TURN()&&S.turnEnd!=null&&S.w>=S.turnEnd){turnDone();acc=0;break}if(TURN()&&decisionsPending()){S.speed=0;acc=0;decOpenFirst();break}}
     if(ticked){dirtyR=true;if(S.w-(S._svW??-99)>=4)saveGame()}
     if(dirtyR&&(S.queue.length||S.over||!S.speed||now-lastR>=RENDER_MS[S.speed])){render();lastR=now;dirtyR=false}}
   else{acc=0;if(dirtyR&&S){render();lastR=now;dirtyR=false}}
