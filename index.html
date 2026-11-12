@@ -641,6 +641,10 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+svg.cch{cursor:crosshair}
+.ccbig{font:13px "Segoe UI",system-ui,sans-serif;margin:2px 0 6px;min-width:230px}.ccbig b{font-size:15px;color:#fff}.ccbig span{display:block;font-size:11px;opacity:.75}
+.ccr{display:grid;grid-template-columns:16px 1fr auto;gap:6px;align-items:center;font:12px "Segoe UI",system-ui,sans-serif;padding:1px 0}.ccr i{display:inline-block;width:14px;height:3px}.ccr b{text-align:right}
+.cclim{margin-top:6px;padding-top:5px;border-top:1px solid #ffffff22;color:#ffd27a;font:600 12.5px "Segoe UI",system-ui,sans-serif}.ccnote{font:11.5px "Segoe UI",system-ui,sans-serif;opacity:.85;margin-top:4px;max-width:320px}
 .lpair{display:inline-flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.pvwin{width:min(980px,96vw)}.pvwin .ft.ctft{display:flex!important;flex-direction:row!important;align-items:stretch;gap:10px;padding:12px 18px 14px;border-top:1px solid #cdb98a}.pvwin .ft.ctft .ctback{flex:0 0 auto;width:auto}.pvwin .ft.ctft .primary{flex:1;max-width:none;display:flex;flex-direction:column;align-items:flex-start}
 #decbar.dbturn{display:flex;align-items:stretch;gap:12px;min-height:58px;height:auto;margin:6px 8px 0;padding:8px 12px;background:linear-gradient(#5a2a16,#3e1d10);border:2px solid #e0a03a;box-shadow:0 0 0 1px #000a,0 0 18px rgba(224,160,58,.35);animation:dbpulse 2.4s ease-in-out infinite}
 @keyframes dbpulse{0%,100%{box-shadow:0 0 0 1px #000a,0 0 10px rgba(224,160,58,.25)}50%{box-shadow:0 0 0 1px #000a,0 0 22px rgba(224,160,58,.55)}}
@@ -2379,14 +2383,14 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   if(rsk&&!live)live=-1; // in the risk comparison, base is always 'with' and alt 'without'
   // compare on the status-quo time grid: take each alternative series at or before each time
   const at=(rows,t)=>{let r=null;for(const x of rows){if(x[0]<=t)r=x;else break}return r};
-  const k=def.t.line?'L:'+def.t.line:def.t.node,isL=k.startsWith('L:'),col=isL?4:8,nrm=isL?1:(S.need0?.[k]||1)/100;
+  const k=def.t.line?'L:'+def.t.line:def.t.node,isL=k.startsWith('L:'),col=isL?4:8,im=isL?null:itemMix(k),nrm=isL?1:1/im.ke;
   const B0=base.out[k]||[],A0=alt.out[k]||[];const withR=live?B0:A0,woR=live?A0:B0;
   const ts=withR.map(r=>r[0]),v=(rows,t)=>{const r=at(rows,t);const x=r?r[col]:null;return x==null?null:x/nrm};
   const W=330,H=110,Lm=40,Rm=8,T=8,Bm=20,x0=S.w,x1=END_W,X=t=>Lm+(W-Lm-Rm)*(t-x0)/Math.max(1,x1-x0);
   const vals=ts.flatMap(t=>[v(withR,t),v(woR,t)]).filter(x=>x!=null);
   const need=ts.map(t=>{const r=at(withR,t);return r?r[5]/nrm:null});const top=Math.max(1e-9,...vals,...need.filter(x=>x!=null))*1.15,Y=y=>T+(H-T-Bm)*(1-Math.min(y,top)/top);
   const pth=rows=>ts.map((t,i)=>{const y=v(rows,t);return y==null?'':(i?'L':'M')+X(t).toFixed(1)+','+Y(y).toFixed(1)}).join('');
-  let g=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(0)}" y2="${Y(0)}" stroke="#8a7850"/>`;for(let q=0;q<=2;q++){const y=top*q/2;g+=`<text x="${Lm-4}" y="${Y(y)+3}" text-anchor="end">${isL?fmtN(y):fmt(y,0)+'%'}</text>`}
+  let g=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(0)}" y2="${Y(0)}" stroke="#8a7850"/>`;for(let q=0;q<=2;q++){const y=top*q/2;g+=`<text x="${Lm-4}" y="${Y(y)+3}" text-anchor="end">${fmtN(y)}</text>`}
   for(let y=dateOf(S.w).getFullYear()+1;y<=2037;y+=2)g+=`<text x="${X(weekOf(y,0,1))}" y="${H-5}" text-anchor="middle">${y}</text>`;
   g+=`<path d="${ts.map((t,i)=>{const r=at(withR,t);return r&&r[5]!=null?(i?'L':'M')+X(t).toFixed(1)+','+Y(r[5]/nrm).toFixed(1):''}).join('')}" fill="none" stroke="${CHC.req}" stroke-width="1.3" stroke-dasharray="6 4"/>`;
   g+=`<path d="${pth(withR)}" fill="none" stroke="${CHC.usL}" stroke-width="3"/><path d="${pth(woR)}" fill="none" stroke="${CHC.alt}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
@@ -2396,9 +2400,9 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   const eRows=Object.keys(LINES).map(c=>{const a=(live?base:alt).out['L:'+c]||[],b=(live?alt:base).out['L:'+c]||[];let tot=0,prev=S.w;
     for(const t of ts){const ra=at(a,t),rb=at(b,t);if(ra&&rb&&ra[4]!=null&&rb[4]!=null)tot+=(ra[4]-rb[4])*(t-prev)/52;prev=t}
     const ra=at(a,ref),rb=at(b,ref),d=ra&&rb?(ra[4]||0)-(rb[4]||0):0;return {c,d,tot}}).filter(r=>Math.abs(r.tot)>LINES[r.c].k*.002||Math.abs(r.d)>LINES[r.c].k*.002).sort((a,b)=>b.tot/LINES[b.c].k-a.tot/LINES[a.c].k);
-  return `<div class="pvimp"><div class="pvih">Against the status quo <span>${isL?LINES[k.slice(2)].n.toLowerCase()+' a year':'supply of '+lc(ND[k].n)+', % of 2027 need'}</span></div>
+  return `<div class="pvimp"><div class="pvih">Against the status quo <span>${isL?LINES[k.slice(2)].n.toLowerCase()+' a year':lc(ND[k].n)+', '+im.unit}</span></div>
     ${rsk?`<div class="pvc">Expected weeks lost to ${rsk.R.n} problems: ${rsk.rows.map(r=>`${projName(r.p)} <b>${Math.round(r.e0)}</b> → <b class="${r.on?'green':''}">${Math.round(r.e1)}</b>${r.on?'':' (finished too late to help it)'}`).join(' · ')}.</div>`:''}
-    <svg class="pvisvg" viewBox="0 0 ${W} ${H}">${g}</svg>
+    <svg class="pvisvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=ts.map(t=>{const r=at(withR,t);return {w:t,v:{A:v(withR,t),Z:v(woR,t),N:r&&r[5]!=null?r[5]/nrm:null}}});CC[id]={W,H,Lm,Rm,T,B:Bm,x0,x1,top,rows,outK:'A',outN:rsk||live?'With this':'With this',mix:im?.mix,ke:im?.ke,keys:[['A','With this',CHC.usL],['Z',rsk||live?'Without it':'Status quo',CHC.alt,1],['N',isL?'US requirement':'Defense need',CHC.req,1]]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg>
     <div class="pvilg"><span><i style="background:${CHC.usL}"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Defense need'}</span></div>
     ${(()=>{const tb=eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):'';return tb||`<div class="pvc">No end item makes more by 2037: ${impWhy(def,k,isL,withR)}.</div>`})()}
     <div class="pvnote">Projected on a copy of your game: every program lands when now expected, new plants ramp up and firms hire. Luck and new decisions will move it.</div></div>`}
@@ -2407,16 +2411,40 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
 // ceilings get their own colours that mean nothing else: slate factory, orange workforce, teal materials, purple orders
 const CHC={us:'#2f62a0',usL:'#5f8fc4',ally:'#86b04f',rival:'#b0453a',req:'#b8860b',fac:'#4a5a6a',lab:'#c0762a',mat:'#2e8a74',ord:'#7a5fb0',alt:'#9a968a',grid:'#d6c9a4'};
 const CEIL_S=[['F','Factory capacity',CHC.fac],['L','Workforce',CHC.lab],['M','Materials',CHC.mat],['D','Funded orders',CHC.ord]];
+// ---- raw units for materials and components: the model counts them in end items' worth (one unit is enough for one unit of a
+// line's base output). Converted with the current mix of the lines each item feeds, so a solid rocket motor chart reads in motors a year.
+function itemMix(k){const R=S._R||production(false),ls=endItemsOf(k);let tw=0;const w={};
+  for(const c of ls){const x=Math.max(R.out[c]?.cap||0,(S.lines[c]?.base||0)*.05,1e-9);w[c]=x;tw+=x}
+  const mix=ls.map(c=>({c,s:w[c]/Math.max(tw,1e-12)}));const ke=mix.reduce((a,m)=>a+m.s*LINES[m.c].k,0)||1;
+  return {mix,ke,unit:ls.length===1?`${LINES[ls[0]].u} supplied a year`:'end items supplied a year'}}
+// ---- hover on the ceilings and impact charts: values at the date under the cursor, a monthly figure, and what binds
+const CC={};let CCn=0;
+function ccInterp(rows,w,key){let a=null,b=null;for(const r of rows){if(r.w<=w)a=r;else{b=r;break}}
+  const va=a?.v[key],vb=b?.v[key];if(va==null&&vb==null)return null;if(va==null)return vb;if(vb==null||!b||b.w===a.w)return va;return va+(vb-va)*(w-a.w)/(b.w-a.w)}
+function ccHover(svg,d,x,y){const r=svg.getBoundingClientRect(),sx=(x-r.left)/r.width*d.W;if(sx<d.Lm||sx>d.W-d.Rm){clearHov();return}
+  const w=d.x0+(sx-d.Lm)/(d.W-d.Lm-d.Rm)*(d.x1-d.x0),X=v=>d.Lm+(d.W-d.Lm-d.Rm)*(v-d.x0)/(d.x1-d.x0),Y=v=>d.T+(d.H-d.T-d.B)*(1-Math.min(v,d.top)/d.top);
+  const vals=d.keys.map(([k,n,c,dash])=>({k,n,c,dash,v:ccInterp(d.rows,w,k)})).filter(o=>o.v!=null);
+  let dots='';for(const o of vals)dots+=`<circle cx="${X(w)}" cy="${Y(o.v)}" r="3.2" fill="${o.c}" stroke="#fff" stroke-width="1.1"/>`;
+  if(hovSvg&&hovSvg!==svg){const g0=hovSvg.querySelector('.hov');if(g0)g0.innerHTML=''}hovSvg=svg;
+  svg.querySelector('.hov').innerHTML=`<line x1="${X(w)}" x2="${X(w)}" y1="${d.T}" y2="${d.H-d.B}" stroke="#2b241a" stroke-width=".9" opacity=".7"/>`+dots;
+  const out=vals.find(o=>o.k===d.outK),f=v=>fmtN(v);
+  let h=`<div class="th">${MON[dateOf(Math.round(w)).getMonth()]} ${dateOf(Math.round(w)).getFullYear()}${w>S.w+2?' · <i>projected</i>':''}</div>`;
+  if(out)h+=`<div class="ccbig"><b>${f(out.v)}</b> a year · about <b>${f(out.v/12)}</b> a month<span>${d.outN}</span></div>`;
+  for(const o of vals)if(o.k!==d.outK)h+=`<div class="ccr"><i style="${o.dash?'border-top:2px dashed '+o.c:'background:'+o.c}"></i><span>${o.n}</span><b>${f(o.v)}</b></div>`;
+  if(d.ceil){const cs=vals.filter(o=>d.ceil.includes(o.k)).sort((a,b)=>a.v-b.v);if(cs.length)h+=`<div class="cclim">Held back by: ${cs[0].n.toLowerCase()}${cs[1]&&cs[1].v<cs[0].v*1.03?` and ${cs[1].n.toLowerCase()}`:''}</div>`}
+  if(d.mix&&d.mix.length>1&&out)h+=`<div class="ccnote">Goes into: ${d.mix.filter(m=>m.s>=.01).map(m=>`${fmtN(out.v/d.ke*m.s*LINES[m.c].k)} ${LINES[m.c].u}`).join(' · ')}</div>`;
+  for(const p of d.progs||[])if(Math.abs(p.w-w)<=6)h+=`<div class="ccnote">● ${p.i}: ${p.n} lands about ${fmtDate(p.w)}</div>`;
+  showTip(h,x,y)}
 function ceilSec(k){if(S.fac!=='US')return '';if(!S.lab)return '<div class="dsec ceilsec"><h4>What holds output back, and when your work lands</h4><p class="mini">The chart starts when you take over in January 2027.</p></div>';
-  const isL=k.startsWith('L:'),c=isL?k.slice(2):null,u=isL?LINES[c].u+' a year':'% of the January 2027 defense need',nrm=isL?1:(S.need0?.[k]||1)/100;
+  const isL=k.startsWith('L:'),c=isL?k.slice(2):null,im=isL?null:itemMix(k),u=isL?LINES[c].u+' a year':im.unit,nrm=isL?1:1/im.ke;
   const H0=(S.ceil?.[k]||[]),P0=ceilProj().out[k]||[],ix=CEIL_K.reduce((a,x,i)=>(a[x]=i+1,a),{});
   const val=(r,x)=>{const v=r[ix[x]];return v==null?null:v/nrm};
   const W=760,H=250,Lm=58,Rm=150,T=26,B=30,x0=PLAY0,x1=END_W,X=w=>Lm+(W-Lm-Rm)*(w-x0)/(x1-x0);
   const all=[...H0,...P0];const ref=Math.max(1e-9,...all.flatMap(r=>['F','O','N','T','D'].map(x=>val(r,x)??0)));const top=ref*1.25,Y=v=>T+(H-T-B)*(1-Math.min(v,top)/top);
-  let g='';for(let q=0;q<=4;q++){const v=top*q/4;g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" stroke="${CHC.grid}" stroke-width=".6"/><text x="${Lm-5}" y="${Y(v)+3}" text-anchor="end">${isL?fmtN(v):fmt(v,0)+'%'}</text>`}
+  let g='';for(let q=0;q<=4;q++){const v=top*q/4;g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" stroke="${CHC.grid}" stroke-width=".6"/><text x="${Lm-5}" y="${Y(v)+3}" text-anchor="end">${fmtN(v)}</text>`}
   for(let y=2027;y<=2037;y+=2){const w=weekOf(y,0,1);g+=`<line x1="${X(w)}" x2="${X(w)}" y1="${H-B}" y2="${H-B+4}" stroke="#9c8a5c"/><text x="${X(w)}" y="${H-B+15}" text-anchor="middle">${y}</text>`}
   g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${H-B}" y2="${H-B}" stroke="#9c8a5c"/><line x1="${X(S.w)}" x2="${X(S.w)}" y1="${T-6}" y2="${H-B}" stroke="#5a4a28" stroke-dasharray="2 3"/><text class="ax" x="${X(S.w)+4}" y="${H-B-5}">Today</text>`;
-  g+=`<text class="ax" transform="translate(12,${(T+H-B)/2}) rotate(-90)" text-anchor="middle">${isL?LINES[c].u+' a year':'% of 2027 need'}</text>`;
+  g+=`<text class="ax" transform="translate(12,${(T+H-B)/2}) rotate(-90)" text-anchor="middle">${u}</text>`;
   const path=(rows,x)=>{let d='',pen=false;for(const r of rows){const v=val(r,x);if(v==null){pen=false;continue}d+=(pen?'L':'M')+X(r[0]).toFixed(1)+','+Y(v).toFixed(1);pen=true}return d};
   // output: a filled area, history solid, projection lighter
   const area=(rows,x,fill,op)=>{const pts=rows.filter(r=>val(r,x)!=null);if(pts.length<2)return '';return `<path d="M${X(pts[0][0])},${Y(0)}${pts.map(r=>`L${X(r[0]).toFixed(1)},${Y(val(r,x)).toFixed(1)}`).join('')}L${X(pts.at(-1)[0])},${Y(0)}Z" fill="${fill}" opacity="${op}"/>`};
@@ -2442,8 +2470,10 @@ function ceilSec(k){if(S.fac!=='US')return '';if(!S.lab)return '<div class="dsec
       ${sl2.length?`<div class="mini cslips">${sl2.slice(-4).map(x=>`${fmtDate(x.w)}: +${Math.max(1,Math.round(x.d/4.35))} mo, ${x.why}`).join(' · ')}</div>`:''}</div></div>`}).join('');
   const lf=isL?S._R.out[c].labF:S._R.P[k].lf;
   return `<div class="dsec ceilsec"><h4>What holds output back, and when your work lands</h4>
-    <p class="mini" style="margin:0 0 6px">${isL?'The line makes no more than the lowest of its ceilings: factory capacity, the workers to run it, the materials its inputs allow, and the orders Congress has funded.':'US output is held to the lowest of three ceilings: factory capacity, the workers to run it, and the materials its inputs allow. Imports come on top.'} Solid lines are what happened; dashed lines are what to expect if every program lands when now expected. Numbered markers are your programs for this item; a red line back to a circle shows where one was first planned.${lf<.98?` <b class="redt">Workers now staff ${pct(lf)} of capacity; hiring closes the gap at about ${pct(labRate(k))} a year.</b>`:''}</p>
-    <svg class="ceilsvg" viewBox="0 0 ${W} ${H}">${g}</svg><div class="clg">${lg}</div>
+    <p class="mini" style="margin:0 0 6px">${isL?'The line makes no more than the lowest of its ceilings: factory capacity, the workers to run it, the materials its inputs allow, and the orders Congress has funded.':'US output is held to the lowest of three ceilings: factory capacity, the workers to run it, and the materials its inputs allow. Imports come on top.'} Solid lines are what happened; dashed lines are what to expect if every program lands when now expected. Numbered markers are your programs for this item; a red line back to a circle shows where one was first planned. Hover the chart for any month.${lf<.98?` <b class="redt">Workers now staff ${pct(lf)} of capacity; hiring closes the gap at about ${pct(labRate(k))} a year.</b>`:''}</p>
+    <svg class="ceilsvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=[...H0.filter(r=>r[0]<=S.w),...P0.filter(r=>r[0]>S.w)].map(r=>({w:r[0],v:Object.fromEntries(CEIL_K.map(x=>[x,val(r,x)]))}));
+      CC[id]={W,H,Lm,Rm,T,B:B,x0,x1,top,rows,outK:'O',outN:isL?'Output':'US output',ceil:isL?['F','L','M','D']:['F','L','M'],mix:im?.mix,ke:im?.ke,progs:mine.map((m,i)=>({i:i+1,n:projName(m.p),w:m.w})),
+        keys:[...CEIL_S.filter(([x])=>isL||x!=='D').map(([x,n,col])=>[x,n,col]),['O',isL?'Output':'US output',CHC.us],...(isL?[]:[['T','Total supply, with imports','#5a4e38',1]]),['N',isL?'US requirement':'Defense need',CHC.req,1]]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg><div class="clg">${lg}</div>
     ${rows?`<div class="crows">${rows}</div>`:`<p class="mini">No programs under way for this item.${fin.length?` ${fin.length} finished since January 2027 (✓ on the chart).`:''}</p>`}</div>`}
 
 // how fast a staffing gap closes, a share of the gap a year
@@ -4876,6 +4906,7 @@ function clearHov(){if(hovSvg){const g=hovSvg.querySelector('.hov');if(g)g.inner
 function showTip(html,x,y){tipEl.innerHTML=html;tipEl.style.display='block';const r=tipEl.getBoundingClientRect();let L=x+16,T=y+14;if(L+r.width>innerWidth-6)L=x-r.width-16;if(T+r.height>innerHeight-6)T=Math.max(4,y-r.height-12);tipEl.style.left=L+'px';tipEl.style.top=T+'px'}
 function hoverAt(x,y){
   const el=document.elementFromPoint(x,y);if(!el||!el.closest){clearHov();return}
+  {const cs=el.closest('svg.cch'),cd=cs&&CC[cs.dataset.c];if(cd){ccHover(cs,cd,x,y);return}}
   const svg=el.closest('svg.lc'),d=svg&&CH[svg.dataset.c];
   if(d){const r=svg.getBoundingClientRect(),sx=(x-r.left)/r.width*d.W,sy=(y-r.top)/r.height*d.H;
     if(sx<d.pl||sx>d.W-d.pr){clearHov();return}
