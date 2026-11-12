@@ -2299,6 +2299,7 @@ function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def?alt.de
 // what a program does against the status quo: this item's supply over time, and each end item's output
 // why a program adds nothing by 2037: the item's own lowest ceiling, or what limits its end items first
 function impWhy(def,k,isL,withR){const R=S._R||production(false),last=withR.at(-1);
+  if(isL){const o=R.out[def.t.line];if(o?.bott)return 'the line is held back first by '+lc(ND[o.chain.at(-1)].n)+(o.chain.length>1?' (short of '+lc(ND[o.chain[0]].n)+')':'');if(o?.ordLim)return 'Congress has not ordered more than the line can already make';if(o&&o.labF<.98)return 'there are not enough workers to staff it'}
   if(!isL&&last){const c=[[1,'F'],[2,'L'],[3,'M']].filter(([i])=>last[i]!=null).sort((a,b)=>last[a[0]]-last[b[0]])[0];if(c&&c[1]==='L')return 'there are not enough workers to staff it by 2037';
     if(c&&c[1]==='M'){const wi=ND[k].in.slice().sort((a,b)=>R.P[a].cover-R.P[b].cover)[0];return 'its materials run out first: not enough '+lc(ND[wi].n)}}
   const ch=def.t.node?endItemsOf(def.t.node).map(c=>R.out[c]).filter(o=>o&&o.bott).map(o=>o.chain.at(-1)).filter(x=>x&&x!==def.t.node):[];
