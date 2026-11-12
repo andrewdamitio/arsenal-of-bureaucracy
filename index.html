@@ -822,6 +822,21 @@ body{background:
 :is(.vpaper,.paper) :is(.cnp,.cnp p,.cnh,.cnhs,.cndr,.cndr div,.cnrow,.wmleg,.wmp){font-family:'Segoe UI',system-ui,sans-serif!important;letter-spacing:0!important}
 :is(.vpaper,.paper) .cnp{font-size:12.5px}:is(.vpaper,.paper) .wmleg b,:is(.vpaper,.paper) .wmp{font-weight:700}
 :is(.vpaper,.paper) :is(.wmlh,.wmk,.wmgh){font:var(--ds-lab-f)!important;letter-spacing:.08em!important}
+/* title screen: new game first */
+#title{max-width:1120px}
+.ti-cont{display:flex;align-items:center;gap:12px;max-width:920px;margin:0 auto 22px;padding:10px 14px;border:1px solid var(--line);background:#1f211b;border-radius:4px}
+.ti-cont .ti-btn{width:auto;margin:0;padding:8px 16px}.ti-contx{flex:1;display:flex;flex-direction:column}.ti-contx span{font:700 10.5px "Segoe UI";letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}.ti-contx b{font:700 16px Georgia,serif;color:#f0e6c8}.ti-contx em{font-style:normal;font-size:12.5px;color:#b9b19a}
+.ti-newg{text-align:center}.ti-newg h2{font:700 30px Georgia,serif;color:var(--brass2);margin:0 0 4px;letter-spacing:.02em}.ti-newsub{color:#cfc6ad;margin:0 auto 14px;max-width:700px;font-size:14px}
+.ti-newg .ti-mode{justify-content:center;margin:0 auto 18px;max-width:760px}.ti-newg .ti-mdesc{flex:0 1 auto;text-align:left}
+.ti-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;text-align:left}
+.ti-card2{display:flex;flex-direction:column;gap:8px;padding:18px 20px 16px;background:#24261f;border:1px solid var(--line);border-radius:6px;cursor:pointer;color:#e6dcc2;font:14px/1.5 "Segoe UI",system-ui,sans-serif;text-align:left;transition:border-color .15s,background .15s,transform .15s}
+.ti-card2:hover{border-color:var(--brass);background:#2c2f26;transform:translateY(-2px)}
+.ti-c2h{display:flex;align-items:center;gap:14px}.ti-c2ic{font-size:34px;line-height:1;width:44px;text-align:center}.ti-c2h b{display:block;font:700 22px Georgia,serif;color:var(--brass2)}.ti-c2h span{font-size:12.5px;color:#d4b46a}
+.ti-card2 p{margin:0;color:#c9c0a6;font-size:13.5px}.ti-card2 ul{margin:0;padding-left:18px;color:#b9b19a;font-size:12.5px}.ti-card2 ul b{color:#e6dcc2}
+.ti-c2go{align-self:flex-end;margin-top:auto;font:700 14px "Segoe UI";color:#1c1a14;background:#b8860b;border-radius:4px;padding:6px 16px}.ti-card2:hover .ti-c2go{background:#cf9a1c}
+.ti-load{margin-top:14px}.ti-load .ti-btn{width:auto;display:inline-block;padding:8px 18px}.ti-newg .ti-note{margin-top:14px}
+@media(max-width:860px){.ti-grid{grid-template-columns:1fr}.ti-cont{flex-wrap:wrap}}
+.ti-c2ic img,.ti-c2ic svg,.ti-c2ic .flg{width:40px!important;height:auto!important;max-height:30px}
 </style>
 </head>
 <body>
@@ -5017,18 +5032,18 @@ const stTag=s=>({ok:'<span class="tag ok">ok</span>',tight:'<span class="tag tig
 const PLAYABLE=['US']; // the game is the US defense industrial base; Europe appears as allies
 let TMODE='std';
 function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k='';document.getElementById('receipt')?.remove();const tb=document.getElementById('toasts');if(tb)tb.innerHTML='';document.body.classList.remove('hasdec');const sv=savedInfo(),ago=sv?Math.max(0,Math.round((Date.now()-sv.at)/60000)):0,agoT=ago<1?'just now':ago<60?ago+' min ago':ago<1440?Math.round(ago/60)+' h ago':Math.round(ago/1440)+' days ago';
-  const opt=(id,ic,n,sub,body)=>`<button class="ti-opt" data-a="tnew" data-s="${id}"><span class="ti-oic">${ic}</span><span class="ti-otx"><b>${n}</b><span class="ti-osub">${sub}</span>${body?`<span class="ti-obody">${body}</span>`:''}</span><span class="ti-go">Start ›</span></button>`;
+  const mand=sc=>sc.mand.map(m=>`<li>${m.n}${m.c?`: <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b> a year`:''}</li>`).join('');
+  const card=(id,ic,n,sub,body,list)=>`<button class="ti-card2" data-a="tnew" data-s="${id}"><div class="ti-c2h"><span class="ti-c2ic">${ic}</span><div><b>${n}</b><span>${sub}</span></div></div><p>${body}</p>${list?`<ul>${list}</ul>`:''}<span class="ti-c2go">Start ›</span></button>`;
   app.innerHTML=cz(`<div id="title"><div class="ti-head"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="ti-tag">Rebuilding the US defense industrial base, January 2027 to 2037</div></div>
    <div class="ti-point"><p><b>You run the effort to rearm the United States.</b> China and Russia are out-producing the US in munitions, ships and missiles. You must close the gap with an industrial base that has withered, suppliers that move slowly, and critical minerals that come from the same rivals you are racing.</p></div>
-   <div class="ti-cols"><section class="ti-card"><h2>Continue</h2>${sv?`<div class="ti-save"><div><span>Game date</span><b>${fmtDate(sv.w)}</b></div><div><span>Mandate</span><b>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'}</b></div><div><span>Mode</span><b>${sv.sandbox?'Sandbox':'Standard'}</b></div><div><span>Saved</span><b>${agoT}</b></div></div>
-       <button class="ti-btn primary" data-a="tcont">Continue your game ›</button>`:`<p class="ti-none">No saved game in this browser.</p>`}
-     <button class="ti-btn" data-a="saveul">Load a save file</button>
-     <p class="ti-note">The game saves itself in this browser as you play. Starting a new game replaces that save; download a file from the save menu first to keep it.</p></section>
-   <section class="ti-card ti-new"><h2>New game</h2>
-     <div class="ti-mode"><span>Mode</span><div class="seg dark"><button class="${TMODE==='std'?'on':''}" data-a="tmode" data-m="std"><span>Standard</span></button><button class="${TMODE==='sbx'?'on':''}" data-a="tmode" data-m="sbx"><span>Sandbox</span></button></div>
+   ${sv?`<div class="ti-cont"><div class="ti-contx"><span>Continue</span><b>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'}</b><em>${fmtDate(sv.w)} · ${sv.sandbox?'Sandbox':'Standard'} · saved ${agoT}</em></div><button class="ti-btn primary" data-a="tcont">Continue your game ›</button><button class="ti-btn" data-a="saveul">Load a file</button></div>`:''}
+   <section class="ti-newg"><h2>New game</h2><p class="ti-newsub">Choose a mandate. Each sets targets drawn from public goals: halfway floors judged in January 2030, the real targets in January 2035.</p>
+     <div class="ti-mode"><div class="seg dark"><button class="${TMODE==='std'?'on':''}" data-a="tmode" data-m="std"><span>Standard</span></button><button class="${TMODE==='sbx'?'on':''}" data-a="tmode" data-m="sbx"><span>Sandbox</span></button></div>
        <span class="ti-mdesc">${TMODE==='sbx'?'No budget or Political Capital limits: build and pass anything, and see what time, permits and suppliers still hold back.':'A real budget and Political Capital: every plant, order and reform competes for them.'}</span></div>
-     <div class="ti-opts">${SCENS.map(sc=>opt(sc.id,sc.ic,sc.n,`Halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}`,sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,''))).join('')}
-       ${opt('open','🏁','Open race','No mandate · play to 2037','Set your own priorities and measure yourself against China and Russia year by year.')}</div></section></div></div>`)}
+     <div class="ti-grid">${SCENS.map(sc=>card(sc.id,sc.ic,sc.n,`vs. ${RIVALS[sc.rival].n} · halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()}`,sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,''),mand(sc))).join('')}
+       ${card('open','🏁','Open race','No mandate · play to 2037','Set your own priorities and measure yourself against China and Russia year by year.','')}</div>
+     ${sv?'':'<div class="ti-load"><button class="ti-btn" data-a="saveul">Load a save file</button></div>'}
+     <p class="ti-note">The game saves itself in this browser as you play. Starting a new game replaces that save; download a file from the Menu first to keep it.</p></section></div>`)}
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
    <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2037 (2025–26 replayed)</div>
