@@ -2222,11 +2222,11 @@ function pjFinish(p,t,added){const def=PD[p.def];if(!def||def.kind==='maint')ret
   labCrew(kind==='line'?'L:'+target:target,g);S.plants.push(pl);added.push({pl,y0:.2,w:t,rw:Math.max(8,rampWeeks(S.know[target]??40,.2,1))})}
 // Project every item to 2037. alt (optional): {def, w} adds a program you might start, delivering at week w;
 // {drop: uid} leaves out a program under way. Without alt this is the status quo, cached for the week.
-function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def.id+'@'+alt.w):'';
+function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def?alt.def.id+'@'+alt.w:'')+(alt.shift?'s'+JSON.stringify(alt.shift):''):'';
   const ok=c=>c&&(c.w===S.w||(S.speed>0&&S.w-c.w>0&&S.w-c.w<6))&&c.n===S.projects.length&&c.u===uidN;
   if(!alt&&ok(S._cpj))return S._cpj;if(alt){if(!ok(S._cpjX))S._cpjX={w:S.w,n:S.projects.length,u:uidN,m:{}};if(S._cpjX.m[key])return S._cpjX.m[key]}
   const save=S,u=uidN,snap=JSON.stringify(S,(k,v)=>SAVE_SKIP.has(k)||k==='ceil'?undefined:v),out={};
-  let evs=S.projects.filter(p=>!alt||alt.drop==null||p.uid!==alt.drop).map(p=>({uid:p.uid,w:S.w+remW(p)}));
+  let evs=S.projects.filter(p=>!alt||alt.drop==null||p.uid!==alt.drop).map(p=>({uid:p.uid,w:S.w+remW(p)+Math.round(alt?.shift?.[p.uid]||0)}));
   if(alt&&alt.def)evs.push({fake:{def:alt.def.id,gm:1,adv:0,uid:-1},w:alt.w});
   evs=evs.filter(x=>x.w<=END_W).sort((a,b)=>a.w-b.w);
   try{S=JSON.parse(snap);S.sim=1;S.queue=[];const added=[];
@@ -2268,9 +2268,29 @@ function impSummary(def,wOn){if(S.histMode||!S.lab||!def||def.kind==='test'||def
   const h1=closes(alt.out['L:'+best.c]||[]),h0=closes(base.out['L:'+best.c]||[]),Y=w=>dateOf(w).getFullYear();
   const gap=!h1?'Not enough on its own to close the gap by 2037.':h1<=S.w?'The gap is already closed.':!h0?`Closes the gap in <b>${Y(h1)}</b>; without it, not by 2037.`:h1<h0-26?`Closes the gap in <b>${Y(h1)}</b> instead of ${Y(h0)}.`:`The gap still closes in ${Y(h0)}.`;
   return {html:`<span class="okt">${LINES[best.c].n} +${fmtN(best.d)}/yr by ${refY}.</span> ${gap}`}}
+const RISK_K={test:{layer:'QUAL',flag:'test',n:'qualification'},power:{layer:'GRID',flag:'power',n:'power and grid'}};
+function expDelay(p,layer,from){const def=PD[p.def];let e=0;
+  for(const o of OBSTACLES){if(o.layer!==layer||!o.stage||!facOk(o))continue;const si=STAGES.indexOf(o.stage);if(si<from||!p.dur[si])continue;
+    const c=obsChance(o,def);if(c<=0)continue;const k=defOpt(o),opt=k>=0?o.o[k]:o.o.find(x=>x.wait);e+=c*Math.round((opt?.wait||0)*waitMult(o,def))}
+  return e}
+// what a test range or firm-power upgrade at a plant saves the programs there: expected weeks lost now, and with it in place
+function riskShift(def,wOn){const R=RISK_K[def.kind],id=def.t.node;if(!R||!id)return null;const fl=(S.nflags[id]=S.nflags[id]||{}),was=!!fl[R.flag],S0={},S1={},rows=[];
+  for(const p of S.projects){const d=PD[p.def];if(p.def===def.id||!d||d.t.node!==id)continue;
+    // the stages still ahead, and when the program reaches the first one where this kind of obstacle strikes
+    const from=p.stage+(p.prog>0?1:0),first=STAGES.findIndex((st,i)=>i>=from&&p.dur[i]>0&&OBSTACLES.some(o=>o.layer===R.layer&&o.stage===st));if(first<0)continue;
+    let reach=S.w+(p.pkg?Math.max(0,pkgWhen()-S.w-p.dur[0]):0);for(let i=p.stage;i<first;i++)reach+=i===p.stage?Math.max(0,p.dur[i]-p.prog):p.dur[i];
+    fl[R.flag]=was;const e0=expDelay(p,R.layer,from);fl[R.flag]=true;const e1=expDelay(p,R.layer,from);fl[R.flag]=was;
+    const on=wOn<=reach,e=on?e1:e0;if(e0<.5)continue;S0[p.uid]=e0;S1[p.uid]=e;rows.push({p,e0,e1:e,on,reach})}
+  fl[R.flag]=was;if(!was)delete fl[R.flag];return {R,S0,S1,rows}}
 function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint')return '';
-  if(def.kind==='test'||def.kind==='power')return `<div class="pvimp"><div class="pvih">Against the status quo</div><div class="pvc">This adds no capacity. It ${def.kind==='test'?'cuts the odds that qualification problems delay programs here':'protects this plant from power curtailment'}, so it shows up as programs landing on time rather than as extra output.${(()=>{const ps=S.projects.filter(p=>PD[p.def].t.node===def.t.node);return ps.length?` Programs it protects now: ${ps.map(p=>projName(p)).join(', ')}.`:' No programs under way here yet.'})()}</div></div>`;
-  const base=ceilProj(),alt=live?ceilProj({drop:live}):ceilProj({def,w:wOn});
+  let base,alt,rsk=null;
+  if(RISK_K[def.kind]){const lp=live&&S.projects.find(x=>x.uid===live),wT=lp?S.w+remW(lp):previewOf(def,null).wPlan;rsk=riskShift(def,wT);const R=RISK_K[def.kind],head=`<div class="pvimp"><div class="pvih">Against the status quo</div><div class="pvc">This adds no capacity. It makes ${R.n} problems at this plant ${def.kind==='test'?'half':'less than a third'} as likely, so programs here finish sooner and their output arrives earlier.`;
+    if(!rsk.rows.length)return head+` No program here still has ${R.n} work ahead of it, so it changes nothing yet; it will protect the plants you start here later.</div></div>`;
+    if(!rsk.rows.some(r=>r.on))return head+` It would be finished too late to help the programs here now (${rsk.rows.map(r=>projName(r.p)).join(', ')}); it will protect the plants you start later.</div></div>`;
+    // live: the status quo is the world without the upgrade, so the comparison is (expected delays without) against (with)
+    base=ceilProj({shift:rsk.S1});alt=ceilProj({shift:rsk.S0})}
+  else{base=ceilProj();alt=live?ceilProj({drop:live}):ceilProj({def,w:wOn})}
+  if(rsk&&!live)live=-1; // in the risk comparison, base is always 'with' and alt 'without'
   // compare on the status-quo time grid: take each alternative series at or before each time
   const at=(rows,t)=>{let r=null;for(const x of rows){if(x[0]<=t)r=x;else break}return r};
   const k=def.t.line?'L:'+def.t.line:def.t.node,isL=k.startsWith('L:'),col=isL?4:8,nrm=isL?1:(S.need0?.[k]||1)/100;
@@ -2291,8 +2311,9 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
     for(const t of ts){const ra=at(a,t),rb=at(b,t);if(ra&&rb&&ra[4]!=null&&rb[4]!=null)tot+=(ra[4]-rb[4])*(t-prev)/52;prev=t}
     const ra=at(a,ref),rb=at(b,ref),d=ra&&rb?(ra[4]||0)-(rb[4]||0):0;return {c,d,tot}}).filter(r=>Math.abs(r.tot)>LINES[r.c].k*.002||Math.abs(r.d)>LINES[r.c].k*.002).sort((a,b)=>b.tot/LINES[b.c].k-a.tot/LINES[a.c].k);
   return `<div class="pvimp"><div class="pvih">Against the status quo <span>${isL?LINES[k.slice(2)].n.toLowerCase()+' a year':'supply of '+lc(ND[k].n)+', % of 2027 need'}</span></div>
+    ${rsk?`<div class="pvc">Expected weeks lost to ${rsk.R.n} problems: ${rsk.rows.map(r=>`${projName(r.p)} <b>${Math.round(r.e0)}</b> → <b class="${r.on?'green':''}">${Math.round(r.e1)}</b>${r.on?'':' (finished too late to help it)'}`).join(' · ')}.</div>`:''}
     <svg class="pvisvg" viewBox="0 0 ${W} ${H}">${g}</svg>
-    <div class="pvilg"><span><i style="background:#5fae4a"></i>${live?'With this program':'With this'}</span><span><i class="d"></i>${live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Defense need'}</span></div>
+    <div class="pvilg"><span><i style="background:#5fae4a"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Defense need'}</span></div>
     ${eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):`<div class="pvc">No end item makes more by 2037: ${impWhy(def,k,isL,withR)}.</div>`}
     <div class="pvnote">Projected on a copy of your game: every program lands when now expected, new plants ramp up and firms hire. Luck and new decisions will move it.</div></div>`}
 
