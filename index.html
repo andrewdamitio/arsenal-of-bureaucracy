@@ -1614,9 +1614,9 @@ function rulesBody0(){
 // pending bills and emergency powers that belong to each domain
 const RLINKS={
  permit:[['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
- qual:[['qualReform','Accept test data from similar items: qualify a new line by comparison with one already qualified.'],['cvQual','Emergency qualification authority: accept allied qualifications now.']],
+ qual:[['seekCommon','Common seekers and guidance: fewer variants, faster qualification.'],['qualReform','Accept test data from similar items: qualify a new line by comparison with one already qualified.'],['cvQual','Emergency qualification authority: accept allied qualifications now.']],
  acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['acqWorkforce','More contracting officers.'],['cvQual','Accept allied qualification data now.']],
- source:[['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Ensuring Naval Readiness Act: allied yards build Navy ships when cheaper. [c:s406] The Senate’s FY27 NDAA markup would instead strip the presidential exception and cap foreign construction at two ships per class. [c:sasc27]'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
+ source:[['energSrc','Second sources for sole-source energetics, ammonium perchlorate first.'],['cotsAlloc','Commercial parts and allocation orders for defense electronics.'],['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Ensuring Naval Readiness Act: allied yards build Navy ships when cheaper. [c:s406] The Senate’s FY27 NDAA markup would instead strip the presidential exception and cap foreign construction at two ships per class. [c:sasc27]'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
  export:[['itarReform','Extend license-free trade to Japan and Korea.'],['nds','Stockpile what Beijing can switch off.']],
  money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
 };
@@ -1852,6 +1852,9 @@ const REFORMS=[
  {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Block further prime mergers; dual-source key subsystems. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20;queueEvent('blitz')}},
  {id:'saws',fac:['US'],n:'Shipyard Wage Authority (SAWS)',d:'Lets the submarine builders pull labor money forward from boats not yet started to raise wages now, without new appropriations. Shipyards and their suppliers hire 60% faster and keep more of the people they train. The Navy proposed it in 2024; it stalled in Congress and the budget office is skeptical.',pc:25,wk:16,p:.5,on:()=>{if(S.lab)for(const k of SAWS_K)if(S.lab[k]!=null)S.lab[k]+=staffOf(k,true)*.06}},
  {id:'pubYards',fac:['US'],n:'Public Shipyard Expansion Act',d:'Authorizes and funds a fifth public naval shipyard and lets the government own new construction yards run by contractors. Unlocks the Fifth Public Naval Shipyard (maintenance) and the Government-Owned Construction Yard (new boats). Both are long, costly builds that need workers the existing yards also want.',pc:45,wk:26,p:.45},
+ {id:'energSrc',fac:['US'],n:'Second Sources for Sole-Source Energetics',d:'Funds second sources and warm standby lines for propellants and explosives with one US maker, ammonium perchlorate first. Existing energetics plants run 15% more, and new energetics plants cost 20% less.',pc:30,$:1,wk:16,p:.6,on:()=>{for(const n of NODES)if(n.arch==='energetic'&&n.ss)S.nodes[n.id].base*=1.15}},
+ {id:'seekCommon',fac:['US'],n:'Common Seekers and Guidance Across Missiles',d:'Fewer seeker and guidance variants, shared across missile programs. Existing seeker and guidance lines make 20% more with fewer changeovers, and new ones qualify 30% faster.',pc:30,wk:16,p:.6,on:()=>{for(const id of ['rf_seeker','ir_seeker','imu'])if(S.nodes[id])S.nodes[id].base*=1.2}},
+ {id:'cotsAlloc',fac:['US'],n:'Commercial Parts and Allocation Orders for Defense Electronics',d:'Accept commercial-grade circuit boards, chips, battery cells, fiber and capacitors where they pass test, and use DPA allocation orders, not just priority, for the rest. Defense can claim twice as much of civilian supply, and allies honor more of the requests; civilian buyers feel it.',pc:35,wk:20,p:.55},
  {id:'workforce',n:'Industrial Workforce Act',d:'Construction 15% faster where trades are short; labor obstacles −60%; plant turnover less frequent. Costs 1B.',pc:20,$:1,wk:26,p:.8},
  {id:'expertVisa',n:'Allied Technical Expert Program',d:'+15 know-how in every node and line. Faster ramp-up, fewer production issues. Costs 0.5B.',pc:20,$:.5,wk:16,p:.75,on:()=>{for(const k in S.know)S.know[k]=Math.min(95,S.know[k]+15);if(S.lab)for(const k in S.lab)S.lab[k]*=1.05}},
  {id:'slep',n:'Service-Life Extension Program',d:'Retirement of ships, subs and aircraft −40%. Costs 1B per year.',pc:25,wk:12,p:.75},
@@ -2507,7 +2510,7 @@ const SAWS_K=['L:subs','L:surface','sub_yard','shipyard','sub_parts'];
 function labRate(k){let r=labP(k)[1];if(passed('saws')&&SAWS_K.includes(k))r*=1.6;if(passed('workforce'))r*=1.5;if(passed('expertVisa'))r*=1.2;if(carveOn('cvHire'))r*=1.4;return r*(S.labX?.[k]||1)}
 function labTick(){if(S.histMode||!S.lab)return;for(const k of labKeys()){const T=staffOf(k,true),L=S.lab[k]??T;
   if(L<T)S.lab[k]=L+(T-L)*Math.min(1,labRate(k)/52);else if(L>T*1.8)S.lab[k]=L-(L-T*1.8)*.01}}
-const ALLY_PRIO=.5,DRONE_CLAIM=.5,DIV_STRAIN=.12; // strain per week for each item whose whole civilian supply defense takes, weighted by the civilian share of its market; strain recovers 0.35 a week
+const ALLY_PRIO=.5,DRONE_CLAIM=.5,DIV_STRAIN=.12,COTS_N=['pcb','micro','li_cells','fiber','tantcap']; // strain per week for each item whose whole civilian supply defense takes, weighted by the civilian share of its market; strain recovers 0.35 a week
 function nodeSupply(id){
   const s=S.nodes[id],c=NO_PRC?0:cutOf(id),mob=MOB[S.mob];
   const nm=tm('node',id);
@@ -2522,7 +2525,7 @@ function nodeSupply(id){
   const prcRaw=s.prc.amt*tm('prc',id),prc=prcRaw*c;
   let spot=0;for(const x of S.spot)if(x.id===id)spot+=x.amt;
   // what civilian buyers take from the same US and allied plants: defense can claim it when short (allies honor about half such requests; neutrals and China none)
-  const civ=ND[id].civ||0,civFull=civ>0&&civ<1&&!(S.noPrio?.[id]>S.w)?(dom+ally*ALLY_PRIO)*civ/(1-civ):0,civPool=Math.min(civFull,(dom+ally*ALLY_PRIO)*1.5);
+  const civ=ND[id].civ||0,alc=S.fac==='US'&&passed('cotsAlloc')&&COTS_N.includes(id),aP=alc?.8:ALLY_PRIO,civFull=civ>0&&civ<1&&!(S.noPrio?.[id]>S.w)?(dom+ally*aP)*civ/(1-civ):0,civPool=Math.min(civFull,(dom+ally*aP)*(alc?3:1.5));
   // US makers of civilian drones buy the same cells, motors, boards, fiber and thermal cores. As that supply chain comes onshore,
   // defense orders can claim up to half of its flow (counted in drones a year, converted to this item's units)
   const drFlow=DRONE_PARTS.includes(id)&&!(S.noPrio?.[id]>S.w)?civM()*civS().share*(S.icOnshore||0)/LINES.drones.k:0;
@@ -2997,7 +3000,8 @@ function poolState(){const o={};for(const k in POOLS){const P=POOLS[k],n=S.proje
 // framework agreements; with a price floor and offtake, lenders fund mines and refineries, as with MP Materials in 2025. The shares are estimates.
 const REF_COST=[
  {r:'multiyear',m:.6,fit:d=>!d.ally&&['mun','msl'].includes(officeOf(d)),t:'suppliers pay 40% of new munitions and missile plants'},
- {r:'pricefloor',m:.55,fit:d=>!d.ally&&d.tags.includes('dumpable'),t:'private lenders fund 45% of mines, refineries and metal plants'}];
+ {r:'pricefloor',m:.55,fit:d=>!d.ally&&d.tags.includes('dumpable'),t:'private lenders fund 45% of mines, refineries and metal plants'},
+ {r:'energSrc',m:.8,fit:d=>!d.ally&&d.tags.includes('energetic'),t:'new energetics plants cost 20% less'}];
 function projCost(def){
   let c=def.cost;
   if(def.tags.includes('prime'))c*=1+(S.lev-50)/100;
@@ -3231,7 +3235,8 @@ const REF_STAGE=[
  {r:'workforce',st:'build',m:.85,dom:1,tags:['labor','shipyard','heavy','energetic','mine'],t:'construction 15% faster where trades are short'},
  {r:'qualReform',st:'qual',m:.55,tags:['energetic','assembly','line'],t:'qualification 45% faster'},
  {r:'multiyear',st:'approp',m:.6,dom:1,tags:['energetic','assembly','line'],t:'funding 40% faster for munitions work'},
- {r:'multiyear',st:'ramp',m:.6,t:'ramp-up to full orders 40% faster'}];
+ {r:'multiyear',st:'ramp',m:.6,t:'ramp-up to full orders 40% faster'},
+ {r:'seekCommon',st:'qual',m:.7,tags:['rf_seeker','ir_seeker','imu'],t:'seeker and guidance plants qualify 30% faster'}];
 const refFits=(x,def)=>(!x.dom||!def.ally)&&(!x.ally||def.ally)&&(!x.tags||x.tags.some(t=>def.tags.includes(t)));
 const stageM=(def,st)=>{let m=1;for(const x of REF_STAGE)if(x.st===st&&passed(x.r)&&refFits(x,def))m*=x.m;return Math.max(.25,m)};
 // qualification policies: joint qualification shortens the stage; pilot-lot qualification overlaps it with the end of construction
@@ -3261,7 +3266,7 @@ function spawnObs(p,id,front){
     if(p.ct.k==='cp'){const x=.06*p.price;if(S.budget>=x){spendB(x,'Cost-plus delays');p.spent+=x;log(`🧾 Cost-plus: ${projName(p)} bills ${money(x)} for the delay.`,'bad')}else if(!p.obs.some(i=>i.id==='costOverrun'))spawnObs(p,'costOverrun')}
     if(p.ct.k==='fp'&&rand()<.22&&!p.obs.some(i=>i.id==='reprice'))spawnObs(p,'reprice')}
 }
-function complete(p){credDone(p);
+function complete(p){credDone(p);pcResult(p);
   const def=PD[p.def];const plan=(p.dur||[]).reduce((a,b)=>a+b,0);
   if(def.kind==='maint'){for(const c of [def.t.line,...(def.also||[])])S.mxAdd[c]+=def.eff;if(def.sideLine)S.lines[def.t.line].base*=def.sideLine;S.mxDone[def.id]=1;
     S.projects=S.projects.filter(x=>x!==p);S.done.push({def:p.def,nm:projName(p),w:S.w,weeks:S.w-p.started,g:0,plan,inh:p.inh,uid:p.uid,h:p.h,lost:p.lost,dur:p.dur,started:p.started,ct:p.ct,spent:p.spent});
@@ -3454,7 +3459,7 @@ function whip(){if(!S.bill||S.pc<10||S.bill.whips>=3)return;S.pc-=10;S.bill.whip
 // Political Capital and are decided on 18 December. The rest (permitting, courts, Jones Act, visas, trade, broad labor law) are
 // stand-alone bills; one can be attached to the NDAA as a rider, at a premium and with a high chance it is stripped in
 // conference, as Manchin's permitting amendment (Dec 2022) and the SAFE Banking Act (FY2022, FY2023) were.[c:manchin22][c:safebank]
-const NDAA_REF=['multiyear','ibfPerm','saws','pubYards','acq','qualReform','antitrust','itarReform','ceDefense','byrnes','dpaMin','dpaFund','pricefloor','acqWorkforce','slep','readiness','crAnomaly'];
+const NDAA_REF=['multiyear','ibfPerm','energSrc','seekCommon','cotsAlloc','saws','pubYards','acq','qualReform','antitrust','itarReform','ceDefense','byrnes','dpaMin','dpaFund','pricefloor','acqWorkforce','slep','readiness','crAnomaly'];
 const vehOf=R=>S.fac!=='US'?'own':NDAA_REF.includes(R.id)?'ndaa':'rider',RIDER_F=1.4;
 const refReqs=()=>(S.refReq=S.refReq||[]),inReq=id=>refReqs().some(x=>x.id===id);
 function refPass(x){const R=RD[x.id],m=moodOf(FYOF(x.pkg)).f;return x.rider?clamp(R.p*.35/m,.05,.4):clamp((R.p+.2)/Math.sqrt(m),.25,.95)}
@@ -3642,6 +3647,9 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
    </div><div class="ft"><button class="pbtn" data-a="close">Close</button><button class="pbtn primary" data-a="turn">Next turn ▸ ${turnLabel(n0)}</button></div></div>`}
 
 // ---- what each reform was worth, built up during play: delay avoided, schedule cut, money saved, Political Capital spent
+// delivering earns Political Capital: a finished plant +5, any other program +2, and +3 more when it lands close to plan
+function pcResult(p){if(S.histMode||p.inh)return;const def=PD[p.def];if(!def||def.kind==='maint')return;const plan=p.dur.reduce((a,b)=>a+b,0),f=(p.h||[]).find(e=>e.funded)?.w,took=S.w-(f??p.started)+(f!=null?0:0),onTime=took<=plan*1.25;
+  const x=(needsContract(def)?5:2)+(onTime?3:0);S.pc+=x;if(S.pcY)S.pcY.inc+=x;log(`⚖ +${x} Political Capital: ${projName(p)} delivered${onTime?' close to plan':''}.`,'good')}
 function refCredit(p,l,x){if(S.histMode||!p||p.pkg||!x)return;const def=PD[p.def];if(!def)return;
   const fs=REF_LAYER.filter(e=>e.L.includes(l)&&passed(e.r)&&(!e.tags||e.tags.some(t=>def.tags.includes(t))));if(!fs.length)return;
   let M=1,lnM=0;for(const e of fs){M*=e.c*e.w;lnM+=Math.log(1/(e.c*e.w))}const tot=x*(1/M-1);
@@ -4878,6 +4886,7 @@ const CITES=[
  {id:'navy250k',g:'Workforce',t:'US Navy seeks to hire 250,000 new dockyard workers in the next 10 years',pub:'Naval News',d:'Jan 2026',url:'https://www.navalnews.com/naval-news/2026/01/us-navy-seeks-to-hire-250000-new-dockyard-workers-in-the-next-10-years/',use:'The scale of the shipyard hiring problem.'},
  {id:'jeto',g:'US rulebook',t:'DoD establishing the Joint Energetics Transition Office (FY2024 NDAA Sec. 241)',pub:'DoD News via GlobalSecurity',d:'Jul 2025',url:'https://www.globalsecurity.org/military/library/news/2025/07/mil-250723-dodnews01.htm',use:'Congress directed a joint office for energetics across the services; the National Energetics Plan notes the services develop and qualify energetics separately and that qualification costs often go unfunded.'},
  {id:'jpac',g:'US rulebook',t:'Joint Production Accelerator Cell: barriers to munitions production (Acquisition Research Symposium)',pub:'Naval Postgraduate School',d:'2026',url:'https://dair.nps.edu/bitstream/123456789/5535/2/SYM-AM-26-176.pdf',use:'Lists qualification and testing as a barrier and proposes sharing test data, accepting manufacturer and supplier data, and changing the qualification process.'},
+ {id:'srm500',g:'Missiles, motors & engines',t:'Defense bill provides $500 million to add alternative solid rocket motor sources',pub:'Defense Daily',d:'2026',url:'https://www.defensedaily.com/defense-bill-provides-500-million-to-add-alternative-solid-rocket-motor-sources/budget/',use:'Congress funding second sources in the motor supply chain: the precedent for the second-sources reform.'},
  {id:'crsssn',g:'Ships, submarines & readiness',t:'Diminishing returns: the US Navy’s attack boat availability problem (citing CRS)',pub:'Naval Technology',d:'2024',url:'https://www.naval-technology.com/features/diminishing-returns-the-us-navys-attack-boat-availability-problem/',use:'31 of 49 SSNs available in FY2023; 18 in or awaiting maintenance; Navy goal ≤20%.'},
  {id:'gaof35',g:'Ships, submarines & readiness',t:'Only 1 in 4 F-35s is fully mission capable, GAO finds',pub:'Defense News',d:'Jun 2026',url:'https://www.defensenews.com/industry/techwatch/2026/06/12/only-1-in-4-f-35s-is-fully-mission-capable-gao-finds/',use:'F-35 mission-capable rate 67% (FY2021) → 44% (FY2025); fully mission capable 25%.'},
  {id:'cmpr',g:'Ships, submarines & readiness',t:'China Naval Modernization (RL33153), citing DoD’s China Military Power Report',pub:'CRS via USNI News',d:'Apr 2025',url:'https://news.usni.org/2025/05/01/report-to-congress-on-chinese-naval-modernization-21',use:'PLAN >370 ships; 395 projected in 2025, 435 by 2030; US Navy 296 battle force ships (Sep 2024).'},
@@ -4948,6 +4957,7 @@ const ASSUMPTIONS=[
  ['Raw-material supply shares','For the raw materials USGS reports, the domestic share is one minus net import reliance (reliance given as “more than 50%” is read as 62.5%, “more than 75%” as 87.5%), and imports are split between allied, neutral and Chinese or Russian sources by USGS import shares for 2021–24. China’s hold on world production appears as Chinese content inside allied and neutral supply: a share of it stops when Beijing cuts supply. That share is an estimate for each material (85% for gallium, because allied refiners purify Chinese primary gallium; 60% for neutral antimony, which is largely re-routed Chinese material).'],
  ['Civilian drone market','US civilian drone sales start at about 400,000 a year and grow 6% a year. US makers’ share moves over about two years toward a level set by the bans in force (shown in the Rulebook under Sourcing). At about 250,000 US-made civilian drones a year, the military drone base reaches full scale: drone line capacity +25%, drone plants 20% cheaper.'],
  ['Submarine options','Sourced: module outsourcing (Austal, $450M), automated factories ($900M), the proposal for a fifth public shipyard, the wage proposal (SAWS). Game estimates: every gain, cost and build time. Outsourcing adds about 0.2 boats a year for $1.2B; a government-owned construction yard about 0.6 a year for $9B over roughly ten years; a fifth public yard raises attack-submarine availability by 12 points for $8B; a second shift by 4 points; a parts repair center by 3. The wage authority makes shipyards and their suppliers hire 60% faster and adds 6% to their workforce when enacted.'],
+ ['Results and inputs','Delivering earns Political Capital: a finished plant +5, any other program +2, and +3 more when it lands within 125% of plan (game estimates). Second sources for sole-source energetics: existing sole-source energetics plants +15%, new energetics plants −20% cost. Common seekers and guidance: existing seeker and guidance lines +20%, new ones qualify 30% faster. Commercial parts and allocation orders: for circuit boards, microelectronics, battery cells, fiber and capacitors, defense can claim up to three times its own supply from civilian buyers instead of 1.5, and allies honor 80% of requests instead of 50%. All effect sizes are game estimates.'],
  ['Qualification policies','Joint qualification shortens energetics and motor qualification by 25% and its delays by 25%; accepting contractor and supplier data makes qualification problems 30% less likely; qualifying from pilot lots overlaps up to half of qualification (at most a quarter of construction) with the end of construction, for energetics, motors and assembly lines. The policies apply when a program reaches qualification. All three effects are game estimates; the policies themselves are sourced.'],
  ['Builder commitment','Each plant\u2019s builder has a commitment from 0 to 100 (all figures are game estimates). It opens at 65, +15 on a multiyear order, +5 cost-plus, −5 fixed-price, +10 with the Multiyear Orders reform (munitions and missiles), +10 with price floors (mines, refineries, metals), +5 with Office of Strategic Capital loans; programs begun before 2027 open at 75. Each week it falls 0.25 while stalled (0.5 if the cause is missing orders or prices), 0.08 while waiting for Congress, 0.06 while more than six months late, 0.15 if Congress has not ordered what the line can already make, and recovers 0.08 with steady progress up to where it opened. Below 30 the builder asks for relief; below 8 it walks.'],
  ['Standing with the defense committees','One number from 0 to 100, starting at 50 (game estimates). +6 when a program Congress funded delivers within 125% of plan (+3 within 175%, +1 if later), +5 for a pledged start kept; −3 when a funded program falls a year behind, −8 when one is abandoned, −6 and −5 PC for a pledge missed. It scales the cut risk on every request from ×1.25 at 0 to ×0.75 at 100. A pledge cuts one request\u2019s markup risk by 40%; its date is the vote plus twice the planned contracting and permitting time plus twelve weeks; lateness is counted from the day a program is funded. Standing drifts back toward 50 by about a fifth of the distance each year.'],
