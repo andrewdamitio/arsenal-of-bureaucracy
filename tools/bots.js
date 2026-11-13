@@ -15,7 +15,7 @@ const b=await chromium.launch({executablePath:CHROME});const p=await b.newPage()
 await p.addInitScript(seed=>{let a=seed>>>0;Math.random=function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};try{localStorage.clear()}catch(e){}},seed);
 await p.goto('file:///'+file);await p.waitForTimeout(700);
 const t0=Date.now();
-const res=await p.evaluate(({bot,scen,years})=>{
+const res=await p.evaluate(({bot,scen,years,DUMP,START})=>{
  newGame('US');S.modal=null;if(scen!=='open')chooseScen(scen);S.modal=null;S.queue=[];S.sim=1;
  const act=bot!=='none',reform=bot==='reformer';
  // ---- decisions
@@ -103,13 +103,16 @@ const res=await p.evaluate(({bot,scen,years})=>{
     diag:Object.fromEntries(Object.keys(LINES).map(c=>{const o=R.out[c],b=o.chain.length?o.chain[o.chain.length-1]:null,p=b&&R.P[b],nd=p?Math.max(p.need,1e-9):1;return [c,{use:+(o.n/Math.max(o.cap,1e-9)).toFixed(2),cap:+(o.capYr/Math.max(start[c],1e-9)).toFixed(2),binds:b?o.chain.map(i=>ND[i].n).join(' < '):'line capacity',root:b?{cover:+p.cover.toFixed(2),dom:+(p.dom/nd).toFixed(2),ally:+(p.ally/nd).toFixed(2),neut:+(p.neut/nd).toFixed(2),prc:+(p.prc/nd).toFixed(2),lost:+(p.lost/nd).toFixed(2),cut:+cutOf(b).toFixed(2),mods:S.tmods.filter(m=>m.id===b).map(m=>m.kind+' x'+m.mult+' '+(m.label||'')+' '+(m.left>999?'perm':m.left+'wk')).join('; ')}:null}]})),
     dfars:!!S.dfars,truce:S.truce,live:S.projects.length,stalled:S.projects.filter(q=>q.obs.length).length,budget:+S.budget.toFixed(1),pc:Math.round(S.pc),strain:Math.round(S.strain),pcRate:+(pcRate()*52).toFixed(0),div:(S.divIds||[]).length,divLoad:+(S.divLoad||0).toFixed(2),
     spent:+sumV(S.spendBy||{}).toFixed(1),reforms:Object.keys(S.reforms).filter(k=>S.reforms[k]==='passed').length,beijing:cnS().rung,started,deals,stop}};
+ if(START){try{(0,eval)(START)}catch(e){console.error(e)}}
  const marks=[snap()];const mid=scen!=='open'?SCD[scen].mid:weekOf(2030,0,7),dl=scen!=='open'?SCD[scen].dl:weekOf(2035,0,8);
  for(let i=0;i<52*years&&!S.over;i++){tick();events();
    if(act){problems();if(reform&&i%2===0)reforms();if(i%4===0)build()}
    if(S.w===mid||S.w===dl||i===52*years-1||S.over)marks.push(snap())}
- return {marks,mid:S.scenMid?{verdict:S.scenMid.verdict,floors:S.scenMid.floors,of:S.scenMid.of,test:S.scenMid.test.ok}:null,scen:S.scenRes?{verdict:S.scenRes.verdict,met:S.scenRes.met,of:S.scenRes.ms.length,floors:S.scenRes.ms.filter(x=>x.ok||x.half).length,test:S.scenRes.test.ok}:null,
-   modelCheck:(()=>{try{const r=btRows();return {ok:r.filter(b=>b.ok).length,of:r.length,miss:r.filter(b=>!b.ok).map(b=>b.n)}}catch(e){return null}})(),lost:Object.fromEntries(Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk).slice(0,5).map(([k,v])=>[LAYERS[k].n,Math.round(v.wk)])),passed:Object.keys(S.reforms).filter(k=>S.reforms[k]==='passed'),orders:[...S.done.filter(d=>!d.inh&&d.w>=PLAY0).map(d=>d.def),...S.projects.filter(q=>!q.inh).map(q=>q.def+(q.pkg?'(req)':''))]}},{bot,scen,years});
+ const dump=DUMP?(()=>{try{return (0,eval)(DUMP)}catch(e){return String(e)}})():null;
+ return {dump,marks,mid:S.scenMid?{verdict:S.scenMid.verdict,floors:S.scenMid.floors,of:S.scenMid.of,test:S.scenMid.test.ok}:null,scen:S.scenRes?{verdict:S.scenRes.verdict,met:S.scenRes.met,of:S.scenRes.ms.length,floors:S.scenRes.ms.filter(x=>x.ok||x.half).length,test:S.scenRes.test.ok}:null,
+   modelCheck:(()=>{try{const r=btRows();return {ok:r.filter(b=>b.ok).length,of:r.length,miss:r.filter(b=>!b.ok).map(b=>b.n)}}catch(e){return null}})(),lost:Object.fromEntries(Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk).slice(0,5).map(([k,v])=>[LAYERS[k].n,Math.round(v.wk)])),passed:Object.keys(S.reforms).filter(k=>S.reforms[k]==='passed'),orders:[...S.done.filter(d=>!d.inh&&d.w>=PLAY0).map(d=>d.def),...S.projects.filter(q=>!q.inh).map(q=>q.def+(q.pkg?'(req)':''))]}},{bot,scen,years,DUMP:process.env.AOB_DUMP||null,START:process.env.AOB_START||null});
 res.bot=bot;res.seed=seed;res.secs=Math.round((Date.now()-t0)/1000);res.errors=errs;
 require('fs').writeFileSync(OUT+'/bot_'+bot+'_'+scen+'_'+seed+'.json',JSON.stringify(res));
+if(res.dump)console.log("DUMP",JSON.stringify(res.dump,null,1));
 const m=res.marks,L=m[m.length-1];console.log(`${bot} seed ${seed} ${scen}: share ${m.map(x=>x.share+'%').join(' → ')} | finished ${L.finished} of ${L.started} started (avg ${L.avgYears} yr vs plan ${L.planYears}) | reforms ${L.reforms} | ${res.mid?'2030: '+res.mid.floors+'/'+res.mid.of+' floors':''}${res.scen?' · 2035: '+res.scen.met+'/'+res.scen.of+' targets, '+res.scen.floors+' floors':''} | ${res.secs}s${errs.length?' ERRORS '+errs[0]:''}`);
 await b.close()})();
