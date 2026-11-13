@@ -641,6 +641,8 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+.qlst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 6px}.qlst div{display:flex;flex-direction:column;padding:6px 10px;border:1px solid #cbbd95;background:#f7f1e1;border-radius:4px}.qlst b{font:600 20px var(--disp)}.qlst span{font-size:12px;color:#6b5a35}
+.qlvs{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.qlv{display:flex;flex-direction:column;font-size:12px;color:#8a7850}.qlv b{font-weight:600;color:#6b5a35}.qlv.on b{color:#2f5a24}.qlv.on{color:#4a5a3e}
 svg.cch{cursor:crosshair}
 .ccbig{font:13px "Segoe UI",system-ui,sans-serif;margin:2px 0 6px;min-width:230px}.ccbig b{font-size:15px;color:#fff}.ccbig span{display:block;font-size:11px;opacity:.75}
 .ccr{display:grid;grid-template-columns:16px 1fr auto;gap:6px;align-items:center;font:12px "Segoe UI",system-ui,sans-serif;padding:1px 0}.ccr i{display:inline-block;width:14px;height:3px}.ccr b{text-align:right}
@@ -1466,8 +1468,10 @@ const KIND={law:['Statute','Only Congress can change this.'],court:['Court rulin
 const DOMAINS=[
  {id:'permit',n:'Permitting',ic:'🌲',layers:['PERMIT','LEGAL','GRID'],ref:d=>!d.ally&&d.tags.includes('energetic')&&d.tags.includes('greenfield'),
   steps:[['NEPA review',['ea','eis'],'Assessment ≤1 yr · impact statement ≤2 yr (2023 law)'],['Clean Air Act permit',['caa'],'Months to years'],['Clean Water Act §404',['cwa'],'If wetlands or streams'],['ESA §7 consultation',['esa'],'135 days by statute'],['NHPA §106 review',['nhpa'],'Historic properties'],['State & local',['local'],'Zoning, state permits'],['Grid hookup',['queue'],'Interconnection queue'],['Lawsuit',['lawsuit'],'6 yr to sue; 2 yr under FAST-41']]},
- {id:'acq',n:'Acquisition',ic:'📑',layers:['PROCURE','PRIME','QUAL'],ref:d=>d.id==='l_int_prime',
-  steps:[['Requirements',['reqcreep'],'The spec moves'],['Source selection',['far'],'RFP to award'],['Bid protest',['protest'],'100 days at GAO'],['Cost accounting',['cas'],'CAS coverage'],['Cyber certification',['cmmc'],'CMMC'],['Prime pushback',['primelobby'],'Incumbents lobby'],['Demand signal',['demand'],'Orders a year at a time'],['First-article test',['fat'],'Qualification']]},
+ {id:'qual',n:'Qualification & testing',ic:'🎯',layers:['QUAL'],ref:d=>d.t.node==='srm'&&!d.kind&&!d.ally,
+  steps:[['First test lots',['fat'],'The new line makes its first articles'],['Material qualification',['qualE','srmqual'],'Propellants and explosives retested: burn rate, aging, safety'],['Trusted supplier',['trusted'],'Electronics and secure parts'],['Range time',[],'Static fires and flight tests on shared ranges'],['Lot acceptance',[],'Each production lot sampled and fired before it ships']]},
+ {id:'acq',n:'Acquisition',ic:'📑',layers:['PROCURE','PRIME'],ref:d=>d.id==='l_int_prime',
+  steps:[['Requirements',['reqcreep'],'The spec moves'],['Source selection',['far'],'RFP to award'],['Bid protest',['protest'],'100 days at GAO'],['Cost accounting',['cas'],'CAS coverage'],['Cyber certification',['cmmc'],'CMMC'],['Prime pushback',['primelobby'],'Incumbents lobby'],['Demand signal',['demand'],'Orders a year at a time']]},
  {id:'source',n:'Domestic sourcing & import controls',ic:'🏭',layers:['PROTECT','MARKET'],ref:d=>!d.ally&&d.tags.includes('greenfield')&&d.tags.includes('metal')||d.id==='l_surf',
   steps:[['Buy American & Berry',['buyam'],'Domestic content, specialty metals'],['Jones Act',['jones'],'US-built, US-crewed'],['Security clearances',['clearance'],'Cleared workforce'],['Hidden PRC content',['hidden'],'Found in audits'],['Chinese price collapse',['dump'],'After you build']]},
  {id:'export',n:'Export & investment controls',ic:'🛂',layers:['ALLIED'],ref:d=>d.ally,
@@ -1492,6 +1496,12 @@ const RULES=[
  {id:'rFAST',dom:'permit',kind:'exec',n:'Put defense plants on the FAST-41 dashboard',since:'available; not used for munitions',c:'fast41',pc:[10,4],
   eff:{tags:['greenfield','mine','smelter','energetic'],wait:{PERMIT:.8},chance:{lawsuit:.75}},up:['coordinated schedules (permitting waits ×0.8)','2-year window to sue (×0.75)']},
  // acquisition
+ {id:'rJETO',dom:'qual',kind:'exec',n:'Joint qualification through the Joint Energetics Transition Office',since:'directed by the FY2024 NDAA (Sec. 241); not yet running',c:'jeto',pc:[12,10],
+  eff:{tags:['energetic','srm'],wait:{QUAL:.75}},up:['one qualification accepted by every service: energetics and motor qualification 25% shorter','qualification delays 25% shorter'],dn:['the services give up their own sign-off']},
+ {id:'rQData',dom:'qual',kind:'exec',n:'Accept manufacturer and supplier test data',since:'proposed by the Joint Production Accelerator Cell',c:'jpac',pc:[10,8],
+  eff:{chance:{QUAL:.7}},up:['fewer repeat tests: qualification problems 30% less likely'],dn:['the government checks less itself']},
+ {id:'rConcQual',dom:'qual',kind:'exec',n:'Qualify from pilot lots while construction finishes',since:'available; rarely used',c:'jpac',pc:[10,8],
+  eff:{tags:['energetic','srm','assembly','line']},up:['test articles come off a pilot line before the plant is finished: up to half of qualification overlaps construction'],dn:['if the full line differs from the pilot, some tests are repeated']},
  {id:'rWAS',dom:'acq',kind:'exec',n:'Warfighting Acquisition System (portfolio acquisition executives)',since:'7 Nov 2025',c:'was',pc:[10,25],slots:1,
   eff:{wait:{PROCURE:.85},chance:{reqcreep:.7}},up:['more staff in every portfolio office','contracting waits ×0.85','requirements creep less (×0.7)']},
  {id:'rNDAA26',dom:'acq',kind:'law',n:'FY2026 NDAA: portfolio executives in law, commercial solutions openings',since:'18 Dec 2025',c:'ndaa26',
@@ -1589,7 +1599,8 @@ function rulesBody0(){
 // pending bills and emergency powers that belong to each domain
 const RLINKS={
  permit:[['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
- acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['qualReform','Qualification by similarity.'],['acqWorkforce','More contracting officers.'],['cvQual','Accept allied qualification data now.']],
+ qual:[['qualReform','Accept test data from similar items: qualify a new line by comparison with one already qualified.'],['cvQual','Emergency qualification authority: accept allied qualifications now.']],
+ acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['acqWorkforce','More contracting officers.'],['cvQual','Accept allied qualification data now.']],
  source:[['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Ensuring Naval Readiness Act: allied yards build Navy ships when cheaper. [c:s406] The Senate’s FY27 NDAA markup would instead strip the presidential exception and cap foreign construction at two ships per class. [c:sasc27]'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
  export:[['itarReform','Extend license-free trade to Japan and Korea.'],['nds','Stockpile what Beijing can switch off.']],
  money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
@@ -3169,7 +3180,7 @@ function startProject(id,ct,mode){
   const def=PD[id],c=ct?ctCost(def,ct):projCost(def),pk=mode==='pkg'&&!S.histMode;if(!canStart(def,c))return;
   if(!pk&&S.budget<c-1e-9)return;const rk=REQ_PC(c);if(pk){if(S.pc<rk)return;S.pc-=rk;spent('pc',rk)}
   if(!pk)spendB(c,'Programs');S.built[id]=(S.built[id]||0)+1;
-  const p={uid:uidN++,def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):planDur(def),sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};refStageCredit(def,def.dur);refMoneyCredit(def,c);if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
+  const p={uid:uidN++,qPlan:{m:qualJointM(def),o:ruleOn('rConcQual')&&qualTag(def)},def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):planDur(def),sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};refStageCredit(def,def.dur);refMoneyCredit(def,c);if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
@@ -3200,7 +3211,11 @@ const REF_STAGE=[
  {r:'multiyear',st:'ramp',m:.6,t:'ramp-up to full orders 40% faster'}];
 const refFits=(x,def)=>(!x.dom||!def.ally)&&(!x.ally||def.ally)&&(!x.tags||x.tags.some(t=>def.tags.includes(t)));
 const stageM=(def,st)=>{let m=1;for(const x of REF_STAGE)if(x.st===st&&passed(x.r)&&refFits(x,def))m*=x.m;return Math.max(.25,m)};
-const planDur=def=>def.dur.map((d,i)=>d?Math.max(1,Math.round(d*stageM(def,STAGES[i]))):0);
+// qualification policies: joint qualification shortens the stage; pilot-lot qualification overlaps it with the end of construction
+const qualTag=def=>!def.ally&&['energetic','srm','assembly','line'].some(t=>def.tags.includes(t));
+const qualJointM=def=>ruleOn('rJETO')&&!def.ally&&['energetic','srm'].some(t=>def.tags.includes(t))?.75:1;
+const qualOverlap=(def,dur)=>ruleOn('rConcQual')&&qualTag(def)&&dur[4]?Math.min(Math.round(dur[4]*.5),Math.round(dur[3]*.25)):0;
+const planDur=def=>{const d=def.dur.map((d,i)=>d?Math.max(1,Math.round(d*stageM(def,STAGES[i])*(i===4?qualJointM(def):1))):0);if(d[4])d[4]=Math.max(1,d[4]-qualOverlap(def,d));return d};
 function refRescale(id){for(const p of S.projects){const def=PD[p.def];for(const x of REF_STAGE){if(x.r!==id||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(!p.dur[i])continue;const d0=p.dur[i];
   if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*x.m));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*x.m))}if(!S.histMode)(S.refW=S.refW||{})[id]=(S.refW[id]||0)+Math.max(0,d0-p.dur[i])}}PJC.clear()}
 function enterStage(p){
@@ -3208,7 +3223,9 @@ function enterStage(p){
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
   pmark(p,{st:p.stage});xfOrder(p);
   if(p.uca&&STAGES[p.stage]==='build'&&!S.histMode&&rand()<.25)spawnObs(p,'costOverrun',true);
-  p.prog=0;p.sched=[];const st=STAGES[p.stage],D=p.dur[p.stage],def=PD[p.def];
+  p.prog=0;p.sched=[];
+  if(STAGES[p.stage]==='qual'&&!S.histMode&&!p.qAdj){const def0=PD[p.def],m=qualJointM(def0),ov=qualOverlap(def0,p.dur);p.qAdj=1;const q0=typeof p.qPlan==='object'?p.qPlan:{m:1,o:false},mm=m/q0.m,oo=q0.o?0:ov;if(mm<1||oo){p.dur[4]=Math.max(1,Math.round(p.dur[4]*Math.min(1,mm))-oo);pmark(p,{note:'qualification shortened by policy'})}}
+  const st=STAGES[p.stage],D=p.dur[p.stage],def=PD[p.def];
   if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(c>0&&rand()<c)p.sched.push({id:o.id,at:Math.floor(rand()*D)})}
   p.sched.sort((a,b)=>a.at-b.at);
 }
@@ -3783,7 +3800,7 @@ const STAGE_WHY={approp:'Congress has to fund it: either it waits for the annual
  contract:'The program office negotiates price, terms and schedule with the builder.',
  permit:'Environmental reviews and permits (NEPA, air, water, hazardous waste, explosives safety) before ground is broken.',
  build:'Construction and installing the equipment.',
- qual:'Before its output can go into weapons, the military has to certify it. The plant makes test lots that are fired, flown or inspected to prove they meet the specification; for explosives and rocket motors that means static fires and lot acceptance tests. It can take a year or more, and test ranges are shared.',
+qual:'Before its output can go into weapons, the service that buys it has to certify it (see Qualification below). The plant makes test lots that are fired, flown or inspected to prove they meet the specification; for explosives and rocket motors that means static fires and lot acceptance tests. It can take a year or more, and test ranges are shared.',
  ramp:'Lining up long-term orders from the services and steady inputs, so the line can run at rate.'};
 const STAGE_DO={approp:'Awaiting funds from Congress',contract:'Negotiating the contract',permit:'Siting and permitting',build:'Under construction',qual:'Qualification testing',ramp:'Lining up buyers and suppliers'};
 function progStatus(p,live){
@@ -3840,6 +3857,20 @@ function progStages(p,live){const def=PD[p.def],stEv=(p.h||[]).filter(e=>e.st!=n
       <div class="pbar"><i style="width:${(f*100).toFixed(1)}%"></i></div><ul class="pmiles">${ml}</ul>${p.xf?`<div class="mini">⚡ Large power transformer: ${p.xf.res?'from the strategic reserve':'ordered '+fmtDate(p.xf.ord)}, ${S.w>=p.xf.due?'<span class="okt">delivered</span>':`due <b>${fmtDate(p.xf.due)}</b>${st==='build'&&f>=1?' · <span class="redt">construction is done except energizing; waiting on it</span>':''}`}</div>`:xfNeeds(def)&&p.stage<2&&!p.inh?`<div class="mini">⚡ Needs a large power transformer, ordered at contract award: about ${xfLead()} weeks at today's lead time.</div>`:''}
       <div class="mini">This stage should finish about <b>${fmtDate(stEnd)}</b>; the whole program about <b>${fmtDate(S.w+remW(p))}</b>${slipF().f>1.05?`, or ${fmtDate(S.w+Math.round(remW(p)*slipF().f))} if it slips like your programs so far`:''}.</div></div>`}
   return `<div class="psteps">${cells}</div>${det}`}
+function qualBox(p,live){const def=PD[p.def];if(!p.dur[4]||def.ally)return '';const st=STAGES[p.stage],past=!live||p.stage>4;if(past)return '';
+  const rows=[],od=OBSTACLES.filter(o=>o.layer==='QUAL'&&o.stage==='qual'&&facOk(o)),odds=od.map(o=>[o,obsChance(o,def)]).filter(x=>x[1]>.01);
+  const lever=(on,n,t)=>rows.push(`<div class="qlv ${on?'on':''}"><b>${on?'✓':'○'} ${n}</b><span>${t}</span></div>`);
+  lever(passed('qualReform'),'Qualification by Similarity (NDAA)','45% shorter for munitions work; problems half as likely');
+  lever(ruleOn('rJETO'),'Joint qualification (Policy tab)','one sign-off for every service: 25% shorter for energetics and motors');
+  lever(ruleOn('rQData'),'Accept contractor and supplier data (Policy tab)','problems 30% less likely');
+  lever(ruleOn('rConcQual'),'Qualify from pilot lots (Policy tab)','up to half of qualification overlaps the end of construction');
+  if(def.t.node)lever(!!(S.nflags[def.t.node]||{}).test,'Test ranges at this plant (its page)','problems half as likely here');
+  lever(carveOn('cvQual'),'Emergency qualification authority (Policy tab)','waits 40% shorter while it lasts; more quality escapes');
+  const rg=poolState().ranges;
+  return `<div class="dsec"><h4>Qualification</h4><p class="mini" style="margin:0 0 6px">Before a new line's output can go into weapons, the service that buys it has to certify it. The plant makes test lots; they are fired, flown or inspected against the specification, and for propellants and explosives aged and safety-tested too. Then every production lot is sampled before it ships. Test ranges are shared, so programs queue for them.</p>
+   <div class="qlst"><div><b>${p.dur[4]} wk</b><span>planned qualification${st==='qual'?`, week ${Math.floor(p.prog)} now`:''}</span></div><div><b>${odds.length?pct(1-odds.reduce((a,x)=>a*(1-x[1]),1)):'Low'}</b><span>odds of a qualification problem</span></div><div><b>${rg.d}/${fmt(rg.cap,0)}</b><span>test-range slots in use</span></div></div>
+   ${odds.length?`<div class="mini" style="margin:4px 0">Problems it may hit: ${odds.map(([o,c])=>`${V(o.n)} (${pct(c)})`).join(' · ')}</div>`:''}
+   <div class="qlvs">${rows.join('')}</div></div>`}
 function progHTML(uid){
   const R=progRec(uid);if(!R)return '';const {p,live}=R,def=PD[p.def],nm=p.nm||def.n,pl=S.plants.find(x=>x.uid==uid),[stT,stC]=progStatus(p,live);
   const tgt=def.t.node?`<span class="linkn" data-a="node" data-n="${def.t.node}">${ND[def.t.node].n}</span>`:`<span class="linkn" data-a="node" data-n="L:${def.t.line}">${LINES[def.t.line].n}</span>`;
@@ -3850,7 +3881,7 @@ function progHTML(uid){
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}${live&&STAGE_WHY[STAGES[Math.min(p.stage,5)]]?`<div class="pwhy">${STAGE_WHY[STAGES[Math.min(p.stage,5)]]}</div>`:''}</div>
    <div class="dsec"><h4>Progress</h4>${progStages(p,live)}</div>
    <!--WILL-->
-   ${live?comHTML(p):''}<div class="dsec"><h4>Docket <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· every step, who handles it, and planned against actual weeks</span></h4>${progDocket(p,live)}</div>
+   ${qualBox(p,live)}${live?comHTML(p):''}<div class="dsec"><h4>Docket <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· every step, who handles it, and planned against actual weeks</span></h4>${progDocket(p,live)}</div>
    <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
    <div class="dsec"><h4>Permits <span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
   if(live&&ucaOK(p)){const rem=Math.round(p.dur[1]-p.prog);h=h.replace('<div class="dsec"><h4>Plan vs. actual</h4>',`<div class="dsec"><h4>Speed up contracting</h4><div class="ucab"><div><b>⚡ Undefinitized contract action</b><div class="mini">Let the contractor start now and settle the price later, as the Army did to replenish GMLRS and NASAMS. Contracting ends in about 4 weeks instead of ${rem}. Until the price is set the government carries the cost risk: the DoD Inspector General found $1.2 billion in profit never adjusted down.[c:ucaig]</div><div class="mini" style="margin-top:3px">Costs 10% of the price now, with a 1-in-4 chance of a cost overrun when construction starts.</div></div><button class="pbtn primary" data-a="uca" data-u="${p.uid}">Issue · ${money(ucaCost(p))}</button></div></div>`+'<div class="dsec"><h4>Plan vs. actual</h4>')}
@@ -4769,6 +4800,8 @@ const CITES=[
  {id:'fifthcost',g:'Ships, submarines & readiness',t:'Trump\u2019s call for fifth shipyard likely to run into cost, workforce hurdles: analysts',pub:'Breaking Defense',d:'Aug 2026',url:'https://breakingdefense.com/2026/08/trumps-call-for-fifth-shipyard-likely-to-run-into-cost-workforce-hurdles-analysts/',use:'A new public yard is costly and adds capacity only if it expands the skilled workforce.'},
  {id:'saws',g:'Workforce',t:'New Navy sub funding proposal to combat growth in labor costs raises questions in Congress, White House',pub:'USNI News',d:'Sep 2024',url:'https://news.usni.org/2024/09/13/new-navy-sub-funding-proposal-to-combat-growth-in-labor-costs-raises-questions-in-congress-white-house',use:'The Shipyard Accountability and Workforce Support proposal: move labor money for boats not yet started forward to raise shipyard wages now.'},
  {id:'navy250k',g:'Workforce',t:'US Navy seeks to hire 250,000 new dockyard workers in the next 10 years',pub:'Naval News',d:'Jan 2026',url:'https://www.navalnews.com/naval-news/2026/01/us-navy-seeks-to-hire-250000-new-dockyard-workers-in-the-next-10-years/',use:'The scale of the shipyard hiring problem.'},
+ {id:'jeto',g:'US rulebook',t:'DoD establishing the Joint Energetics Transition Office (FY2024 NDAA Sec. 241)',pub:'DoD News via GlobalSecurity',d:'Jul 2025',url:'https://www.globalsecurity.org/military/library/news/2025/07/mil-250723-dodnews01.htm',use:'Congress directed a joint office for energetics across the services; the National Energetics Plan notes the services develop and qualify energetics separately and that qualification costs often go unfunded.'},
+ {id:'jpac',g:'US rulebook',t:'Joint Production Accelerator Cell: barriers to munitions production (Acquisition Research Symposium)',pub:'Naval Postgraduate School',d:'2026',url:'https://dair.nps.edu/bitstream/123456789/5535/2/SYM-AM-26-176.pdf',use:'Lists qualification and testing as a barrier and proposes sharing test data, accepting manufacturer and supplier data, and changing the qualification process.'},
  {id:'crsssn',g:'Ships, submarines & readiness',t:'Diminishing returns: the US Navy’s attack boat availability problem (citing CRS)',pub:'Naval Technology',d:'2024',url:'https://www.naval-technology.com/features/diminishing-returns-the-us-navys-attack-boat-availability-problem/',use:'31 of 49 SSNs available in FY2023; 18 in or awaiting maintenance; Navy goal ≤20%.'},
  {id:'gaof35',g:'Ships, submarines & readiness',t:'Only 1 in 4 F-35s is fully mission capable, GAO finds',pub:'Defense News',d:'Jun 2026',url:'https://www.defensenews.com/industry/techwatch/2026/06/12/only-1-in-4-f-35s-is-fully-mission-capable-gao-finds/',use:'F-35 mission-capable rate 67% (FY2021) → 44% (FY2025); fully mission capable 25%.'},
  {id:'cmpr',g:'Ships, submarines & readiness',t:'China Naval Modernization (RL33153), citing DoD’s China Military Power Report',pub:'CRS via USNI News',d:'Apr 2025',url:'https://news.usni.org/2025/05/01/report-to-congress-on-chinese-naval-modernization-21',use:'PLAN >370 ships; 395 projected in 2025, 435 by 2030; US Navy 296 battle force ships (Sep 2024).'},
@@ -4839,6 +4872,7 @@ const ASSUMPTIONS=[
  ['Raw-material supply shares','For the raw materials USGS reports, the domestic share is one minus net import reliance (reliance given as “more than 50%” is read as 62.5%, “more than 75%” as 87.5%), and imports are split between allied, neutral and Chinese or Russian sources by USGS import shares for 2021–24. China’s hold on world production appears as Chinese content inside allied and neutral supply: a share of it stops when Beijing cuts supply. That share is an estimate for each material (85% for gallium, because allied refiners purify Chinese primary gallium; 60% for neutral antimony, which is largely re-routed Chinese material).'],
  ['Civilian drone market','US civilian drone sales start at about 400,000 a year and grow 6% a year. US makers’ share moves over about two years toward a level set by the bans in force (shown in the Rulebook under Sourcing). At about 250,000 US-made civilian drones a year, the military drone base reaches full scale: drone line capacity +25%, drone plants 20% cheaper.'],
  ['Submarine options','Sourced: module outsourcing (Austal, $450M), automated factories ($900M), the proposal for a fifth public shipyard, the wage proposal (SAWS). Game estimates: every gain, cost and build time. Outsourcing adds about 0.2 boats a year for $1.2B; a government-owned construction yard about 0.6 a year for $9B over roughly ten years; a fifth public yard raises attack-submarine availability by 12 points for $8B; a second shift by 4 points; a parts repair center by 3. The wage authority makes shipyards and their suppliers hire 60% faster and adds 6% to their workforce when enacted.'],
+ ['Qualification policies','Joint qualification shortens energetics and motor qualification by 25% and its delays by 25%; accepting contractor and supplier data makes qualification problems 30% less likely; qualifying from pilot lots overlaps up to half of qualification (at most a quarter of construction) with the end of construction, for energetics, motors and assembly lines. The policies apply when a program reaches qualification. All three effects are game estimates; the policies themselves are sourced.'],
  ['Builder commitment','Each plant\u2019s builder has a commitment from 0 to 100 (all figures are game estimates). It opens at 65, +15 on a multiyear order, +5 cost-plus, −5 fixed-price, +10 with the Multiyear Orders reform (munitions and missiles), +10 with price floors (mines, refineries, metals), +5 with Office of Strategic Capital loans; programs begun before 2027 open at 75. Each week it falls 0.25 while stalled (0.5 if the cause is missing orders or prices), 0.08 while waiting for Congress, 0.06 while more than six months late, 0.15 if Congress has not ordered what the line can already make, and recovers 0.08 with steady progress up to where it opened. Below 30 the builder asks for relief; below 8 it walks.'],
  ['Standing with the defense committees','One number from 0 to 100, starting at 50 (game estimates). +6 when a program Congress funded delivers within 125% of plan (+3 within 175%, +1 if later), +5 for a pledged start kept; −3 when a funded program falls a year behind, −8 when one is abandoned, −6 and −5 PC for a pledge missed. It scales the cut risk on every request from ×1.25 at 0 to ×0.75 at 100. A pledge cuts one request\u2019s markup risk by 40%; its date is the vote plus twice the planned contracting and permitting time plus twelve weeks; lateness is counted from the day a program is funded. Standing drifts back toward 50 by about a fifth of the distance each year.'],
  ['Large power transformers','New energetics plants, smelters and greenfield sites need a large power transformer, ordered at contract award; construction cannot finish until it arrives. The lead time starts at 128 weeks (Wood Mackenzie, Q2 2025) and, as a game estimate, eases by about 6 weeks a year from mid-2028 to a floor of 80 as announced factories open. DPA priority ratings cut it to 60% for defense orders; a strategic reserve of 12 units supplies one in 16 weeks; co-funding US capacity cuts it 25% for everyone from the third year. Programs begun before 2027 and the 2025-26 replay are unaffected.'],
