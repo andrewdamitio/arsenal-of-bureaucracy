@@ -641,6 +641,7 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+.cnhedge{margin-top:8px;padding:7px 10px;border:1px solid #cbbd95;border-left:4px solid #2e8a74;background:#f2f1e3;border-radius:4px;font-size:13px}
 #tut{position:fixed;inset:0;z-index:70;pointer-events:none}#tut.tut-center{background:rgba(0,0,0,.6)}
 .tut-hole{position:fixed;border:2px solid #ffd27a;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 18px rgba(255,210,122,.6);transition:all .2s}
 .tut-box{position:fixed;width:360px;pointer-events:auto;background:var(--paper) linear-gradient(#f5eedb,#e9dfc4);color:#2b241a;border:1px solid #a8925a;border-left:4px solid #b8860b;border-radius:5px;padding:12px 14px;box-shadow:0 12px 34px rgba(0,0,0,.6);font:13.5px/1.5 "Segoe UI",system-ui,sans-serif}
@@ -1555,6 +1556,8 @@ const RULES=[
   eff:{},dyn:()=>[`Beijing’s ladder: step ${cnS().rung} of ${CN_RUNGS.length}, pressure ${Math.round(cnS().heat)}/100 (Imports tab)`,...(S.truce?['Suspended under the truce: gallium, germanium, antimony, graphite, the Oct 2025 rare-earth rules','Heavy rare-earth licensing (Apr 2025) still in force']:['In force: gallium, germanium, antimony, graphite and the 0.1% rare-earth rule','Heavy rare-earth licensing (Apr 2025) in force'])]},
  {id:'rCOINS',dom:'export',kind:'law',n:'COINS Act: outbound investment screening in law',since:'Dec 2025 · final rule due Mar 2027',c:'coins',
   eff:{},up:['US capital kept out of PRC chips, AI and quantum'],dn:['no direct effect on your plants']},
+ {id:'rMSP',dom:'export',kind:'exec',n:'Minerals Security Partnership offtakes for what Beijing can cut',since:'partnership formed 2022; offtakes not yet used for defense',c:'msp',pc:[15,8],
+  eff:{},up:['allies add supply of rare earths, magnets, indium, tungsten, gallium, germanium, graphite and battery cells','that supply carries half as much Chinese feedstock'],dn:['Beijing reads it as decoupling: pressure +2 a year'],onOn:()=>mspSet(true),onOff:()=>mspSet(false)},
  {id:'rKnown',dom:'export',kind:'exec',n:'CFIUS Known Investor fast track for allied capital',since:'pilot · launch expected early 2027',c:'known',pc:[8,6],
   eff:{tags:['greenfield','shipyard'],cost:.95},up:['allied co-investment in US plants (−5% cost)'],dn:['screening still applies to everyone else']},
  // money
@@ -2232,6 +2235,9 @@ function cnInit(){return {heat:15,rung:0,hist:[],talkTo:0,next:PLAY0+13}}
 const cnS=()=>S.cn||(S.cn=cnInit());
 function cnNodes(r){if(!r.all)return r.nodes;const f=S.fac;return ORDER.filter(id=>ND[id][f].mix[2]>=r.min&&(!r.tier||ND[id].t<=r.tier)).map(id=>[id,r.all])}
 // plants of yours now replacing Chinese supply: Beijing reads them as lost leverage
+// the partnership: allied producers in the partnership add supply of the minerals on Beijing's ladder, sourced outside China
+function mspSet(on){setRule('rMSP',on);for(const id of CN_MIN().concat(['magnets','li_cells']).filter((v,i,a)=>a.indexOf(v)===i)){const n=S.nodes[id];if(!n)continue;
+  if(on){n.mspAdd=n.scale*.15;n.ally.amt+=n.mspAdd;n.mspAdv=n.ally.adv;n.ally.adv*=.5}else if(n.mspAdd!=null){n.ally.amt=Math.max(0,n.ally.amt-n.mspAdd);n.ally.adv=n.mspAdv??n.ally.adv;n.mspAdd=null}}}
 function cnReplaced(){const f=S.fac;return [...new Set(S.plants.filter(p=>p.kind==='node'&&p.yield>=.5&&ND[p.target]&&(ND[p.target][f].mix[2]>=.3||AP_CN_FEED.includes(p.target))).map(p=>p.target))]}
 function cnDrivers(){const r=[],U=S.fac==='US',c=cnS();cnBase(c);
   r.push(['Rivalry, and Beijing’s own plan to keep its lead in processing',3]);
@@ -2239,10 +2245,16 @@ function cnDrivers(){const r=[],U=S.fac==='US',c=cnS();cnBase(c);
   if(U&&ruleOn('rAffil')&&!c.affil0)r.push(['The Affiliates Rule in force',12]);
   const ic=U?IC.filter(x=>x.id!=='icAllyEx'&&icOn(x.id)&&!(c.ic0||[]).includes(x.id)):[];if(ic.length)r.push([`New US import controls on Chinese drones and electronics: ${ic.map(x=>lc(x.n)).join('; ')}`,3*ic.length]);
   const rp=cnReplaced();if(rp.length)r.push([`Your plants replacing Chinese supply: ${rp.map(id=>ND[id].n).join(', ')}`,2*Math.min(rp.length,6)]);
+  if(U&&ruleOn('rMSP'))r.push(['The Minerals Security Partnership offtakes',2]);
   if(S.truce)r.push(['The truce in force',-4]);
   if(c.talkTo>S.w)r.push(['Talks under way',-10]);
   return r}
 const cnRate=()=>cnDrivers().reduce((a,x)=>a+x[1],0);
+// how close Beijing is to its next step, and what hedges exist for what it would cut
+function cnNext(){const c=cnS(),nx=CN_RUNGS[c.rung];if(!nx)return null;const r=cnRate(),yrsTo=r>0?(nx.th-c.heat)/r:Infinity,mine=cnDrivers().find(x=>x[0].startsWith('Your plants'));return {nx,heat:c.heat,r,yrsTo,mine:mine?mine[1]:0}}
+function cnWarnTick(){if(S.histMode||S.fac!=='US')return;const n=cnNext();if(!n||n.yrsTo>1||n.yrsTo<0)return;const c=cnS();if(c.warned===n.nx.id)return;c.warned=n.nx.id;
+  log(`${FLAGS.cn} Warning: Beijing is within a year of its next step, ${n.nx.s.toLowerCase()} (pressure ${Math.round(n.heat)} of ${n.nx.th}, rising ${fmt(n.r,0)} a year${n.mine?`; your plants replacing Chinese supply add ${n.mine}`:''}). Hedge on Abroad: stockpile buys in the NDAA, the minerals partnership, or open talks.`,'bad');
+  toast(`${FLAGS.cn} <b>Beijing nears its next step</b><br><span class="dim">${n.nx.s}: about ${n.yrsTo<.25?'a few months':Math.round(n.yrsTo*12)+' months'} away. Hedge on Abroad.</span>`,'bad',{a:'view',v:'imports'})}
 function cnBase(c){if(!c.ic0){c.ic0=IC.filter(x=>icOn(x.id)).map(x=>x.id);c.affil0=S.fac==='US'&&ruleOn('rAffil')}}
 function cnTick(){const c=cnS();cnBase(c);if(!S.yr0)S.yr0=yrSnap();c.heat=clamp(c.heat+cnRate()/52,0,100);if(S.w>=c.next){c.next=S.w+13;cnReview()}}
 function cnReview(){const c=cnS();if(S.queue.some(q=>q.ev==='cnRung')||(S.inbox||[]).some(x=>x.ev==='cnRung'))return;
@@ -2257,6 +2269,8 @@ function cnApply(k,f,how){const r=CN_RUNGS[k],c=cnS();for(const [id,v] of cnNode
 function cnReapply(){for(const h of cnS().hist)if(h.k>=0)for(const [id,v] of cnNodes(CN_RUNGS[h.k]))S.cut[id]=Math.min(S.cut[id],1-(1-v)*h.f)}
 function cnTalk(){const c=cnS();if(c.talkTo>S.w||S.pc<CN_TALK)return;S.pc-=CN_TALK;spent('pc',CN_TALK);c.talkTo=S.w+52;c.heat=Math.max(0,c.heat-8);log(`${FLAGS.cn} Talks open with Beijing on export licences (${CN_TALK} PC): pressure eases for a year.`,'ev')}
 function cnHits(r){const ns=cnNodes(r);return ns.length>4?`${ns.length} materials and parts where China supplies ${pct(r.min)} or more of yours, each cut to ${pct(r.all)} of Chinese supply`:ns.map(([id,v])=>`${ND[id].n} (Chinese supply cut ${pct(1-v)})`).join(', ')+(r.ally?'; allied magnet supply falls too':'')}
+function cnHedge(){if(S.fac!=='US')return '';const n=cnNext(),ids=CN_MIN().filter(id=>ndsOk(id));
+  return `<div class="cnhedge"><b>Hedge before it bites</b>${n&&n.yrsTo<=1.5&&n.yrsTo>=0?`<span class="redt"> · next step about ${n.yrsTo<.25?'a few months':Math.round(n.yrsTo*12)+' months'} away</span>`:''}<div class="mini">Stockpile buys in the NDAA hold a year of supply for each mineral Beijing can cut (${ids.map(id=>lc(ND[id].n)).join(', ')}). The minerals partnership on Rules & policy adds allied supply with half the Chinese feedstock. Talks cool the pressure for a while. Your own plants that replace Chinese supply raise it: about 2 a year each, up to 12.</div></div>`}
 function cnPanel(){const c=cnS(),rt=cnRate(),dr=cnDrivers(),nx=CN_RUNGS[c.rung],T=x=>`${Math.max(0,Math.min(100,x))}%`;
   const ticks=CN_RUNGS.map((r,i)=>`<span class="cnt ${i<c.rung?'done':i===c.rung?'next':''}" style="left:${T(r.th)}" data-tip="${tipQ(`<b>Step ${i+1}: ${r.n}</b><br>${r.d}<br>Possible once pressure passes ${r.th}.${i<c.rung?`<br>Taken ${fmtDate(c.hist.find(h=>h.k===i)?.w??S.w)}.`:''}`)}"><i></i><em>${i+1}</em></span>`).join('');
   const took=c.hist.map(h=>h.k<0?`<span class="cnh bad">${fmtDate(h.w)} · truce ended early</span>`:`<span class="cnh">${fmtDate(h.w)} · ${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`).join('');
@@ -2264,7 +2278,7 @@ function cnPanel(){const c=cnS(),rt=cnRate(),dr=cnDrivers(),nx=CN_RUNGS[c.rung],
     <button class="btn sm" data-a="cntalk" ${c.talkTo>S.w||S.pc<CN_TALK?'disabled':''} data-tip="${tipQ(c.talkTo>S.w?`Talks run to ${fmtDate(c.talkTo)}.`:`Open a year of talks on export licences: pressure −8 now and −10 a year while they run.`)}">${c.talkTo>S.w?'Talks under way':`Open talks · ${CN_TALK} PC`}</button></div>
    <div class="cnbar"><i style="width:${T(c.heat)}"></i>${ticks}</div>
    <div class="cnrow"><div class="mini">${S.truce?'<b>Truce in force.</b> Beijing’s December 2024 bans stay suspended and it takes no new steps, but pressure still builds; above 55 it may end the truce early. ':''}${nx?`Next step: <b>${nx.n}</b>, possible once pressure passes ${nx.th}. At each quarterly review Beijing may climb one step, likelier the further past the line; each step it takes releases 8 points.`:'Beijing has nothing left to escalate.'}${took?`<div class="cnhs">${took}</div>`:''}</div>
-    <div class="cndr"><div class="mini"><b>What moves the pressure, per year</b></div>${dr.map(([n,v])=>`<div><span>${n}</span><b class="${v>0?'redt':'okt'}">${v>0?'+':'−'}${Math.abs(v)}</b></div>`).join('')}</div></div></div>`}
+    <div class="cndr"><div class="mini"><b>What moves the pressure, per year</b></div>${dr.map(([n,v])=>`<div><span>${n}</span><b class="${v>0?'redt':'okt'}">${v>0?'+':'−'}${Math.abs(v)}</b></div>`).join('')}</div></div>${cnHedge()}</div>`}
 function doCeasefire(){const E=S.enemy.eu;E.war=false;E.pm*=.85;S.ceasefire=true} // output keeps flowing — into depots
 
 /* =====================================================================
@@ -3115,13 +3129,13 @@ function enactPkg(src){const its=pkgOrd().filter(p=>p.pkg<S.w),nds=ndsReqs().fil
 // National Defense Stockpile buys are authorized in the NDAA (Strategic and Critical Materials Stock Piling Act). Each buy
 // here is about half a year of base demand for one raw or processed material (not energetics, which age and are hazardous to
 // store in bulk), at a flat game-estimate price.[c:ndsa]
-const NDS_C=.4,NDS_WK=26,ndsOk=id=>S.fac==='US'&&ND[id]&&ND[id].t<=2&&!ENERGETIC.includes(id),ndsReqs=()=>(S.ndsReq=S.ndsReq||[]);
+const NDS_C=.4,NDS_WK=26,CN_MIN=()=>[...new Set(CN_RUNGS.flatMap(r=>(r.nodes||[]).map(x=>x[0])))].filter(id=>ND[id]&&ND[id].t<=2),ndsWk=id=>CN_MIN().includes(id)?52:NDS_WK,ndsOk=id=>S.fac==='US'&&ND[id]&&ND[id].t<=2&&!ENERGETIC.includes(id),ndsReqs=()=>(S.ndsReq=S.ndsReq||[]);
 function ndsAdd(id){const k=REQ_PC(NDS_C);if(!ndsOk(id)||ndsReqs().some(x=>x.id===id)||S.pc<k)return;S.pc-=k;spent('pc',k);ndsReqs().push({id,req:NDS_C,pkg:pkgW(),pc:k});log(`Requested in the FY${pkgFY()} NDAA: stockpile buy, ${ND[id].n} (${money(NDS_C)}; ${k} PC).`)}
 function ndsDrop(id){const x=ndsReqs().find(y=>y.id===id);if(x){S.pc+=x.pc||0;spent('pc',-(x.pc||0))}S.ndsReq=ndsReqs().filter(y=>y.id!==id)}
 function ndsCut(id){const fy=pkgFY();return clamp(moodOf(fy).f*.08*cpF({t:{node:id}},fy),.02,.5)}
 function ndsEnact(got,lost,fy,room){const its=ndsReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.ndsReq=ndsReqs().filter(x=>!its.includes(x));
   for(const x of its){const n=ND[x.id].n,why=room.r<x.req-1e-9?'below the money line':rand()<ndsCut(x.id)?'cut in markup':null;
-    if(why){if(why!=='cut in markup')room.r=-1;lost.push(`Stockpile: ${n} (${why})`);continue}room.r-=x.req;fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*NDS_WK;got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
+    if(why){if(why!=='cut in markup')room.r=-1;lost.push(`Stockpile: ${n} (${why})`);continue}room.r-=x.req;fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
 function billAct(a,uid,d){const p=S.projects.find(x=>x.uid===+uid);if(!p||!p.pkg)return;const o=pkgOrd();o.forEach((x,i)=>x.pri=i);
   if(a==='mv'){const i=o.indexOf(p),j=i+(+d);if(j<0||j>=o.length)return;[o[i].pri,o[j].pri]=[o[j].pri,o[i].pri]}
   else if(a==='top'){p.pri=-1}
@@ -3593,7 +3607,7 @@ function tick(){
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
-  labTick();xfTick();invTick();const R=production(true);S.lastOut=R.out;ceilRec(R);slipTick();comTick();credTick();
+  labTick();xfTick();invTick();cnWarnTick();const R=production(true);S.lastOut=R.out;ceilRec(R);slipTick();comTick();credTick();
   if(!S.histMode){let pc=0;for(const c in LINES)pc+=R.out[c].yr/52*UC[c];S.procSp=(S.procSp||0)+pc;S.procY=(S.procY||0)+pc;fyLed('proc',pc);if(S.ordBuy){S.ordBuy.forEach(x=>x.left--);S.ordBuy=S.ordBuy.filter(x=>x.left>0)}}limTick(R.out);
   for(const c in LINES)S.inv[c]=Math.max(0,S.inv[c]+R.out[c].yr/52-S.inv[c]*retRate(c)/52-(aidOn()?(F().aid?.[c]||0)*S.aidLvl/52:0));
   if(S.histMode)histTick();
@@ -3640,6 +3654,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
   if(S.bill)ahead.push(`📜 ${rname(RD[S.bill.id])}: the floor vote is in ${S.bill.left} weeks.`);
   for(const p of S.projects){const e=S.w+remW(p);if(inN(e))ahead.push(`🏗 ${projName(p)} is expected to finish around ${fmtDate(e)}.`)}
   if(FYOF(n1)===IB_RECON_END+1&&FYOF(n0)<=IB_RECON_END)ahead.push('💵 Reconciliation money ends with this fiscal year.');
+  {const cn=cnNext();if(cn&&cn.yrsTo>=0&&cn.yrsTo<=1)ahead.push(`${FLAGS.cn} Beijing could reach its next step, ${cn.nx.s.toLowerCase()}, within ${cn.yrsTo<.25?'a few months':Math.round(cn.yrsTo*12)+' months'}${cn.mine?`; your plants replacing Chinese supply add ${cn.mine} pressure a year`:''}. Hedges: stockpile buys (a year of supply for these minerals), the minerals partnership, talks.`)}
   return `<div class="paper wide yrp"><div class="hd"><span class="ic">🗓</span>${turnLabel(w0)}: turn report</div><div class="bd">
    <div class="yrts">${tile(pct(b.race),'of the requirement, you + allies',d(a.race*100,b.race*100,v=>fmt(v,1)+' pt'))}${tile(`${b.short}/${S.order.length}`,'lines short',d(a.short,b.short,v=>String(Math.round(v)),-1))}${tile(money(S.budget),'in your budget',d(a.budget,b.budget,v=>money(v)))}${tile(Math.floor(S.pc),'Political Capital',d(a.pc,b.pc,v=>fmt(v,0)))}</div>
    ${rows?`<table class="ctable yrtab"><tr><th>Output per year</th><th class="num">Two months ago</th><th class="num">Now</th><th class="num">Change</th></tr>${rows}</table>`:'<p class="mini">No end item changed its output this turn.</p>'}
@@ -4829,6 +4844,7 @@ const CITES=[
  {id:'mtcr',g:'US rulebook',t:'Drone Export Policy Revised',pub:'Washington Trade & Tariff Letter',d:'Sep 2025',url:'https://www.wttlonline.com/stories/drone-export-policy-revised,14323',use:'Military drone exports reviewed like crewed fighter aircraft rather than under MTCR Category I presumption of denial.'},
  {id:'aukus',g:'US rulebook',t:'DDTC Publishes ITAR Amendments to Implement the AUKUS Exemption',pub:'Crowell & Moring',d:'2024',url:'https://www.crowell.com/en/insights/client-alerts/ddtc-publishes-itar-amendments-to-implement-the-aukus-exemption',use:'ITAR §126.7: license-free defense trade among Australia, the UK and the US, minus an excluded-technology list.'},
  {id:'coins',g:'US rulebook',t:'Treasury Issues Proposed Rule to Implement Comprehensive Outbound Investment National Security Act',pub:'U.S. Treasury',d:'Oct 2026',url:'https://home.treasury.gov/news/press-releases/sb0667',use:'COINS Act enacted Dec 2025 in the FY2026 NDAA; proposed rule 22 Oct 2026; final rule due 13 Mar 2027.'},
+ {id:'msp',g:'US rulebook',t:'Minerals Security Partnership',pub:'U.S. Department of State',d:'2022–',url:'https://www.state.gov/minerals-security-partnership',use:'A partnership of allied governments formed in 2022 to finance and coordinate critical-mineral supply outside China: the basis for the offtake action.'},
  {id:'known',g:'US rulebook',t:'Known Investor Program',pub:'CFIUS, U.S. Treasury',d:'2026',url:'https://cfius.gov/initiatives/known-investor-program/',use:'Fast track for allied investors under the Feb 2025 America First Investment Policy; pilot under way, launch expected early 2027.'},
  // Import controls
  {id:'fccuas',g:'Import controls',t:'FACT SHEET: FCC Updates Covered List to Include Foreign UAS',pub:'Federal Communications Commission',d:'Dec 2025',url:'https://docs.fcc.gov/public/attachments/DOC-416839A1.pdf',use:'All foreign-produced drones and UAS critical components barred from new equipment authorizations from 22 Dec 2025; earlier authorizations continue.'},

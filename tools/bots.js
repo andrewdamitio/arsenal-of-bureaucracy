@@ -82,9 +82,11 @@ const res=await p.evaluate(({bot,scen,years,DUMP,START})=>{
    // order what the lines can make: request it in the NDAA, or buy a year from the budget when money is spare
    for(const c of Object.keys(LINES)){const o=R0.out[c];const gap=o.physYr-ordOf(c);if(!isFinite(gap)||gap<=o.physYr*.03||ordReqs().some(x=>x.c===c))continue;
      if(S.pc>=ordPC(c,gap))ordAdd(c,gap)}
+   // hedge when Beijing nears its next step: stockpile the minerals it can cut
+   if(reform){const cn=cnNext();if(cn&&cn.yrsTo<=1.5&&cn.yrsTo>=0)for(const id of CN_MIN().filter(ndsOk).slice(0,4))if(!ndsReqs().some(x=>x.id===id)&&S.pc>=REQ_PC(NDS_C)+5)ndsAdd(id)}
    const out=R0.out;for(const D of ALLY_DEALS)if(alDealOk(D)&&S.pc>=D.pc+15+reserve()&&S.budget>=(D.$||0)+1&&suffLine(D.c,out[D.c].yr)<1){alDeal(D.id);deals++}};
  // ---- reforms
- const NDAA=['acq','byrnes','ceDefense','qualReform','multiyear','acqWorkforce','pricefloor','itarReform','dpaMin','crAnomaly','dpaFund','antitrust'],BILLS=['nepaReform','workforce','judRev','expertVisa','jonesReform','tariffExempt'],EXEC=['rFAST','rNSR','rWOTUS','rITAR','rKnown'];
+ const NDAA=['acq','byrnes','ceDefense','qualReform','multiyear','acqWorkforce','pricefloor','itarReform','dpaMin','crAnomaly','dpaFund','antitrust'],BILLS=['nepaReform','workforce','judRev','expertVisa','jonesReform','tariffExempt'],EXEC=['rMSP','rFAST','rNSR','rWOTUS','rITAR','rKnown'];
  // the reformer keeps enough Political Capital in hand for its next reform before it spends any on plant requests
  // one agenda in priority order, NDAA provisions and stand-alone bills together; the reformer saves for the next item rather than skipping it
  const AGENDA=['acq','energSrc','seekCommon','cotsAlloc','byrnes','saws','nepaReform','ceDefense','qualReform','multiyear','ibfPerm','workforce','acqWorkforce','pricefloor','itarReform','judRev','dpaMin','crAnomaly','dpaFund','expertVisa','antitrust','jonesReform','tariffExempt'];
