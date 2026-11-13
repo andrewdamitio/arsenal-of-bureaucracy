@@ -900,13 +900,26 @@ svg.cch{cursor:crosshair}
 .rc-rh{flex-wrap:wrap}.rc-ttl b{overflow-wrap:anywhere}
 .bngrid>div:nth-child(3) .bnc .pbtn{white-space:normal;overflow:visible;text-overflow:clip}
 .sc-card .sc-m{grid-template-columns:minmax(0,1fr) 30% minmax(0,max-content)}.sc-n{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25}
-#top>*{flex-shrink:0}#top .spacer{flex-shrink:1;min-width:0}
-@media(max-width:1440px) and (min-width:761px){#top .logo{font-size:18px}#top .logo small{font-size:10.5px}#top .res{min-width:52px;padding:2px 5px}#top .res b{font-size:17px}#top .res span{font-size:9px;letter-spacing:.06em}#top .date{font-size:16px!important;padding:2px 8px}}
+#top>*{flex-shrink:0}#top .spacer{flex-shrink:1;min-width:0}@media(min-width:761px){#top .logo{flex-shrink:1;min-width:60px;overflow:hidden;text-overflow:ellipsis}#top .res{flex-shrink:1;min-width:38px;overflow:hidden}}
+@media(max-width:1660px) and (min-width:761px){#top .logo{font-size:18px}#top .logo small{font-size:10.5px}#top .res{min-width:52px;padding:2px 5px}#top .res b{font-size:17px}#top .res span{font-size:9px;letter-spacing:.06em}#top .date{font-size:16px!important;padding:2px 8px}}
 @media(max-width:1280px) and (min-width:761px){#top .logo{font-size:15px}#top .res{min-width:44px;padding:2px 4px}#top .res b{font-size:15px}#top .res span{font-size:8px;letter-spacing:.03em}#top .res i{font-size:10px}#top .crbadge{display:none}}
-@media(max-width:1380px) and (min-width:761px){#top .turnbtn{white-space:normal;max-width:118px;line-height:1.15;padding:4px 10px;font-size:12px;text-align:center}#top .aptog{white-space:normal;max-width:104px;line-height:1.15;text-align:center}#top .date{font-size:14px!important;padding:2px 6px}}
+@media(max-width:1580px) and (min-width:761px){#top .turnbtn{white-space:normal;max-width:118px;line-height:1.15;padding:4px 10px;font-size:12px;text-align:center}#top .aptog{white-space:normal;max-width:104px;line-height:1.15;text-align:center}#top .date{font-size:14px!important;padding:2px 6px}}
 .rc-rhead{grid-template-columns:minmax(0,1.5fr) repeat(4,minmax(0,1fr))}.rc-rhead span{overflow-wrap:anywhere}
 @media(max-width:1480px) and (min-width:761px){.rc-rhead{grid-template-columns:repeat(4,minmax(0,1fr))}.rc-rhead>*:first-child{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px}}
 @media(max-width:1180px) and (min-width:761px){#top .logo{font-size:13px}#top .res span{font-size:7.5px}}
+/* a tab's views: a bar of tabs under its title */
+.vhead.vhead2{flex-wrap:wrap;padding-bottom:0;row-gap:8px}
+.vhead .vsubbar{flex:1 1 100%;order:10;display:flex;gap:6px;margin:0 0 -2px}
+.vhead .vsubbar button{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;padding:8px 14px;background:#ddd0ac;border:1px solid #b3a072;border-bottom:2px solid #8a7850;border-radius:6px 6px 0 0;color:#5a4a28;cursor:pointer}
+.vhead .vsubbar button:hover{background:#e8dcbc}
+.vhead .vsubbar button.on{background:#f6efdc;border-color:#8a7850;border-top:3px solid #b8860b;border-bottom-color:#f6efdc;color:#2b241a;cursor:default}
+.vsubbar .vsi{flex:none;display:flex;color:#7a6638}.vsubbar button.on .vsi{color:#8a5a10}
+.vsubbar .vst{display:flex;flex-direction:column;min-width:0}.vsubbar .vst b{font:700 15.5px Georgia,serif}.vsubbar .vst em{font:normal 12px/1.35 "Segoe UI",system-ui,sans-serif;color:#6b5a35}
+.vsubbar button:not(.on) .vst em{color:#7a6a48}
+.bnsort{align-items:stretch}.bnsl{align-self:center;font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;margin-right:4px}
+.bnopt{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:6px 12px;border:1px solid #b3a072;border-radius:5px;background:#f3ead2;color:#3a3020;cursor:pointer}.bnopt b{font:700 13.5px "Segoe UI",system-ui,sans-serif}.bnopt em{font:normal 11.5px "Segoe UI",system-ui,sans-serif;color:#6b5a35}
+.bnopt:hover{background:#ebe0c2}.bnopt.on{background:#3a3020;border-color:#3a3020;color:#f0dfae}.bnopt.on em{color:#cfc6ad}
+.bnsort>.mini:last-child{flex:1 1 100%;margin:2px 0 0}
 </style>
 </head>
 <body>
@@ -3383,8 +3396,8 @@ function decList(){const L=[];
 // ---- the tutorial: parts, one per tab. The full tutorial runs them in order and plays the first turn; each tab's Tour button
 // runs its own part alone. After the full tutorial, first-year tips explain each new thing the first time it appears.
 const secH=t=>()=>[...document.querySelectorAll('#view .dsec')].find(d=>(d.querySelector('h4')?.textContent||'').startsWith(t))||null;
-const NAV=(v,n)=>({nav:1,sel:`#views [data-v="${v}"]`,t:`Open ${n}`,x:`<b>Click ${n}</b> in the tabs along the top.`,wait:()=>S.view===v&&!S.modal});
-const SUB=(v,n)=>({sel:`#view .vsub [data-v="${v}"]`,t:`Switch to ${n}`,x:`This tab holds two views. <b>Click ${n}</b> on the title line.`,wait:()=>S.view===v&&!S.modal});
+const NAV=(v,n)=>({nav:1,sel:`#views [data-g="${v}"]`,t:`Open ${n}`,x:`<b>Click ${n}</b> in the tabs along the top.`,wait:()=>vGroup(S.view)[0]===v&&!S.modal});
+const SUB=(v,n)=>({sel:`#view .vsub [data-v="${v}"]`,t:`Switch to ${n}`,x:`This tab has two views, in the bar under its title. <b>Click ${n}.</b>`,wait:()=>S.view===v&&!S.modal});
 const TUT=[
  // Command
  {p:'cmd',t:'Welcome to the arsenal',x:'You run the effort to rearm the United States from January 2027. This tutorial walks through every tab, has you start a first program, and plays your first turn. It uses one scenario only: <b>the Taiwan Window, against China</b>; the other mandates play the same way with different targets and a different rival. Nothing moves until you press <b>Next turn</b>, near the end.',next:1},
@@ -3398,15 +3411,14 @@ const TUT=[
  {p:'cmd',sel:'[data-a="savem"]',t:'The Menu',x:'Save or load a game, switch between two-month turns and continuous play, or go back to the title screen.',next:1},
  // Supply chain
  {p:'bn',...NAV('bn','Supply chain')},
- {p:'bn',sel:'#view .bnsort',t:'Bottlenecks',x:'The inputs costing you the most output, ranked by what they cost today or by which have no fix yet. The coloured key says why each is short: cut off, waiting on an input, plant problems, still ramping, or not enough capacity.',next:1},
+ {p:'bn',sel:'#view .skctl',t:'Supply flows',x:'The tab opens on the whole supply chain. The controls: Show the diagram or a sourcing table; follow one end item or all; size the bands by deterrence value or output; trace value to raw materials or to each manufacturing step.',next:1},
+ {p:'bn',sel:'#view svg.sk',t:'The diagram',x:'Left to right: raw sources feed four tiers of the supply chain, which feed the end items. Hover anything to trace its chain; click to open its page.',next:1},
+ {p:'bn',...SUB('bn','Bottlenecks')},
+ {p:'bn',sel:'#view .bnsort',t:'Bottlenecks',x:'The inputs costing you the most output. Rank them by what they cost <b>today</b>, or by what they will <b>still cost after the fixes you have started</b>: the second order puts first the shortages that need a new decision. The coloured key says why each is short: cut off, waiting on an input, plant problems, still ramping, or not enough capacity.',next:1},
  {p:'bn',sel:'#view .bncard .bnhd',t:'One bottleneck',x:'Its rank, tier and how short it is. The green chips are the output you would gain on each end item by fixing it; click one to see that line.',next:1},
  {p:'bn',sel:'#view .bncard .bngrid > div:nth-child(1)',t:'Why it’s short',x:'Supply as a share of need, by where it comes from, and the reason it falls short.',next:1},
  {p:'bn',sel:'#view .bncard .bngrid > div:nth-child(2)',t:'Fixes under way',x:'Programs already working on it, and when they land. Until then the gap still costs output.',next:1},
  {p:'bn',sel:'#view .bncard .bngrid > div:nth-child(3)',t:'What you could do',x:'Options for this item with cost and time: new plants, allied deals, upgrades, supplier shifts. Hover one to see its effect.',next:1},
- {p:'bn',...SUB('flow','Supply flows')},
- {p:'bn',sel:'#view .skctl',t:'Supply flows: controls',x:'Show the diagram or a sourcing table; follow one end item or all; size the bands by deterrence value or output; trace value to raw materials or to each manufacturing step.',next:1},
- {p:'bn',sel:'#view svg.sk',t:'The diagram',x:'Left to right: raw sources feed four tiers of the supply chain, which feed the end items. Hover anything to trace its chain; click to open its page.',next:1},
- {p:'bn',...SUB('bn','Bottlenecks')},
  {p:'bn',sel:'#view .bncard .bnhd .linkn',t:'Open an item',x:'Every item has its own page. <b>Click the name of the top bottleneck.</b>',wait:()=>S.modal==='node'},
  {p:'bn',sel:'#ov .ceilsec',t:'What holds output back',x:'Output is held to the lowest of its ceilings: factory capacity, the workers to run it, and the materials its inputs allow. Solid lines happened; dashed lines are expected. Numbered markers are programs and when they land. <b>Hover the chart</b> for any month.',next:1},
  {p:'bn',sel:'#ov .raise',t:'Ways to raise it',x:'The best options for this item, and below them every option grouped by the ceiling it lifts. <b>Look closer</b> shows what one would do before you commit.',next:1},
@@ -3415,6 +3427,16 @@ const TUT=[
  {p:'bn',sel:'#ov .pvwin .ft [data-a="launch"]',t:'Start it',x:'<b>Press the button to start it.</b> A new plant first asks who builds it and on what terms.',wait:()=>S.modal==='contract'||S.projects.some(p=>!p.inh)},
  {p:'bn',sel:'#ov .ctp',skip:()=>S.projects.some(p=>!p.inh),t:'The award',x:'Choose who builds it and the contract terms; each trades price against speed and risk. Then pay: <b>Build now</b> from your budget, or <b>Request it</b> in the NDAA for Political Capital. <b>Choose one.</b>',wait:()=>S.projects.some(p=>!p.inh)},
  {p:'bn',solo:0,t:'Your first program',x:'It is under way. Its page shows progress stage by stage, a docket of every step, and the builder’s commitment. <b>Close the windows</b> (✕ or Esc) to go on.',wait:()=>!S.modal},
+ // Abroad
+ {p:'abroad',...NAV('imports','Abroad')},
+ {p:'abroad',sel:'#view .cnp',t:'Beijing’s ladder',x:'China climbs a ladder of export controls as pressure builds. Each step cuts a mineral or part you depend on.',next:1},
+ {p:'abroad',sel:'#view .cndr',t:'What moves the pressure',x:'What raises or lowers Beijing’s pressure each year, including your own plants that replace Chinese supply.',next:1},
+ {p:'abroad',sel:'#view .cnhedge',t:'Hedges',x:'How to defend against the next step: stockpiles, the minerals partnership, and talks.',next:1},
+ {p:'abroad',sel:'#view .wmhd',t:'One raw material',x:'How much the US imports, and from whom: China and Russia, allies, and neutral countries, from USGS data.',next:1},
+ {p:'abroad',sel:'#view .wmlist',t:'All eighteen',x:'Pick any raw material to see where it comes from, and your supply in the game now.',next:1},
+ {p:'abroad',...SUB('allies','Allies')},
+ {p:'abroad',sel:'#view .alintro',t:'Your allies',x:'What Japan, South Korea and Taiwan build counts toward your requirement, and what is at risk if a crisis cuts them off.',next:1},
+ {p:'abroad',sel:'#view .alc',t:'One ally',x:'What it builds now and its share of the allied total, and the deals you can strike for more.',next:1},
  // NDAA
  {p:'ndaa',...NAV('ndaa','NDAA')},
  {p:'ndaa',sel:'#view .bltop',t:'This year’s request',x:'What you have asked Congress for this year, what it costs, how much Congress has for requests, and when it votes (every December).',next:1},
@@ -3432,16 +3454,6 @@ const TUT=[
  {p:'policy',...SUB('rules','Laws in force & permits')},
  {p:'policy',sel:'#view .rbdom',t:'How each process works',x:'For each area: the steps a program goes through, the odds each one stops a program you could launch now, the laws in force, and the ways to change them.',next:1},
  {p:'policy',sel:'#view .rbtabs .seg',t:'The permit docket',x:'The second switch lists every permit your plants hold or need, and where each stands.',next:1},
- // Abroad
- {p:'abroad',...NAV('imports','Abroad')},
- {p:'abroad',sel:'#view .cnp',t:'Beijing’s ladder',x:'China climbs a ladder of export controls as pressure builds. Each step cuts a mineral or part you depend on.',next:1},
- {p:'abroad',sel:'#view .cndr',t:'What moves the pressure',x:'What raises or lowers Beijing’s pressure each year, including your own plants that replace Chinese supply.',next:1},
- {p:'abroad',sel:'#view .cnhedge',t:'Hedges',x:'How to defend against the next step: stockpiles, the minerals partnership, and talks.',next:1},
- {p:'abroad',sel:'#view .wmhd',t:'One raw material',x:'How much the US imports, and from whom: China and Russia, allies, and neutral countries, from USGS data.',next:1},
- {p:'abroad',sel:'#view .wmlist',t:'All eighteen',x:'Pick any raw material to see where it comes from, and your supply in the game now.',next:1},
- {p:'abroad',...SUB('allies','Allies')},
- {p:'abroad',sel:'#view .alintro',t:'Your allies',x:'What Japan, South Korea and Taiwan build counts toward your requirement, and what is at risk if a crisis cuts them off.',next:1},
- {p:'abroad',sel:'#view .alc',t:'One ally',x:'What it builds now and its share of the allied total, and the deals you can strike for more.',next:1},
  // Stocks & needs
  {p:'stocks',...NAV('arsenal','Stocks & needs')},
  {p:'stocks',sel:'#view .acard',t:'Could you fight?',x:'Output is one thing; what you hold is another. This tests whether your stocks and production would sustain the campaign, against the enemy’s.',next:1},
@@ -3460,14 +3472,14 @@ const TUT=[
  {p:'turn',sel:'.turnbtn',t:'Play your first turn',x:'<b>Press Next turn.</b> It plays two months, and stops for anything that needs you.',wait:()=>S.turnEnd!=null||S.trnRep},
  {p:'turn',dyn:1,wait:()=>S.modal==='turn'},
  {p:'turn',sel:'#ov .yrp',t:'The turn report',x:'What changed in the last two months, and what is coming in the next.',next:1},
- {p:'turn',t:'You have the controls',x:'That is the whole loop: find what holds output back, start programs, push reforms, play turns. For the rest of your first year, a tip explains each new thing the first time it appears. Every tab has a <b>Tour</b> button on its title line if you want its part again.',next:'Finish'}];
-const TUT_PN={cmd:'Command',bn:'Supply chain',ndaa:'NDAA',policy:'Rules & policy',abroad:'Abroad',stocks:'Stocks & needs',src:'Sources',turn:'Your first turn'};
+ {p:'turn',t:'You have the controls',x:'That is the whole loop: find what holds output back, start programs, push reforms, play turns. For the rest of your first year, a tip explains each new thing the first time it appears. Any tab you skipped gets its tour the first time you open it, and every tab has a <b>Tour this tab</b> button on its title line.',next:'Finish'}];
+const TUT_PN={cmd:'Command',bn:'Supply chain',abroad:'Abroad',ndaa:'NDAA',policy:'Rules & policy',stocks:'Stocks & needs',src:'Sources',turn:'Your first turn'};
 const TUT_PARTS=Object.keys(TUT_PN).map(k=>({k,n:TUT_PN[k],i:TUT.findIndex(x=>x.p===k)}));
 const VIEW_PART={cmd:'cmd',bn:'bn',flow:'bn',ndaa:'ndaa',policy:'policy',rules:'policy',imports:'abroad',allies:'abroad',arsenal:'stocks',rec:'stocks',src:'src'};
-const PART_VIEW={bn:'bn',ndaa:'ndaa',policy:'policy',abroad:'imports',stocks:'arsenal',src:'src'};
+const PART_VIEW={bn:'flow',ndaa:'ndaa',policy:'policy',abroad:'imports',stocks:'arsenal',src:'src'};
 function tutPart(i){const p=TUT[i]?.p,k=TUT_PARTS.findIndex(x=>x.k===p);const nx=S.tut?.solo?null:TUT_PARTS[k+1]||null;return {n:TUT_PN[p]||'',next:nx?{i:nx.i,to:nx.k==='turn'?'your first turn':nx.n}:null}}
 // a tab's own tour: its part alone, from the first view of the tab, without the steps that need the full tutorial
-function tourStart(v){const k=VIEW_PART[v];if(!k||k==='cmd')return;const i0=TUT.findIndex(x=>x.p===k&&!x.nav);let i1=i0;while(TUT[i1+1]&&TUT[i1+1].p===k)i1++;
+function tourStart(v){const k=VIEW_PART[v];if(!k||k==='cmd')return;(S.toured=S.toured||{})[k]=1;const i0=TUT.findIndex(x=>x.p===k&&!x.nav);let i1=i0;while(TUT[i1+1]&&TUT[i1+1].p===k)i1++;
   S.view=PART_VIEW[k];S.modal=null;S.tut={i:i0,end:i1,solo:1,sc:-1}}
 const tutOn=()=>S&&S.tut&&!S.over;
 function tutStep(){if(!tutOn())return null;let i=S.tut.i;
@@ -3489,9 +3501,10 @@ const TIPS=[
  {id:'year',when:()=>S.modal==='year'&&document.querySelector('#ov .yrp'),sel:'#ov .yrp',t:'The year in review',x:'A year of output against China, what changed in law, plants that started producing, and what the year ahead holds.'},
  {id:'mid',when:()=>S.modal==='scenMid',sel:'#ov .paper',t:'The 2030 checkpoint',x:'Your halfway floors and the campaign test are judged today. The real targets come in January 2035.'}];
 function tipNow(){if(!S||S.histMode||!S.tips||S.tut||S.w>PLAY0+60)return null;const seen=S.tipSeen=S.tipSeen||{};return TIPS.find(t=>!seen[t.id]&&t.when())||null}
-function tutTick(){const tip=tutOn()?null:tipNow();
+function tourAuto(){if(!S||S.tut||!S.tourAuto||S.tips===0||S.modal||S.queue.length||S.over||S.histMode)return;const k=VIEW_PART[S.view];if(k&&k!=='cmd'&&!(S.toured||{})[k]){tourStart(S.view);render()}}
+function tutTick(){tourAuto();const tip=tutOn()?null:tipNow();
   if(!tutOn()&&!tip){const el=document.getElementById('tut');if(el)el.remove();return}
-  let st;if(tip)st={...tip,tip:1};else{st=tutStep();if(!st){S.tut=null;render();tutTick();return}if(st.wait&&st.wait()){S.tut.i++;S.tut.sc=-1;if(S.tut.end!=null&&S.tut.i>S.tut.end)S.tut=null;render();return}}
+  let st;if(tip)st={...tip,tip:1};else{st=tutStep();if(!st){S.tut=null;render();tutTick();return}if(!S.tut.solo){const cp=TUT[S.tut.i]?.p;if(S.tut.cp&&S.tut.cp!==cp&&S.tut.skipP!==S.tut.cp)(S.toured=S.toured||{})[S.tut.cp]=1;S.tut.cp=cp}if(st.wait&&st.wait()){S.tut.i++;S.tut.sc=-1;if(S.tut.end!=null&&S.tut.i>S.tut.end)S.tut=null;render();return}}
   let el=document.getElementById('tut');if(!el){el=document.createElement('div');el.id='tut';el.innerHTML='<div class="tut-hole"></div><div class="tut-box"></div>';document.body.appendChild(el)}
   el.classList.toggle('tut-soft',!!st.tip);
   const hole=el.firstChild,box=el.lastChild,tg=typeof st.sel==='function'?st.sel():st.sel?document.querySelector(st.sel):null,n=TUT.length;
@@ -4162,8 +4175,8 @@ function bnBody(){
   const cov={};for(const r of rows0)cov[r.id]=bnCover(r,P);const nowRank={};rows0.forEach((r,i)=>nowRank[r.id]=i+1);
   // two orders: what costs output today, or what still costs it once everything under way has landed
   const rows=open?rows0.slice().sort((a,b)=>(cov[b.id].remP>=.5)-(cov[a.id].remP>=.5)||b.score*cov[b.id].share-a.score*cov[a.id].share||b.score-a.score):rows0;
-  let h=`<div class="bnsort"><span class="mini">Rank by</span><button class="pbtn sm ${open?'':'on'}" data-a="bnsort" data-v="now">Today’s cost</button><button class="pbtn sm ${open?'on':''}" data-a="bnsort" data-v="open">What has no fix yet</button>
-   <span class="mini">${open?'The output each one would still cost once every program and plant under way has landed. Items fully covered sink to the bottom, though they still cost output until the fixes arrive.':`The output each one costs you today, whatever is under way. Line-by-line gaps against ${RV().n}: <span class="linkn" data-a="home">🏛 The Race on Command →</span>`}</span></div>`;
+  let h=`<div class="bnsort"><span class="bnsl">Rank shortages by</span><button class="bnopt ${open?'':'on'}" data-a="bnsort" data-v="now"><b>Output lost today</b><em>What each shortage costs you right now</em></button><button class="bnopt ${open?'on':''}" data-a="bnsort" data-v="open"><b>Output lost after current fixes</b><em>What it will still cost once the programs you have started land</em></button>
+   <span class="mini">${open?'Shortages your programs already cover sink to the bottom (they still cost output until the fixes arrive); the ones at the top need a new decision from you.':`The output each one costs you today, whatever is under way. Line-by-line gaps against ${RV().n}: <span class="linkn" data-a="home">🏛 The Race on Command →</span>`}</span></div>`;
   if(!rows.length)return h+'<p>No material or component is short right now. Every line is limited by its own capacity: see <span class="linkn" data-a="home">The Race</span>.</p>';
   h+=`<div class="sleg" style="margin:8px 0 4px">${CAUSES.map(([k,n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')}</div>`;
   h+=rows.map((r,ix)=>{const id=r.id,n=ND[id],p=P[id],st=nodeStatus(p),tot=Object.values(r.causes).reduce((a,b)=>a+b,0)||1;
@@ -5216,10 +5229,13 @@ const VIEWS=[['cmd','Command'],['bn','Supply chain'],['imports','Abroad'],['ndaa
 const VGROUPS=[['cmd'],['bn','flow'],['imports','allies'],['ndaa'],['policy','rules'],['arsenal','rec'],['src']];
 const SUBN={bn:'Bottlenecks',flow:'Supply flows',imports:'Raw material imports',allies:'Allies',policy:'Policy actions',rules:'Laws in force & permits',arsenal:'Stocks & needs',rec:'The record'};
 const vGroup=v=>VGROUPS.find(g=>g.includes(v==='permits'?'rules':v==='fac'||v==='pipe'||v==='ready'?'arsenal':v))||[v];
-const vSubStrip=()=>{const g=vGroup(S.view);return g.length<2?'':`<div class="seg vsub">${g.map(v=>`<button class="${S.view===v?'on':''}" data-a="view" data-v="${v}"><span>${SUBN[v]}</span></button>`).join('')}</div>`};
+const VDEF={bn:'flow'},SUBORD={bn:['flow','bn']};
+const SUBD={flow:'How raw materials move through four tiers of suppliers into each weapon',bn:'The inputs costing you the most output, and what would fix each one',imports:'Where each raw material comes from, and Beijing\u2019s export controls',allies:'What Japan, South Korea and Taiwan build, and the deals you can strike',policy:'Executive actions, emergency powers and stand-alone bills',rules:'The laws in force, how each process works, and the permit docket',arsenal:'Whether your stocks and production would sustain the campaign',rec:'Everything that has changed since you took over'};
+const vSubStrip=()=>{const g=vGroup(S.view);if(g.length<2)return '';const ord=SUBORD[g[0]]||g;
+  return `<div class="vsub vsubbar">${ord.map(v=>`<button class="${S.view===v?'on':''}" data-a="view" data-v="${v}"><span class="vsi">${VIC[v]?vic(v,22):''}</span><span class="vst"><b>${SUBN[v]}</b><em>${SUBD[v]||''}</em></span></button>`).join('')}</div>`};
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
-function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>{const g=vGroup(k),on=g.includes(S.view);return `<button class="vbtn ${on?'on':''}" data-a="view" data-v="${on?S.view:(S.vlast?.[k]&&g.includes(S.vlast[k])?S.vlast[k]:k)}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`}).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">${vic('find')}Find</button></div>`}
+function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>{const g=vGroup(k),on=g.includes(S.view);return `<button class="vbtn ${on?'on':''}" data-a="view" data-g="${k}" data-v="${on?S.view:(S.vlast?.[k]&&g.includes(S.vlast[k])?S.vlast[k]:VDEF[k]||k)}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`}).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">${vic('find')}Find</button></div>`}
 function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   const foreign=id=>{const x=srcSplit(id,P),t=x.dom+x.ally+x.neut+x.spot+x.prc;return t>1e-9?(x.ally+x.neut+x.spot+x.prc)/t:0};
   const keep=id=>f==='all'||(f==='short'&&P[id].need>1e-6&&P[id].cover<.999)||(f==='foreign'&&foreign(id)>.5)||(f==='barred'&&!!allyBar(id));
@@ -5252,7 +5268,8 @@ function flowBody(){
 function viewHTML(){
   const T={allies:['🤝','Allies','who builds alongside you, what counts toward your requirement, the deals you can strike, and what hits them at home'],imports:['🌍','Raw material imports','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA & Congress':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The Record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['⚖','Rulebook','the laws in force, how each process works, and every permit your plants hold'],policy:['🖋','Policy','executive actions, emergency powers and stand-alone bills'],src:['📚','Sources & Assumptions',CITES.length+' citations'],flow:['⇶','Supply flows','this week\'s flows, from raw sources to end items'],arsenal:['📈','Stocks & Needs','projections hold today\'s production constant; the enemy keeps growing'],pipe:['🏗','Production Pipeline','what\'s coming, what\'s stuck, what\'s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
   const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?(S.view='rules',S.rbTab='docket',rulesBody()):S.view==='bn'?bnBody():S.view==='rules'?rulesBody():S.view==='src'?srcBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='allies'?alliesBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML('ndaa')}</div></div>`:S.view==='policy'?policyBody():S.view==='pipe'?facBody():readyBody();
-  return `<div class="vhead"><span class="ic">${VIC[S.view]?vic(S.view,22):T[0]}</span><b>${T[1]}</b><span class="mini">${fmtDate(S.w)} · ${T[2]}</span><span class="dsp"></span>${VIEW_PART[S.view]&&VIEW_PART[S.view]!=='cmd'&&!S.tut?`<button class="vtour" data-a="tour" data-tip="A guided tour of this tab\u2019s parts.">🎓 Tour this tab</button>`:''}${vSubStrip()}${!['flow','src','rules','bn','permits','fac','rec','ndaa','policy','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
+  const grp=vGroup(S.view),gN=grp.length>1?(VIEWS.find(x=>x[0]===grp[0])||[])[1]:null;
+  return `<div class="vhead${gN?' vhead2':''}"><span class="ic">${gN?vic(grp[0],22):VIC[S.view]?vic(S.view,22):T[0]}</span><b>${gN||T[1]}</b><span class="mini">${fmtDate(S.w)}${gN?'':' · '+T[2]}</span><span class="dsp"></span>${VIEW_PART[S.view]&&VIEW_PART[S.view]!=='cmd'&&!S.tut?`<button class="vtour" data-a="tour" data-tip="A guided tour of this tab\u2019s parts.">🎓 Tour this tab</button>`:''}${vSubStrip()}${!['flow','src','rules','bn','permits','fac','rec','ndaa','policy','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
 function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 function mountView(st0){
@@ -6261,7 +6278,7 @@ document.addEventListener('pointerdown',e=>{
   if(a==='tsel'&&!S){TSEL=b.dataset.s;renderTitle();return}
   if(a==='tpace'&&!S){TPACE=b.dataset.m;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
-  if(a==='ttut'){clearSave();newGame('US');S.sandbox=false;S.modal=null;S.queue=[];chooseScen('taiwan');S.modal=null;S.view='cmd';S.tut={i:0,sc:-1};render();saveGame();return}
+  if(a==='ttut'){clearSave();newGame('US');S.sandbox=false;S.modal=null;S.queue=[];chooseScen('taiwan');S.modal=null;S.view='cmd';S.tut={i:0,sc:-1};S.tourAuto=1;S.toured={};render();saveGame();return}
   if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];if(TSEL==='open')S.scenSkip=true;else chooseScen(TSEL);sbxFill();render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
@@ -6279,8 +6296,8 @@ document.addEventListener('pointerdown',e=>{
     case 'tour':tourStart(S.view);break;
     case 'tipgot':(S.tipSeen=S.tipSeen||{})[b.dataset.t]=1;break;
     case 'tipsoff':S.tips=0;break;
-    case 'tutskip':if(S.tut&&!S.tut.solo)S.tips=1;S.tut=null;break;
-    case 'tutpart':if(S.tut){const nx=tutPart(S.tut.i).next;if(nx){S.tut.i=nx.i;S.tut.sc=-1;if(!S.queue.length&&S.modal!=='turn'){S.modal=null;S.pvBack=null;S.ct=null;S.navBack=[]}}}break;
+    case 'tutskip':if(S.tut){const k=VIEW_PART[S.view];if(k)(S.toured=S.toured||{})[k]=1;if(!S.tut.solo)S.tips=1}S.tut=null;break;
+    case 'tutpart':if(S.tut){S.tut.skipP=TUT[S.tut.i]?.p;const nx=tutPart(S.tut.i).next;if(nx){S.tut.i=nx.i;S.tut.sc=-1;if(!S.queue.length&&S.modal!=='turn'){S.modal=null;S.pvBack=null;S.ct=null;S.navBack=[]}}}break;
     case 'turnmode':S.turnMode=S.turnMode===false;S.speed=0;S.turnEnd=null;break;
     case 'ap':S.autoPause=!S.autoPause;break;
     case 'tab':S.tab=b.dataset.t==='bott'?'bott':+b.dataset.t;S.view='cmd';if(S.modal&&S.modal!=='end'&&!S.queue.length)S.modal=null;break;
@@ -6391,7 +6408,7 @@ document.addEventListener('keydown',e=>{
   if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();navBackG();render();return}
   if(e.code==='Space'&&TURN()){e.preventDefault();if(S.speed)S.speed=0;else turnGo();render();return}
   if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed&&!LIVE_M.has(S.modal))S.modal=S.modal==='end'?S.modal:null;render()}
-  else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VGROUPS.findIndex(g=>g.includes(S.view||'cmd'));S.view=VGROUPS[(i+(e.shiftKey?VGROUPS.length-1:1))%VGROUPS.length][0];render()}
+  else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VGROUPS.findIndex(g=>g.includes(S.view||'cmd'));{const g0=VGROUPS[(i+(e.shiftKey?VGROUPS.length-1:1))%VGROUPS.length][0];S.view=VDEF[g0]||g0}render()}
   else if('1234'.includes(e.key)&&TURN()){S.tspd=+e.key;if(S.speed)S.speed=S.tspd;render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
   else if(e.key==='Escape'&&S._rcpt&&!S._rcpt.gone&&performance.now()-S._rcpt.t0<RCPT_MS){S._rcpt.gone=true;renderReceipt()}
