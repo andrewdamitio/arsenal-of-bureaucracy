@@ -887,6 +887,12 @@ svg.cch{cursor:crosshair}
 @media(max-width:860px){.ti-how{grid-template-columns:1fr 1fr}.ti-quick,.ti-mand,.ti-two,.ti-rads{grid-template-columns:1fr}.ti-mdet ul{columns:1}}
 /* tutorial box */
 .tut-box{width:390px}.tut-b{flex-wrap:wrap}.tut-part{border:1px solid #a8925a;border-radius:4px;background:#fbf7ec;color:#3a3020;font:600 12.5px "Segoe UI",system-ui,sans-serif;padding:5px 10px;cursor:pointer}.tut-part:hover{background:#efe3c4}
+/* welcome note: part of the dark page, not a paper card */
+#title.ti2 .ti-welcome{background:none;border:0;border-radius:0;padding:4px 0 18px;margin:0 auto 18px;max-width:1000px;text-align:center;color:#cfc6ad;border-bottom:1px solid var(--line)}
+#title.ti2 .ti-welcome p{font:italic 16.5px/1.6 Georgia,serif;color:#d8cfb4;margin:0 auto 14px;max-width:880px}
+#title.ti2 .ti-how{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 14px;font:13px "Segoe UI",system-ui,sans-serif;color:#b9b19a}
+#title.ti2 .ti-how span{display:inline;padding:0;background:none;border:0;color:#c9c0a6!important;font-size:13px;white-space:nowrap}#title.ti2 .ti-how b{font:700 11.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--brass2);margin-right:5px}
+#title.ti2 .ti-how i{width:4px;height:4px;border-radius:50%;background:#6b6450}
 </style>
 </head>
 <body>
@@ -5245,8 +5251,8 @@ function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k=
   const rad=(a,attr,on,n,d)=>`<button class="ti-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
   const step=(k,n,d)=>`<div class="ti-step"><span class="ti-num">${k}</span><div><b>${n}</b><em>${d}</em></div></div>`;
   app.innerHTML=cz(`<div id="title" class="ti2"><div class="ti-head"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="ti-tag">Rebuilding the US defense industrial base, January 2027 to 2037</div></div>
-   <div class="ti-welcome"><p><b>Welcome.</b> You run the effort to rearm the United States. China and Russia are out-producing the US in munitions, ships and missiles. You must close the gap with an industrial base that has withered, suppliers that move slowly, and critical minerals that come from the same rivals you are racing.</p>
-     <div class="ti-how"><div><b>Find</b><span>what holds each weapon's output back</span></div><div><b>Build</b><span>plants, allied deals and stockpiles</span></div><div><b>Reform</b><span>the rules that slow them down</span></div><div><b>Play</b><span>two months at a time, to 2037</span></div></div></div>
+   <div class="ti-welcome"><p>January 2027. China and Russia out-produce the United States in munitions, ships and missiles. You inherit an industrial base that has withered, suppliers that move slowly, and critical minerals that come from the rivals you are racing.</p>
+     <div class="ti-how"><span><b>Find</b> what holds output back</span><i></i><span><b>Build</b> plants, deals and stockpiles</span><i></i><span><b>Reform</b> the rules that slow them</span><i></i><span><b>Play</b> two months at a time, to 2037</span></div></div>
    <div class="ti-quick ${sv?'':'one'}">
      ${sv?`<button class="ti-qs" data-a="tcont"><span class="ti-qi">▶</span><span class="ti-qt"><b>Continue your game</b><em>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'} · ${fmtDate(sv.w)} · ${sv.sandbox?'Sandbox':'Standard'} · saved ${agoT}</em></span><span class="ti-c2go">Continue ›</span></button>`:''}
      <button class="ti-qs" data-a="ttut"><span class="ti-qi">🎓</span><span class="ti-qt"><b>Play the tutorial</b><em>A guided tour of every screen, your first program and your first turn. It uses one scenario only: the Taiwan Window, against China. About ten minutes.</em></span><span class="ti-c2go">Start ›</span></button>
