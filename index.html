@@ -641,6 +641,14 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+#tut{position:fixed;inset:0;z-index:70;pointer-events:none}#tut.tut-center{background:rgba(0,0,0,.6)}
+.tut-hole{position:fixed;border:2px solid #ffd27a;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 18px rgba(255,210,122,.6);transition:all .2s}
+.tut-box{position:fixed;width:360px;pointer-events:auto;background:var(--paper) linear-gradient(#f5eedb,#e9dfc4);color:#2b241a;border:1px solid #a8925a;border-left:4px solid #b8860b;border-radius:5px;padding:12px 14px;box-shadow:0 12px 34px rgba(0,0,0,.6);font:13.5px/1.5 "Segoe UI",system-ui,sans-serif}
+.tut-n{font:700 10.5px "Segoe UI";letter-spacing:.08em;text-transform:uppercase;color:#8a7850;margin-bottom:3px}.tut-box>b{font:700 17px Georgia,serif;display:block;margin-bottom:4px}.tut-box p{margin:0 0 10px}
+.tut-b{display:flex;align-items:center;gap:8px}.tut-skip{margin-right:auto;border:0;background:none;color:#8a7850;cursor:pointer;font:12px "Segoe UI";text-decoration:underline}
+.tut-next{border:0;border-radius:4px;background:#3a3020;color:#f3dc9a;font:700 13px "Segoe UI";padding:6px 16px;cursor:pointer}.tut-next:hover{background:#4d4029}
+.ti-tut{display:flex;align-items:center;gap:14px;width:100%;max-width:920px;margin:0 auto 20px;padding:14px 18px;background:#2a2c20;border:1px solid #b8860b;border-radius:6px;cursor:pointer;color:#e6dcc2;text-align:left;font:14px/1.5 "Segoe UI",system-ui,sans-serif}.ti-tut:hover{background:#34372a}
+.ti-tuti{font-size:30px}.ti-tut b{display:block;font:700 18px Georgia,serif;color:#ffd27a}.ti-tut em{font-style:normal;color:#c9c0a6;font-size:13px}.ti-tut .ti-c2go{margin:0 0 0 auto;white-space:nowrap}
 #guide{position:fixed;left:14px;bottom:14px;z-index:45;width:330px;background:var(--paper) linear-gradient(#f3ebd6,#e9dfc4);color:#2b241a;border:1px solid #a8925a;border-left:4px solid #b8860b;border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.55);font:13px/1.45 "Segoe UI",system-ui,sans-serif}
 #guide .gh{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #cbbd95}#guide .gh b{font:700 15px Georgia,serif}#guide .gh span{font-size:12px;color:#6b5a35;margin-right:auto}
 #guide .gx{border:0;background:none;cursor:pointer;color:#6b5a35;font-size:14px;padding:0 4px}#guide.gmin .gh{border-bottom:0}
@@ -3302,20 +3310,59 @@ function decList(){const L=[];
   for(const pl of S.plants){const o=pl.issue;if(o&&!o.wait)L.push({a:'prog',d:`data-u="${pl.uid}"`,ic:'⚠',t:OPSD[o.id].n,sub:pl.nm,due:o.due})}
   return L.sort((a,b)=>dLeft(a.due)-dLeft(b.due))}
 // open the first waiting decision, as if its card were clicked
-// ---- guided first year
-const GUIDE=[
- {id:'stand',n:'See where you stand',t:'Stocks & needs shows each end item against what the plan requires, now and projected to 2037. The gap is what you are closing.',go:['view','arsenal'],done:()=>S.gseen?.arsenal},
- {id:'bn',n:'Find what holds output back',t:'Supply chain → Bottlenecks ranks the items that cost you the most output today, why each is short, and what is already under way.',go:['view','bn'],done:()=>S.gseen?.bn},
- {id:'start',n:'Start a program',t:'Open an item, press Look closer on an option to see what it adds year by year, then start it. Plants take years: funding, contract, permits, construction, qualification.',go:['view','bn'],done:()=>S.projects.some(p=>!p.inh&&!p.pkg)||S.done.some(x=>!x.inh)},
- {id:'ndaa',n:'Use the NDAA',t:'Congress votes on the bill every December. Request plants for Congress to pay for, more orders where lines have capacity nobody ordered, and reforms that ride the bill.',go:['view','ndaa'],done:()=>pkgItems().length||ordReqs().length||refReqs().length||(S.ndsReq||[]).length||(S.bills||[]).length},
- {id:'rules',n:'Change the rules',t:'Reforms decide whether plants arrive in time. Adopt an executive action on Rules & policy, or put a reform in the NDAA; the Rulebook shows what each process costs today.',go:['view','policy'],done:()=>(S.lawLog||[]).length||refReqs().length||S.bill},
- {id:'turn',n:'Play a turn',t:'Next turn, top right, plays two months. Time stops for every decision, and nothing is decided for you. The turn report says what changed and what is coming.',go:null,done:()=>S.trnRep||S.w>=PLAY0+10},
- {id:'decide',n:'Make a decision',t:'When a program is stuck, choose how to get past it. Each way trades time against Political Capital, money and risk; Look closer on any option shows its effect first.',go:null,done:()=>(S.decN?.you||0)>0}];
-function guideHTML(){if(!S||S.histMode||S.replay||S.over||S.guideOff||S.w>PLAY0+60)return '';const st=GUIDE.map(g=>({...g,ok:!!g.done()})),n=st.filter(x=>x.ok).length;
-  if(n===st.length){return `<div id="guide" class="gdone"><b>First year: done</b><span>You have used every part of the game. The guide steps aside.</span><button class="pbtn sm" data-a="goff">Close</button></div>`}
-  const nx=st.findIndex(x=>!x.ok),min=S.guideMin;
-  return `<div id="guide" class="${min?'gmin':''}"><div class="gh"><b>Your first year</b><span>${n} of ${st.length}</span><button class="gx" data-a="gmin" title="${min?'Show':'Hide'} the guide">${min?'▴':'▾'}</button><button class="gx" data-a="goff" title="Turn the guide off">✕</button></div>
-   ${min?'':`<ol>${st.map((g,i)=>`<li class="${g.ok?'ok':i===nx?'nx':''}"><span class="gk">${g.ok?'✓':i+1}</span><div><b>${g.n}</b>${i===nx?`<p>${g.t}</p>${g.go?`<button class="pbtn sm primary" data-a="gshow" data-v="${g.go[1]}">Show me ›</button>`:''}`:''}</div></li>`).join('')}</ol>`}</div>`}
+// ---- the tutorial: chosen on the title screen. A spotlight walks through each screen in order and waits for each action it asks for.
+const TUT=[
+ {t:'Welcome to the arsenal',x:'You run the effort to rearm the United States from January 2027. This tutorial shows each screen in turn, has you start a first program, and plays your first turn. Nothing moves until you press <b>Next turn</b>, near the end. You can skip it at any time.',next:1},
+ {sel:'#top',t:'The top bar',x:'Your standing at a glance. <b>Sufficiency</b>: you and your allies against what the plan requires. <b>Political Capital</b>: earned every week, spent on NDAA requests, reforms and rules. <b>Budget</b>: what you can spend on plants without asking Congress. Then the NDAA request, decisions waiting, lines short, and Chinese and Russian content. <b>Menu</b> saves, loads and starts over.',next:1},
+ {sel:'.sc-card',t:'Your mandate',x:'The Taiwan Window gives you targets drawn from public goals. In January 2030 you are judged on halfway floors and a campaign test; in January 2035 on the real targets.',next:1},
+ {sel:'#rc-interceptors',t:'One end item',x:'Each card is one line. Blue is what you make, hatched is capacity on order, green is allies, red is China, and the yellow mark is the requirement. <b>Limits, lowest first</b> shows what stops output today, and when the fix under way lands.',next:1},
+ {sel:'#supply',t:'The supply chain',x:'Every line that is short, and the input at the root of it; then the inputs worst covered. Everything here is a link to its page.',next:1},
+ {sel:'#right',t:'Programs under way',x:'Plants, deals and upgrades already started, inherited from before 2027. Each passes through funding, contract, permits, construction and qualification. The tabs above hold your factories and the home front.',next:1},
+ {sel:'#views [data-v="bn"]',t:'The tabs',x:'Seven tabs hold the rest of the game. <b>Click Supply chain.</b>',wait:()=>S.view==='bn'},
+ {sel:'#view .bncard',t:'Bottlenecks',x:'The inputs costing you the most output, ranked. Each card says why it is short, what is already being done, and what you could do. The switch on the title line opens Supply flows, a diagram of the whole chain.',next:1},
+ {sel:'#view .bncard .bnhd .linkn',t:'Open an item',x:'Every item has its own page. <b>Click the name of the top bottleneck.</b>',wait:()=>S.modal==='node'},
+ {sel:'#ov .ceilsec',t:'What holds output back',x:'Output is held to the lowest of its ceilings: factory capacity, the workers to run it, and the materials its inputs allow. Solid lines happened; dashed lines are expected. Numbered markers are programs and when they land. <b>Hover the chart</b> for any month.',next:1},
+ {sel:'#ov .raise',t:'Ways to raise it',x:'The best options for this item, and below them every option grouped by the ceiling it lifts. <b>Look closer</b> shows what one would do before you commit.',next:1},
+ {sel:'#ov .rcard [data-a="pvopen"]',t:'Look before you commit',x:'<b>Press Look closer</b> on the first option.',wait:()=>S.modal==='pv'},
+ {sel:'#ov .pvimp',t:'What it would do',x:'Your game is played forward to 2037 with and without this option. The table gives each end item a year: the requirement, the status quo, with this, and the change. If nothing changes, it says what holds the line back instead.',next:1},
+ {sel:'#ov .pvwin .ft [data-a="launch"]',t:'Start it',x:'<b>Press the button to start it.</b> A new plant first asks who builds it and on what terms.',wait:()=>S.modal==='contract'||S.projects.some(p=>!p.inh)},
+ {sel:'#ov .ctp',skip:()=>S.projects.some(p=>!p.inh),t:'The award',x:'Choose who builds it and the contract terms; each trades price against speed and risk. Then pay: <b>Build now</b> from your budget, or <b>Request it</b> in the NDAA for Political Capital and let Congress pay. <b>Choose one.</b>',wait:()=>S.projects.some(p=>!p.inh)},
+ {t:'Your first program',x:'It is under way. Its page shows progress stage by stage, a docket of every step, and the builder’s commitment. <b>Close the windows</b> (✕ or Esc) to go on.',wait:()=>!S.modal},
+ {sel:'#views [data-v="ndaa"]',t:'Congress',x:'<b>Click NDAA.</b>',wait:()=>S.view==='ndaa'},
+ {sel:'#view .bltop',t:'The annual bill',x:'Congress votes every December. What you request, Congress pays for, funded top to bottom until its money runs out; markup cuts some anyway. Your <b>standing with the committees</b> rises when funded programs deliver and lowers the cut risk.',next:1},
+ {sel:'#view .ndaaref',t:'Reforms in the NDAA',x:'Defense law rides the bill: add a reform to the request and it is decided in December. Reforms are what make plants arrive in time.',next:1},
+ {sel:'#views [data-v="policy"]',t:'Rules & policy',x:'<b>Click Rules & policy.</b>',wait:()=>S.view==='policy'},
+ {sel:'#view .polv',t:'Policy',x:'Executive actions switch on or off for Political Capital, fast but reversible. Stand-alone bills go to the floor one at a time. Emergency powers are quick and temporary, and courts can strike them down. The switch on the title line shows the laws in force and every permit.',next:1},
+ {sel:'#views [data-v="imports"]',t:'Abroad',x:'<b>Click Abroad.</b>',wait:()=>S.view==='imports'},
+ {sel:'#view .cnp',t:'Beijing’s export controls',x:'China climbs a ladder of export controls as pressure builds. Each step cuts a mineral you depend on. Below, where US imports of each raw material come from; the switch on the title line shows your allies.',next:1},
+ {sel:'#views [data-v="arsenal"]',t:'Stocks & needs',x:'<b>Click Stocks & needs.</b>',wait:()=>S.view==='arsenal'},
+ {sel:'#view .acard',t:'Could you fight?',x:'Output is one thing; what you hold is another. This tests whether your stocks and production would sustain the campaign. The switch on the title line opens the Record: the bill and what each reform was worth.',next:1},
+ {sel:'#views [data-v="cmd"]',t:'Back to Command',x:'<b>Click Command.</b>',wait:()=>S.view==='cmd'},
+ {sel:'.turnbtn',t:'Play your first turn',x:'<b>Press Next turn.</b> It plays two months, and stops for anything that needs you.',wait:()=>S.turnEnd!=null||S.trnRep},
+ {dyn:1,wait:()=>S.modal==='turn'},
+ {sel:'#ov .yrp',t:'The turn report',x:'What changed in the last two months, and what is coming in the next: the NDAA vote, checkpoints, programs due to finish.',next:1},
+ {t:'You have the controls',x:'That is the whole loop: find what holds output back, start programs, push reforms, play turns. Your first year ends with the NDAA vote in December. Good luck.',next:'Finish'}];
+// the step during the turn changes with what is on screen
+function tutDyn(){if(S.queue.length&&document.querySelector('#ov .evp'))return {sel:'#ov .evp',t:'News that needs you',x:'Events stop the clock. The chart plays each choice a year ahead on a copy of your game; the table shows each choice’s average, what it costs most, and the Political Capital and strain it leaves. <b>Choose one</b>, then Continue.'};
+  if(decisionsPending()&&document.getElementById('decbar'))return {sel:'#decbar',t:'A decision is waiting',x:'A program is stuck. The turn waits until you decide; nothing is decided for you. <b>Open it and choose</b> how to get past it.'};
+  if(S.modal==='prog')return {sel:'#ov .obs',t:'Getting past a problem',x:'Each way trades time against Political Capital, money and risk, and says what it does. <b>Choose one.</b>'};
+  return {sel:'.turnbtn',t:'The turn is playing',x:'Wait for the turn report, or press the button to continue if the turn has paused.'}}
+const tutOn=()=>S&&S.tut&&!S.over;
+function tutStep(){if(!tutOn())return null;let i=S.tut.i;while(TUT[i]&&TUT[i].skip&&TUT[i].skip())i=++S.tut.i;const st=TUT[i];if(!st)return null;return st.dyn?{...st,...tutDyn()}:st}
+function tutTick(){if(!tutOn()){const el=document.getElementById('tut');if(el)el.remove();return}
+  const st=tutStep();if(!st){S.tut=null;tutTick();return}
+  if(st.wait&&st.wait()){S.tut.i++;S.tut.sc=-1;if(S)render();return}
+  let el=document.getElementById('tut');if(!el){el=document.createElement('div');el.id='tut';el.innerHTML='<div class="tut-hole"></div><div class="tut-box"></div>';document.body.appendChild(el)}
+  const hole=el.firstChild,box=el.lastChild,tg=st.sel?document.querySelector(st.sel):null,n=TUT.length;
+  if(tg&&S.tut.sc!==S.tut.i){S.tut.sc=S.tut.i;try{tg.scrollIntoView({block:'center',inline:'nearest'})}catch(e){}}
+  const key=S.tut.i+'|'+st.t;if(box.dataset.k!==key){box.dataset.k=key;box.innerHTML=`<div class="tut-n">Tutorial · ${Math.min(S.tut.i+1,n)} of ${n}</div><b>${st.t}</b><p>${st.x}</p><div class="tut-b"><button class="tut-skip" data-a="tutskip">Skip tutorial</button>${st.next?`<button class="tut-next" data-a="tutnext">${st.next===1?'Next ›':st.next}</button>`:''}</div>`}
+  const vw=innerWidth,vh=innerHeight,bw=box.offsetWidth||360,bh=box.offsetHeight||160;
+  if(tg){const r=tg.getBoundingClientRect(),p=6,x0=Math.max(4,r.left-p),y0=Math.max(4,r.top-p),x1=Math.min(vw-4,r.right+p),y1=Math.min(vh-4,r.bottom+p);
+    el.classList.remove('tut-center');hole.style.cssText=`left:${x0}px;top:${y0}px;width:${Math.max(0,x1-x0)}px;height:${Math.max(0,y1-y0)}px`;
+    let L,T;if(y1+12+bh<vh){T=y1+12;L=r.left}else if(y0-12-bh>0){T=y0-12-bh;L=r.left}else if(x1+12+bw<vw){L=x1+12;T=r.top}else if(x0-12-bw>0){L=x0-12-bw;T=r.top}else{L=vw-bw-20;T=vh-bh-20}
+    box.style.left=Math.max(10,Math.min(vw-bw-10,L))+'px';box.style.top=Math.max(10,Math.min(vh-bh-10,T))+'px'}
+  else{el.classList.add('tut-center');hole.style.cssText='display:none';box.style.left=Math.round((vw-bw)/2)+'px';box.style.top=Math.round((vh-bh)/2)+'px'}}
+setInterval(tutTick,250);addEventListener('resize',tutTick);addEventListener('scroll',tutTick,true);
 function decOpenFirst(){if(S.modal||S.queue.length)return;const x=decList()[0];if(!x)return;const v=(x.d.match(/="([^"]*)"/)||[])[1];
   if(x.a==='prog'){S.modal='prog';S.selP=v;S.progBack=null}else if(x.a==='evdo'){const it=(S.inbox||[]).find(y=>y.ev===v);S.inbox=(S.inbox||[]).filter(y=>y.ev!==v);S.queue.unshift({ev:v,fxDone:1,due:it?.due})}}
 function decBar(){const L=decList();if(!L.length)return '';
@@ -3565,7 +3612,7 @@ function turnEndW(w=S.w){const d=dateOf(w+2);let y=d.getFullYear(),m=TURN_M.find
 function turnLabel(w=S.w){w=Math.round((w+turnEndW(w))/2);const d=dateOf(w),m=d.getMonth()-d.getMonth()%2;return `${MON[m]}–${MON[m+1]} ${d.getFullYear()}`}
 function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)out[c]=R.out[c].yr;
   return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
-function turnGo(){if(!TURN()||S.over)return;if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
+function turnGo(){if(!TURN()||S.over)return;if(S.tut&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play a turn soon, or Skip tutorial.</span>');return}if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
   if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
 function turnDone(){S.speed=0;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap()};if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
@@ -5132,7 +5179,7 @@ function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k=
   app.innerHTML=cz(`<div id="title"><div class="ti-head"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="ti-tag">Rebuilding the US defense industrial base, January 2027 to 2037</div></div>
    <div class="ti-point"><p><b>You run the effort to rearm the United States.</b> China and Russia are out-producing the US in munitions, ships and missiles. You must close the gap with an industrial base that has withered, suppliers that move slowly, and critical minerals that come from the same rivals you are racing.</p></div>
    ${sv?`<div class="ti-cont"><div class="ti-contx"><span>Continue</span><b>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'}</b><em>${fmtDate(sv.w)} · ${sv.sandbox?'Sandbox':'Standard'} · saved ${agoT}</em></div><button class="ti-btn primary" data-a="tcont">Continue your game ›</button><button class="ti-btn" data-a="saveul">Load a file</button></div>`:''}
-   <section class="ti-newg"><h2>New game</h2><p class="ti-newsub">Choose a mandate. Each sets targets drawn from public goals: halfway floors judged in January 2030, the real targets in January 2035.</p>
+   <section class="ti-newg"><button class="ti-tut" data-a="ttut"><span class="ti-tuti">🎓</span><span><b>New here? Play the tutorial</b><em>A guided tour of every screen, then your first program and your first turn, in the Taiwan Window. About ten minutes.</em></span><span class="ti-c2go">Start tutorial ›</span></button><h2>New game</h2><p class="ti-newsub">Choose a mandate. Each sets targets drawn from public goals: halfway floors judged in January 2030, the real targets in January 2035.</p>
      <div class="ti-mode"><div class="seg dark"><button class="${TMODE==='std'?'on':''}" data-a="tmode" data-m="std"><span>Standard</span></button><button class="${TMODE==='sbx'?'on':''}" data-a="tmode" data-m="sbx"><span>Sandbox</span></button></div>
        <span class="ti-mdesc">${TMODE==='sbx'?'No budget or Political Capital limits: build and pass anything, and see what time, permits and suppliers still hold back.':'A real budget and Political Capital: every plant, order and reform competes for them.'}</span></div>
      <div class="ti-grid">${SCENS.map(sc=>card(sc.id,sc.ic,sc.n,`vs. ${RIVALS[sc.rival].n} · halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()}`,sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,''),mand(sc))).join('')}
@@ -5835,7 +5882,7 @@ function renderGame(){
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
   document.body.classList.toggle('replaying',!!S.replay);
-  const db=decBar();document.body.classList.toggle('hasdec',!!db);app.innerHTML=cz(top+viewStrip()+db+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode${S.view==='flow'?' vwide':''}"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`)+guideHTML())+reelHTML();
+  const db=decBar();document.body.classList.toggle('hasdec',!!db);app.innerHTML=cz(top+viewStrip()+db+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode${S.view==='flow'?' vwide':''}"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+reelHTML();
   mountLog(lg);
   ['supply','needs','right'].forEach((id,i)=>{const el=document.getElementById(id);if(el&&sc[i]!=null)el.scrollTop=sc[i]});
   if(S._rtTop){const el=document.getElementById('right');if(el)el.scrollTop=0;S._rtTop=false}
@@ -6028,7 +6075,6 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
    <button class="ti-btn primary" data-a="close">Resume ›</button>
    <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
    <button class="ti-btn" data-a="tmode" data-tip="Two-month turns stop for every decision. Continuous play runs week by week and takes the default when a decision times out.">${S.turnMode===false?'Continuous play · switch to two-month turns':'Two-month turns · switch to continuous play'}</button>
-   ${S.guideOff&&S.w<=PLAY0+60?'<button class="ti-btn" data-a="gon">Show the first-year guide again</button>':''}
    <div class="gm-row"><button class="ti-btn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="ti-btn gm-danger" data-a="savenew" data-tip="Starts over from the title screen. This game's browser save is replaced; download a file first to keep it.">New game</button></div>
    <p class="ti-note">The game saves itself in this browser every four game weeks and when you close the tab. Clearing site data erases it, so download a file to keep a copy or move the game to another computer.</p>
    ${S._svErr?`<p class="gm-err">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="gm-err">${S._svMsg}</p>`:''}</div></div>`}
@@ -6044,6 +6090,7 @@ document.addEventListener('pointerdown',e=>{
   if(a==='start'){newGame(b.dataset.f);render();return}
   if(a==='tmode'){TMODE=b.dataset.m;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
+  if(a==='ttut'){clearSave();newGame('US');S.sandbox=false;S.modal=null;S.queue=[];chooseScen('taiwan');S.modal=null;S.view='cmd';S.tut={i:0,sc:-1};render();saveGame();return}
   if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.modal=null;S.queue=[];if(b.dataset.s==='open')S.scenSkip=true;else chooseScen(b.dataset.s);sbxFill();render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
@@ -6057,10 +6104,8 @@ document.addEventListener('pointerdown',e=>{
     case 'speed':S.speed=+b.dataset.s;if(S.speed)S.lastSpeed=S.speed;break;
     case 'turn':turnGo();break;
     case 'tpause':S.speed=0;break;
-    case 'gshow':S.view=b.dataset.v;(S.gseen=S.gseen||{})[S.view]=1;S.modal=null;S.navBack=[];break;
-    case 'gon':S.guideOff=0;S.guideMin=0;S.modal=null;break;
-    case 'gmin':S.guideMin=!S.guideMin;break;
-    case 'goff':S.guideOff=1;break;
+    case 'tutnext':if(S.tut){const st=tutStep();if(st&&st.next){if(st.next!==1){S.tut=null}else{S.tut.i++;S.tut.sc=-1}}}break;
+    case 'tutskip':S.tut=null;break;
     case 'tmode':S.turnMode=S.turnMode===false;S.speed=0;S.turnEnd=null;break;
     case 'ap':S.autoPause=!S.autoPause;break;
     case 'tab':S.tab=b.dataset.t==='bott'?'bott':+b.dataset.t;S.view='cmd';if(S.modal&&S.modal!=='end'&&!S.queue.length)S.modal=null;break;
@@ -6071,7 +6116,7 @@ document.addEventListener('pointerdown',e=>{
     case 'map':if(b.dataset.m)S.wmat=b.dataset.m;S.view='imports';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'flow':S.flowFocus=b.dataset.f||'all';S.view='flow';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'cite':S.view='src';S.citeHi=b.dataset.c;S._citeScroll=true;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'view':S.view=b.dataset.v;(S.gseen=S.gseen||{})[S.view]=1;{const g=vGroup(S.view);(S.vlast=S.vlast||{})[g[0]]=S.view}if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'view':S.view=b.dataset.v;{const g=vGroup(S.view);(S.vlast=S.vlast||{})[g[0]]=S.view}if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'ser':S.hide=S.hide||{};S.hide[b.dataset.k]=!S.hide[b.dataset.k];break;
     case 'range':S.range=b.dataset.r;break;
     case 'flowm':S.flowMode=b.dataset.m;break;
