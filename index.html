@@ -641,6 +641,13 @@ body{background:
 .rbt tr.pdom td{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;background:#ece2c6;padding:5px 8px}.rbtabs .mini{flex:1;min-width:240px}
 .hmrows{padding:2px 12px 4px}.hmr{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted #4a4532}.hmr b{white-space:nowrap;font-weight:600}.hmr.tot{border-bottom:0;color:var(--dim)}.hmr.tot b{font-weight:400}.hmnote{padding:2px 12px 6px}
 .svp{width:min(720px,94vw)}
+#guide{position:fixed;left:14px;bottom:14px;z-index:45;width:330px;background:var(--paper) linear-gradient(#f3ebd6,#e9dfc4);color:#2b241a;border:1px solid #a8925a;border-left:4px solid #b8860b;border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.55);font:13px/1.45 "Segoe UI",system-ui,sans-serif}
+#guide .gh{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #cbbd95}#guide .gh b{font:700 15px Georgia,serif}#guide .gh span{font-size:12px;color:#6b5a35;margin-right:auto}
+#guide .gx{border:0;background:none;cursor:pointer;color:#6b5a35;font-size:14px;padding:0 4px}#guide.gmin .gh{border-bottom:0}
+#guide ol{list-style:none;margin:0;padding:6px 10px 10px}#guide li{display:flex;gap:8px;padding:4px 0;color:#8a7850}#guide li.ok{color:#4a5a3e}#guide li.nx{color:#2b241a}
+#guide .gk{flex:none;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:700 11px "Segoe UI";background:#e4d8b8;color:#6b5a35}#guide li.ok .gk{background:#4f8a3e;color:#fff}#guide li.nx .gk{background:#b8860b;color:#fff}
+#guide li b{font-weight:600}#guide li.nx b{font:700 14px Georgia,serif}#guide p{margin:3px 0 6px;font-size:12.5px;color:#3d3426}
+#guide.gdone{display:flex;flex-direction:column;gap:4px;padding:10px 12px}#guide.gdone span{font-size:12.5px;color:#4a3f2a}#guide.gdone .pbtn{align-self:flex-end}
 .qlst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 6px}.qlst div{display:flex;flex-direction:column;padding:6px 10px;border:1px solid #cbbd95;background:#f7f1e1;border-radius:4px}.qlst b{font:600 20px var(--disp)}.qlst span{font-size:12px;color:#6b5a35}
 .qlvs{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.qlv{display:flex;flex-direction:column;font-size:12px;color:#8a7850}.qlv b{font-weight:600;color:#6b5a35}.qlv.on b{color:#2f5a24}.qlv.on{color:#4a5a3e}
 svg.cch{cursor:crosshair}
@@ -3295,6 +3302,20 @@ function decList(){const L=[];
   for(const pl of S.plants){const o=pl.issue;if(o&&!o.wait)L.push({a:'prog',d:`data-u="${pl.uid}"`,ic:'⚠',t:OPSD[o.id].n,sub:pl.nm,due:o.due})}
   return L.sort((a,b)=>dLeft(a.due)-dLeft(b.due))}
 // open the first waiting decision, as if its card were clicked
+// ---- guided first year
+const GUIDE=[
+ {id:'stand',n:'See where you stand',t:'Stocks & needs shows each end item against what the plan requires, now and projected to 2037. The gap is what you are closing.',go:['view','arsenal'],done:()=>S.gseen?.arsenal},
+ {id:'bn',n:'Find what holds output back',t:'Supply chain → Bottlenecks ranks the items that cost you the most output today, why each is short, and what is already under way.',go:['view','bn'],done:()=>S.gseen?.bn},
+ {id:'start',n:'Start a program',t:'Open an item, press Look closer on an option to see what it adds year by year, then start it. Plants take years: funding, contract, permits, construction, qualification.',go:['view','bn'],done:()=>S.projects.some(p=>!p.inh&&!p.pkg)||S.done.some(x=>!x.inh)},
+ {id:'ndaa',n:'Use the NDAA',t:'Congress votes on the bill every December. Request plants for Congress to pay for, more orders where lines have capacity nobody ordered, and reforms that ride the bill.',go:['view','ndaa'],done:()=>pkgItems().length||ordReqs().length||refReqs().length||(S.ndsReq||[]).length||(S.bills||[]).length},
+ {id:'rules',n:'Change the rules',t:'Reforms decide whether plants arrive in time. Adopt an executive action on Rules & policy, or put a reform in the NDAA; the Rulebook shows what each process costs today.',go:['view','policy'],done:()=>(S.lawLog||[]).length||refReqs().length||S.bill},
+ {id:'turn',n:'Play a turn',t:'Next turn, top right, plays two months. Time stops for every decision, and nothing is decided for you. The turn report says what changed and what is coming.',go:null,done:()=>S.trnRep||S.w>=PLAY0+10},
+ {id:'decide',n:'Make a decision',t:'When a program is stuck, choose how to get past it. Each way trades time against Political Capital, money and risk; Look closer on any option shows its effect first.',go:null,done:()=>(S.decN?.you||0)>0}];
+function guideHTML(){if(!S||S.histMode||S.replay||S.over||S.guideOff||S.w>PLAY0+60)return '';const st=GUIDE.map(g=>({...g,ok:!!g.done()})),n=st.filter(x=>x.ok).length;
+  if(n===st.length){return `<div id="guide" class="gdone"><b>First year: done</b><span>You have used every part of the game. The guide steps aside.</span><button class="pbtn sm" data-a="goff">Close</button></div>`}
+  const nx=st.findIndex(x=>!x.ok),min=S.guideMin;
+  return `<div id="guide" class="${min?'gmin':''}"><div class="gh"><b>Your first year</b><span>${n} of ${st.length}</span><button class="gx" data-a="gmin" title="${min?'Show':'Hide'} the guide">${min?'▴':'▾'}</button><button class="gx" data-a="goff" title="Turn the guide off">✕</button></div>
+   ${min?'':`<ol>${st.map((g,i)=>`<li class="${g.ok?'ok':i===nx?'nx':''}"><span class="gk">${g.ok?'✓':i+1}</span><div><b>${g.n}</b>${i===nx?`<p>${g.t}</p>${g.go?`<button class="pbtn sm primary" data-a="gshow" data-v="${g.go[1]}">Show me ›</button>`:''}`:''}</div></li>`).join('')}</ol>`}</div>`}
 function decOpenFirst(){if(S.modal||S.queue.length)return;const x=decList()[0];if(!x)return;const v=(x.d.match(/="([^"]*)"/)||[])[1];
   if(x.a==='prog'){S.modal='prog';S.selP=v;S.progBack=null}else if(x.a==='evdo'){const it=(S.inbox||[]).find(y=>y.ev===v);S.inbox=(S.inbox||[]).filter(y=>y.ev!==v);S.queue.unshift({ev:v,fxDone:1,due:it?.due})}}
 function decBar(){const L=decList();if(!L.length)return '';
@@ -5814,7 +5835,7 @@ function renderGame(){
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
   document.body.classList.toggle('replaying',!!S.replay);
-  const db=decBar();document.body.classList.toggle('hasdec',!!db);app.innerHTML=cz(top+viewStrip()+db+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode${S.view==='flow'?' vwide':''}"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`))+reelHTML();
+  const db=decBar();document.body.classList.toggle('hasdec',!!db);app.innerHTML=cz(top+viewStrip()+db+(S.view&&S.view!=='cmd'?`<div id="main" class="vmode${S.view==='flow'?' vwide':''}"><div id="viewslot"></div><div class="panel" id="right">${rt}</div></div>`:`<div id="main"><div class="panel" id="supply">${sup}</div><div class="panel" id="needs">${nd}</div><div class="panel" id="right">${rt}</div></div>`)+guideHTML())+reelHTML();
   mountLog(lg);
   ['supply','needs','right'].forEach((id,i)=>{const el=document.getElementById(id);if(el&&sc[i]!=null)el.scrollTop=sc[i]});
   if(S._rtTop){const el=document.getElementById('right');if(el)el.scrollTop=0;S._rtTop=false}
@@ -6007,6 +6028,7 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
    <button class="ti-btn primary" data-a="close">Resume ›</button>
    <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
    <button class="ti-btn" data-a="tmode" data-tip="Two-month turns stop for every decision. Continuous play runs week by week and takes the default when a decision times out.">${S.turnMode===false?'Continuous play · switch to two-month turns':'Two-month turns · switch to continuous play'}</button>
+   ${S.guideOff&&S.w<=PLAY0+60?'<button class="ti-btn" data-a="gon">Show the first-year guide again</button>':''}
    <div class="gm-row"><button class="ti-btn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="ti-btn gm-danger" data-a="savenew" data-tip="Starts over from the title screen. This game's browser save is replaced; download a file first to keep it.">New game</button></div>
    <p class="ti-note">The game saves itself in this browser every four game weeks and when you close the tab. Clearing site data erases it, so download a file to keep a copy or move the game to another computer.</p>
    ${S._svErr?`<p class="gm-err">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="gm-err">${S._svMsg}</p>`:''}</div></div>`}
@@ -6035,6 +6057,10 @@ document.addEventListener('pointerdown',e=>{
     case 'speed':S.speed=+b.dataset.s;if(S.speed)S.lastSpeed=S.speed;break;
     case 'turn':turnGo();break;
     case 'tpause':S.speed=0;break;
+    case 'gshow':S.view=b.dataset.v;(S.gseen=S.gseen||{})[S.view]=1;S.modal=null;S.navBack=[];break;
+    case 'gon':S.guideOff=0;S.guideMin=0;S.modal=null;break;
+    case 'gmin':S.guideMin=!S.guideMin;break;
+    case 'goff':S.guideOff=1;break;
     case 'tmode':S.turnMode=S.turnMode===false;S.speed=0;S.turnEnd=null;break;
     case 'ap':S.autoPause=!S.autoPause;break;
     case 'tab':S.tab=b.dataset.t==='bott'?'bott':+b.dataset.t;S.view='cmd';if(S.modal&&S.modal!=='end'&&!S.queue.length)S.modal=null;break;
@@ -6045,7 +6071,7 @@ document.addEventListener('pointerdown',e=>{
     case 'map':if(b.dataset.m)S.wmat=b.dataset.m;S.view='imports';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'flow':S.flowFocus=b.dataset.f||'all';S.view='flow';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'cite':S.view='src';S.citeHi=b.dataset.c;S._citeScroll=true;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'view':S.view=b.dataset.v;{const g=vGroup(S.view);(S.vlast=S.vlast||{})[g[0]]=S.view}if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'view':S.view=b.dataset.v;(S.gseen=S.gseen||{})[S.view]=1;{const g=vGroup(S.view);(S.vlast=S.vlast||{})[g[0]]=S.view}if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'ser':S.hide=S.hide||{};S.hide[b.dataset.k]=!S.hide[b.dataset.k];break;
     case 'range':S.range=b.dataset.r;break;
     case 'flowm':S.flowMode=b.dataset.m;break;
