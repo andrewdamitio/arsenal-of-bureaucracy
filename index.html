@@ -949,7 +949,7 @@ const FLAGS={
    ===================================================================== */
 const START=new Date(2025,0,6),DAY=864e5;
 const weekOf=(y,m,d)=>Math.round((new Date(y,m,d)-START)/(7*DAY));
-const END_W=weekOf(2037,11,27),PLAY0=weekOf(2027,0,4); // weeks 0–103 replay 2025–26
+const END_Y=2035,END_W=weekOf(2035,0,8),PLAY0=weekOf(2027,0,4); // weeks 0–103 replay 2025–26
 const anP=v=>{const n=Math.round(v*100);return (n===8||n===11||n===18||(n>=80&&n<=89)?'an ':'a ')+n+'%'};
 let RNG=Math.random;const rand=()=>RNG(),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const fmt=(x,d=1)=>(Math.round(x*10**d)/10**d).toFixed(d);
@@ -2389,7 +2389,7 @@ function labF(k,staff){if(S.histMode||!S.lab||S.lab[k]==null||staff<=1e-12)retur
 function labCrew(k,g){if(!S.lab||S.histMode)return;S.lab[k]=(S.lab[k]??0)+g*Math.min(1,labP(k)[1]*(S.labX?.[k]||1))}
 function labInit(){S.lab={};S.labX={};for(const k of labKeys())S.lab[k]=staffOf(k,true)*labP(k)[0];
   const R=production(false);S.need0={};for(const id of ORDER)S.need0[id]=Math.max(R.P[id].need,S.nodes[id].scale*.05,1e-9);ceilRec(R,true)}
-// ---- ceilings: what each item's output is held to. Recorded every four weeks; projected to 2037 from the programs under way.
+// ---- ceilings: what each item's output is held to. Recorded every four weeks; projected to 2035 from the programs under way.
 const CEIL_K=['F','L','M','O','N','D','I','T'];
 function ceilVals(R,k){
   if(k.startsWith('L:')){const c=k.slice(2),Lc=LINES[c],o=R.out[c],Fy=lineCap(c,true)*Lc.k,st=lineStaff(c),Ly=S.lab&&S.lab[k]!=null&&st>1e-12?Fy*S.lab[k]/st:null;
@@ -2412,7 +2412,7 @@ function pjFinish(p,t,added){const def=PD[p.def];if(!def||def.kind==='maint')ret
   const g=projGain(def,p.gm||1);if(def.ally){const ch=def.nt?S.nodes[id].neut:S.nodes[id].ally;ch.amt+=g;return}
   const kind=def.t.line?'line':'node',target=def.t.line||id,pl={uid:uidN++,def:def.id,nm:def.n,kind,target,gain:g,yield:.2,issue:null,full:false,adv:p.adv||0,start:t};
   labCrew(kind==='line'?'L:'+target:target,g);S.plants.push(pl);added.push({pl,y0:.2,w:t,rw:Math.max(8,rampWeeks(S.know[target]??40,.2,1))})}
-// Project every item to 2037. alt (optional): {def, w} adds a program you might start, delivering at week w;
+// Project every item to 2035. alt (optional): {def, w} adds a program you might start, delivering at week w;
 // {drop: uid} leaves out a program under way. Without alt this is the status quo, cached for the week.
 function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def?alt.def.id+'@'+alt.w:'')+(alt.shift?'s'+JSON.stringify(alt.shift):''):'';
   const ok=c=>c&&(c.w===S.w||(S.speed>0&&S.w-c.w>0&&S.w-c.w<6))&&c.n===S.projects.length&&c.u===uidN;
@@ -2432,16 +2432,16 @@ function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def?alt.de
   catch(err){console.error(err)}finally{S=save;uidN=u}
   const res={w:S.w,n:S.projects.length,u:uidN,out};if(alt)S._cpjX.m[key]=res;else S._cpj=res;return res}
 // what a program does against the status quo: this item's supply over time, and each end item's output
-// why a program adds nothing by 2037: the item's own lowest ceiling, or what limits its end items first
+// why a program adds nothing by 2035: the item's own lowest ceiling, or what limits its end items first
 function impWhy(def,k,isL,withR){const R=S._R||production(false),last=withR.at(-1);
   if(isL){const o=R.out[def.t.line];if(o?.bott)return 'the line is held back first by '+lc(ND[o.chain.at(-1)].n)+(o.chain.length>1?' (short of '+lc(ND[o.chain[0]].n)+')':'');if(o?.ordLim)return 'Congress has not ordered more than the line can already make';if(o&&o.labF<.98)return 'there are not enough workers to staff it'}
-  if(!isL&&last){const c=[[1,'F'],[2,'L'],[3,'M']].filter(([i])=>last[i]!=null).sort((a,b)=>last[a[0]]-last[b[0]])[0];if(c&&c[1]==='L')return 'there are not enough workers to staff it by 2037';
+  if(!isL&&last){const c=[[1,'F'],[2,'L'],[3,'M']].filter(([i])=>last[i]!=null).sort((a,b)=>last[a[0]]-last[b[0]])[0];if(c&&c[1]==='L')return 'there are not enough workers to staff it by 2035';
     if(c&&c[1]==='M'){const wi=ND[k].in.slice().sort((a,b)=>R.P[a].cover-R.P[b].cover)[0];return 'its materials run out first: not enough '+lc(ND[wi].n)}}
   const ch=def.t.node?endItemsOf(def.t.node).map(c=>R.out[c]).filter(o=>o&&o.bott).map(o=>o.chain.at(-1)).filter(x=>x&&x!==def.t.node):[];
   return ch.length?'held back first by '+[...new Set(ch)].slice(0,3).map(i=>lc(ND[i].n)).join(', '):'something else limits them first, or the program lands too late'}
-// output a year by end item: requirement, status quo, with this, and the change, every other year to 2037
-function impTable(cs,A,Bq,at,ts){const y0=dateOf(S.w).getFullYear()+1,yrs=[];for(let y=y0;y<2037;y+=2)yrs.push(y);yrs.push(2037);
-  const wk=y=>y>=2037?END_W:weekOf(y,0,1),cell=(rows,y)=>{const r=at(rows,wk(y));return r&&r[4]!=null?r[4]:null};
+// output a year by end item: requirement, status quo, with this, and the change, every other year to 2035
+function impTable(cs,A,Bq,at,ts){const y0=dateOf(S.w).getFullYear()+1,yrs=[];for(let y=y0;y<END_Y;y+=2)yrs.push(y);yrs.push(END_Y);
+  const wk=y=>y>=END_Y?END_W:weekOf(y,0,1),cell=(rows,y)=>{const r=at(rows,wk(y));return r&&r[4]!=null?r[4]:null};
   let h=`<table class="pvt"><tr><th>A year</th>${yrs.map(y=>`<th>${y}</th>`).join('')}</tr>`;
   let any=false;for(const c of cs){const a=A.out['L:'+c]||[],b=Bq.out['L:'+c]||[];if(!yrs.some(y=>{const v=cell(a,y),u=cell(b,y);return v!=null&&u!=null&&Math.abs(v-u)>LINES[c].k*.002}))continue;any=true;
     h+=`<tr class="pvtn"><td colspan="${yrs.length+1}">${LINES[c].n}</td></tr>`+
@@ -2459,7 +2459,7 @@ function impSummary(def,wOn){if(S.histMode||!S.lab||!def||def.kind==='test'||def
   if(!best)return {none:true};
   const closes=rows=>{for(const r of rows){if(r[4]!=null&&r[4]>=Math.max(0,reqOut(best.c,r[0])-allyOut(best.c,r[0]))*.999)return r[0]}return null};
   const h1=closes(alt.out['L:'+best.c]||[]),h0=closes(base.out['L:'+best.c]||[]),Y=w=>dateOf(w).getFullYear();
-  const gap=!h1?'Not enough on its own to close the gap by 2037.':h1<=S.w?'The gap is already closed.':!h0?`Closes the gap in <b>${Y(h1)}</b>; without it, not by 2037.`:h1<h0-26?`Closes the gap in <b>${Y(h1)}</b> instead of ${Y(h0)}.`:`The gap still closes in ${Y(h0)}.`;
+  const gap=!h1?'Not enough on its own to close the gap by 2035.':h1<=S.w?'The gap is already closed.':!h0?`Closes the gap in <b>${Y(h1)}</b>; without it, not by 2035.`:h1<h0-26?`Closes the gap in <b>${Y(h1)}</b> instead of ${Y(h0)}.`:`The gap still closes in ${Y(h0)}.`;
   return {html:`<span class="okt">${LINES[best.c].n} +${fmtN(best.d)}/yr by ${refY}.</span> ${gap}`}}
 const RISK_K={test:{layer:'QUAL',flag:'test',n:'qualification'},power:{layer:'GRID',flag:'power',n:'power and grid'}};
 function expDelay(p,layer,from){const def=PD[p.def];let e=0;
@@ -2494,11 +2494,11 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   const need=ts.map(t=>{const r=at(withR,t);return r?r[5]/nrm:null});const top=Math.max(1e-9,...vals,...need.filter(x=>x!=null))*1.15,Y=y=>T+(H-T-Bm)*(1-Math.min(y,top)/top);
   const pth=rows=>ts.map((t,i)=>{const y=v(rows,t);return y==null?'':(i?'L':'M')+X(t).toFixed(1)+','+Y(y).toFixed(1)}).join('');
   let g=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(0)}" y2="${Y(0)}" stroke="#8a7850"/>`;for(let q=0;q<=2;q++){const y=top*q/2;g+=`<text x="${Lm-4}" y="${Y(y)+3}" text-anchor="end">${fmtN(y)}</text>`}
-  for(let y=dateOf(S.w).getFullYear()+1;y<=2037;y+=2)g+=`<text x="${X(weekOf(y,0,1))}" y="${H-5}" text-anchor="middle">${y}</text>`;
+  for(let y=dateOf(S.w).getFullYear()+1;y<=END_Y;y+=2)g+=`<text x="${X(weekOf(y,0,1))}" y="${H-5}" text-anchor="middle">${y}</text>`;
   g+=`<path d="${ts.map((t,i)=>{const r=at(withR,t);return r&&r[5]!=null?(i?'L':'M')+X(t).toFixed(1)+','+Y(r[5]/nrm).toFixed(1):''}).join('')}" fill="none" stroke="${CHC.req}" stroke-width="1.3" stroke-dasharray="6 4"/>`;
   g+=`<path d="${pth(withR)}" fill="none" stroke="${CHC.usL}" stroke-width="3"/><path d="${pth(woR)}" fill="none" stroke="${CHC.alt}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
   if(wOn<=END_W)g+=`<line x1="${X(wOn)}" x2="${X(wOn)}" y1="${T}" y2="${H-Bm}" stroke="${CHC.usL}" stroke-dasharray="2 2" opacity=".7"/>`;
-  // end items: output a year at a reference year, and the total through 2037
+  // end items: output a year at a reference year, and the total through 2035
   const ref=Math.min(END_W,Math.max(wOn+52,weekOf(2030,0,1))),refY=dateOf(ref).getFullYear();
   const eRows=Object.keys(LINES).map(c=>{const a=(live?base:alt).out['L:'+c]||[],b=(live?alt:base).out['L:'+c]||[];let tot=0,prev=S.w;
     for(const t of ts){const ra=at(a,t),rb=at(b,t);if(ra&&rb&&ra[4]!=null&&rb[4]!=null)tot+=(ra[4]-rb[4])*(t-prev)/52;prev=t}
@@ -2507,7 +2507,7 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
     ${rsk?`<div class="pvc">Expected weeks lost to ${rsk.R.n} problems: ${rsk.rows.map(r=>`${projName(r.p)} <b>${Math.round(r.e0)}</b> → <b class="${r.on?'green':''}">${Math.round(r.e1)}</b>${r.on?'':' (finished too late to help it)'}`).join(' · ')}.</div>`:''}
     <svg class="pvisvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=ts.map(t=>{const r=at(withR,t);return {w:t,v:{A:v(withR,t),Z:v(woR,t),N:r&&r[5]!=null?r[5]/nrm:null}}});CC[id]={W,H,Lm,Rm,T,B:Bm,x0,x1,top,rows,outK:'A',outN:rsk||live?'With this':'With this',mix:im?.mix,ke:im?.ke,keys:[['A','With this',CHC.usL],['Z',rsk||live?'Without it':'Status quo',CHC.alt,1],['N',isL?'US requirement':'Defense need',CHC.req,1]]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg>
     <div class="pvilg"><span><i style="background:${CHC.usL}"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Defense need'}</span></div>
-    ${(()=>{const tb=eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):'';return tb||`<div class="pvc">No end item makes more by 2037: ${impWhy(def,k,isL,withR)}.</div>`})()}
+    ${(()=>{const tb=eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):'';return tb||`<div class="pvc">No end item makes more by 2035: ${impWhy(def,k,isL,withR)}.</div>`})()}
     <div class="pvnote">Projected on a copy of your game: every program lands when now expected, new plants ramp up and firms hire. Luck and new decisions will move it.</div></div>`}
 
 // one chart palette everywhere: blue = you, green = allies, red = China or Russia, gold dashed = the requirement or need;
@@ -2545,7 +2545,7 @@ function ceilSec(k){if(S.fac!=='US')return '';if(!S.lab)return '<div class="dsec
   const W=760,H=250,Lm=58,Rm=150,T=26,B=30,x0=PLAY0,x1=END_W,X=w=>Lm+(W-Lm-Rm)*(w-x0)/(x1-x0);
   const all=[...H0,...P0];const ref=Math.max(1e-9,...all.flatMap(r=>['F','O','N','T','D'].map(x=>val(r,x)??0)));const top=ref*1.25,Y=v=>T+(H-T-B)*(1-Math.min(v,top)/top);
   let g='';for(let q=0;q<=4;q++){const v=top*q/4;g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" stroke="${CHC.grid}" stroke-width=".6"/><text x="${Lm-5}" y="${Y(v)+3}" text-anchor="end">${fmtN(v)}</text>`}
-  for(let y=2027;y<=2037;y+=2){const w=weekOf(y,0,1);g+=`<line x1="${X(w)}" x2="${X(w)}" y1="${H-B}" y2="${H-B+4}" stroke="#9c8a5c"/><text x="${X(w)}" y="${H-B+15}" text-anchor="middle">${y}</text>`}
+  for(let y=2027;y<=END_Y;y+=2){const w=weekOf(y,0,1);g+=`<line x1="${X(w)}" x2="${X(w)}" y1="${H-B}" y2="${H-B+4}" stroke="#9c8a5c"/><text x="${X(w)}" y="${H-B+15}" text-anchor="middle">${y}</text>`}
   g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${H-B}" y2="${H-B}" stroke="#9c8a5c"/><line x1="${X(S.w)}" x2="${X(S.w)}" y1="${T-6}" y2="${H-B}" stroke="#5a4a28" stroke-dasharray="2 3"/><text class="ax" x="${X(S.w)+4}" y="${H-B-5}">Today</text>`;
   g+=`<text class="ax" transform="translate(12,${(T+H-B)/2}) rotate(-90)" text-anchor="middle">${u}</text>`;
   const path=(rows,x)=>{let d='',pen=false;for(const r of rows){const v=val(r,x);if(v==null){pen=false;continue}d+=(pen?'L':'M')+X(r[0]).toFixed(1)+','+Y(v).toFixed(1);pen=true}return d};
@@ -2556,7 +2556,7 @@ function ceilSec(k){if(S.fac!=='US')return '';if(!S.lab)return '<div class="dsec
   g+=`<path d="${path(H0,'N')}" fill="none" stroke="${CHC.req}" stroke-width="1.8" stroke-dasharray="6 4"/><path d="${path(P0,'N')}" fill="none" stroke="${CHC.req}" stroke-width="1.4" stroke-dasharray="6 4" opacity=".7"/>`;
   const ser=CEIL_S.filter(([x])=>isL||x!=='D');
   for(const [x,,col] of ser){g+=`<path d="${path(H0,x)}" fill="none" stroke="${col}" stroke-width="2.2"/><path d="${path(P0,x)}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="5 3" opacity=".9"/>`}
-  // end labels at 2037, nudged apart
+  // end labels at 2035, nudged apart
   {const last=P0.at(-1)||H0.at(-1);if(last){const labs=[...ser.map(([x,n,col])=>({n,col,v:val(last,x)})),{n:isL?'Requirement':'Defense need',col:CHC.req,v:val(last,'N')},{n:isL?'Output':'US output',col:CHC.us,v:val(last,'O')}].filter(l=>l.v!=null).map(l=>({...l,y:Y(l.v)})).sort((a,b)=>a.y-b.y);
     let pr=-99;for(const l of labs){if(l.y<pr+12)l.y=pr+12;pr=l.y}for(const l of labs)g+=`<text class="cend" x="${W-Rm+6}" y="${l.y+3.5}" fill="${l.col}">${l.n}${l.v>=top?' ↑':''}</text>`}}
   // programs for this item: expected delivery, with the original plan when it has slipped
@@ -3289,7 +3289,7 @@ function startProject(id,ct,mode){
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
-  if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2037':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
+  if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2035':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
     receipt({ic:def.nt?'🌐':def.ally?'🤝':pk?'🏛':'🏗',lab:def.nt?'Offtake signed with a neutral supplier':def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:pk?'Track the request →':'Open the program →',
       lines:[`Raises <b>${tgt}</b>.${pk?` ${rk} Political Capital spent. Congress votes on the FY${FYOF(p.pkg)} ${billN()} ~${fmtDate(pkgWhen())}; if it funds the plant, Congress pays the ${money(c)}, not your budget. It is likelier to cut it the less it holds back output.`:pv.isPlant?` The ${OFFICES[officeOf(def)].n} office runs the contract, permits and construction.`:''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''} at your record so far${pk?'':` · ${money(c)} committed`}.`]})}
 }
@@ -3423,7 +3423,7 @@ const TUT=[
  {p:'bn',sel:'#ov .ceilsec',t:'What holds output back',x:'Output is held to the lowest of its ceilings: factory capacity, the workers to run it, and the materials its inputs allow. Solid lines happened; dashed lines are expected. Numbered markers are programs and when they land. <b>Hover the chart</b> for any month.',next:1},
  {p:'bn',sel:'#ov .raise',t:'Ways to raise it',x:'The best options for this item, and below them every option grouped by the ceiling it lifts. <b>Look closer</b> shows what one would do before you commit.',next:1},
  {p:'bn',sel:'#ov .rcard [data-a="pvopen"]',t:'Look before you commit',x:'<b>Press Look closer</b> on the first option.',wait:()=>S.modal==='pv'},
- {p:'bn',sel:'#ov .pvimp',t:'What it would do',x:'Your game is played forward to 2037 with and without this option. The table gives each end item a year: the requirement, the status quo, with this, and the change.',next:1},
+ {p:'bn',sel:'#ov .pvimp',t:'What it would do',x:'Your game is played forward to 2035 with and without this option. The table gives each end item a year: the requirement, the status quo, with this, and the change.',next:1},
  {p:'bn',sel:'#ov .pvwin .ft [data-a="launch"]',t:'Start it',x:'<b>Press the button to start it.</b> A new plant first asks who builds it and on what terms.',wait:()=>S.modal==='contract'||S.projects.some(p=>!p.inh)},
  {p:'bn',sel:'#ov .ctp',skip:()=>S.projects.some(p=>!p.inh),t:'The award',x:'Choose who builds it and the contract terms; each trades price against speed and risk. Then pay: <b>Build now</b> from your budget, or <b>Request it</b> in the NDAA for Political Capital. <b>Choose one.</b>',wait:()=>S.projects.some(p=>!p.inh)},
  {p:'bn',solo:0,t:'Your first program',x:'It is under way. Its page shows progress stage by stage, a docket of every step, and the builder’s commitment. <b>Close the windows</b> (✕ or Esc) to go on.',wait:()=>!S.modal},
@@ -3457,7 +3457,7 @@ const TUT=[
  // Stocks & needs
  {p:'stocks',...NAV('arsenal','Stocks & needs')},
  {p:'stocks',sel:'#view .acard',t:'Could you fight?',x:'Output is one thing; what you hold is another. This tests whether your stocks and production would sustain the campaign, against the enemy’s.',next:1},
- {p:'stocks',sel:'#view .acard:nth-of-type(2)',t:'One end item',x:'Stock in service, output a year and capacity, against what the campaign needs, projected to 2037.',next:1},
+ {p:'stocks',sel:'#view .acard:nth-of-type(2)',t:'One end item',x:'Stock in service, output a year and capacity, against what the campaign needs, projected to 2035.',next:1},
  {p:'stocks',sel:'#view .rng',t:'Time range',x:'Zoom the charts in or out.',next:1},
  {p:'stocks',...SUB('rec','The record')},
  {p:'stocks',sel:'#view .rec-tiles',t:'The record',x:'Everything that has changed since you took over: share of the requirement, money spent, jobs, Chinese content, laws changed, plants built, decisions.',next:1},
@@ -3759,7 +3759,7 @@ function tick(){
   if(S.queue.length&&!S.sim)S.speed=0;
   if(S.scen&&!S.scenMid&&!S.scenRes&&S.w>=SCD[S.scen].mid)scenMidJudge();
   if(S.scen&&!S.scenRes&&S.w>=SCD[S.scen].dl)scenJudge();
-  if(S.w>=END_W)gameOver(null);
+  if(S.w>=END_W&&!S.scen)gameOver(null);
 }
 /* ---------- the year in review: the turn of each year, right after the annual bill ---------- */
 // ---- two-month turns. A turn ends at the start of January, March, May, July, September or November, so December's NDAA vote
@@ -4004,10 +4004,10 @@ function timelineSVG(v){const W=330,H=34,x0=S.w,X=w=>Math.min(W,Math.max(0,(w-x0
    ${v.wOn<END_W?`<rect x="${X(v.wOn)}" y="9" width="${Math.max(0,X(v.wFull)-X(v.wOn))}" height="9" fill="url(#rmp)"/><rect x="${X(v.wFull)}" y="9" width="${Math.max(0,W-X(v.wFull))}" height="9" fill="#5f9e4a"/>`:''}
    ${v.wPlan<END_W&&v.wPlan<v.wOn-8?`<line x1="${X(v.wPlan)}" x2="${X(v.wPlan)}" y1="9" y2="18" class="tlp" stroke="#ece4cc" stroke-width="2" stroke-dasharray="2 1"><title>On plan: ${yr(v.wPlan)}</title></line>`:''}
    ${cr.map(c=>`<line x1="${X(c[1])}" x2="${X(c[1])}" y1="5" y2="22" stroke="#e05a48" stroke-width="2"/><text class="tlct" x="${X(c[1])}" y="32" fill="#e8a090" font-size="9" text-anchor="middle">⚔ ${yr(c[1])}</text>`).join('')}
-   ${v.wOn<END_W?`<text class="tlo" x="${Math.min(W-70,X(v.wOn))}" y="7" fill="#dcc78e" font-size="9">${v.isPlant?'Output':'Online'} ${yr(v.wOn)}</text>`:`<text class="tlct" x="${W}" y="7" fill="#e8a090" font-size="9" text-anchor="end">Not before 2037</text>`}
+   ${v.wOn<END_W?`<text class="tlo" x="${Math.min(W-70,X(v.wOn))}" y="7" fill="#dcc78e" font-size="9">${v.isPlant?'Output':'Online'} ${yr(v.wOn)}</text>`:`<text class="tlct" x="${W}" y="7" fill="#e8a090" font-size="9" text-anchor="end">Not before 2035</text>`}
    ${v.isPlant&&v.wFull<END_W&&X(v.wFull)-X(v.wOn)>60?`<text class="tlf" x="${W}" y="7" fill="#a8d48e" font-size="9" text-anchor="end">Full rate ${yr(v.wFull)}</text>`:''}</svg>`}
 function previewHTML(def,ct,wOn0,liveUid){
-  const v=previewOf(def,ct,wOn0),yr=w=>dateOf(w).getFullYear(),gap=(h,by)=>!h?'<span class="red">not by 2037</span>':h.w<=S.w?'<span class="green">now</span>':`<span class="${h.w<=by[1]?'gold':'red'}">${yr(h.w)}</span>`;
+  const v=previewOf(def,ct,wOn0),yr=w=>dateOf(w).getFullYear(),gap=(h,by)=>!h?'<span class="red">not by 2035</span>':h.w<=S.w?'<span class="green">now</span>':`<span class="${h.w<=by[1]?'gold':'red'}">${yr(h.w)}</span>`;
   const rows=v.rows.slice().sort((a,b)=>b.d/LINES[b.c].k-a.d/LINES[a.c].k).slice(0,4);
   let h=`<div class="pvbox"><div class="th">${def.n}</div>${timelineSVG(v)}`;
   const imp=impactHTML(def,v.wOn,liveUid);if(imp)h+=imp;else if(rows.length)h+=`<div class="pvr pvhd"><span></span><span>Output</span><span>Gap closes</span></div>`+rows.map(r=>{const moved=r.d>LINES[r.c].k*.002;
@@ -4028,7 +4028,7 @@ function contractHTML(){
    <div class="bd" style="font-size:13px"><p class="ctintro">You are awarding the contract for <b>${def.n}</b>, which adds capacity for <b>${lc(def.t.node?ND[def.t.node].n:LINES[def.t.line].n)}</b>. Make two choices, <b>who builds it</b> and <b>on what terms</b>; each trades price against speed and risk, and the preview below updates as you choose. Then decide how to pay for it, at the bottom.</p>
    <div class="dsec"><h4>Who builds it</h4><p class="ctsec">The builder decides how fast the plant goes up, how hard it is to qualify, and how much power the big primes hold over your later awards.</p>${bOpts}</div>
    <div class="dsec"><h4>Terms</h4><p class="ctsec">The contract type decides how long the award takes to sign, who carries cost overruns, and how sure the builder is of future orders.</p>${kOpts}</div>
-   <div class="dsec"><h4>What you get</h4><p class="ctsec">The bar runs from today to 2037: grey while the plant is being funded, permitted and built, then shading to green as output ramps to full rate. A red mark is a crisis date. Below it, the end items this plant lifts, how much a year, and when each one's gap to the requirement closes, without and with the plant.</p>${previewHTML(def,c)}</div></div>
+   <div class="dsec"><h4>What you get</h4><p class="ctsec">The bar runs from today to 2035: grey while the plant is being funded, permitted and built, then shading to green as output ramps to full rate. A red mark is a crisis date. Below it, the end items this plant lifts, how much a year, and when each one's gap to the requirement closes, without and with the plant.</p>${previewHTML(def,c)}</div></div>
    <div class="ft ctft"><button class="pbtn ctback" data-a="ctback">← Back</button><button class="pbtn primary" data-a="ctgo" data-m="pkg" ${S.pc>=REQ_PC(cost)?'':'disabled'}><b>🏛 Request it in the FY${pkgFY()} NDAA · ${REQ_PC(cost)} PC</b><span class="mini">If Congress funds it (~${fmtDate(pkgWhen())}), Congress pays the ${money(cost)}, not your budget; cut risk now ~${Math.round(clamp(moodOf(pkgFY()).f*(.03+.22*Math.pow(1-billSev(def).s,1.5)),.02,.75)*100)}% (${billSev(def).why.replace(/^./,c=>c.toLowerCase())}).</span></button>
    <button class="pbtn ctnow" data-a="ctgo" data-m="now" ${S.budget>=cost-1e-9?'':'disabled'}><b>🏗 Build now · ${money(cost)} from your budget</b><span class="mini">Starts today${(()=>{const w=Math.max(0,pkgWhen()-S.w);return w>4?`, about ${Math.round(w/4.35)} months before the bill`:''})()}. Budget ${money(S.budget)}; next +${money(nextFunds().amt)} with the bill.</span></button></div></div>`}
 /* ---------- program page: one project's story — plan vs. actual, what's blocking it, where the time went, what it will do ---------- */
@@ -4252,7 +4252,7 @@ const capF=t=>t?t[0].toUpperCase()+t.slice(1):t;
 // effect chips: colored text with ▲ for good and ▼ for bad, readable on dark panels and parchment alike
 const fxChips=(up=[],dn=[])=>`<span class="fx">${up.map(t=>`<span class="up">▲ ${capF(t)}</span>`).join('')}${dn.map(t=>`<span class="dn">▼ ${capF(t)}</span>`).join('')}</span>`;
 function raisePanel(id,P){
-  const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>w>=END_W?'after 2037':dateOf(w).getFullYear();
+  const isL=id.startsWith('L:'),l=isL?id.slice(2):null,yr=w=>w>=END_W?'after 2035':dateOf(w).getFullYear();
   let head,status,pool;
   if(isL){const o=S._R.out[l];head=`Raise output of ${lc(LINES[l].n)}`;
     status=o.bott?`<span class="redt">Running at ${pct(o.n/Math.max(o.cap,1e-9))} of capacity. ${ND[o.bott].n} is short.</span>`:`<span class="okt">Running at capacity.</span> More output needs more line capacity.`;
@@ -4262,10 +4262,10 @@ function raisePanel(id,P){
     pool=leversFor(id).filter(d=>!d.kind||d.kind==='cap'||d.kind==='mod'||d.ally)}
   const under=S.projects.filter(q=>isL?PD[q.def].t.line===l:PD[q.def].t.node===id);
   const opts=pool.filter(d=>!under.some(q=>q.def===d.id)&&!leverDone(d)).sort((a,b)=>projGain(b)-projGain(a)).slice(0,3);
-  const Y=h=>dateOf(h.w).getFullYear(),gapS=(h0,h1)=>!h1?'Not enough on its own to close the gap by 2037.':h1.w<=S.w?'The gap is already closed.':!h0?`Closes the gap in <b>${Y(h1)}</b>; without it, not by 2037.`:h1.w<h0.w-26?`Closes the gap in <b>${Y(h1)}</b> instead of ${Y(h0)}.`:`The gap still closes in ${Y(h0)}.`;
+  const Y=h=>dateOf(h.w).getFullYear(),gapS=(h0,h1)=>!h1?'Not enough on its own to close the gap by 2035.':h1.w<=S.w?'The gap is already closed.':!h0?`Closes the gap in <b>${Y(h1)}</b>; without it, not by 2035.`:h1.w<h0.w-26?`Closes the gap in <b>${Y(h1)}</b> instead of ${Y(h0)}.`:`The gap still closes in ${Y(h0)}.`;
   const card=d=>{const v=previewOf(d,ctDefault(d)),best=v.rows.filter(r=>r.d>LINES[r.c].k*.002).sort((a,b)=>b.d/LINES[b.c].k-a.d/LINES[a.c].k)[0],held=v.rows.find(r=>r.chain);
     const gain=isL?`+${fmtN(d.gain*LINES[l].k)} ${LINES[l].u}/yr`:leverEffect(d,P);
-    const sm=impSummary(d,v.wOn);const impact=sm&&!sm.none?sm.html:sm&&sm.none?(held?`<span class="redt">No end-item gain by 2037: ${held.chain.map(i=>ND[i].n).join(' ← ')} holds it back.</span>`:'<span class="mini">No end-item gain by 2037.</span>'):best?`${isL?'':`<span class="okt">${LINES[best.c].n} +${fmtN(best.d)}/yr.</span> `}${gapS(best.h0,best.h1)}`:held?`<span class="redt">No end-item gain yet: ${held.chain.map(i=>ND[i].n).join(' ← ')} holds it back.</span>`:'<span class="mini">No end-item gain yet.</span>';
+    const sm=impSummary(d,v.wOn);const impact=sm&&!sm.none?sm.html:sm&&sm.none?(held?`<span class="redt">No end-item gain by 2035: ${held.chain.map(i=>ND[i].n).join(' ← ')} holds it back.</span>`:'<span class="mini">No end-item gain by 2035.</span>'):best?`${isL?'':`<span class="okt">${LINES[best.c].n} +${fmtN(best.d)}/yr.</span> `}${gapS(best.h0,best.h1)}`:held?`<span class="redt">No end-item gain yet: ${held.chain.map(i=>ND[i].n).join(' ← ')} holds it back.</span>`:'<span class="mini">No end-item gain yet.</span>';
     return `<div class="rcard"><div class="rk">${d.nt?'🌐 Neutral supply':d.ally?'🤝 Allied supply':KIND_L[d.kind||'cap']}</div><b>${d.n}</b><div>${gain}</div><div class="mini">${impact}</div>
       <div class="rmeta">${money(projCost(d))} · ${v.isPlant?'First output':'Online'} ${yr(v.wOn)}${v.isPlant&&v.wFull<END_W?`, full rate ${yr(v.wFull)}`:''}</div>
       ${d.req&&!passed(d.req)?`<span class="mini redt">🔒 Needs ${rname(RD[d.req])}</span>`:launchBtn(d,1)}</div>`};
@@ -4451,7 +4451,7 @@ function outRaceHTML(l,o,lp){const rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#86
   ser.push({pts:usH,c:'#2f62a0',wd:2.4,n:'You'},{pts:usF,c:'#2f62a0',wd:1.6,dash:'4 3',n:'You (projected)'});
   const yMax=Math.max(...ser.flatMap(x=>x.pts.map(p=>p[1])),1e-9)*1.06,now=o.yr+al(S.w),rq=reqOut(l),gap=rq-now;
   const end=usF.at(-1)[1]+al(END_W),cnE=cnOut(l,END_W);
-  return `<div class="orhd"><span><b>${fmtN(o.yr)}</b>/yr you${hasA?` + <b style="color:#2e8a74">${fmtN(al(S.w))}</b> allies`:''} vs <b class="red">~${fmtN(cnOut(l))}</b> ${R.n} · requirement <b>${fmtN(rq)}</b>/yr</span><span class="${gap>0?'redt':'okt'}">${gap>0?`short ${fmtN(gap)}/yr`:'requirement met'}</span><span class="mini">2037, with today’s orders: ${fmtN(end)}/yr${slip?` (${fmtN(fa.at(-1)[1]+al(END_W))} if on schedule)`:''} vs ~${fmtN(cnE)}</span></div>
+  return `<div class="orhd"><span><b>${fmtN(o.yr)}</b>/yr you${hasA?` + <b style="color:#2e8a74">${fmtN(al(S.w))}</b> allies`:''} vs <b class="red">~${fmtN(cnOut(l))}</b> ${R.n} · requirement <b>${fmtN(rq)}</b>/yr</span><span class="${gap>0?'redt':'okt'}">${gap>0?`short ${fmtN(gap)}/yr`:'requirement met'}</span><span class="mini">2035, with today’s orders: ${fmtN(end)}/yr${slip?` (${fmtN(fa.at(-1)[1]+al(END_W))} if on schedule)`:''} vs ~${fmtN(cnE)}</span></div>
     ${lineChart({W:900,H:180,yMax,yFmt:fmtN,vf:v=>fmtN(v)+'/yr',series:ser,unit:'⟳ Output per year (flow)'})}
     <div class="sleg"><span><i style="background:#2f62a0"></i>You</span>${hasA?`<span><i style="background:${AC}"></i>You + allies</span>`:''}<span><i style="background:${rc}"></i>${R.n}</span><span><i class="dsh" style="border-color:#b8860b"></i>Requirement</span><span><i style="background:#9dbbdc"></i>Your capacity</span>${slip?'<span><i class="dsh" style="border-color:#5f9e4a"></i>If on schedule</span>':''}<span class="mini">Light blue: what your plants could build if nothing were short. Dashed: your plants on order at your track record so far, held to today’s input limits; ${R.n} keeps growing. ${R.n}'s figures are intelligence estimates.</span></div>`}
 function inServiceHTML(l,o,pj){const L=LINES[l],us=S.inv[l],rv=S.rival||'pac',R=RV(),rc=RIV_C[rv],AC='#86b04f',al=allyOut(l),A=AL();
@@ -4686,11 +4686,11 @@ function stockBody(){
     html+=`<div class="acard wide2"><div class="ah"><b>${THEATERS[t]} — can you sustain ${SCEN[t].short}? vs ${E.flag} ${E.n}</b><span class="mini">${nxt?`Next test: ${nxt[3]} (${fmtDate(nxt[1])}) — projected <b>${fmt(at(pj,nxt[1])[t],2)}</b> at current output (80% range ${fmt(at(pj,nxt[1]).pes[t],2)}–${fmt(at(pj,nxt[1]).opt[t],2)}), <b>${fmt(at(pc,nxt[1])[t],2)}</b> at capacity`:''}</span></div>
      ${lineChart({unit:'Coverage of the campaign (1 = fully covered)',W:S.theaters.length>1?560:1000,H:S.theaters.length>1?150:140,yMax,yFmt:v=>fmt(v,1),vf:v=>fmt(v,2),hl:[{v:1,c:'#5f9e4a',n:'Fully covered'},{v:CRISIS_WIN,c:'#b8860b',n:'Deters (true score)'},{v:CRISIS_TENSE,c:'#d0503f',n:'Below: deterrence fails'}],marks:cr.filter(c=>c[2]===t).map(c=>({w:c[1],t:'Crisis: '+c[3]})),
        series:[{pts:H.filter(h=>h.opt).map(h=>[h.w,h.opt[t]]),c:'#9a9a9a',wd:1,dash:'1 3',n:'90th percentile',k:'band'},{pts:H.filter(h=>h.pes).map(h=>[h.w,h.pes[t]]),c:'#9a9a9a',wd:1,dash:'1 3',n:'10th percentile',k:'band'},{pts:pj.map(h=>[h.w,h.opt[t]]),c:'#b5b5b5',wd:1,dash:'1 3',n:'90th percentile',k:'band'},{pts:pj.map(h=>[h.w,h.pes[t]]),c:'#b5b5b5',wd:1,dash:'1 3',n:'10th percentile',k:'band'},{pts:H.map(h=>[h.w,h[t]]),c:'#2f62a0',wd:2.2,n:'Your coverage (estimate)',k:'you'},{pts:pj.map(h=>[h.w,h[t]]),c:'#2f62a0',dash:'6 4',n:'Your coverage (estimate)',k:'proj'},{pts:pc.map(h=>[h.w,h[t]]),c:'#7fa3cc',dash:'2 3',n:'At full capacity',k:'cap'}]})}
-     <div class="mini">2037 at current output: <b>${fmt(end,2)}</b> · if every line ran at capacity: <b>${fmt(endC,2)}</b>. Weakest link now: <b>${S._sc[t].est.bind?LINES[S._sc[t].est.bind].n:'—'}</b>. The grey dotted lines are the 10th and 90th percentiles over 40 draws from the scenario and intelligence ranges.</div></div>`}
+     <div class="mini">2035 at current output: <b>${fmt(end,2)}</b> · if every line ran at capacity: <b>${fmt(endC,2)}</b>. Weakest link now: <b>${S._sc[t].est.bind?LINES[S._sc[t].est.bind].n:'—'}</b>. The grey dotted lines are the 10th and 90th percentiles over 40 draws from the scenario and intelligence ranges.</div></div>`}
   html+=`</div><div class="agrid">`;
   for(const c of Object.keys(LINES)){
     const L=LINES[c],o=R.out[c],nw=needOf(c),bt=nw.t||S.theaters[0],E=S.enemy[bt],ev=S._sc[bt].est;
-    const nxt=cr.find(x=>x[2]===bt&&x[1]>S.w+52)||[null,END_W,bt,'2037'];const T=Math.max(4,nxt[1]-S.w)/52;
+    const nxt=cr.find(x=>x[2]===bt&&x[1]>S.w+52)||[null,END_W,bt,'2035'];const T=Math.max(4,nxt[1]-S.w)/52;
     const at=(arr,w)=>arr.reduce((b,x)=>Math.abs(x.w-w)<Math.abs(b.w-w)?x:b,arr[0]);
     const tgt=at(pj,nxt[1]).need[c],invT=at(pj,nxt[1]).inv[c],invTc=at(pc,nxt[1]).inv[c];
     const r=retRate(c),e=Math.exp(-r*T),req=r>1e-6?Math.max(0,r*(tgt-S.inv[c]*e)/(1-e)):Math.max(0,(tgt-S.inv[c])/T);
@@ -4709,9 +4709,9 @@ function stockBody(){
      ${enNote}<div class="rates"><div class="lcu2">⟳ Per year (flow)</div><div class="rr"><span>Producing</span><div class="rb"><i style="width:${B(o.yr)}%;background:#2f62a0"></i></div><b>${fmtN(o.yr)}/yr</b></div>
       <div class="rr"><span>Capacity</span><div class="rb"><i style="width:${B(prodCap[c])}%;background:#7fa3cc"></i></div><b>${fmtN(prodCap[c])}/yr</b></div>
       <div class="rr"><span>Needed</span><div class="rb"><i style="width:${B(req)}%;background:#b8860b"></i></div><b>${req>0?fmtN(req)+'/yr':'met'}</b></div></div>
-     <div class="mini">${nw.n<1e-6&&tgt<1e-6?'Not needed for this campaign. ':`Stock against need now <b>${shrF(shr)}</b> → ${shrF(shrT)} at current output, ${shrF(shrC)} at capacity by ${nxt[3]==='2037'?'2037':dateOf(nxt[1]).getFullYear()} · `}In service <b>${fmtN(S.inv[c])}</b>${S.ready[c]!=null?` (${pct(S.ready[c])} available)`:''} · ${nw.n<1e-6?'':`need now <b>${fmtN(nw.n)}</b> for ${SCEN[bt].short} · `}${E.flag} ${E.n}: ~${fmtN(estInv(E,c))} in service (est.) · retiring ${pct(r)}/yr${wk!=null&&nw.n>1e-6?` · stock lasts <b>${wk>=99?'the whole campaign':fmt(wk,1)+' weeks'}</b> of the ${Math.round(ev.wk)} required`:''}${o.bott?` · <span class="redt">short: ${o.chain.map(i=>ND[i].n).join(' ← ')}</span>`:''}</div></div>`;
+     <div class="mini">${nw.n<1e-6&&tgt<1e-6?'Not needed for this campaign. ':`Stock against need now <b>${shrF(shr)}</b> → ${shrF(shrT)} at current output, ${shrF(shrC)} at capacity by ${nxt[3]==='2035'?'2035':dateOf(nxt[1]).getFullYear()} · `}In service <b>${fmtN(S.inv[c])}</b>${S.ready[c]!=null?` (${pct(S.ready[c])} available)`:''} · ${nw.n<1e-6?'':`need now <b>${fmtN(nw.n)}</b> for ${SCEN[bt].short} · `}${E.flag} ${E.n}: ~${fmtN(estInv(E,c))} in service (est.) · retiring ${pct(r)}/yr${wk!=null&&nw.n>1e-6?` · stock lasts <b>${wk>=99?'the whole campaign':fmt(wk,1)+' weeks'}</b> of the ${Math.round(ev.wk)} required`:''}${o.bott?` · <span class="redt">short: ${o.chain.map(i=>ND[i].n).join(' ← ')}</span>`:''}</div></div>`;
   }
-  html+=`</div><p class="mini" style="margin-top:8px"><b>Need (scenario)</b> = the in-service level that would cover the scenario in this category's binding theater, on your central estimate. <b>Munitions:</b> the campaign's weekly burn × the required weeks, net of allies' share and of what your lines make during the campaign, divided by the share of your stock assigned to the theater. Interceptor burn is the enemy's salvo (launch rate × missiles in service, plus output) × interceptors per threat × the share aimed at defended targets. Taiwan strike burn is long-range missiles per PLAN battle-force ship: CSIS found the US fired more than 5,000 in three weeks and ran out of LRASM in the first.[c:csiswg,csis] Shell, drone and European strike burns are anchored to observed rates (Russia's output,[c:estonia] Ukraine's ~4M drones a year[c:uadrone]) and scale with the enemy's ability to sustain fire. <b>Platforms:</b> the 2025 in-theater force, scaled by the enemy's growth in available platforms net of allies' growth. (CSIS's base case had the 2026 force win at a cost of hundreds of aircraft and dozens of ships.[c:csisloss]) Only available platforms count (see Readiness). <b>Needed</b> = the steady output that would reach the need by the next crisis at least a year out (or 2037), after retirements. Every parameter has a range; see 📚 Sources → Scenario.</p>`;
+  html+=`</div><p class="mini" style="margin-top:8px"><b>Need (scenario)</b> = the in-service level that would cover the scenario in this category's binding theater, on your central estimate. <b>Munitions:</b> the campaign's weekly burn × the required weeks, net of allies' share and of what your lines make during the campaign, divided by the share of your stock assigned to the theater. Interceptor burn is the enemy's salvo (launch rate × missiles in service, plus output) × interceptors per threat × the share aimed at defended targets. Taiwan strike burn is long-range missiles per PLAN battle-force ship: CSIS found the US fired more than 5,000 in three weeks and ran out of LRASM in the first.[c:csiswg,csis] Shell, drone and European strike burns are anchored to observed rates (Russia's output,[c:estonia] Ukraine's ~4M drones a year[c:uadrone]) and scale with the enemy's ability to sustain fire. <b>Platforms:</b> the 2025 in-theater force, scaled by the enemy's growth in available platforms net of allies' growth. (CSIS's base case had the 2026 force win at a cost of hundreds of aircraft and dozens of ships.[c:csisloss]) Only available platforms count (see Readiness). <b>Needed</b> = the steady output that would reach the need by the next crisis at least a year out (or 2035), after retirements. Every parameter has a range; see 📚 Sources → Scenario.</p>`;
   return html;
 }
 
@@ -4760,7 +4760,7 @@ function stackBar(seg,fv,mark,markL){
 const usReq=c=>Math.max(0,reqOut(c)-allyOut(c));
 function reqRate(c,pj){
   const nw=needOf(c,S.enemy,S.allied),bt=nw.t||S.theaters[0],cr=CRISES[S.fac]||[];
-  const nxt=cr.find(x=>x[2]===bt&&x[1]>S.w+52)||[null,END_W,bt,'2037'];const T=Math.max(4,nxt[1]-S.w)/52;
+  const nxt=cr.find(x=>x[2]===bt&&x[1]>S.w+52)||[null,END_W,bt,'2035'];const T=Math.max(4,nxt[1]-S.w)/52;
   const at=pj.reduce((b,x)=>Math.abs(x.w-nxt[1])<Math.abs(b.w-nxt[1])?x:b,pj[0]);const tgt=at.need[c];
   const r=retRate(c),e=Math.exp(-r*T);return {req:r>1e-6?Math.max(0,r*(tgt-S.inv[c]*e)/(1-e)):Math.max(0,(tgt-S.inv[c])/T),by:nxt}
 }
@@ -5130,7 +5130,7 @@ const ASSUMPTIONS=[
  ['Allied sourcing limits','The bars themselves are statutory: Navy ships only from US yards (10 U.S.C. 8679)[c:yard8679] and bearings only from the US or Canada (DFARS 225.7009).[c:dfarsbr] Their game effect is a simplification: no allied supply or emergency buys for shipyards, submarine yards or bearings until a bill, waiver or presidential exception lifts them. The capacity the Ensuring Naval Readiness Act adds (+0.5 of base shipyard capacity, +3 surface ships a year)[c:s406] is an estimate. Specialty metals are limited to about 28 qualifying countries; that bar is not modeled item by item.'],
  ['Air-to-air and Army fires','US output: AMRAAM ~1,200 a year in 2025 (recent lots 1,160–1,200), GMLRS and PrSM ~12,000 a year retained by the US out of ~14,000 capacity (sourced capacity; the US share is an estimate). US stocks (12,000 air-to-air missiles, 25,000 rockets) are estimates: neither is public. Chinese and Russian output and stocks are game estimates with wide ranges; for the PL-15 the only public figures are open-source speculation (1,000–3,000 a year). Neither line is scored in the campaign scenarios yet.'],
  ['Emergency purchases','A spot purchase is offered only for raw materials, materials and components that also sell to civilian customers. Defense-only items that allied plants make can be bought from those producers at half again the price, as Poland and South Korea have sold TNT and shells. Items built to order by a few US defense suppliers (submarine and surface shipyards, solid rocket motors, seekers, warheads, thermal batteries, AESA radars, fighter engines) have no emergency purchase: only new capacity helps. Which items fall in each group, and the premiums, are game estimates.'],
- ['Sufficiency','The headline compares your output plus allied output with what the plan requires, line by line, capped at 100% and averaged over the nine lines. The requirement is the US public target (cited on each line) plus the allies’ own 2030 level, raised in proportion as the rival out-builds its own January 2027 level. You choose the rival, and with it the allies counted: Japan, South Korea and Taiwan against China; European allies against Russia (Ukraine excluded, since its output goes to its own war). Allied output rises from its 2027 level to its 2030 plan over three years. Allied deals build new capacity and take nothing from the allies. Emergency buys from existing allied output first use spare capacity (about 15% of it); only the remainder comes out of the allies’ own lines that use those inputs (allied suppliers assumed to sell a third of their output to you), at most half. Sustained buying makes allied suppliers expand, closing up to three-quarters of that squeeze over about two years, and the expansion stays. These are game estimates. The game ends in late 2037 and is judged on sufficiency: Arsenal Restored at 100%, Within Reach at 75%, Gained Ground if you rose at least 5 points from January 2027, otherwise Out-Built.'],
+ ['Sufficiency','The headline compares your output plus allied output with what the plan requires, line by line, capped at 100% and averaged over the nine lines. The requirement is the US public target (cited on each line) plus the allies’ own 2030 level, raised in proportion as the rival out-builds its own January 2027 level. You choose the rival, and with it the allies counted: Japan, South Korea and Taiwan against China; European allies against Russia (Ukraine excluded, since its output goes to its own war). Allied output rises from its 2027 level to its 2030 plan over three years. Allied deals build new capacity and take nothing from the allies. Emergency buys from existing allied output first use spare capacity (about 15% of it); only the remainder comes out of the allies’ own lines that use those inputs (allied suppliers assumed to sell a third of their output to you), at most half. Sustained buying makes allied suppliers expand, closing up to three-quarters of that squeeze over about two years, and the expansion stays. These are game estimates. The game ends on 8 January 2035. With a mandate it is judged on the mandate; in the open race, on sufficiency: Arsenal Restored at 100%, Within Reach at 75%, Gained Ground if you rose at least 5 points from January 2027, otherwise Out-Built.'],
  ['Permits','Statutory terms are from the statutes: Title V and NPDES permits run five years, RCRA permits up to ten, ATF explosives licenses three, ITAR registration one; ESA formal consultation is 135 days; NEPA assessments and impact statements have one- and two-year deadlines (2023). Which permits each project type needs, their review times relative to each other, and the odds that a renewal is contested are game estimates.'],
  ['US rulebook','Each rule’s status, date and scope is sourced. How much it changes obstacle odds, waits and costs (the ×multipliers shown on each rule), and the Political Capital needed to adopt, finalize or reverse executive actions, are game assumptions.'],
  ['Import controls (US)','Dates and scope of each control are sourced. Their game effects are assumptions: drone output up to −10%; US output of drone parts (cells, motors, boards, fiber, IR sensors) up to +20% as onshoring completes; drone line (−3% with an allied exemption) and −4% under tariffs while foreign parts are barred and US sources catch up, rising to +25% as the protected home market builds scale; onshoring takes about four years (1.5× faster with the Section 232 onshoring program, 2× if existing authorizations are pulled); obstacle, wait, cost and strain effects; and the Political Capital price of each switch.'],
@@ -5351,12 +5351,12 @@ function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k=
       <div class="ti-dk">What you must reach, a year</div><ul>${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:''}</li>`).join('')}</ul>
       <div class="ti-chk"><div><b>January ${dateOf(cur.sc.mid).getFullYear()}</b><span>halfway floors, and a test of what you hold that day</span></div><div><b>January ${dateOf(cur.sc.dl).getFullYear()}</b><span>the real targets</span></div></div>`
     :`<p>No targets are handed to you. Set your own priorities, choose which rival to measure yourself against, and switch between them as you play.</p>
-      <div class="ti-chk"><div><b>Every year</b><span>your output against China's or Russia's, line by line</span></div><div><b>December 2037</b><span>the game ends with an after-action report</span></div></div>`;
+      <div class="ti-chk"><div><b>Every year</b><span>your output against China's or Russia's, line by line</span></div><div><b>January 2035</b><span>the real targets are judged, and the game ends</span></div></div>`;
   const rad=(a,attr,on,n,d)=>`<button class="ti-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
   const step=(k,n,d)=>`<div class="ti-step"><span class="ti-num">${k}</span><div><b>${n}</b><em>${d}</em></div></div>`;
-  app.innerHTML=cz(`<div id="title" class="ti2"><div class="ti-head"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="ti-tag">Rebuilding the US defense industrial base, January 2027 to 2037</div></div>
+  app.innerHTML=cz(`<div id="title" class="ti2"><div class="ti-head"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="ti-tag">Rebuilding the US defense industrial base, January 2027 to January 2035</div></div>
    <div class="ti-welcome"><p>January 2027. China and Russia out-produce the United States in munitions, ships and missiles. You inherit an industrial base that has withered, suppliers that move slowly, and critical minerals that come from the rivals you are racing.</p>
-     <div class="ti-how"><span><b>Find</b> what holds output back</span><i></i><span><b>Build</b> plants, deals and stockpiles</span><i></i><span><b>Reform</b> the rules that slow them</span><i></i><span><b>Play</b> two months at a time, to 2037</span></div></div>
+     <div class="ti-how"><span><b>Find</b> what holds output back</span><i></i><span><b>Build</b> plants, deals and stockpiles</span><i></i><span><b>Reform</b> the rules that slow them</span><i></i><span><b>Play</b> two months at a time, to 2035</span></div></div>
    <div class="ti-quick ${sv?'':'one'}">
      ${sv?`<button class="ti-qs" data-a="tcont"><span class="ti-qi">▶</span><span class="ti-qt"><b>Continue your game</b><em>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'} · ${fmtDate(sv.w)} · ${sv.sandbox?'Sandbox':'Standard'} · saved ${agoT}</em></span><span class="ti-c2go">Continue ›</span></button>`:''}
      <button class="ti-qs" data-a="ttut"><span class="ti-qi">🎓</span><span class="ti-qt"><b>Play the tutorial</b><em>A guided tour of every screen, your first program and your first turn. It uses one scenario only: the Taiwan Window, against China. About ten minutes.</em></span><span class="ti-c2go">Start ›</span></button>
@@ -5374,7 +5374,7 @@ function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k=
      <p class="ti-note">${sv?'Starting a new game replaces the saved game in this browser; download a file from the Menu first to keep it. ':''}The game saves itself in this browser as you play.</p></section></div>`)}
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
-   <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2037 (2025–26 replayed)</div>
+   <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2035 (2025–26 replayed)</div>
    <div class="fcards">${PLAYABLE.map(k=>{const f=FACTIONS[k];return `<div class="fcard" data-a="start" data-f="${k}"><h3>${f.flag} ${f.name}</h3><div class="dim" style="font:italic 13px Georgia">${f.motto}</div><ul>${f.blurb.map(b=>`<li>${b}</li>`).join('')}</ul></div>`}).join('')}</div>
    </div>`;app.innerHTML=cz(app.innerHTML);
 }
@@ -5684,13 +5684,13 @@ function scenMidHTML(){const sc=SCD[S.scen],r=S.scenMid;
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
   const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
   S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
-  log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0}
+  log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0;S.over=true;S.verdict=verdict;S.overWhy=''}
 const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
 // the picker before play starts, then the mandate card
 function scenCard(){
-  if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2037. You can still pick a scenario until the clock starts.</span></div>`:'';
+  if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2035. You can still pick a scenario until the clock starts.</span></div>`:'';
   if(false){
-    return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">Real targets on real timelines: the US is not on track for most of them. The floors show how close you can get. Or close this and play the open race to 2037.</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
+    return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">Real targets on real timelines: the US is not on track for most of them. The floors show how close you can get. Or close this and play the open race to 2035.</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
   const sc=SCD[S.scen],mid=S.scenMid,nextW=mid||S.w>=sc.mid?sc.dl:sc.mid,left=nextW-S.w,res=S.scenRes;
   return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`${mid?`<span class="sc-midv" data-tip="${tipQ(`January 2030: ${mid.floors} of ${mid.of} halfway floors met; the test ${mid.test.ok?'passed':'failed'}.`)}">2030: ${mid.verdict}</span>`:''}<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${nextW===sc.mid?'the floors':'the real targets'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}</span>`}</div>
     ${sc.mand.map(m=>{const x=mandVal(m),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
@@ -5699,14 +5699,14 @@ function scenCard(){
 function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"><span class="ic">🎯</span>January 2027: choose your mandate</div><div class="bd">
   <p>Each scenario hands you targets drawn from real public goals. In January 2030 you are judged on whether you are halfway there and whether what you hold would be enough that day. In January 2035 you are judged on the real targets. Under today’s rules the United States is not on track for most of them.</p>
   <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
-  <div class="ft"><button class="pbtn" data-a="scenskip">No mandate: play the open race to 2037</button></div></div>`}
+  <div class="ft"><button class="pbtn" data-a="scenskip">No mandate: play the open race to 2035</button></div></div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
   return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
     <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>${S.scenMid?`<p class="mini">In January 2030 you were <b>${S.scenMid.verdict.toLowerCase()}</b>: ${S.scenMid.floors} of ${S.scenMid.of} halfway floors met.</p>`:''}
     <table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
     <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
     <p><i>${sc.lesson}</i></p></div>
-    <div class="ft"><button class="pbtn primary" data-a="scenon">Keep building to 2037</button><button class="pbtn" data-a="scenstop">End here and see the record</button></div></div>`}
+    <div class="ft"><button class="pbtn primary" data-a="scenstop">See the full record</button></div></div>`}
 
 function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   if(id.startsWith('L:')){const ps=S.projects.filter(q=>PD[q.def].t.line===c),pl=S.plants.filter(p=>p.kind==='line'&&p.target===c&&!p.full);
