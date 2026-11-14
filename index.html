@@ -932,6 +932,8 @@ span.trk.t-up{background:#152a30;color:#9fd2e0;border:1px solid #3d7480}span.trk
 span.trk.t-ord{background:#2e2610;color:#e9c46a;border:1px solid #8a6d2e;cursor:pointer}
 .rc-out{display:block;margin-top:4px;font:600 12px "Segoe UI",system-ui,sans-serif!important;letter-spacing:.02em!important;text-transform:none!important;color:#c8bf9f}.rc-rhead .rc-rbig .rc-out b,.rc-out b{font:700 15px "Segoe UI",system-ui,sans-serif!important;line-height:1.2!important;color:#9fd2e0}.rc-out em{font-style:normal;color:#8fd16a}.rc-out em.neg{color:#e9a091}
 .rc-rhead .rc-rbig{flex-wrap:wrap}.rc-rhead .rc-rbig .rc-out{flex:1 1 100%;margin-top:2px}
+span.trk.t-idle{background:#3a2a0c;color:#ffd27a;border:1px solid #c9a227;cursor:pointer}
+.ordidle{border:1px solid #c9a227;border-left:4px solid #b8860b;background:#fbf3dc;border-radius:4px;padding:8px 10px;margin:6px 0 10px}.oih{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}.oih b{color:#7a5410}.oih span{flex:1;font-size:12.5px;color:#5a4e38}
 </style>
 </head>
 <body>
@@ -1998,6 +2000,14 @@ const DFARS_NODES=['ndpr','hree','magnets','tungsten','wha','tantalum','tantcap'
 /* ---------- EVENTS ---------- */
 const cutAll=(ids,v)=>{for(const id of ids)S.cut[id]=Math.min(S.cut[id],v)};
 const EVENTS=[
+ {id:'ordidle',fac:['US'],once:false,ic:'🏭',when:()=>{if(S.w<PLAY0+1||S.w%4||S.queue.some(q=>q.ev==='ordidle')||S.sandbox)return false;const m=ordIdle(),ask=S.ordAsk=S.ordAsk||{};
+   const c=Object.keys(m).filter(c=>!ask[c]||S.w-ask[c].w>=26&&m[c].gain>ask[c].gain*1.2).sort((a,b)=>m[b].gain*UC[b]-m[a].gain*UC[a])[0];if(!c)return false;ask[c]={w:S.w,gain:m[c].gain};S._ordC=c;S._ordX=m[c];return true},
+  t:()=>`Idle capacity: ${LINES[S._ordC].n}`,
+  body:()=>{const c=S._ordC,x=S._ordX,L=LINES[c];return `Your ${L.n.toLowerCase()} lines could make <b>${fmtN(x.could)} a year</b>, but Congress has ordered only <b>${fmtN(ordOf(c))}</b>. Lines build only what is ordered and paid for, so <b>${fmtN(x.gain)} a year sits idle</b> (${money(x.gain*UC[c])} a year at recent prices). Ordering it would raise your share of the requirement by about <b>${fmt(x.d*100,1)} points</b>${x.hurt.length?`, though it would take shared inputs from ${hurtTxt(x.hurt)}`:''}. Ask Congress for more in this year’s NDAA, or pay for a year of output now from your budget.`},
+  o:()=>{const c=S._ordC,x=S._ordX,add=x.add,k=ordPC(c,add),cost=add*UC[c];return [
+   {l:`Request +${fmtN(add)} a year in the FY${pkgFY()} NDAA (Congress votes in December and cuts about ${Math.round(ordCut(pkgFY())*100)}% of order requests; permanent once funded)`,pc:k,fx:()=>ordReqAdd(c,add,k)},
+   {l:`Buy +${fmtN(add)} for the next year from the budget (output starts now; the order lapses after a year)`,$:cost,fx:()=>{(S.ordBuy=S.ordBuy||[]).push({c,add,left:52});spent('$',cost);log(`Bought from the budget: +${fmtN(add)} ${L_U(c)} over the next year (${money(cost)}).`)}},
+   {dflt:1,l:'Not now (the capacity stays idle; the NDAA tab lists every idle line)'}]}},
  {id:'dfars',fac:['US'],fixedW:PLAY0+1,ic:'🧲',t:'DFARS Restrictions Widen (1 Jan 2027)',pre:'September 2022: the Pentagon halted F-35 deliveries after a Chinese-made alloy turned up in a pump magnet, then signed a national security waiver a month later so deliveries could resume.[c:f35magnet]',
   body:"DFARS 225.7018 now bans Chinese- and Russian-origin magnets, tungsten, and tantalum \"mined, refined, separated, melted, or produced\" anywhere in the supply chain.[c:dfars7018] Your allied magnet suppliers buy Chinese oxide. Compliant supply shrinks now; new supply (MP's 10X plant, 2028) arrives later.",
   o:[{dflt:1,l:'Waive it where nothing compliant exists (non-availability determinations for a year, renewable; supply keeps flowing)',fx:()=>{S.dfars=true;startCarve('cvDfars',true)}},
@@ -2635,6 +2645,24 @@ const UC={shells:.000008,interceptors:.0045,strike:.002,aircraft:.09,surface:2,s
 // funded orders per year: Congress buys what the lines could make in January 2027; extra buys from the budget last a year
 const ordReqs=()=>(S.ordReq=S.ordReq||[]);
 function ordOf(c){if(S.histMode||!S.ord||S.ord[c]==null)return Infinity;let o=S.ord[c];for(const x of S.ordBuy||[])if(x.c===c)o+=x.add;return o}
+const ordStep=c=>{const k=LINES[c].k;return k<10?.5:k<2000?50:k<50000?1000:10000};
+// What ordering each line in full would do, judged at steady state (stockpiles left out, so a buffer that runs dry later does not hide
+// the cost): the line's gain, the output it would take from other lines through shared inputs, and the net change in sufficiency.
+// A line is idle only when the net change is a gain.
+function ordIdle(){if(!S.ord||S.histMode)return {};const key=S.w+'|'+S.plants.length+'|'+JSON.stringify(S.ord)+'|'+(S.ordBuy||[]).length+'|'+ordReqs().length;if(S._oi&&S._oi.k===key)return S._oi.m;
+  const R=S._R||production(false),m={},cs=Object.keys(LINES),stk=S.stock;let R0;
+  const suf=O=>cs.reduce((a,c)=>a+shareAt(c,O.out[c].yr,S.w),0)/cs.length;
+  try{S.stock={};R0=production(false);
+    for(const c of cs){const o=R.out[c];if(!o||!o.ordLim)continue;const o0=S.ord[c];S.ord[c]=1e15;let R1;try{R1=production(false)}finally{S.ord[c]=o0}
+      const req=ordReqs().find(x=>x.c===c),gain=R1.out[c].yr-R0.out[c].yr-(req?req.add:0),st=ordStep(c),d=suf(R1)-suf(R0);
+      const hurt=cs.filter(l=>l!==c&&R0.out[l].yr-R1.out[l].yr>R0.out[l].yr*.02).map(l=>({c:l,f:1-R1.out[l].yr/Math.max(R0.out[l].yr,1e-9)}));
+      if(gain>=Math.max(st*.5,o.yr*.05)&&d>=.002)m[c]={gain,add:Math.max(st,Math.ceil(gain/st)*st),now:o.yr,could:o.yr+gain,d,hurt}
+      else if(gain>=Math.max(st*.5,o.yr*.05))(m._no=m._no||{})[c]={gain,d,hurt}}}
+  finally{S.stock=stk}
+  const no=m._no;delete m._no;S._oi={k:key,m,no};return m}
+const ordNo=()=>(ordIdle(),S._oi?.no||{});
+const hurtTxt=h=>h&&h.length?h.sort((a,b)=>b.f-a.f).slice(0,3).map(x=>`${LINES[x.c].n.toLowerCase()} −${Math.round(x.f*100)}%`).join(', '):'';
+function ordReqAdd(c,add,k){ordReqs().push({c,add,pkg:pkgW(),pc:k});spent('pc',k);log(`Requested in the FY${pkgFY()} NDAA: +${fmtN(add)} ${LINES[c].u} a year (${money(add*UC[c])} a year; ${k} PC).`)}
 const ordPC=(c,add)=>Math.max(3,Math.round(2+1.5*add*UC[c]));
 const ordCut=fy=>clamp(moodOf(fy).f*.1*credF(),.03,.4);
 function ordAdd(c,add){add=Math.round(add*1000)/1000;if(add<=0||ordReqs().some(x=>x.c===c))return;const k=ordPC(c,add);if(S.pc<k)return;S.pc-=k;spent('pc',k);
@@ -3222,8 +3250,13 @@ function billAct(a,uid,d){const p=S.projects.find(x=>x.uid===+uid);if(!p||!p.pkg
 function refSec(){const its=refReqs();
   return `<div class="dsec"><h4>Policy provisions</h4><p class="mini" style="margin:0 0 6px">Reforms riding this year’s bill. Defense provisions usually survive conference; riders from other committees usually do not. Their PC is spent; a dropped provision can be tried again next year. Add them from the reform list.</p>
     ${its.length?`<table class="ctable bl-t"><tr><th>Provision</th><th>Kind</th><th>Money</th><th>Outlook</th><th></th></tr>${its.map(x=>`<tr><td><b>${rname(RD[x.id])}</b><div class="mini">${x.pc} PC spent</div></td><td>${x.rider?'<span class="amb">Rider</span>':'Defense provision'}</td><td class="num">${x.req?money(x.req):'—'}</td><td><span class="${refPass(x)<.5?'amb':'okt'}">~${Math.round(refPass(x)*100)}% chance it survives conference</span></td><td><button class="btn sm" data-a="refdrop" data-r="${x.id}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No reforms in the request yet.</p>'}</div>`}
+function ordIdleSec(){const m=ordIdle(),cs=Object.keys(m).sort((a,b)=>m[b].gain*UC[b]-m[a].gain*UC[a]);const no=ordNo(),noT=Object.keys(no).length?`<p class="mini">Not worth ordering now: ${Object.keys(no).map(c=>`<b>${LINES[c].n}</b> could make ${fmtN(no[c].gain)} more a year, but it would take shared inputs from ${hurtTxt(no[c].hurt)||'other lines'}, and your share of the requirement would ${no[c].d<-.0005?'fall':'not rise'}`).join('; ')}. Fix the shared input first.</p>`:'';
+  if(!cs.length)return '<p class="mini okt">✓ No idle capacity worth ordering.</p>'+noT;
+  const tot=cs.reduce((a,c)=>a+ordPC(c,m[c].add),0);
+  return `<div class="ordidle"><div class="oih"><b>⚠ Idle capacity</b><span>Lines that could make more than Congress has ordered.</span><button class="pbtn sm primary" data-a="ordall" ${S.pc>=ordPC(cs[0],m[cs[0]].add)?'':'disabled'}>🏛 Request all · ${tot} PC</button></div>
+   <table class="ctable"><tr><th>Line</th><th class="num">Ordered</th><th class="num">Could make</th><th class="num">Idle a year</th><th class="num">Net effect</th><th></th></tr>${cs.map(c=>{const x=m[c],k=ordPC(c,x.add);return `<tr><td><span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span></td><td class="num">${fmtN(ordOf(c))}</td><td class="num">${fmtN(x.could)}</td><td class="num redt">${fmtN(x.gain)}<div class="mini">${money(x.gain*UC[c])}</div></td><td class="num okt">+${fmt(x.d*100,1)} pt${x.hurt.length?`<div class="mini redt">takes from ${hurtTxt(x.hurt)}</div>`:''}</td><td><button class="btn sm" data-a="ordadd" data-c="${c}" data-v="${x.add}" ${S.pc>=k?'':'disabled'}>Request +${fmtN(x.add)} · ${k} PC</button></td></tr>`}).join('')}</table>${noT}</div>`}
 function ordBillSec(){const rs=ordReqs(),fy=pkgFY();
-  return `<h4 class="bh">Weapons orders</h4><p class="mini">Requests to buy more than Congress funds now, so capacity you build does not sit idle. Each costs Political Capital; Congress cuts about ${Math.round(ordCut(fy)*100)}% in markup. Request from an end item’s page.</p>${rs.length?`<table class="ctable"><tr><th>Line</th><th class="num">More a year</th><th class="num">Cost a year</th><th></th></tr>${rs.map(x=>`<tr><td><span class="linkn" data-a="node" data-n="L:${x.c}">${LINES[x.c].n}</span></td><td class="num">+${fmtN(x.add)}</td><td class="num">${money(x.add*UC[x.c])}</td><td><button class="btn sm" data-a="orddrop" data-c="${x.c}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No order increases in the request yet.</p>'}`}
+  return `<h4 class="bh">Weapons orders</h4><p class="mini">Requests to buy more than Congress funds now, so capacity you build does not sit idle. Each costs Political Capital; Congress cuts about ${Math.round(ordCut(fy)*100)}% in markup. Request from an end item’s page, or from the idle lines below.</p>${ordIdleSec()}${rs.length?`<table class="ctable"><tr><th>Line</th><th class="num">More a year</th><th class="num">Cost a year</th><th></th></tr>${rs.map(x=>`<tr><td><span class="linkn" data-a="node" data-n="L:${x.c}">${LINES[x.c].n}</span></td><td class="num">+${fmtN(x.add)}</td><td class="num">${money(x.add*UC[x.c])}</td><td><button class="btn sm" data-a="orddrop" data-c="${x.c}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No order increases in the request yet.</p>'}`}
 function ndsSec(){const P=S._R?.P||production(false).P,left0=pkgRoom()-pkgPlan().filter(x=>x.st==='in').reduce((a,x)=>a+x.p.req,0);let left=left0;
   const rows=ndsReqs().map(x=>{const ok=left>=x.req-1e-9;if(ok)left-=x.req;else left=-1;const q=ndsCut(x.id);
     return `<tr class="${ok?'':'bl-out'}"><td>${pill(x.id,P)}<div class="mini">holds ${fmt((S.stock[x.id]||0)/Math.max(S.nodes[x.id].scale,1e-9),0)} weeks now</div></td><td class="num">${money(x.req)}</td><td>${ok?`<span class="okt">~${Math.round(q*100)}% cut risk</span>`:'<span class="redt">Not funded: below the money line</span>'}</td><td><button class="btn sm" data-a="ndsdrop" data-n="${x.id}" data-tip="Take it out of the request.">✕</button></td></tr>`}).join('');
@@ -3458,7 +3491,7 @@ const TUT=[
  {p:'ndaa',sel:secH('Standing'),t:'Your standing',x:'Whether Congress believes your requests. It rises when programs Congress funded deliver and when you keep a pledged start date, and it lowers the cut risk on everything you ask for.',next:1},
  {p:'ndaa',sel:secH('Work the bill'),t:'Work the bill',x:'New plants you request appear here. Congress funds them top to bottom until its money runs out, so set the order; pledge a start date to cut an item’s risk.',next:1},
  {p:'ndaa',sel:secH('Stockpile'),t:'Stockpile buys',x:'The NDAA can buy a stockpile of a short material: a year of supply for the minerals Beijing can cut. It drains only when supply falls short.',next:1},
- {p:'ndaa',sel:()=>[...document.querySelectorAll('#view h4.bh')].find(h=>h.textContent.startsWith('Weapons'))||null,t:'Weapons orders',x:'Lines build only what Congress orders. When you add capacity, request more orders here, or the new lines sit idle.',next:1},
+ {p:'ndaa',sel:()=>[...document.querySelectorAll('#view h4.bh')].find(h=>h.textContent.startsWith('Weapons'))||null,t:'Weapons orders',x:'Lines build only what Congress orders, and Congress keeps ordering the January 2027 amounts unless you ask. When new capacity sits idle, the game stops to tell you and lists it here, with what ordering it would do to your share of the requirement. Ordering one line can take shared inputs from others; the list says when it would.',next:1},
  {p:'ndaa',sel:'#view .ndaaref',t:'Reforms in the NDAA',x:'Defense law rides the bill: add a reform to the request and it is decided in December. Reforms are what make plants arrive in time.',next:1},
  // Rules & policy
  {p:'policy',...NAV('policy','Rules & policy')},
@@ -3674,6 +3707,7 @@ function carvesTick(){
   for(const id in S.carve){const c=S.carve[id];if(c.left>0){c.left--;if(c.left===0)log(`⌛ Carve-out expired: ${cname(CD[id])}. Renew it or lose it.`,'bad');
     else if(CD[id].court&&!S.queue.some(q=>q.ev==='enjoin')&&rand()<CD[id].court){S._enj=id;queueEvent('enjoin')}}}
 }
+const L_U=c=>LINES[c].u;
 function queueEvent(id){S.queue.push({ev:id})}
 function infoOnly(q){if(q.read||q.sys==='outcome')return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
 function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(true)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
@@ -3803,6 +3837,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
   if(sc&&inN(sc.mid))ahead.push(`🎯 ${sc.n}: the halfway floors are judged ${fmtDate(sc.mid)}.`);if(sc&&inN(sc.dl))ahead.push(`🎯 ${sc.n}: the real targets are judged ${fmtDate(sc.dl)}.`);
   if(S.bill)ahead.push(`📜 ${rname(RD[S.bill.id])}: the floor vote is in ${S.bill.left} weeks.`);
   for(const p of S.projects){const e=S.w+remW(p);if(inN(e))ahead.push(`🏗 ${projName(p)} is expected to finish around ${fmtDate(e)}.`)}
+  {const m=ordIdle(),cs=Object.keys(m);if(cs.length)ahead.push(`🏭 Idle capacity: ${cs.map(c=>`${LINES[c].n.toLowerCase()} +${fmtN(m[c].gain)} a year`).join(', ')}. Congress has not ordered it; <span class="linkn" data-a="view" data-v="ndaa">request orders on the NDAA tab</span>.`)}
   if(FYOF(n1)===IB_RECON_END+1&&FYOF(n0)<=IB_RECON_END)ahead.push('💵 Reconciliation money ends with this fiscal year.');
   {const cn=cnNext();if(cn&&cn.yrsTo>=0&&cn.yrsTo<=1)ahead.push(`${FLAGS.cn} Beijing could reach its next step, ${cn.nx.s.toLowerCase()}, within ${cn.yrsTo<.25?'a few months':Math.round(cn.yrsTo*12)+' months'}${cn.mine?`; your plants replacing Chinese supply add ${cn.mine} pressure a year`:''}. Hedges: stockpile buys (a year of supply for these minerals), the minerals partnership, talks.`)}
   return `<div class="paper wide yrp"><div class="hd"><span class="ic">🗓</span>${turnLabel(w0)}: turn report</div><div class="bd">
@@ -5722,9 +5757,9 @@ function trkTipOf(t){const y=t.w?dateOf(t.w).getFullYear():'',e=`<br>January 203
   return ({met:'<b>Met</b><br>Enough is made now to meet the requirement.',track:`<b>On track</b><br>What is under way meets the requirement by about ${y} and holds it to January 2035, if it lands on schedule.`,
     up:'<b>Rising</b><br>Not enough by 2035, but what is under way moves it closer.',flat:'<b>Holding</b><br>What is under way roughly keeps pace: no closer by 2035. It needs a new program, an allied deal or a reform.',
     down:'<b>Slipping</b><br>The requirement grows faster than what is under way adds: further behind by 2035. It needs a new program, an allied deal or a reform.'}[t.s])+e+o}
-function trkChip(t,k){if(!t)return '';const nw=k&&S.trkNew?.[k]&&S.w-S.trkNew[k].w<=10?' new':'',y=t.w?dateOf(t.w).getFullYear():'';
+function trkChip(t,k){if(!t)return '';const c=k&&k.startsWith('L:')?k.slice(2):null,idle=c?ordIdle()[c]:null;const nw=k&&S.trkNew?.[k]&&S.w-S.trkNew[k].w<=10?' new':'',y=t.w?dateOf(t.w).getFullYear():'';
   const dd=nw&&S.trkNew[k].d>=.005?Math.round(S.trkNew[k].d*100):0,txt=t.s==='met'?'Met':t.s==='track'?`On track · ${y}`:dd?`${pct(t.end)} by 2035 · +${dd} pts`:`${TRK_N[t.s]} · ${pct(t.end)} by 2035`;
-  return `<span class="trk t-${t.s}${nw}" data-tip="${tipQ(trkTipOf(t))}">${nw?'▲':TRK_I[t.s]} ${txt}</span>${t.needOrd?`<span class="trk t-ord" data-a="view" data-v="ndaa" data-tip="${tipQ(trkTipOf(t))}">Needs orders</span>`:''}`}
+  return `<span class="trk t-${t.s}${nw}" data-tip="${tipQ(trkTipOf(t))}">${nw?'▲':TRK_I[t.s]} ${txt}</span>${idle?`<span class="trk t-idle" data-a="view" data-v="ndaa" data-tip="${tipQ(`<b>Idle capacity</b><br>The lines could make ${fmtN(idle.could)} a year; Congress has ordered ${fmtN(ordOf(c))}. ${fmtN(idle.gain)} a year sits idle. Request orders on the NDAA tab.`)}">⚠ Idle +${fmtN(idle.gain)}/yr</span>`:t.needOrd?`<span class="trk t-ord" data-a="view" data-v="ndaa" data-tip="${tipQ(trkTipOf(t))}">Needs orders</span>`:''}`}
 // the 2035 outlook across all lines, as the race measures it (capped shares, averaged)
 function trkAll(){const cs=Object.keys(LINES),ts=cs.map(c=>trkOf('L:'+c));return {now:ts.reduce((a,t)=>a+t.now,0)/cs.length,end:ts.reduce((a,t)=>a+t.end,0)/cs.length}}
 // when the game is paused, compare with last time and say what moved: progress gets a notice and a marker for the next turn
@@ -5785,7 +5820,7 @@ const unitP=v=>v>=1?'$'+fmt(v,1)+'B':v>=.001?'$'+fmt(v*1000,v>=.01?0:1)+'M':'$'+
 function ordSec(c,o){if(!S.ord)return '';const L=LINES[c],ord=ordOf(c),phys=o.physYr,gap=Math.max(0,phys-ord),q=ordReqs().find(x=>x.c===c),buys=(S.ordBuy||[]).filter(x=>x.c===c);
   const step=L.k<10?.5:L.k<2000?50:L.k<50000?1000:10000,add=Math.max(step,Math.ceil(gap/step)*step);
   return `<div class="dsec ordsec"><h4>Orders</h4><div class="ordrow"><div><b>${fmtN(ord)}</b><span>a year funded by Congress</span></div><div><b>${fmtN(phys)}</b><span>a year the lines could make</span></div><div><b>${unitP(UC[c])}</b><span>each, at recent prices</span></div></div>
-   <p class="mini">Lines build only what is ordered and paid for. ${gap>step*.5?`<b class="redt">${fmtN(gap)} a year of capacity has no orders</b> and sits idle.`:'Orders cover the lines’ capacity.'}${buys.length?` Bought from the budget: +${fmtN(buys.reduce((a,x)=>a+x.add,0))} a year, ${Math.max(...buys.map(x=>x.left))} weeks left.`:''}</p>
+   <p class="mini">Lines build only what is ordered and paid for. ${gap>step*.5?`<b class="redt">${fmtN(gap)} a year of capacity has no orders</b> and sits idle.`:'Orders cover the lines’ capacity.'}${ordNo()[c]?` <b class="amb">More orders would not help now:</b> the line would take shared inputs from ${hurtTxt(ordNo()[c].hurt)||'other lines'} and your share of the requirement would not rise.`:ordIdle()[c]?` Ordering it raises your share of the requirement by about ${fmt(ordIdle()[c].d*100,1)} points.`:''}${buys.length?` Bought from the budget: +${fmtN(buys.reduce((a,x)=>a+x.add,0))} a year, ${Math.max(...buys.map(x=>x.left))} weeks left.`:''}</p>
    <div class="ordb">${q?`<span class="okt mini">🏛 +${fmtN(q.add)} a year requested in the FY${FYOF(q.pkg)} NDAA (Congress votes ~${fmtDate(pkgWhen())}) </span><button class="btn sm" data-a="orddrop" data-c="${c}">Withdraw</button>`:
      `<button class="pbtn sm primary" data-a="ordadd" data-c="${c}" data-v="${add}" ${S.pc>=ordPC(c,add)?'':'disabled'}>🏛 Request +${fmtN(add)} a year in the FY${pkgFY()} NDAA · ${ordPC(c,add)} PC</button>`}
      <button class="pbtn sm" data-a="ordbuy" data-c="${c}" data-v="${add}" ${S.budget>=add*UC[c]?'':'disabled'} data-tip="${tipQ('Pay for a year of extra output now, from your industrial budget.')}">Buy +${fmtN(add)} this year · ${money(add*UC[c])}</button></div></div>`}
@@ -6380,6 +6415,7 @@ document.addEventListener('pointerdown',e=>{
     case 'refadd':refAdd(b.dataset.r,b.dataset.k==='rider');break;
     case 'refdrop':refDrop(b.dataset.r);break;
     case 'ndsadd':ndsAdd(b.dataset.n);break;
+    case 'ordall':{const m=ordIdle();for(const c of Object.keys(m).sort((a,b)=>m[b].gain*UC[b]-m[a].gain*UC[a]))ordAdd(c,m[c].add)}S._vdirty=true;break;
     case 'ordadd':ordAdd(b.dataset.c,+b.dataset.v);S._vdirty=true;break;
     case 'orddrop':ordDrop(b.dataset.c);S._vdirty=true;break;
     case 'ordbuy':ordBuy(b.dataset.c,+b.dataset.v);S._vdirty=true;break;
