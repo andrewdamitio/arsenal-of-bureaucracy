@@ -958,6 +958,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .acstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:1px;background:#d6c9a4;border:1px solid #d6c9a4;margin-top:6px}
 .acs{background:#f6efdc;padding:5px 8px;display:flex;flex-direction:column}.acs b{font:700 16px Georgia,serif;color:#2b241a}.acs span{font:12px/1.25 "Segoe UI",system-ui,sans-serif;color:#5a4e38}.acs.bad b{color:#a3261c}
 .acshort{margin-top:4px;font:12.5px "Segoe UI",system-ui,sans-serif;color:#a3261c}
+.pstep[data-tip],.pmiles li[data-tip]{cursor:help}
 </style>
 </head>
 <body>
@@ -4108,10 +4109,10 @@ function contractHTML(){
 const STAGE_C=['#b8923a','#4a78c8','#6aa84f','#a0703a','#4fb3b0','#9a84c4'];
 function progRec(uid){const p=S.projects.find(x=>x.uid==uid);if(p)return {p,live:true};
   const r=S.done.find(x=>x.uid==uid)||S.gone.find(x=>x.uid==uid);return r?{p:r,live:false}:null}
-const STAGE_WHY={approp:'Congress has to fund it: either it waits for the annual NDAA, or the money you paid is being obligated.',
- contract:'The program office negotiates price, terms and schedule with the builder.',
- permit:'Environmental reviews and permits (NEPA, air, water, hazardous waste, explosives safety) before ground is broken.',
- build:'Construction and installing the equipment.',
+const STAGE_WHY={approp:'Congress has to fund it: either it waits for the annual NDAA, or the money you paid is being obligated. A continuing resolution freezes new starts until Congress passes full-year funding.',
+ contract:'The program office solicits bids, evaluates them and negotiates price, terms and schedule with the builder. Losing bidders can protest, and each acquisition office runs only so many awards at full speed.',
+ permit:'Environmental reviews and permits (NEPA, air, water, hazardous waste, explosives safety) before ground is broken. Building inside an existing defense site is usually faster than a greenfield site, and permits can be challenged in court.',
+ build:'Construction and installing the equipment: site work, buildings, utilities and process lines. Explosives and propellant plants need blast walls and separation distances, specialized tools can take a year or more to arrive, and a new site may wait on a large power transformer.',
 qual:'Before its output can go into weapons, the service that buys it has to certify it (see Qualification below). The plant makes test lots that are fired, flown or inspected to prove they meet the specification; for explosives and rocket motors that means static fires and lot acceptance tests. It can take a year or more, and test ranges are shared.',
  ramp:'Lining up long-term orders from the services and steady inputs, so the line can run at rate.'};
 const STAGE_DO={approp:'Awaiting funds from Congress',contract:'Negotiating the contract',permit:'Siting and permitting',build:'Under construction',qual:'Qualification testing',ramp:'Lining up buyers and suppliers'};
@@ -4156,15 +4157,29 @@ const MILES={approp:[['Funding approved and obligated',1]],
  qual:[['First test lots made',.2],['Tests: static fires, flights or inspections',.7],['Lot acceptance and certification',1]],
  ramp:[['First long-term orders',.4],['Steady input contracts',.8],['Running at rate',1]]};
 const MILES_ALLY={build:[['Partner expands its line',.6],['Shipments begin',1]]};
+// what each milestone is, for the hover on a program's page
+const MILE_TIP={'Funding approved and obligated':'Congress has appropriated the money and the contracting office has committed it to this program.',
+ 'Solicitation issued':'The government publishes what it wants to buy and invites bids.','Proposals evaluated':'A source-selection board scores the bids on price, schedule and risk. Losing bidders can protest the award.',
+ 'Contract awarded':'The winner signs, and work and long-lead orders (such as a large power transformer) can start.',
+ 'Applications filed':'Air, water and land-use applications go to federal, state and local agencies.','Reviews and public comment':'Agencies review the plans and take public comment. An environmental review (NEPA) runs if federal money, land or permits are involved.',
+ 'Permits issued':'Construction can start. Permits can still be challenged in court.',
+ 'Site preparation':'Clearing, grading, roads and temporary power.','Foundations and utilities':'Foundations, power, water and safety systems. Explosives and propellant sites add blast walls and separation distances.',
+ 'Structure and enclosure':'The buildings go up and are closed in.','Equipment installed':'Machines and process lines are set and connected. Specialized tools can have long lead times.',
+ 'Commissioning and trial runs':'Systems are tested and the line makes its first trial product. The large power transformer must be energized.',
+ 'First test lots made':'The new line makes its first production lots for testing.','Tests: static fires, flights or inspections':'Test articles are fired, flown or inspected to prove they meet the specification. Test ranges are shared.',
+ 'Lot acceptance and certification':'The service that buys the product certifies the line. Its output can now go into weapons.',
+ 'First long-term orders':'Buyers commit to multi-year orders, so the plant can hire and buy inputs.','Steady input contracts':'Suppliers sign steady contracts for the plant’s inputs.','Running at rate':'The plant runs at its full nameplate capacity.',
+ 'Partner expands its line':'The allied producer adds capacity under the agreement.','Shipments begin':'Output starts arriving in the United States.'};
+const stageTip=st=>tipQ(`<b>${STAGE_L[st]}</b><br>${STAGE_WHY[st]}`);
 function progStages(p,live){const def=PD[p.def],stEv=(p.h||[]).filter(e=>e.st!=null),startOf=i=>i===0?(p.started??null):(stEv.find(e=>e.st===i)?.w??null);
   const endW=live?null:((p.h||[]).find(e=>e.done||e.gone)?.w??p.w??S.w);
   const nextStart=i=>{for(let j=i+1;j<STAGES.length;j++){const w=startOf(j);if(w!=null)return w}return endW};
-  const cells=STAGES.map((st,i)=>{const pl=p.dur[i]||0;if(!pl)return p.inh&&(!live||i<p.stage)?`<div class="pstep done"><b>✓ ${STEP_N[st]}</b><span>Done before 2027</span></div>`:`<div class="pstep skip"><b>${STEP_N[st]}</b><span>Not needed</span></div>`;
+  const cells=STAGES.map((st,i)=>{const pl=p.dur[i]||0;if(!pl)return p.inh&&(!live||i<p.stage)?`<div class="pstep done" data-tip="${stageTip(st)}"><b>✓ ${STEP_N[st]}</b><span>Done before 2027</span></div>`:`<div class="pstep skip" data-tip="${stageTip(st)}"><b>${STEP_N[st]}</b><span>Not needed for this program</span></div>`;
     const done=live?i<p.stage:!!(p.h||[]).find(e=>e.done),cur=live&&i===p.stage,s0=startOf(i),s1=nextStart(i),took=done&&s0!=null&&s1!=null?s1-s0:null;
-    return `<div class="pstep ${done?'done':cur?'cur':''}"><b>${done?'✓ ':cur?'▶ ':''}${STEP_N[st]}</b><span>${cur?`week ${Math.floor(p.prog)} of ${pl}`:done?(took!=null?`${took} wk (plan ${pl})`:'done'):`plan ${pl} wk`}</span>${took!=null&&took>pl*1.15?`<i class="late">+${took-pl} wk</i>`:''}</div>`}).join('');
+    return `<div class="pstep ${done?'done':cur?'cur':''}" data-tip="${stageTip(st)}"><b>${done?'✓ ':cur?'▶ ':''}${STEP_N[st]}</b><span>${cur?`week ${Math.floor(p.prog)} of ${pl}`:done?(took!=null?`${took} wk (plan ${pl})`:'done'):`plan ${pl} wk`}</span>${took!=null&&took>pl*1.15?`<i class="late">+${took-pl} wk</i>`:''}</div>`}).join('');
   let det='';
   if(live&&p.dur[p.stage]){const st=STAGES[p.stage],pl=p.dur[p.stage],f=Math.min(1,p.prog/pl),ms=(def.ally&&MILES_ALLY[st])||MILES[st]||[],wait=p.obs[0]?.wait||0,stEnd=S.w+wait+Math.max(0,pl-p.prog);
-    let firstOpen=true;const ml=ms.map(([n,t])=>{const ok=f>=t-1e-9,curM=!ok&&firstOpen;if(!ok)firstOpen=false;return `<li class="${ok?'ok':curM?'now':''}">${ok?'✓':curM?'▶':'○'} ${n}</li>`}).join('');
+    let firstOpen=true;const ml=ms.map(([n,t])=>{const ok=f>=t-1e-9,curM=!ok&&firstOpen;if(!ok)firstOpen=false;return `<li class="${ok?'ok':curM?'now':''}"${MILE_TIP[n]?` data-tip="${tipQ(`<b>${n}</b><br>${MILE_TIP[n]}`)}"`:''}>${ok?'✓':curM?'▶':'○'} ${n}</li>`}).join('');
     det=`<div class="pdet"><div class="pdh"><b>${STEP_N[st]}</b> · ${pct(f)} done · week ${Math.floor(p.prog)} of ${pl}${p.obs.length?` · <span class="redt">${p.obs[0].wait?'paused':'stopped'}: ${V(OD[p.obs[0].id].n)}</span>`:''}</div>
       <div class="pbar"><i style="width:${(f*100).toFixed(1)}%"></i></div><ul class="pmiles">${ml}</ul>${p.xf?`<div class="mini">⚡ Large power transformer: ${p.xf.res?'from the strategic reserve':'ordered '+fmtDate(p.xf.ord)}, ${S.w>=p.xf.due?'<span class="okt">delivered</span>':`due <b>${fmtDate(p.xf.due)}</b>${st==='build'&&f>=1?' · <span class="redt">construction is done except energizing; waiting on it</span>':''}`}</div>`:xfNeeds(def)&&p.stage<2&&!p.inh?`<div class="mini">⚡ Needs a large power transformer, ordered at contract award: about ${xfLead()} weeks at today's lead time.</div>`:''}
       <div class="mini">This stage should finish about <b>${fmtDate(stEnd)}</b>; the whole program about <b>${fmtDate(S.w+remW(p))}</b>${slipF().f>1.05?`, or ${fmtDate(S.w+Math.round(remW(p)*slipF().f))} if it slips like your programs so far`:''}.</div></div>`}
