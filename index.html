@@ -959,6 +959,9 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .acs{background:#f6efdc;padding:5px 8px;display:flex;flex-direction:column}.acs b{font:700 16px Georgia,serif;color:#2b241a}.acs span{font:12px/1.25 "Segoe UI",system-ui,sans-serif;color:#5a4e38}.acs.bad b{color:#a3261c}
 .acshort{margin-top:4px;font:12.5px "Segoe UI",system-ui,sans-serif;color:#a3261c}
 .pstep[data-tip],.pmiles li[data-tip]{cursor:help}
+.prtab td{vertical-align:middle}.prarr{white-space:nowrap}.prarr .btn{padding:0 6px;margin-right:2px}
+.gtip{cursor:help;text-decoration:underline dotted rgba(140,120,80,.55);text-underline-offset:3px}
+.ctp .ctopt .cth b,.ctp .ctopt.on .cth b{color:#2b241a!important}
 </style>
 </head>
 <body>
@@ -3280,6 +3283,24 @@ function ordIdleSec(){const m=ordIdle(),cs=Object.keys(m).sort((a,b)=>m[b].gain*
   const tot=cs.reduce((a,c)=>a+ordPC(c,m[c].add),0);
   return `<div class="ordidle"><div class="oih"><b>⚠ Idle capacity</b><span>Lines that could make more than Congress has ordered.</span><button class="pbtn sm primary" data-a="ordall" ${S.pc>=ordPC(cs[0],m[cs[0]].add)?'':'disabled'}>🏛 Request all · ${tot} PC</button></div>
    <table class="ctable"><tr><th>Line</th><th class="num">Ordered</th><th class="num">Could make</th><th class="num">Idle a year</th><th class="num">Net effect</th><th></th></tr>${cs.map(c=>{const x=m[c],k=ordPC(c,x.add);return `<tr><td><span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span></td><td class="num">${fmtN(ordOf(c))}</td><td class="num">${fmtN(x.could)}</td><td class="num redt">${fmtN(x.gain)}<div class="mini">${money(x.gain*UC[c])}</div></td><td class="num okt">+${fmt(x.d*100,1)} pt${x.hurt.length?`<div class="mini redt">takes from ${hurtTxt(x.hurt)}</div>`:''}</td><td><button class="btn sm" data-a="ordadd" data-c="${c}" data-v="${x.add}" ${S.pc>=k?'':'disabled'}>Request +${fmtN(x.add)} · ${k} PC</button></td></tr>`}).join('')}</table>${noT}</div>`}
+// ---- priority for scarce inputs (like DPAS rated orders): move a line, and say what moved
+function lineUses(R,l,id){return (R.out[l].lims||[]).some(x=>x.id===id||chainOf(R.P,x.id).includes(id))}
+function prioMove(i,j){if(j<0||j>=S.order.length||i===j)return;const R0=production(false),o0=S.order.slice();
+  [S.order[i],S.order[j]]=[S.order[j],S.order[i]];S._R=null;const R1=production(false);S._oi=null;
+  const ch=Object.keys(LINES).map(c=>({c,a:R0.out[c].yr,b:R1.out[c].yr})).filter(x=>Math.abs(x.b-x.a)>Math.max(x.a,1e-9)*.01);
+  const mv=S.order[j],up=j<i;S._prioUndo=o0;
+  const txt=ch.length?ch.sort((x,y)=>(y.b-y.a)/Math.max(y.a,1e-9)-(x.b-x.a)/Math.max(x.a,1e-9)).map(x=>{const d=(x.b-x.a)/Math.max(x.a,1e-9);return `<span class="${d>0?'okt':'redt'}">${LINES[x.c].n} ${d>0?'+':'−'}${Math.round(Math.abs(d)*100)}%</span>`}).join(' · '):'<span class="dim">No line’s output changes now: no input they share is short.</span>';
+  const loss=ch.filter(x=>x.b<x.a);
+  log(`⇅ ${LINES[mv].n} moved ${up?'up':'down'} in priority for scarce inputs${ch.length?': '+ch.map(x=>`${LINES[x.c].n} ${x.b>x.a?'+':'−'}${Math.round(Math.abs(x.b-x.a)/Math.max(x.a,1e-9)*100)}%`).join(', '):''}.`,loss.length?'bad':'ev');
+  toast(`<b>${LINES[mv].n} moved ${up?'up':'down'}</b><br>${txt}${loss.length?'<br><span class="dim">Click to undo.</span>':''}`,loss.length?'bad':'',loss.length?{a:'prioundo'}:null,loss.length?9000:4200)}
+function prioSec(){const R=S._R||production(false),P=R.P;
+  const rows=S.order.map((c,i)=>{const o=R.out[c],L=LINES[c],sh=shareAt(c,o.yr,S.w),root=o.bott&&!o.chain.at(-1)?.startsWith('L:')?o.chain.at(-1):null;
+    const rivals=root?S.order.filter(l=>l!==c&&lineUses(R,l,root)):[],above=rivals.filter(l=>S.order.indexOf(l)<i),below=rivals.filter(l=>S.order.indexOf(l)>i);
+    const st=!o.bott?`<span class="okt">Not short of any input</span>`:root?`<span class="redt">Short of <span class="linkn" data-a="node" data-n="${root}">${ND[root].n}</span></span>${rivals.length?`<div class="mini">${above.length?'After '+above.map(l=>LINES[l].n.toLowerCase()).join(', '):''}${above.length&&below.length?'; ':''}${below.length?'ahead of '+below.map(l=>LINES[l].n.toLowerCase()).join(', '):''}</div>`:'<div class="mini">No other line uses it</div>'}`:'<span class="amb">Limited by its own capacity</span>';
+    return `<tr><td class="num">${i+1}</td><td class="prarr"><button class="btn sm" data-a="prio2" data-i="${i}" data-d="-1" ${i===0?'disabled':''} aria-label="Move up">▲</button><button class="btn sm" data-a="prio2" data-i="${i}" data-d="1" ${i===S.order.length-1?'disabled':''} aria-label="Move down">▼</button></td>
+      <td>${lineIcon(c,16,'lic sm')} <span class="linkn" data-a="node" data-n="L:${c}">${L.n}</span></td><td class="num">${fmtN(o.yr)}<span class="mini">/yr</span></td><td class="num">${pct(sh)}</td><td>${st}</td></tr>`}).join('');
+  return `<h4 class="bh">Who gets scarce inputs first</h4><p class="mini">When an input is short, every line first gets an equal share up to a quarter of its requirement, so none stops outright. Then lines are filled to their requirement in this order, the way rated defense orders (DPAS) are filled. Moving a line up protects it; the lines below it that use the same input get what is left.</p>
+   <table class="ctable prtab"><tr><th class="num">#</th><th></th><th>Line</th><th class="num">Output</th><th class="num" data-tip="Your output plus allies, against the requirement">Of requirement</th><th>Scarce input</th></tr>${rows}</table>`}
 function ordBillSec(){const rs=ordReqs(),fy=pkgFY();
   return `<h4 class="bh">Weapons orders</h4><p class="mini">Requests to buy more than Congress funds now, so capacity you build does not sit idle. Each costs Political Capital; Congress cuts about ${Math.round(ordCut(fy)*100)}% in markup. Request from an end item’s page, or from the idle lines below.</p>${ordIdleSec()}${rs.length?`<table class="ctable"><tr><th>Line</th><th class="num">More a year</th><th class="num">Cost a year</th><th></th></tr>${rs.map(x=>`<tr><td><span class="linkn" data-a="node" data-n="L:${x.c}">${LINES[x.c].n}</span></td><td class="num">+${fmtN(x.add)}</td><td class="num">${money(x.add*UC[x.c])}</td><td><button class="btn sm" data-a="orddrop" data-c="${x.c}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No order increases in the request yet.</p>'}`}
 function ndsSec(){const P=S._R?.P||production(false).P,left0=pkgRoom()-pkgPlan().filter(x=>x.st==='in').reduce((a,x)=>a+x.p.req,0);let left=left0;
@@ -3340,7 +3361,7 @@ function billBody(){const fy=pkgFY(),cp=cprioOf(fy),pl=pkgPlan(),room=pkgRoom(),
      <div class="bl-sum"><div><b>${pl.length}</b><span>new plant${pl.length===1?'':'s'} requested</span></div><div><b>${money(pkgSum())}</b><span>asked</span></div><div><b>~${money(room)}</b><span>Congress’s money for requests</span></div><div><b>${pcIn}</b><span>PC committed</span></div><div><b class="${credOf()>=60?'okt':credOf()<40?'redt':''}">${Math.round(credOf())}</b><span>standing with the committees</span></div><div><b class="${pl.some(x=>x.st==='out')?'redt':'okt'}">${pl.filter(x=>x.st==='in').length}</b><span>above the money line · ${money(inS)}</span></div><div><b class="${['okt','','amb','redt'][S.moods?.[fy]?.i??1]}" data-tip="${tipQ('<b>Congress’s appetite for new starts</b><br>It changes from year to year with the budget fight and the news; it is more generous after a shock. Generous years cut fewer items, tight years many more.')}">${moodOf(fy).n}</b><span>appetite for new starts this year</span></div><div><b>~${when}</b><span>Congress passes the bill (every 18 December)</span></div></div></div>
     ${cpH}${S.fac==='US'?credSec():''}<div class="dsec"><h4>Work the bill</h4><p class="mini" style="margin:0 0 6px">Each item costs Political Capital to request; what Congress funds, it pays for, on top of your budget. It funds the request top to bottom until its money runs out, so set the order. In markup it cuts some items anyway: it backs plants that fix what is holding output back and is quickest to cut the rest, though never reliably either way. Pledging a start date lowers the risk, if you keep it. PC spent on an item that is cut or falls below the line is lost. Congress may also add a plant of its own for a member’s district (about even odds each year), paid with money it adds.</p>
       ${pl.length?`<table class="ctable bl-t"><tr><th>Priority</th><th>Plant</th><th>Raises</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:`<p class="mini">Nothing in the request. New plants you order join it.</p>`}
-      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-a="cat">+ New order</button>${suppBtn('btn sm')}</div></div>${S.fac==='US'?refSec():''}${S.fac==='US'?ndsSec():''}${ordBillSec()}${lastH}`;
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-a="cat">+ New order</button>${suppBtn('btn sm')}</div></div>${S.fac==='US'?refSec():''}${S.fac==='US'?ndsSec():''}${ordBillSec()}${prioSec()}${lastH}`;
   return h}
 function billHTML(){return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(billBody())}</div></div>`}
 function canStart(def,cost=projCost(def)){if(S.projects.some(p=>p.def===def.id&&p.pkg))return false;if(def.kind==='maint'&&(S.mxDone[def.id]||S.projects.some(p=>p.def===def.id)))return false;if(def.kind!=='maint'&&def.kind&&def.kind!=='cap'&&((S.nflags[def.t.node]||{})[def.kind]||S.projects.some(p=>p.def===def.id)))return false;return facOk(def)&&(!def.req||passed(def.req))&&(needsContract(def)&&!S.histMode||S.budget>=cost-1e-9)}
@@ -5318,9 +5339,9 @@ const VGROUPS=[['cmd'],['bn','flow'],['imports','allies'],['ndaa'],['policy','ru
 const SUBN={bn:'Bottlenecks',flow:'Supply flows',imports:'Raw material imports',allies:'Allies',policy:'Policy actions',rules:'Laws in force & permits',arsenal:'Stocks & needs',rec:'The record'};
 const vGroup=v=>VGROUPS.find(g=>g.includes(v==='permits'?'rules':v==='fac'||v==='pipe'||v==='ready'?'arsenal':v))||[v];
 const VDEF={bn:'flow'},SUBORD={bn:['flow','bn']};
-const SUBD={flow:'How raw materials move through four tiers of suppliers into each weapon',bn:'The inputs costing you the most output, and what would fix each one',imports:'Where each raw material comes from, and Beijing\u2019s export controls',allies:'What Japan, South Korea and Taiwan build, and the deals you can strike',policy:'Executive actions, emergency powers and stand-alone bills',rules:'The laws in force, how each process works, and the permit docket',arsenal:'Whether your stocks and production would sustain the campaign',rec:'Everything that has changed since you took over'};
+const SUBD={flow:'How raw materials move through four tiers of suppliers into each weapon',bn:'The inputs costing you the most output, and what would fix each one',imports:'Where each raw material comes from, and Beijing\u2019s export controls',allies:()=>`What ${AL().n} build, the deals you can strike${ruOn()?', and Moscow’s campaign against them':''}`,policy:'Executive actions, emergency powers and stand-alone bills',rules:'The laws in force, how each process works, and the permit docket',arsenal:'Whether your stocks and production would sustain the campaign',rec:'Everything that has changed since you took over'};
 const vSubStrip=()=>{const g=vGroup(S.view);if(g.length<2)return '';const ord=SUBORD[g[0]]||g;
-  return `<div class="vsub vsubbar">${ord.map(v=>`<button class="${S.view===v?'on':''}" data-a="view" data-v="${v}"><span class="vsi">${VIC[v]?vic(v,22):''}</span><span class="vst"><b>${SUBN[v]}</b><em>${SUBD[v]||''}</em></span></button>`).join('')}</div>`};
+  return `<div class="vsub vsubbar">${ord.map(v=>`<button class="${S.view===v?'on':''}" data-a="view" data-v="${v}"><span class="vsi">${VIC[v]?vic(v,22):''}</span><span class="vst"><b>${SUBN[v]}</b><em>${V(SUBD[v])||''}</em></span></button>`).join('')}</div>`};
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
 function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>{const g=vGroup(k),on=g.includes(S.view);return `<button class="vbtn ${on?'on':''}" data-a="view" data-g="${k}" data-v="${on?S.view:(S.vlast?.[k]&&g.includes(S.vlast[k])?S.vlast[k]:VDEF[k]||k)}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`}).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">${vic('find')}Find</button></div>`}
@@ -5378,13 +5399,68 @@ function xpPass(root){if(!root)return;const on=xpOn();document.body.classList.to
     if(!hd){const par=el.parentElement;hd=par&&[...par.children].find(isH)||par?.parentElement&&[...par.parentElement.children].find(isH)||null}
     const btn=document.createElement('button');btn.className='xpi';btn.type='button';btn.dataset.a='xpi';btn.dataset.k=key;btn.dataset.tip=el.innerHTML;btn.textContent='ⓘ';btn.setAttribute('aria-label','Explain this section');
     if(hd&&!hd.querySelector('.xpi')){const tn=[...hd.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim()).pop();if(tn)tn.after(btn);else hd.appendChild(btn)}else{btn.classList.add('xpi-own');el.before(btn)}}}
+// ---- the glossary: label text (lower case, symbols dropped) to its explanation; keys starting with ^ match the start of a label
+const GLOSS={
+ // the NDAA
+ '^fy20':'This year’s NDAA request: the plants, stockpile buys, reforms and weapons orders you are asking Congress for. Congress decides them all in December.',
+ 'new plants requested':'Plants you have added to this year’s request. Congress funds them top to bottom, in your order, until its money for requests runs out.',
+ 'asked':'What the plants in your request would cost Congress in total.',
+ 'congress’s money for requests':'How much Congress will spend on new plants you request this year. It depends on its appetite for new starts and on your standing with the committees.',
+ 'pc committed':'Political Capital spent on this year’s request. Items Congress cuts do not give it back.',
+ 'standing with the committees':'Whether the defense committees believe your requests, 0–100. It rises when programs Congress funded deliver and when you keep a pledged start date; higher standing lowers the cut risk on everything you ask for.',
+ '^above the money line':'What the requested plants that fit within Congress’s money cost, in your order. Anything below the line is not funded this year.',
+ 'appetite for new starts this year':'How generous Congress is with new programs this year. It shifts with the budget climate and events.',
+ '^congress passes the bill':'The NDAA and defense appropriations pass once a year, in December. If Congress is late, a continuing resolution freezes new starts until it acts.',
+ 'congress’s priorities':'About seven weeks before the vote the committees publish their marks: two sectors they back and one they question. Requests in backed sectors are cut less often.',
+ '#':'Priority rank for scarce inputs: lines higher up are filled first when a shared input is short.',
+ 'scarce input':'The input this line is short of, and the other lines that compete for it.',
+ 'of requirement':'Your output plus allies, against the requirement.',
+ // item pages
+ 'the race: output per year':'Your output, allied output and the rival’s, against the requirement, year by year.',
+ 'what limits output':'Each ceiling on output: factory capacity, workers, materials and orders. Output is held to the lowest of them.',
+ 'what holds output back':'Each ceiling on output: factory capacity, workers and materials. Output is held to the lowest. Solid lines happened; dashed lines are expected.',
+ 'in service':'How many are in the inventory now, against what the campaign needs.',
+ '^all ways to':'Every program, deal and upgrade for this item, grouped by the limit it lifts. Look closer shows what one would do before you commit.',
+ 'action':'The program, deal or upgrade.','effect':'What it adds once complete.','cost':'Dollars (from your budget or Congress) and Political Capital.','time':'How long until it adds output, if it runs to plan.',
+ '^made from':'Its inputs, and the items downstream that need it. Click any to open it.',
+ 'who makes it':'The producers of this item and how much each makes. Sole sources are marked.',
+ 'producer':'The company or site.','supply':'What each producer supplies a year.','status':'Whether it is running, ramping or in trouble.',
+ '^capacity pipeline':'Programs under way that will add capacity, where each stands, and when it comes online.',
+ 'stage':'Funding, contract, permits, construction, qualification or ramp-up.',
+ 'obligated · billed':'Obligated: money committed on contract. Billed: what the builder has charged so far.',
+ 'online (on schedule)':'When it starts producing, if nothing slips.',
+ 'situation':'Where this item stands now: supply against need, and what is driving it.',
+ 'why it matters':'What this input goes into, and what is lost when it is short.',
+ 'where it comes from':'The sources of supply: domestic plants, allies, neutral countries, and China or Russia.',
+ 'how it\'s made':'The production process, and why it is hard to scale.','how it’s made':'The production process, and why it is hard to scale.',
+ // look closer and the award
+ 'planned schedule':'Each stage’s planned length. Programs often slip; the forecasts use your record so far.',
+ 'what it would do':'Your game played forward to 2035 with and without this option, end item by end item.',
+ '^output 20':'The year the plant’s first output is expected.','^full rate':'The year it reaches full rate, after qualification and ramp-up.',
+ 'who builds it':'The company that builds and runs it. Each trades price against speed, risk and how committed it stays when things go wrong.',
+ 'terms':'How the contract shares cost and risk between the government and the builder.',
+ 'what you get':'When it starts producing and reaches full rate, and what it adds against the status quo.',
+ // program pages
+ 'progress':'Each stage of the program, from funding to ramp-up. Hover a stage or milestone for what it involves.',
+ 'what it will do':'When the plant starts producing and reaches full rate, and what it adds against the status quo.',
+ 'plan vs. actual':'Each step’s planned and actual length, and why it slipped.',
+ 'step':'The stage or the problem that took the time.','start':'When it began.','plan wk':'Weeks it was planned to take.','actual wk':'Weeks it took, or has taken so far.','against plan':'How far ahead of or behind plan it ran.',
+ '^permits':'The permits this program needs and where each stands. All permits opens the full docket.',
+ 'likely ahead':'Problems that commonly hit programs like this in the stages still to come, and how likely each is.',
+ 'where the time went':'Weeks spent in each stage and on each problem, against the plan.',
+ 'money':'What the program costs, who pays (your budget or Congress), and what has been obligated and billed.'};
+const glossKey=t=>t.toLowerCase().replace(/[^a-z0-9#’'&·.:\s()-]/g,' ').replace(/\s+/g,' ').replace(/[\s→›]+$/,'').trim();
+const GLOSS_P=Object.keys(GLOSS).filter(k=>k[0]==='^').map(k=>[k.slice(1),GLOSS[k]]);
+function glossOf(t){const k=glossKey(t);if(GLOSS[k])return GLOSS[k];for(const [p,v] of GLOSS_P)if(k.startsWith(p))return v;return null}
+function tipPass(root){if(!root)return;for(const el of root.querySelectorAll('h3,h4,h5,th,.bh,.bl-sum span,.bltop span,.ctp h4 span,.ctstep b,.ctstep span,.ctsl,.pjbar span,.pjl,.sect>span:first-child')){
+  if(el.dataset.gl||el.closest('[data-tip]')||el.querySelector('[data-tip]'))continue;el.dataset.gl=1;const t=el.innerText||'';if(!t||t.length>70)continue;const g=glossOf(t);if(g){el.dataset.tip=g;el.classList.add('gtip')}}}
 function mountView(st0){
   const slot=document.getElementById('viewslot');if(!slot)return;
   if(!viewEl){viewEl=document.createElement('div');viewEl.id='view';viewEl.className='panel vpaper'}
   const st=st0??viewEl.scrollTop;const now=performance.now();
   if(S._vdirty||viewKey!==S.view||(S.w!==viewW&&now-viewT>(S.speed>=3?1500:800)&&!hoverLocked())){
     for(const k in CH)if(CH[k].ctx==='v')delete CH[k];CHctx='v';
-    viewEl.innerHTML=cz(viewHTML());xpPass(viewEl);viewW=S.w;viewT=now;if(viewKey!==S.view)viewEl.dataset.fresh=1;viewKey=S.view;S._vdirty=false;
+    viewEl.innerHTML=cz(viewHTML());xpPass(viewEl);tipPass(viewEl);viewW=S.w;viewT=now;if(viewKey!==S.view)viewEl.dataset.fresh=1;viewKey=S.view;S._vdirty=false;
     if(S.view==='flow')attachSankey(viewEl)}
   slot.replaceWith(viewEl);if(viewEl.dataset.fresh){viewEl.scrollTop=0;delete viewEl.dataset.fresh}else viewEl.scrollTop=st;
   if(S._citeScroll){const el=viewEl.querySelector('#cite-'+S.citeHi);if(el)el.scrollIntoView({block:'center'});S._citeScroll=false}
@@ -6381,7 +6457,7 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
 // does a supply move on this item touch a line's current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.budget=9999}}
-function render(){if(!S){renderTitle();return}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
+function render(){if(!S){renderTitle();return}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
 const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
@@ -6453,8 +6529,10 @@ document.addEventListener('pointerdown',e=>{
     case 'ap':S.autoPause=!S.autoPause;break;
     case 'tab':S.tab=b.dataset.t==='bott'?'bott':+b.dataset.t;S.view='cmd';if(S.modal&&S.modal!=='end'&&!S.queue.length)S.modal=null;break;
     case 'ptab':S.ptab=+b.dataset.t;break;
-    case 'up':{const i=+b.dataset.i;[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
-    case 'dn':{const i=+b.dataset.i;[S.order[i+1],S.order[i]]=[S.order[i],S.order[i+1]];break}
+    case 'up':prioMove(+b.dataset.i,+b.dataset.i-1);break;
+    case 'prio2':prioMove(+b.dataset.i,+b.dataset.i+(+b.dataset.d));S._vdirty=true;break;
+    case 'prioundo':if(S._prioUndo){S.order=S._prioUndo;S._prioUndo=null;S._R=null;S._oi=null;log('⇅ Priority order restored.','ev');S._vdirty=true}break;
+    case 'dn':prioMove(+b.dataset.i,+b.dataset.i+1);break;
     case 'cat':S.modal='cat';S.speed=0;break;
     case 'map':if(b.dataset.m)S.wmat=b.dataset.m;S.view='imports';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'flow':S.flowFocus=b.dataset.f||'all';S.view='flow';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
@@ -6505,7 +6583,7 @@ document.addEventListener('pointerdown',e=>{
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
     case 'arsenal':S.view=({stock:'arsenal',pipe:'fac',ready:'ready'})[b.dataset.t]||'arsenal';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
-    case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];break}
+    case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)prioMove(i,i-1);break}
     case 'close':if(S.billAlert){S.billAlert=null;S.speed=TURN()?0:(S.billSpd||1);S.billSpd=null}
 if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;if(S._trnDue&&S.trnRep){S._trnDue=0;S.modal='turn'}break;
     case 'pvopen':S.pvBack={m:S.modal,sel:S.sel,selP:S.selP};S.pvId=b.dataset.p;S.modal='pv';S.speed=0;break;
