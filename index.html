@@ -991,6 +991,25 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .debtx{display:flex;flex-direction:column;gap:2px;min-width:0}.debtx b{font:600 14.5px Georgia,serif;color:#2b241a}.debtx span{font:12px/1.35 "Segoe UI",system-ui,sans-serif;color:#5a4e38}
 .pbtn.primary.debgo{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 14px;border-radius:3px;text-align:center}.debgo b{font:600 15.5px Georgia,serif;letter-spacing:.02em}.debgo span{font:400 12px "Segoe UI",system-ui,sans-serif;color:#cfc6ad}
 @media(max-width:760px){.debc{grid-template-columns:1fr}}
+.paper.wide.ckp{width:min(1280px,100%)}
+.ckgrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:16px;margin:12px 0}
+.ckcol{min-width:0;background:#f7f0dd;border:1px solid #cdb98a;border-radius:3px;padding:10px 12px}
+.ckh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #cdb98a}.ckh b{display:block;font:600 17px Georgia,serif;color:#2b241a}.ckh>div>span{font:12px/1.35 "Segoe UI",system-ui,sans-serif;color:#6b5a35}
+.ckchip{flex:none;font:700 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:2px;white-space:nowrap}.ckchip.ok{background:#e2ecd6;color:#2f5a24;border:1px solid #c3d6ae}.ckchip.no{background:#f5e1da;color:#8a2a1c;border:1px solid #e6c2b6}
+.ckscore{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 14px;align-items:center;margin:2px 0 8px}.ckscore>b{font:700 32px Georgia,serif;grid-row:1/3;line-height:1}
+.ckbar{position:relative;height:14px;background:#e6dbbd;border:1px solid #cbbd95;margin-top:16px}.ckbar>i{position:absolute;left:0;top:0;bottom:0}
+.ckbar>i.ok,.ckt>i.ok{background:#76b357}.ckbar>i.dry,.ckt>i.dry{background:#c9533f}.ckt>i.mid{background:#d9a441}
+.ckpass{position:absolute;top:-4px;bottom:-4px;width:2px;background:#2b241a;z-index:2}.ckpass em{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font:600 10.5px "Segoe UI",system-ui,sans-serif;font-style:normal;color:#2b241a;white-space:nowrap;padding-bottom:1px}
+.cksv{font:11.5px "Segoe UI",system-ui,sans-serif;color:#6b5a35}
+.ckweak{margin:6px 0 8px;padding:7px 10px;background:#f5e1da;border-left:3px solid #c0452f;font:12.5px/1.4 "Segoe UI",system-ui,sans-serif;color:#3a2a20}.ckweak.ok{background:#eef2e4;border-left-color:#76b357}
+.cksub{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#6b5a35;margin:10px 0 4px}.cksub span{display:block;font:400 11px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none;color:#8a7850}
+.ckr{display:grid;grid-template-columns:150px minmax(0,1fr) 108px;gap:8px;align-items:center;font:12px/1.2 "Segoe UI",system-ui,sans-serif;margin:2px 0;padding:2px 4px;border-radius:2px}.ckr.weak{background:#f5e1da;box-shadow:inset 3px 0 0 #c0452f}
+.ckt{position:relative;height:12px;background:#e6dbbd;border:1px solid #cbbd95}.ckt>i{position:absolute;left:0;top:0;bottom:0}.ckt>s{position:absolute;top:0;bottom:0;width:1px;background:rgba(43,36,26,.28);z-index:1}
+.ckv{text-align:right;white-space:nowrap;font-weight:600}
+.cknote{font:italic 11.5px "Segoe UI",system-ui,sans-serif;color:#7a6a48;margin:8px 0 0}
+@media(max-width:980px){.ckgrid{grid-template-columns:1fr}}
+.sc-rdy{cursor:pointer}.sc-rdy:hover .sc-n{color:#fff}.nb i.rdyband{background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}.ckgold{color:#9a6a12}
+.sc-wk{font-size:11px;color:#b8ad8a;margin:0 0 3px 22px}.sc-wk b{color:var(--ink);font-weight:600}.sc-wk .up{color:#8fd16a}.sc-wk .dn{color:#e9a091}
 </style>
 </head>
 <body>
@@ -5878,9 +5897,9 @@ function mandValRaw(m){const r0=S.rec0||{};
 function scenTest(sc){const T=sc.test;
   if(T.cut){const r0=S.rec0?.out||{},now=Object.fromEntries(Object.keys(LINES).map(c=>[c,{yr:Math.max(r0[c]??0,1e-9)}]));NO_PRC=true;const cut=production(false).out;NO_PRC=false;
     const cs=Object.keys(LINES),kept=cs.reduce((a,c)=>a+(now[c].yr>1e-9?Math.min(1,cut[c].yr/now[c].yr):1),0)/cs.length;
-    return {v:kept,ok:kept>=.8,txt:`If China switched everything off, you would build ${pct(kept)} of your January 2027 output (pass: 80%).`,worst:cs.filter(c=>now[c].yr>1e-9).sort((a,b)=>cut[a].yr/now[a].yr-cut[b].yr/now[b].yr).slice(0,2).map(c=>`${LINES[c].n} ${pct(cut[c].yr/now[c].yr)}`).join(', ')}}
+    return {d:JSON.parse(JSON.stringify(cutDet())),v:kept,ok:kept>=.8,txt:`If China switched everything off, you would build ${pct(kept)} of your January 2027 output (pass: 80%).`,worst:cs.filter(c=>now[c].yr>1e-9).sort((a,b)=>cut[a].yr/now[a].yr-cut[b].yr/now[b].yr).slice(0,2).map(c=>`${LINES[c].n} ${pct(cut[c].yr/now[c].yr)}`).join(', ')}}
   scenUpdate();const tr=trueScore(T.t),es=ratio(T.t);
-  return {v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
+  return {d:{...testDet(T.t,S._sc[T.t].true),est:es},v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
 function setTheater(t){if(S.fac!=='US')return;S.theaters=[t];scenUpdate();PJC.clear()}
 function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;if(S.modal==='scenPick')S.modal=null;S.rival=sc.rival;setTheater(sc.rival);S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Halfway floors judged ${fmtDate(sc.mid)}; real targets ${fmtDate(sc.dl)}.`,'ev')}
 function mandWhy(m){const R=S._R||production(false);
@@ -5890,20 +5909,70 @@ function mandWhy(m){const R=S._R||production(false);
   if(m.kind==='keep'){const {by}=keepOf(m.lines);return 'Without China: '+m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>`${LINES[c].n} ${pct(by[c])}`).join(', ')}
   if(m.kind==='expo'){const P=R.P,top=ORDER.filter(id=>P[id].need>1e-6).sort((a,b)=>P[b].prc*(1-P[b].expo*0)-P[a].prc).slice(0,2);return 'Still buying from China: '+top.map(id=>ND[id].n).join(', ')}
   return ''}
+// ---- the stocks test, line by line. The score is a weighted harmonic mean, so the weakest lines count hardest:
+// the weak link is the line whose shortfall costs the score most (what the score would read had that line been covered)
+function testDet(t,o){if(!o?.cov)return null;const s=SCEN[t],f=F(),ls=[];let num=0,den=0;
+  for(const c in LINES){const wt=s.w[c]||0,a=f.alloc[t][c];if(!(wt>0&&a>0))continue;const cov=o.cov[c],mun=MUN.includes(c);num+=wt/clamp(cov,.02,1.5);den+=wt;ls.push({c,cov,wt,mun,wks:mun?o.wks[c]:null})}
+  let weak=null,fix=null;for(const l of ls){if(l.cov>=1)continue;const fs=den/(num-l.wt/clamp(l.cov,.02,1.5)+l.wt);if(fix==null||fs>fix){fix=fs;weak=l.c}}
+  if(!weak&&ls.length)weak=ls.reduce((a,b)=>b.cov<a.cov?b:a).c;
+  return {t,wk:o.wk,score:den?den/num:1,weak,fix,ls:ls.map(({c,cov,wks,mun})=>({c,cov:+(+cov).toFixed(4),wks:wks==null?null:+(+wks).toFixed(3),mun}))}}
+// the cutoff test, line by line: what each line would still build with every Chinese and Russian input cut, against January 2027
+function cutDet(){const k=`${S.w}|${S.projects.length}|${S.plants.length}|${S.spot?.length||0}|${S.budget.toFixed(3)}`;if(CDC.k===k)return CDC.v;
+  const r0=S.rec0?.out||{},cs=Object.keys(LINES);NO_PRC=true;let cut;try{cut=production(false).out}finally{NO_PRC=false}
+  const ls=cs.filter(c=>(r0[c]??0)>1e-9).map(c=>({c,cov:+Math.min(1,cut[c].yr/r0[c]).toFixed(4)})),sum=ls.reduce((a,x)=>a+x.cov,0)+(cs.length-ls.length);
+  const wl=ls.length?ls.reduce((a,b)=>b.cov<a.cov?b:a):null,v={cut:1,score:sum/cs.length,weak:wl?.c||null,fix:wl&&wl.cov<1?(sum-wl.cov+1)/cs.length:null,ls};CDC.k=k;CDC.v=v;return v}
+const CDC={k:null,v:null};
+// how one line did, in words
+function ckWhat(d,l){const D=Math.round(d.wk*7);if(d.cut)return `${pct(l.cov)} of its output kept`;
+  if(l.mun)return l.cov>=1?`enough for all ${D} days`:l.wks*7<1?'empty from day 1':`dry on day ${Math.max(1,Math.ceil(l.wks*7))} of ${D}`;
+  return l.cov>=1?'at full strength':`${pct(l.cov)} of what is needed`}
+function ckWeak(d,ok,pass){const l=d.ls.find(x=>x.c===d.weak);if(!l)return '';const nm=LINES[l.c].n;
+  if(ok||d.fix==null)return `<div class="ckweak ok">Weakest line: <b>${nm}</b>: ${ckWhat(d,l)}.</div>`;
+  return `<div class="ckweak"><b>⚠ Weak link: ${nm}</b>: ${ckWhat(d,l)}. ${d.cut?'The test averages every line':'The test counts the weakest lines hardest'}: had that line ${d.cut?'kept all its output':l.mun?'lasted the whole campaign':'been at full strength'}, it would read <b>${pct(d.fix)}</b>${d.fix>=pass?', a pass.':`, still short of ${pct(pass)}.`}</div>`}
+// the right-hand column of a checkpoint: what you hold (or, in the cutoff scenario, what survives)
+function holdHTML(sc,T,when){const d=T.d,pass=sc.test.cut?.8:CRISIS_WIN;
+  const head=`<div class="ckh"><div><b>${sc.test.cut?'What survives a cutoff':'What you hold'}</b><span>${sc.test.cut?`What your lines would still build if China switched everything off ${when}, against January 2027`:`Your stocks and forces, if ${SCEN[sc.test.t].short} came ${when}`}</span></div><span class="ckchip ${T.ok?'ok':'no'}">${T.ok?'✓ Passed':'✗ Failed'}</span></div>`;
+  if(!d)return head+`<p class="${T.ok?'okt':'redt'}">${T.txt}</p>`;
+  const v=T.v??d.score,big=`<div class="ckscore"><b class="${T.ok?'okt':'redt'}">${pct(v)}</b><div class="ckbar"><i style="width:${Math.min(1,v)*100}%" class="${T.ok?'ok':'dry'}"></i><span class="ckpass" style="left:${pass*100}%"><em>pass ${pct(pass)}</em></span></div><span class="cksv">${sc.test.cut?'of January 2027 output kept, averaged over every line':'of what the campaign needs, all lines weighed together'}</span></div>`;
+  const bar=(l,fill,cls,val)=>`<div class="ckr${l.c===d.weak&&!T.ok?' weak':''}"><span class="ckn">${LINES[l.c].n}</span><div class="ckt">${fill}</div><span class="ckv ${cls}">${val}</span></div>`;
+  let rows='';
+  if(d.cut)rows=`<div class="cksub">Output kept, line by line</div>`+d.ls.slice().sort((a,b)=>a.cov-b.cov).map(l=>bar(l,`<i class="${l.cov>=.8?'ok':l.cov>=.5?'mid':'dry'}" style="width:${l.cov*100}%"></i>`,l.cov>=.8?'okt':l.cov>=.5?'ckgold':'redt',pct(l.cov))).join('');
+  else{const D=Math.round(d.wk*7),mun=d.ls.filter(l=>l.mun),pl=d.ls.filter(l=>!l.mun),tk=[];for(let k=1;k<d.wk;k++)tk.push(`<s style="left:${k/d.wk*100}%"></s>`);
+    if(mun.length)rows+=`<div class="cksub">Magazines over a ${D}-day campaign <span>how long each stock lasts, with what your lines and allies add during the fighting; each tick is a week</span></div>`+mun.map(l=>{const ok=l.cov>=1,w=ok?1:Math.max(0,l.wks)/d.wk;
+      return bar(l,tk.join('')+`<i class="${ok?'ok':'dry'}" style="width:${Math.min(1,w)*100}%"></i>`,ok?'okt':'redt',ok?`lasts all ${D} days`:l.wks*7<1?'empty from day 1':`dry on day ${Math.max(1,Math.ceil(l.wks*7))}`)}).join('');
+    if(pl.length)rows+=`<div class="cksub">Forces on hand <span>ships, submarines and aircraft available, against what the campaign needs</span></div>`+pl.map(l=>bar(l,`<i class="${l.cov>=1?'ok':l.cov>=.6?'mid':'dry'}" style="width:${Math.min(1,l.cov)*100}%"></i>`,l.cov>=1?'okt':l.cov>=.6?'ckgold':'redt',l.cov>=1?'enough':pct(l.cov)+' of need')).join('')}
+  const est=d.est!=null?`<p class="cknote">Your own estimate was ${pct(d.est)}: intelligence is never exact.</p>`:'';
+  return head+big+ckWeak(d,T.ok,pass)+rows+est}
+// the left-hand column: what you make, against the mandates
+function makeHTML(r,mid){const n=mid?r.floors:r.met,of=r.ms.length;
+  const head=`<div class="ckh"><div><b>What you make</b><span>Output a year against the mandates${mid?': halfway floors now, real targets in 2035':''}</span></div><span class="ckchip ${n===of?'ok':'no'}">${n} of ${of} ${mid?'floors':'targets'} met</span></div>`;
+  const tb=mid?`<table class="ctable"><tr><th>Mandate</th><th>Halfway floor</th><th>Reached</th><th></th><th>Real target, 2035</th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.half?'okt':'redt'}">${x.ok?'✓ already at the real target':x.half?'✓ floor met':'✗ below the floor'}</td><td>${mFmt(x,x.t)}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>`
+    :`<table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>`;
+  return head+tb}
+function ckGrid(sc,r,mid){return `<div class="ckgrid"><div class="ckcol">${makeHTML(r,mid)}</div><div class="ckcol ckhold">${holdHTML(sc,r.test,mid?'today':'in January 2035')}</div></div>`}
+// the Command card: the same test, as your intelligence sees it now
+function rdyRow(sc){if(S.scenRes||!S.rec0)return '';const cut=!!sc.test.cut,pass=cut?.8:CRISIS_WIN;let d,v,lo=null,hi=null,dl=null,since='';
+  if(cut){d=cutDet();v=d.score}
+  else{const t=sc.test.t,o=S._sc?.[t];if(!o?.est)return '';d=testDet(t,o.est);v=o.est.score;lo=o.pes?.score;hi=o.opt?.score;
+    const h=S.hist.findLast(h=>h.w<=S.w-8&&h[t]!=null);if(h&&S.w>PLAY0){dl=(v-h[t])*100;since=MON[dateOf(h.w).getMonth()]}}
+  const l=d.ls.find(x=>x.c===d.weak),col=v>=pass?'#76b357':v>=CRISIS_TENSE?'#d9a441':'#d0503f';
+  const tip=cut?`<b>If China cut you off today</b><br>What your lines would still build with every Chinese and Russian input cut, as a share of January 2027 output, averaged over every line. The checkpoints judge this figure. Pass: ${pct(pass)}.`
+    :`<b>If the fight came today</b><br>Your intelligence estimate of how far your stocks and forces would cover ${SCEN[sc.test.t].short}${lo!=null?` (80% range ${pct(lo)}–${pct(hi)}, the pale band)`:''}. The checkpoints judge the true figure, which can differ. Pass: ${pct(pass)}. Click for Stocks & needs.`;
+  return `<div class="sc-sep" data-tip="${tipQ(tip)}">${cut?'If China cut you off today':'If the fight came today'}</div><div class="sc-m sc-rdy" data-a="view" data-v="arsenal" data-tip="${tipQ(tip)}"><span class="sc-n"><span class="sc-st ${v>=pass?'met':v>=CRISIS_TENSE?'half':'no'}">${v>=pass?'✓':'⚔'}</span> ${cut?'Output kept, all lines':sc.test.n[0].toUpperCase()+sc.test.n.slice(1)+' (estimate)'}</span><div class="nb"><i style="width:${Math.min(1,v)*100}%;background:${col}"></i>${lo!=null?`<i class="rdyband" style="left:${Math.min(1,lo)*100}%;width:${Math.max(0,Math.min(1,hi)-Math.min(1,lo))*100}%"></i>`:''}<span class="mk" style="left:${pass*100}%"></span></div><span class="sc-val"><b>${pct(v)}</b> / ${pct(pass)}</span></div>
+    <div class="sc-wk">${l?`${v>=pass?'Weakest':'Weak link'}: <b>${LINES[l.c].n}</b>: ${ckWhat(d,l)}`:''}${dl!=null&&Math.abs(dl)>=.5?` <span class="${dl>0?'up':'dn'}">${dl>0?'▲':'▼'}${fmt(Math.abs(dl),0)} pt since ${since}</span>`:''}</div>`}
 // January 2030, when the window opens: are you halfway there, and would what you hold be enough today?
 function scenMidJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),fl=ms.filter(x=>x.half).length;
   const verdict=fl===ms.length?(t.ok?'ON TRACK':'ON TRACK, BUT EXPOSED'):fl>=ms.length/2?'BEHIND':'FAR BEHIND';
-  S.scenMid={w:S.w,verdict,floors:fl,of:ms.length,ms:ms.map(x=>({why:x.half?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
+  S.scenMid={w:S.w,verdict,floors:fl,of:ms.length,ms:ms.map(x=>({why:x.half?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
   log(`🎯 ${sc.n}, ${fmtDate(S.w)}: ${verdict} (${fl} of ${ms.length} floors; test ${t.ok?'passed':'failed'}). Real targets are judged ${fmtDate(sc.dl)}.`,fl===ms.length?'good':'bad');if(!S.sim){S.modal='scenMid';S.speed=0}}
 function scenMidHTML(){const sc=SCD[S.scen],r=S.scenMid;
-  return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, the window opens</div><div class="bd">
+  return `<div class="paper wide ckp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, the window opens</div><div class="bd">
     <div class="stamp" style="font-size:22px">${r.verdict}</div><p>The first checkpoint asks whether you are halfway from where you started in January 2027 to each real target. The real targets are judged in January 2035.</p>
-    <table class="ctable"><tr><th>Mandate</th><th>Halfway floor</th><th>Reached</th><th></th><th>Real target, 2035</th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.half?'okt':'redt'}">${x.ok?'✓ already at the real target':x.half?'✓ floor met':'✗ below the floor'}</td><td>${mFmt(x,x.t)}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
-    <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} If it came today.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p></div>
+    ${ckGrid(sc,r,true)}</div>
     <div class="ft debft"><button class="pbtn primary debgo" data-a="close"><b>Keep building →</b><span>Five years to the real targets, January 2035</span></button></div></div>`}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
   const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
-  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
+  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
   log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0;S.over=true;S.verdict=verdict;S.overWhy=''}
 const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
 // the picker before play starts, then the mandate card
@@ -5954,7 +6023,7 @@ function scenCard(){
   return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`${mid?`<span class="sc-midv" data-tip="${tipQ(`January 2030: ${mid.floors} of ${mid.of} halfway floors met; the test ${mid.test.ok?'passed':'failed'}.`)}">2030: ${mid.verdict}</span>`:''}<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${nextW===sc.mid?'the floors':'the real targets'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}</span>`}</div>
     ${sc.mand.map(m=>{const x=mandVal(m),tm=res?null:trkMand(m,x),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
       return `${m.kind==='keep'?`<div class="sc-sep" data-tip="${tipQ('<b>If China cuts you off</b><br>The same five lines with no Chinese or Russian inputs: the share of output you keep.<br>Weakest: '+(()=>{const {by}=keepOf(m.lines);return m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>LINES[c].n+' '+pct(by[c])).join(', ')})())}">Cutoff test</div>`:''}<div class="sc-m${m.kind==='keep'?' sc-keep':''}"><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}"><span class="sc-st ${x.ok?'met':tm?.s==='track'?'on':x.half?'half':'no'}" data-tip="${tipQ(x.ok?'<b>Target met</b>':tm?.s==='track'?`<b>On track</b><br>What is under way reaches the target by about ${dateOf(tm.w).getFullYear()}, if Congress orders what new capacity adds.`:x.half?'<b>Halfway floor met</b>':'<b>Below the halfway floor</b>')}">${x.ok?'✓':tm?.s==='track'?'↗':x.half?'◐':'○'}</span> ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.kind==='keep'?`<span data-tip="${tipQ(mandWhy(m))}">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the halfway floor, judged January 2030. End: the real target, judged January 2035."><i style="width:${f*100}%;background:${x.ok?'#76b357':tm?.s==='track'?'#4f8fd0':x.half?'#d9a441':'#d0503f'}"></i>${tm&&tm.v!=null&&tm.v/t>f+.005?`<i class="rc-up" style="left:${f*100}%;width:${(Math.min(1,tm.v/t)-f)*100}%" data-tip="${tipQ(`Hatched: January 2035 with everything under way, if Congress orders what new capacity adds: <b>${mFmt(m,tm.v)}/yr</b>`)}"></i>`:''}<span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>`}).join('')}
-    <div class="sc-test">${res?`Test: ${res.test.txt}`:`Hatched: where what is under way takes it by 2035. ✓ target met · ↗ on track for the target · ◐ halfway floor met · ○ neither yet. January 2030 judges the floors and ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}; January 2035 judges the real targets.`}</div></div>`}
+    ${rdyRow(sc)}<div class="sc-test">${res?`Test: ${res.test.txt}`:`Hatched: where what is under way takes it by 2035. ✓ target met · ↗ on track for the target · ◐ halfway floor met · ○ neither yet. January 2030 judges the floors and ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}; January 2035 judges the real targets.`}</div></div>`}
 function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"><span class="ic">🎯</span>January 2027: choose your mandate</div><div class="bd">
   <p>Each scenario hands you targets drawn from real public goals. In January 2030 you are judged on whether you are halfway there and whether what you hold would be enough that day. In January 2035 you are judged on the real targets. Under today’s rules the United States is not on track for most of them.</p>
   <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
@@ -5962,10 +6031,9 @@ function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"
 const DEBC=[['cfopen','🔁','What it would have taken','Your plan replayed from 2027 with reforms passed early.'],['timeopen','⏱','Where the time went','The weeks your programs lost, step by step.'],['briefopen','🖨','One-page brief','Your result on a single printable page.']];
 function debCards(){return `<div class="debc">${DEBC.map(([a,ic,t,d])=>`<button class="pbtn debcard" data-a="${a}"><span class="debic">${ic}</span><span class="debtx"><b>${t}</b><span>${d}</span></span></button>`).join('')}</div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
-  return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
+  return `<div class="paper wide ckp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
     <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>${S.scenMid?`<p class="mini">In January 2030 you were <b>${S.scenMid.verdict.toLowerCase()}</b>: ${S.scenMid.floors} of ${S.scenMid.of} halfway floors met.</p>`:''}
-    <table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
-    <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
+    ${ckGrid(sc,r,false)}
     <p><i>${sc.lesson}</i></p></div>
     <div class="ft debft"><div class="debh">Debrief</div>${debCards()}<button class="pbtn primary debgo" data-a="scenstop"><b>See the full record →</b><span>Charts, decisions and every line, year by year</span></button></div></div>`}
 
