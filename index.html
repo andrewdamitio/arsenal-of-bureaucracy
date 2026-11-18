@@ -1010,6 +1010,22 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 @media(max-width:980px){.ckgrid{grid-template-columns:1fr}}
 .sc-rdy{cursor:pointer}.sc-rdy:hover .sc-n{color:#fff}.nb i.rdyband{background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}.ckgold{color:#9a6a12}
 .sc-wk{font-size:11px;color:#b8ad8a;margin:0 0 3px 22px}.sc-wk b{color:var(--ink);font-weight:600}.sc-wk .up{color:#8fd16a}.sc-wk .dn{color:#e9a091}
+.rec-charts.two,.rec-cols.two{grid-template-columns:1fr 1fr}@media(max-width:1300px){.rec-charts.two,.rec-cols.two{grid-template-columns:1fr}}
+.rec-tl{margin-bottom:10px;overflow:hidden}.rtl{display:block;max-width:100%;height:auto;margin-top:2px}
+.rtl-grid{stroke:#e2d6b6;stroke-width:1}.rtl-req{stroke:#5f9e4a;stroke-width:1.5;stroke-dasharray:5 4}.rtl-ax{font:11px "Segoe UI",system-ui,sans-serif;fill:#7a6a48}
+.rtl-lab{font:600 12px "Segoe UI",system-ui,sans-serif;fill:#4a3f2a}.rtl-lab.b{fill:#2b241a;font-weight:700}.rtl-lab.m{fill:#6b6250;font-weight:400}
+.rtl-fut{fill:#e9dfc4;opacity:.45}.rtl-now{stroke:#8a7850;stroke-width:1;stroke-dasharray:2 2}.rtl-guide{stroke:#a07a1a;stroke-opacity:.4;stroke-width:1;stroke-dasharray:2 3}
+.rtl-base{fill:none;stroke:#8a8270;stroke-width:1.5;stroke-dasharray:3 3}.rtl-you{fill:none;stroke:#2f62a0;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.rtl-youpt{fill:#2f62a0;stroke:#f3ebd6;stroke-width:2}
+.rtl-hit{fill:transparent}.rtl-hit:hover{fill:rgba(47,98,160,.08)}.rtl-lane{stroke:#d6c79f;stroke-width:1}.rtl-ln{font:600 12px "Segoe UI",system-ui,sans-serif;fill:#3a3020}
+.rtl-dot circle{stroke:#f3ebd6;stroke-width:2;cursor:help}.rtl-dot:hover circle{stroke:#2b241a}.rtl-k{font:700 10px "Segoe UI",system-ui,sans-serif;fill:#fff;pointer-events:none}
+.rtl-leg{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;font:12px "Segoe UI",system-ui,sans-serif;color:#4a3f2a;margin:4px 0}.rtl-leg span{display:inline-flex;align-items:center;gap:6px}.rtl-leg i{display:inline-block;width:20px;height:0;border-top:2px solid #2f62a0}.rtl-leg i.base{border-top:2px dashed #8a8270}.rtl-leg i.guide{border-top:1px dashed #a07a1a}
+.rec-all{margin-top:6px}.rec-all summary{cursor:pointer;font:600 12px "Segoe UI",system-ui,sans-serif;color:#5a4a26}.rec-lawcols{columns:2 420px;column-gap:24px;margin-top:4px}.rec-lawcols .rec-law{break-inside:avoid}.rec-law>i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.ltwrap{margin:4px 0 10px}.lthd{font:13px/1.45 "Segoe UI",system-ui,sans-serif;color:#3a3020;margin:4px 0 8px}
+.ltbar{display:flex;gap:2px;height:22px;border-radius:4px;overflow:hidden}.ltbar i{display:block;min-width:2px}
+.ltrows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 32px;margin-top:12px}
+.ltrow{display:grid;grid-template-columns:10px minmax(140px,210px) minmax(0,1fr) 74px 34px;gap:8px;align-items:center;font:12.5px "Segoe UI",system-ui,sans-serif;color:#2b241a;padding:3px 0;border-bottom:1px dotted #d6c79f}.ltrow .sw{width:10px;height:10px;border-radius:2px}.ltrow b,.ltrow .dim{text-align:right}
+.ltb{height:8px}.ltb i{display:block;height:100%;border-radius:0 4px 4px 0}
+@media(max-width:1100px){.ltrows{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -3608,8 +3624,8 @@ const TUT=[
  {p:'stocks',sel:'#view .rng',t:'Time range',x:'Zoom the charts in or out.',next:1},
  {p:'stocks',...SUB('rec','The record')},
  {p:'stocks',sel:'#view .rec-tiles',t:'The record',x:'Everything that has changed since you took over: share of the requirement, money spent, jobs, Chinese content, laws changed, plants built, decisions.',next:1},
- {p:'stocks',sel:'#view .rec-charts',t:'Over time',x:'Your share of the requirement, Chinese and Russian content, and money spent, since 2025.',next:1},
- {p:'stocks',sel:'#view .rec-cols',t:'Where it went',x:'Where your money and your programs’ time went, and every law and rule you changed. Further down: the bill by fiscal year and what each reform was worth.',next:1},
+ {p:'stocks',sel:'#view .rec-tl',t:'What you changed',x:'Every law, executive action, waiver and deal you made, on one timeline with your share of the requirement and the do-nothing line. Hover a dot for what changed.',next:1},
+ {p:'stocks',sel:'#view .rec-cols',t:'Where it went',x:'Where your money came from and where it went. Below: where your programs lost time, by cause.',next:1},
  // Sources
  {p:'src',...NAV('src','Sources')},
  {p:'src',sel:'#view .acard',t:'The model check',x:'The game replays 2025 and 2026 before you take over, and checks itself against what actually happened.',next:1},
@@ -5815,6 +5831,53 @@ function billTable(){const L=S.fyLed||{},fys=Object.keys(L).map(Number).sort((a,
   <table class="ctable billt"><tr><th>Fiscal year</th>${cols.map(([k,n,d])=>`<th>${n}<br><span class="mini">${d}</span></th>`).join('')}<th>Industrial base</th><th>Total</th></tr>
   ${fys.map(y=>`<tr><td><b>FY${y}</b>${y===now?' <span class="mini">so far</span>':''}</td>${cols.map(([k])=>`<td>${c(L[y][k]||0)}</td>`).join('')}<td><b>${c(ib(y))}</b></td><td><b>${c(tot(y))}</b></td></tr>`).join('')}
   <tr class="billsum"><td><b>Since Jan 2027</b></td>${cols.map(([k])=>`<td><b>${c(sum(k))}</b></td>`).join('')}<td><b>${c(allIb)}</b></td><td><b>${c(all)}</b></td></tr></table>`}
+const nWk=v=>Math.round(v).toLocaleString('en-US');
+// ---- The record: what you changed, on one timeline with the share of the requirement (validated palette: share #2f62a0;
+// lanes #a07a1a, #7a4fa8, #16917f on the paper surface)
+let RTL_W=0,RTL_T=null;const REC_LANES=[{n:'Laws (Congress)',c:'#a07a1a',k:['Law']},{n:'Executive actions',c:'#7a4fa8',k:['Executive action','Rule finalized','Reversed','Emergency','Import control','Control lifted']},{n:'Waivers & deals',c:'#16917f',k:['Waiver','Allied deal']}];
+const recLane=kind=>{const i=REC_LANES.findIndex(l=>l.k.includes(kind));return i<0?1:i};
+function recTimeline(){const laws=S.lawLog||[],x0=PLAY0,x1=Math.max(END_W,S.w),GL=150,GR=78,PT=16,CH=170,LH=30,NL=REC_LANES.length;
+  const live=document.querySelector('#view .rec-tl');if(live?.clientWidth)RTL_W=live.clientWidth;clearTimeout(RTL_T);RTL_T=setTimeout(rtlFit,0);const cw=RTL_W||((document.getElementById('view')?.clientWidth||1300)-40),W=Math.max(560,Math.min(1800,cw-18)),H=PT+CH+16+NL*LH+22,pw=W-GL-GR;
+  const X=w=>GL+(w-x0)/(x1-x0)*pw,R=S._R||production(false);
+  const ser=S.hist.filter(h=>h.prod&&h.w>=x0&&h.w<S.w).map(h=>[h.w,raceIdx(null,h.w,c=>h.prod[c]??0)]);ser.push([S.w,raceIdx(R.out)]);
+  const bs=S.base?.done?S.base.pts.filter(p=>p[0]>=x0&&p[0]<=S.w).map(p=>[p[0],p[1]]):[];
+  const yMax=Math.max(1.08,...ser.map(p=>p[1]*1.08),...bs.map(p=>p[1]*1.08)),Y=v=>PT+CH*(1-v/yMax),path=a=>a.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join('');
+  let g='';
+  // recessive grid: years and 0/50/100%
+  for(let y=2027;y<=dateOf(x1).getFullYear();y++){const w=weekOf(y,0,1);if(w<x0||w>x1)continue;const x=X(w).toFixed(1);g+=`<line x1="${x}" x2="${x}" y1="${PT}" y2="${H-20}" class="rtl-grid"/><text x="${x}" y="${H-6}" class="rtl-ax" text-anchor="middle">${y}</text>`}
+  for(const v of [0,.5]){g+=`<line x1="${GL}" x2="${GL+pw}" y1="${Y(v)}" y2="${Y(v)}" class="rtl-grid"/><text x="${GL-8}" y="${Y(v)+4}" class="rtl-ax" text-anchor="end">${pct(v)}</text>`}
+  g+=`<line x1="${GL}" x2="${GL+pw}" y1="${Y(1)}" y2="${Y(1)}" class="rtl-req"/><text x="${GL-8}" y="${Y(1)+4}" class="rtl-ax" text-anchor="end">100%</text><text x="${GL+pw+6}" y="${Y(1)+4}" class="rtl-lab">Enough</text>`;
+  // the future, to January 2035
+  if(S.w<x1)g+=`<rect x="${X(S.w)}" y="${PT}" width="${X(x1)-X(S.w)}" height="${H-20-PT}" class="rtl-fut"/><line x1="${X(S.w)}" x2="${X(S.w)}" y1="${PT-6}" y2="${H-20}" class="rtl-now"/><text x="${X(S.w)+5}" y="${PT-4}" class="rtl-ax">Today</text>`;
+  // what you changed, clustered when dots would touch
+  const cl=REC_LANES.map(()=>[]);for(const e of laws.slice().sort((a,b)=>a.w-b.w)){const i=recLane(e.kind),a=cl[i],last=a[a.length-1];if(last&&X(e.w)-X(last.w0)<11)last.es.push(e);else a.push({w0:e.w,es:[e]})}
+  // guides from each law up through the chart, so you can see what followed
+  for(const c of cl[0]){const w=c.es.reduce((s,e)=>s+e.w,0)/c.es.length,x=X(w).toFixed(1);g+=`<line x1="${x}" x2="${x}" y1="${PT}" y2="${PT+CH+16}" class="rtl-guide"/>`}
+  if(bs.length>1)g+=`<path d="${path(bs)}" class="rtl-base"/>`;
+  g+=`<path d="${path(ser)}" class="rtl-you"/>`;
+  const lp=ser[ser.length-1],lb=bs[bs.length-1];g+=`<circle cx="${X(lp[0])}" cy="${Y(lp[1])}" r="4" class="rtl-youpt"/><text x="${X(lp[0])+8}" y="${Y(lp[1])+4}" class="rtl-lab b">You ${pct(lp[1])}</text>`;
+  if(lb&&Math.abs(Y(lb[1])-Y(lp[1]))>=12)g+=`<text x="${X(lb[0])+8}" y="${Y(lb[1])+4}" class="rtl-lab m">Doing nothing ${pct(lb[1])}</text>`;
+  // hover: one hit column per point
+  const bAt=w=>{let b=null;for(const p of bs){if(p[0]<=w)b=p;else break}return b};
+  g+=ser.map((p,i)=>{const xa=i?(X(ser[i-1][0])+X(p[0]))/2:X(p[0])-4,xb=i<ser.length-1?(X(p[0])+X(ser[i+1][0]))/2:X(p[0])+4,b=bAt(p[0]);
+    return `<rect x="${xa.toFixed(1)}" y="${PT}" width="${Math.max(1,xb-xa).toFixed(1)}" height="${CH}" class="rtl-hit" data-tip="${tipQ(`<b>${fmtDate(p[0])}</b><br>You + allies: <b>${pct(p[1])}</b> of the requirement${b?`<br>Doing nothing: ${pct(b[1])}`:''}`)}"/>`}).join('');
+  // the lanes
+  REC_LANES.forEach((L,i)=>{const y=PT+CH+16+i*LH+LH/2,n=laws.filter(e=>recLane(e.kind)===i).length;
+    g+=`<line x1="${GL}" x2="${GL+pw}" y1="${y}" y2="${y}" class="rtl-lane"/><circle cx="12" cy="${y}" r="5" fill="${L.c}"/><text x="22" y="${y+4}" class="rtl-ln">${L.n}</text><text x="${GL-8}" y="${y+4}" class="rtl-ax" text-anchor="end">${n}</text>`;
+    for(const c of cl[i]){const w=c.es.reduce((s,e)=>s+e.w,0)/c.es.length,k=c.es.length;
+      g+=`<g class="rtl-dot" data-tip="${tipQ(c.es.map(e=>`${fmtDate(e.w)} · <b>${e.kind}</b><br>${e.n}`).join('<br>'))}"><circle cx="${X(w).toFixed(1)}" cy="${y}" r="${k>1?8:6}" fill="${L.c}"/>${k>1?`<text x="${X(w).toFixed(1)}" y="${y+4}" text-anchor="middle" class="rtl-k">${k}</text>`:''}</g>`}});
+  const leg=`<div class="rtl-leg"><span><i class="you"></i>You + ${AL().short}: share of the requirement</span>${bs.length?'<span><i class="base"></i>Doing nothing, same luck</span>':''}<span><i class="guide"></i>When a law passed</span><span class="mini">Hover a dot for what changed, or the line for the figures.</span></div>`;
+  const list=laws.length?`<details class="rec-all"><summary>All ${laws.length} changes, newest first</summary><div class="rec-lawcols">${laws.slice().reverse().map(x=>`<div class="rec-law"><i style="background:${REC_LANES[recLane(x.kind)].c}"></i><span class="mini">${fmtDate(x.w)}</span> <b>${x.kind}</b> ${x.n}</div>`).join('')}</div></details>`:'<p class="mini">Nothing changed yet. The ⚖ Rulebook and the NDAA & Congress tab show what you could change.</p>';
+  return `<div class="acard rec-tl"><div class="ah"><b>What you changed, and the share of the requirement</b><span class="mini">${laws.length} laws, rules, waivers and deals since January 2027</span></div>${leg}<svg class="rtl" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Share of the requirement over time, with the laws, executive actions, waivers and deals you made">${g}</svg>${list}</div>`}
+// ---- where your programs lost time: one bar for the whole, then every cause ranked
+function recLost(){const L=Object.entries(S.ledger||{}).filter(x=>x[1].wk>0).sort((a,b)=>b[1].wk-a[1].wk);
+  const head=`<div class="pdg">Where your programs lost time</div>`;if(!L.length)return head+'<p class="mini">No program has lost time yet.</p>';
+  const tot=L.reduce((a,x)=>a+x[1].wk,0),mx=L[0][1].wk,top=L.slice(0,5),rest=L.slice(5),rw=rest.reduce((a,x)=>a+x[1].wk,0);
+  const parts=top.map(([k,v])=>[LAYERS[k].n,v.wk,LAYERS[k].c]);if(rw>0)parts.push([`${rest.length} other causes`,rw,'#a59c84']);
+  const bar=`<div class="ltbar">${parts.map(([n,v,c])=>`<i style="flex:${v} 1 0;background:${c}" data-tip="${tipQ(`<b>${n}</b><br>${nWk(v)} program-weeks · ${pct(v/tot)} of all delay`)}"></i>`).join('')}</div>
+    <div class="tleg">${parts.map(([n,v,c])=>`<span><i style="background:${c}"></i>${n} <b>${pct(v/tot)}</b></span>`).join('')}</div>`;
+  const rows=L.map(([k,v])=>`<div class="ltrow" data-tip="${tipQ(`<b>${LAYERS[k].n}</b><br>${nWk(v.wk)} program-weeks lost, ${pct(v.wk/tot)} of all delay. Struck ${v.n} time${v.n===1?'':'s'}.`)}"><i class="sw" style="background:${LAYERS[k].c}"></i><span>${LAYERS[k].n}</span><div class="ltb"><i style="width:${(v.wk/mx*100).toFixed(1)}%;background:${LAYERS[k].c}"></i></div><b>${nWk(v.wk)} wk</b><span class="dim">${v.n?'×'+v.n:''}</span></div>`).join('');
+  return `${head}<div class="ltwrap"><p class="lthd"><b>${nWk(tot)} program-weeks</b> lost to delay since January 2027, about ${fmt(tot/52,0)} program-years. Programs run side by side, so this adds up faster than the calendar. <b>${LAYERS[L[0][0]].n}</b> cost the most: ${pct(L[0][1].wk/tot)}.</p>${bar}<div class="ltrows">${rows}</div><p class="mini" style="margin:6px 0 0"><span class="linkn" data-a="timeopen">⏱ Program by program, step by step →</span> · ×N is how many times each cause struck.</p></div>`}
 function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINES),yr=w=>dateOf(w).getFullYear();
   if(!r0)return '<p class="mini">The record starts when you take over in January 2027.</p>';
   const idx=raceIdx(R.out),idx0=raceIdx(null,PLAY0,c=>r0.out[c]??0),spent=sumV(S.spendBy),inc=sumV(S.incBy),J=jobsNow();
@@ -5834,8 +5897,7 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   const hs=S.hist.filter(x=>x.prod),ser=hs.map(x=>[x.w,raceIdx(null,x.w,c=>x.prod[c]??0)]);ser.push([S.w,idx]);
   const ex=S.hist.filter(x=>x.expo!=null).map(x=>[x.w,x.expo]);ex.push([S.w,S.exposure]);
   const sp=S.hist.filter(x=>x.spent!=null).map(x=>[x.w,x.spent]);sp.push([S.w,spent]);
-  h+=`<div class="rec-charts"><div class="acard"><div class="ah"><b>Share of the requirement · you + ${AL().short}</b></div>${lineChart({unit:'⟳ Output (flow), share of requirement',W:440,H:150,yMax:Math.max(1,...ser.map(x=>x[1]))*1.05,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1,c:'#5f9e4a',n:'Sufficient'}],series:[...(S.base?.done?[{pts:S.base.pts.filter(p=>p[0]<=S.w).map(p=>[p[0],p[1]]),c:'#8a8270',wd:1.5,dash:'2 3',n:'Doing nothing'}]:[]),{pts:ser,c:'#2f62a0',wd:2.2,n:'Share of requirement'}]})}</div>
-    <div class="acard"><div class="ah"><b>PRC and Russian content in what you build</b></div>${lineChart({unit:'Share of inputs',W:440,H:150,yMax:Math.max(.05,...ex.map(x=>x[1]))*1.1,yFmt:v=>pct(v),vf:v=>pct(v),series:[{pts:ex,c:'#b0453a',wd:2.2,n:'PRC / Russian content'}]})}</div>
+  h+=recTimeline()+`<div class="rec-charts two"><div class="acard"><div class="ah"><b>PRC and Russian content in what you build</b></div>${lineChart({unit:'Share of inputs',W:440,H:150,yMax:Math.max(.05,...ex.map(x=>x[1]))*1.1,yFmt:v=>pct(v),vf:v=>pct(v),series:[{pts:ex,c:'#b0453a',wd:2.2,n:'PRC / Russian content'}]})}</div>
     <div class="acard"><div class="ah"><b>Money spent since January 2027</b></div>${lineChart({unit:'Cumulative spending',W:440,H:150,yMax:Math.max(1,...sp.map(x=>x[1]))*1.08,yFmt:v=>'$'+fmt(v,0)+'B',vf:v=>money(v),series:[{pts:sp,c:'#8a6a1f',wd:2.2,n:'Spent'}]})}</div></div>`;
   h+=billTable();if(REFORMS.some(R=>passed(R.id)))h+=`<div class="pdg">What your reforms were worth so far</div>${refWorthHTML(false)}`;
   // line by line
@@ -5844,10 +5906,8 @@ function recBody(){const R=S._R||production(false),r0=S.rec0,cs=Object.keys(LINE
   // where the money went, where the time went, what changed in law
   const bars=(o,f,c)=>{const e=Object.entries(o||{}).sort((a,b)=>b[1]-a[1]),m=Math.max(1e-9,...e.map(x=>x[1]));return e.length?e.map(([k,v])=>`<div class="rec-bar"><span>${k}</span><div class="nb"><i style="width:${v/m*100}%;background:${typeof c==='function'?c(k):c}"></i></div><b>${f(v)}</b></div>`).join(''):'<p class="mini">Nothing yet.</p>'};
   const led=Object.fromEntries(Object.entries(S.ledger).filter(x=>x[1].wk>0).map(([k,v])=>[LAYERS[k].n,v.wk])),lc=Object.fromEntries(Object.keys(S.ledger).map(k=>[LAYERS[k].n,LAYERS[k].c]));
-  h+=`<div class="rec-cols"><div><div class="pdg">Where the money went</div>${bars(S.spendBy,money,'#8a6a1f')}<div class="pdg" style="margin-top:10px">Where it came from</div>${bars(S.incBy,money,'#5f9e4a')}</div>
-    <div><div class="pdg">Where the time went <span class="mini" style="text-transform:none;letter-spacing:0">· program and plant weeks lost</span></div>${bars(led,v=>fmt(v,0)+' wk',k=>lc[k]||'#8a6a1f')}</div>
-    <div><div class="pdg">Laws, rules and waivers changed</div>${laws.length?laws.slice().reverse().map(x=>`<div class="rec-law"><span class="mini">${fmtDate(x.w)}</span> <b>${x.kind}</b> ${x.n}</div>`).join(''):'<p class="mini">None yet. The ⚖ Rulebook and the NDAA & Congress tab show what you could change.</p>'}</div></div>`;
-  {const L=Object.entries(S.ledger||{}).filter(x=>x[1].wk>0).sort((a,b)=>b[1].wk-a[1].wk),mx=Math.max(1,...L.map(x=>x[1].wk));if(L.length)h+=`<div class="dsec"><h4>Where your programs lost time</h4><p class="mini" style="margin:0 0 4px">Weeks of delay across all your programs, by the kind of obstacle that caused them, and how many times each struck.</p><div class="ledrec">`+L.map(([k,v])=>`<div class="lg"><span class="sw" style="background:${LAYERS[k].c}"></span><span>${LAYERS[k].n}</span><b style="text-align:right">${fmt(v.wk,0)}</b><span class="dim" style="text-align:right">×${v.n}</span><div class="lgbar"><i style="width:${v.wk/mx*100}%;background:${LAYERS[k].c}"></i></div></div>`).join('')+`</div>`}
+  h+=`<div class="rec-cols two"><div><div class="pdg">Where the money went</div>${bars(S.spendBy,money,'#8a6a1f')}</div><div><div class="pdg">Where it came from</div>${bars(S.incBy,money,'#5f9e4a')}</div></div>`;
+  h+=recLost();
   return h}
 /* ---------- threat scenarios: dated mandates from real targets, and a test at the deadline ---------- */
 let NO_PRC=false; // set while testing what survives if China switches everything off
@@ -6989,6 +7049,9 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 window.addEventListener('resize',()=>{if(S&&S.modal)renderModal()});
+// the record timeline is drawn at its card's width: redraw it when the window changes size
+function rtlFit(){const c=document.querySelector('#view .rec-tl'),g=c?.querySelector('svg.rtl');if(!S||!c||!g||!c.clientWidth)return;RTL_W=c.clientWidth;if(Math.abs(+g.getAttribute('width')-Math.max(560,Math.min(1800,RTL_W-18)))>24){const o=c.querySelector('details')?.open;c.outerHTML=recTimeline();clearTimeout(RTL_T);if(o)document.querySelector('#view .rec-tl details').open=true}}
+window.addEventListener('resize',()=>{clearTimeout(RTL_T);RTL_T=setTimeout(rtlFit,150)});
 renderTitle();requestAnimationFrame(loop);
 </script>
 </body>
