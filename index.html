@@ -982,6 +982,15 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .cft td.num,.cft th.num{white-space:nowrap}
 .rc-out.rc-dn b{color:#a8d48e!important}.rc-out.rc-dn b.neg{color:#e9a091!important}.rc-out[data-a]{cursor:pointer}.whyc{cursor:pointer}
 .whyp .bd{max-width:720px;font:13.5px/1.5 "Segoe UI",system-ui,sans-serif}.whyf2{font-size:14px}.whyt td,.whyt th{padding:3px 8px}.whyt tr.whyf td{border-top:2px solid #8a7850}
+.paper .ft.debft{display:flex;flex-direction:column;gap:10px;padding:12px 18px 16px;border-top:1px solid #cdb98a;background:#e9dfc4}
+.debh{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35}
+.debc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}.debft .debc{margin:0}
+.pbtn.debcard{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:3px;background:#f7f0dd;border:1px solid #cdb98a;transition:background .12s,border-color .12s,box-shadow .12s}
+.pbtn.debcard:hover{background:#fffbf0;border-color:#8a7440;box-shadow:inset 4px 0 0 #c9a227}
+.debic{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#e6dbbd;border:1px solid #cdb98a;font-size:15px}
+.debtx{display:flex;flex-direction:column;gap:2px;min-width:0}.debtx b{font:600 14.5px Georgia,serif;color:#2b241a}.debtx span{font:12px/1.35 "Segoe UI",system-ui,sans-serif;color:#5a4e38}
+.pbtn.primary.debgo{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 14px;border-radius:3px;text-align:center}.debgo b{font:600 15.5px Georgia,serif;letter-spacing:.02em}.debgo span{font:400 12px "Segoe UI",system-ui,sans-serif;color:#cfc6ad}
+@media(max-width:760px){.debc{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -5891,7 +5900,7 @@ function scenMidHTML(){const sc=SCD[S.scen],r=S.scenMid;
     <div class="stamp" style="font-size:22px">${r.verdict}</div><p>The first checkpoint asks whether you are halfway from where you started in January 2027 to each real target. The real targets are judged in January 2035.</p>
     <table class="ctable"><tr><th>Mandate</th><th>Halfway floor</th><th>Reached</th><th></th><th>Real target, 2035</th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.half?'okt':'redt'}">${x.ok?'✓ already at the real target':x.half?'✓ floor met':'✗ below the floor'}</td><td>${mFmt(x,x.t)}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
     <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} If it came today.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p></div>
-    <div class="ft"><button class="pbtn primary" data-a="close">Keep building: five years to the real targets →</button></div></div>`}
+    <div class="ft debft"><button class="pbtn primary debgo" data-a="close"><b>Keep building →</b><span>Five years to the real targets, January 2035</span></button></div></div>`}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
   const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
   S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst}};
@@ -5950,13 +5959,15 @@ function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"
   <p>Each scenario hands you targets drawn from real public goals. In January 2030 you are judged on whether you are halfway there and whether what you hold would be enough that day. In January 2035 you are judged on the real targets. Under today’s rules the United States is not on track for most of them.</p>
   <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
   <div class="ft"><button class="pbtn" data-a="scenskip">No mandate: play the open race to 2035</button></div></div>`}
+const DEBC=[['cfopen','🔁','What it would have taken','Your plan replayed from 2027 with reforms passed early.'],['timeopen','⏱','Where the time went','The weeks your programs lost, step by step.'],['briefopen','🖨','One-page brief','Your result on a single printable page.']];
+function debCards(){return `<div class="debc">${DEBC.map(([a,ic,t,d])=>`<button class="pbtn debcard" data-a="${a}"><span class="debic">${ic}</span><span class="debtx"><b>${t}</b><span>${d}</span></span></button>`).join('')}</div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
   return `<div class="paper wide"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
     <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>${S.scenMid?`<p class="mini">In January 2030 you were <b>${S.scenMid.verdict.toLowerCase()}</b>: ${S.scenMid.floors} of ${S.scenMid.of} halfway floors met.</p>`:''}
     <table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>
     <p class="${r.test.ok?'okt':'redt'}"><b>${r.test.ok?'✓':'✗'} The test.</b> ${r.test.txt}${r.test.worst?` Hardest hit: ${r.test.worst}.`:''}</p>
     <p><i>${sc.lesson}</i></p></div>
-    <div class="ft"><button class="pbtn" data-a="cfopen">🔁 What it would have taken</button><button class="pbtn" data-a="timeopen">⏱ Where the time went</button><button class="pbtn" data-a="briefopen">🖨 Brief</button><button class="pbtn primary" data-a="scenstop">See the full record</button></div></div>`}
+    <div class="ft debft"><div class="debh">Debrief</div>${debCards()}<button class="pbtn primary debgo" data-a="scenstop"><b>See the full record →</b><span>Charts, decisions and every line, year by year</span></button></div></div>`}
 
 function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   if(id.startsWith('L:')){const ps=S.projects.filter(q=>PD[q.def].t.line===c),pl=S.plants.filter(p=>p.kind==='line'&&p.target===c&&!p.full);
@@ -6579,7 +6590,7 @@ function renderModal(){
       <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}'s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
       <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
       <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. Programs abandoned or cut: <b>${S.gone.length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Waivers and exceptions: <b>${S.waivers}</b>.</p>
-      <p class="debb"><button class="pbtn" data-a="cfopen">🔁 What it would have taken</button><button class="pbtn" data-a="timeopen">⏱ Where the time went</button><button class="pbtn" data-a="briefopen">🖨 One-page brief</button></p>
+      <h5 class="yrh">Debrief</h5>${debCards()}
       <h5 class="yrh">What your reforms were worth</h5>${refWorthHTML(true)}
       <h5 class="yrh">The bill</h5>${billTable()||'<p class="mini">Nothing was spent.</p>'}
       <h5 class="yrh">Where the time went <span class="mini">(${fmt(tot,0)} program-weeks lost)</span></h5>
