@@ -1331,6 +1331,10 @@ const NODES=[
   US:{mix:[1,0,0],kn:30,cov:.8},adv:0,
   dp:{n:'Submarine Component Yard',g:.4,c:1.5},ap:{n:'AUKUS Partner Components',g:.2,c:.8}},
  // ---------------- TIER 4 ----------------
+ {id:'rayon',t:2,n:'Missile-Grade Rayon (Nozzle Cloth)',ic:'🧵',in:[],arch:'refine',ss:'One approved product, made in Europe',
+  d:'The carbon cloth lining the PAC-3 MSE motor nozzle starts as rayon. One product is approved: the fibre is spun in the Czech Republic, woven and carbonized by ArianeGroup in France, and coated with resin by Park Aerospace in Kansas.[c:wsjrayon] No US maker since 1997.[c:narcrep]',
+  US:{mix:[0,1,0],kn:15,cov:1.2},adv:0,
+  dp:{n:'US Aerospace Rayon Line',g:1,c:.5,dur:[12,20,40,104,78,12]},ap:{n:'ArianeGroup Rayon Line (France)',g:.6,c:.1,dur:[6,10,0,52,16,4]}},
  {id:'srm',t:4,n:'Solid Rocket Motors',ic:'🚀',in:['ap','composites','primers','al_powder','propchem'],arch:'assembly',tags:['srm','energetic'],ss:'Duopoly',
   d:'Six US makers in 1995, two by 2017 (GAO).[c:gaosrm] Entrants (Anduril, Ursa Major, X-Bow, Avio USA) are still qualifying, and they draw on the same sub-tier suppliers.[c:bdsrm] Gates every interceptor ramp.',
   US:{mix:[1,0,0],kn:45,cov:.85},adv:0,
@@ -1427,6 +1431,7 @@ const INFO={
  micro:{chain:['Trusted / rad-hard wafer fab','Packaging & test','Trust accreditation'],world:'Leading-edge fabs in Taiwan/Korea; trusted mature-node fabs in the US.',who:{US:'Trusted-foundry-accredited fabs (e.g., SkyWater, BAE, GlobalFoundries for some processes).'},why:'Guidance, seekers, radars. Small volumes make fabs reluctant; obsolescence is constant.'},
  mmic:{chain:['GaN epi wafers','Front-end fab','Dicing & packaging into T/R modules'],world:'Prime-owned and a few merchant foundries.',who:{US:'Raytheon, Northrop, Qorvo.'},why:'The building block of AESA radars and RF seekers.'},
  fpa:{chain:['InSb / HgCdTe / InGaAs crystal growth','Detector array fab','Hybridization to readout ICs','Dewar & cooler integration'],world:'A handful of fabs worldwide.',who:{US:'Raytheon, L3Harris, Teledyne.'},why:'IR seekers, targeting pods, drone cameras.'},
+ rayon:{chain:['Dissolving wood pulp','Viscose rayon spun with carbon disulfide (Czech Republic)','Woven and carbonized (ArianeGroup, France)','Phenolic resin prepreg (Park Aerospace, Kansas)','Nozzle liner layup and cure'],world:'One approved product for PAC-3 MSE, from Europe. Germany’s Enka is in testing as a second source.[c:wsjrayon]',who:{US:'None. Avtex in Virginia closed in 1989–90 for economic and environmental reasons; North American Rayon stopped aerospace rayon in 1997 as the US rayon market shrank under foreign competition; the last US rayon staple plant shut in 2005.[c:avtex][c:narcrep][c:liberty]'},why:'Feeds only the interceptor line: enough for about 700 a year, about a third of the 2,000 the Pentagon wants by 2030. A US maker can come back on its own once interceptor lines are about 60% bigger than in 2027 and the US base around it has grown (eight new domestic plants or upgrades delivered); multiyear orders make that likelier.'},
  thermal_bat:{chain:['Lithium-alloy anodes, FeS₂ cathodes','Molten-salt electrolyte pellets','Stack & pyrotechnic heater','Hermetic case'],world:'Niche; very few makers.',who:{US:'EaglePicher is the dominant maker.'},why:'Powers missiles and fuzes in flight; DoD found one maker held ~80% of the market.[c:dn2018]'},
  fuzes:{chain:['Electronics & safe-arm devices','Primer & detonator','Assembly & lot acceptance'],world:'—',who:{US:'A few makers; many single sources.'},why:'DoD found 98% of second- and third-tier munitions suppliers single or sole source.[c:dn2018]'},
  blades:{chain:['Superalloy master melt','Ceramic cores & wax patterns','Single-crystal vacuum casting','Coating & machining'],world:'A handful of casting houses also serve commercial engines.',who:{US:'PCC, Howmet.'},why:'Fighter engines and cruise-missile turbofans compete with commercial overhaul demand.'},
@@ -1508,7 +1513,7 @@ const LEVER_COST={mod:.4,know:.15,power:.25,test:.25};
    k = real units/yr per line-unit (1.0 = US nominal final-assembly rate in 2025, US-retained). Set so that output after the 2025 input shortages lands on observed deliveries: shells ~36–40k/month, interceptors ~500–750, strike ~750–1,100, subs ~1.1–1.2 (see Sources → Model check). */
 const LINES={
  shells:      {n:'Artillery Shells',u:'shells',k:480000,in:['shell_bodies','tnt','nc','fuzes','primers']},
- interceptors:{n:'Air & Missile Defense Interceptors',u:'interceptors',k:600,in:['srm','rf_seeker','imu','warhead','actuators','thermal_bat']},
+ interceptors:{n:'Air & Missile Defense Interceptors',u:'interceptors',k:600,in:['srm','rf_seeker','imu','warhead','actuators','thermal_bat','rayon']},
  strike:      {n:'Long-Range Strike Missiles',u:'strike missiles',k:1050,in:['turbofan','ir_seeker','imu','warhead','actuators','thermal_bat','composites']},
  aircraft:    {n:'Combat Aircraft',u:'aircraft',k:110,in:['airframe','fengine','aesa','micro','actuators']},
  surface:     {n:'Surface Combatants',u:'surface ships',k:6,in:['shipyard','hy_steel','propulsion','aesa','pcb']},
@@ -1822,6 +1827,8 @@ for(const n of NODES){
 for(const n of NODES){const a=ARCH[n.arch];for(const L of LEVERS[n.arch]||[]){
   const kind=L.k,base=kind==='cap'?{gain:L.g,cost:L.c,dur:L.dur,tags:[...L.tags,n.id]}:{gain:0,cost:LEVER_COST[kind]*(kind==='mod'?Math.max(.5,(n.dp?.c||1)*.5):1),dur:LEVER_DUR[kind],tags:kind==='mod'?['brownfield',...a.tags.filter(t=>!['greenfield','mine','dumpable','prime'].includes(t)),n.id]:['program',n.id]};
   PROJECTS.push({id:'x_'+n.id+'_'+L.id,kind,n:L.n,d:L.d,t:{node:n.id},...base})}}
+PROJECTS.push({id:'a2_rayon',ally:1,n:'Qualify Enka Rayon (Germany)',d:'Germany’s Enka, which NASA qualified to replace US rayon on the Shuttle boosters in 2004, is in testing for the newest interceptors; its material has not passed every test yet.[c:wsjrayon][c:nasarayon]',t:{node:'rayon'},gain:.5,cost:.15,adv:0,dur:[6,8,0,12,40,4],tags:['allied','rayon']});
+{const p=PROJECTS.find(x=>x.id==='d_rayon');if(p)p.tags=['refine','greenfield','rayon']}
 for(const m of MXP)PROJECTS.push({id:m.id,kind:'maint',fac:m.fac,req:m.req,n:m.n,d:m.d,t:{line:m.line},gain:0,cost:m.c,dur:m.dur,tags:m.tags,eff:m.eff,also:m.also,sideLine:m.sideLine});
 PROJECTS.push(
  {id:'l_shell_lap',n:'Shell Load/Assemble/Pack Expansion',d:'More fill lines (+50% of the US base rate). Useless without shell bodies, TNT, propellant and fuzes.',t:{line:'shells'},gain:.5,cost:1,dur:[8,16,12,78,26,0],tags:['line','prime','energetic']},
@@ -1941,6 +1948,9 @@ const OBSTACLES=[
  {id:'srmqual',layer:'QUAL',stage:'qual',tags:['srm','ap'],chance:.9,mods:{qualReform:.5,cvQual:.4},n:'Motor Requalification',
   t:"Every missile that switches to a new motor — or a new AP source — must requalify: static fires, aging tests, insensitive-munitions tests. Qualifying a new SRM source \"can take years.\"",
   o:[{l:'Full requalification',wait:52},{l:'Parallel static-fire campaigns',$:.3,wait:26},{l:'Qualification by similarity',pc:18,p:.45,wait:6,fail:{wait:40},waiver:1}]},
+ {id:'rayonQual',layer:'QUAL',stage:'qual',tags:['rayon'],al:1,chance:.9,mods:{qualReform:.6,cvQual:.5},n:'Nozzle Rayon Qualification',
+  t:"A new rayon has to be carbonized, woven, coated and fired in a motor nozzle before it can fly. When North American Rayon stopped in 1997, NASA's replacement first flew in a full-scale static test in 2004.",
+  o:[{l:'Full qualification: erosion tests and static fires',wait:52},{l:'Parallel static-fire campaigns',$:.15,wait:30},{l:'Qualify by similarity to the heritage cloth',pc:14,p:.4,wait:6,fail:{wait:40},waiver:1}]},
  {id:'fat',layer:'QUAL',stage:'qual',tags:['line','assembly'],chance:.4,mods:{cvQual:.5},n:'First Article Test Failure',
   t:"The first lot fails acceptance testing, for reasons that turn out to be a test fixture.",
   o:[{l:'Fix and retest',wait:12},{l:'Accept with a deviation',pc:7,p:.7,fail:{wait:16},waiver:1}]},
@@ -2210,6 +2220,9 @@ const EVENTS=[
   body:()=>(S._e>0?`Rearmament polled well. The new Congress arrives eager to be seen building things. (${S._e>0?'+':''}${S._e} PC)`:`Divided government, or a new administration reviewing everything it inherited. (${S._e} PC)`)+(S.strain>50?' Voters punished civilian shortages.':''),o:[{l:'Onward.'}]},
  
  
+ {id:'rayonBack',fac:['US'],once:true,ic:'🧵',when:()=>rayonReady()&&rand('r54')<(passed('multiyear')?.05:.025),t:'A US Firm Restarts Aerospace Rayon',
+  body:()=>`Interceptor lines are ${pct(lineName('interceptors')/Math.max(S.lines.interceptors.base,1e-9)-1)} bigger than in 2027, and ${rayonBase()} new US plants and upgrades have been delivered. A US specialty-chemicals firm decides missile-grade rayon is worth making again, with its own money, at a chemical site it already runs. It still needs an air permit for the carbon disulfide, a year of building, and a year or more of nozzle qualification.`,
+  fx:()=>rayonRestart(),o:[{l:'Welcome it and watch it'},{l:'Back it with a DPA Title III grant (−$0.3B: a bigger line)',$:.3,fx:()=>{const p=S.projects.find(x=>x.uid===S._rayP);if(p)p.gm*=1.6}}]},
  {id:'cruisers',pre:"March 2024: the Navy's FY2025 plan proposed decommissioning 19 ships, 10 of them early. Congress has blocked most such requests.[c:navy25]",fac:['US'],fixedW:PLAY0+40,ic:'⚓',t:'Navy Proposes Early Ship Retirements',body:"To free money for new construction, the Navy proposes decommissioning 10 ships before the end of their service lives. Congress can block it — and pay to keep them running.",
   o:[{l:'Approve the retirements (−10 ships, +$1.5B)',fx:()=>{S.inv.surface-=10;gainB(1.5,'Retirements')}},{l:'Block it in the NDAA (−10 PC, −$0.5B)',pc:10,fx:()=>{spendB(.5,'Events')}}]},
  {id:'divest',pre:"March 2023: the Air Force's FY2024 request proposed divesting 310 aircraft.[c:af310]",at:[80,120],ic:'✈',t:{US:'Air Force Proposes Divesting Old Aircraft'},body:"Retire about 300 old airframes to fund modernization. They are expensive to maintain — and, in a war, would still be airframes.",
@@ -3240,11 +3253,11 @@ function projCost(def){
   if(icOn('icGrid')&&['mod','power'].includes(def.kind))c*=1.1;
   return c;
 }
-const slotsUsed=()=>S.projects.filter(p=>!p.inh).length;
+const slotsUsed=()=>S.projects.filter(p=>!p.inh&&!p.priv).length;
 // Portfolio acquisition executives (the November 2025 overhaul): one office per sector runs every plant, upgrade and deal in it.
 // Each has staff for about three orders at full speed (more with reforms); past that, every order in the office slows together.
 const OFFICES={mun:{n:'Munitions & Energetics',ic:'💥'},msl:{n:'Missiles & Seekers',ic:'🚀'},ship:{n:'Ships & Submarines',ic:'⚓'},air:{n:'Aircraft & Drones',ic:'✈'},elec:{n:'Electronics',ic:'📡'},mat:{n:'Minerals & Materials',ic:'⛏'}};
-const OFF_N={mun:['linters','chem','al_powder','propchem','imx','ap','rdx','tnt','nc','primers','shell_bodies','fuzes','srm','warhead','thermal_bat'],msl:['rf_seeker','ir_seeker','imu','turbofan','actuators','composites','cfiber','fiber','wha'],
+const OFF_N={mun:['linters','chem','al_powder','propchem','imx','ap','rdx','tnt','nc','primers','shell_bodies','fuzes','srm','warhead','thermal_bat'],msl:['rf_seeker','ir_seeker','imu','turbofan','actuators','composites','cfiber','fiber','wha','rayon'],
   ship:['propulsion','shipyard','sub_yard','sub_parts','castings','hy_steel'],air:['fengine','airframe','blades','li_cells','al_plate'],elec:['pcb','micro','mmic','gan','fpa','tantcap','twt','aesa','ir_optics']};
 const OFF_L={shells:'mun',interceptors:'msl',strike:'msl',a2a:'msl',fires:'msl',subs:'ship',surface:'ship',aircraft:'air',drones:'air'};
 function officeOf(def){if(def.t.line)return OFF_L[def.t.line]||'mat';for(const k in OFF_N)if(OFF_N[k].includes(def.t.node))return k;return 'mat'}
@@ -3252,7 +3265,7 @@ function officeOf(def){if(def.t.line)return OFF_L[def.t.line]||'mat';for(const k
 // new-entrant pathway mean fewer bespoke negotiations (+1.5 a office); multiyear orders put several years of buys on one contract,
 // for the munitions and missile offices (+2); recompeting sole-source lines on standard terms frees a little more (+0.5). Game estimates.
 const OFF_REF=[['acq',1.5,null,'Fixed-Price & New-Entrant Pathway'],['multiyear',2,['mun','msl'],'Multiyear Orders'],['antitrust',.5,null,'Recompete Sole-Source Lines']];
-const officeCap=k=>S.slots/3+OFF_REF.reduce((a,[r,x,ks])=>a+(passed(r)&&(!ks||!k||ks.includes(k))?x:0),0),staffed=p=>!p.inh&&!p.pkg;
+const officeCap=k=>S.slots/3+OFF_REF.reduce((a,[r,x,ks])=>a+(passed(r)&&(!ks||!k||ks.includes(k))?x:0),0),staffed=p=>!p.inh&&!p.pkg&&!p.priv;
 function officeLoad(){const o={};for(const k in OFFICES)o[k]={n:0,cap:officeCap(k)};for(const p of S.projects)if(staffed(p))o[officeOf(PD[p.def])].n++;for(const k in o)o[k].f=o[k].n>o[k].cap+1e-9?o[k].cap/o[k].n:1;return o}
 const OFF_TIP='Since the November 2025 acquisition overhaul, one portfolio acquisition executive runs each sector: every plant, upgrade and deal in it. Each has staff for about five orders at full speed; past that, all of its orders slow down together. The Hire Acquisition Workforce reform adds staff for two more in every office.';
 function officeChips(lbl=true){const L=officeLoad();return `<span class="offs">${lbl?'<span class="offl">Offices</span>':''}${Object.entries(OFFICES).map(([k,o])=>`<span class="offc ${L[k].f<1?'over':L[k].n>=L[k].cap-1e-9?'full':''}" data-tip="${tipQ(`<b>${o.ic} ${o.n} office</b><br>${L[k].n} order${L[k].n===1?'':'s'} running, staff for about ${fmt(L[k].cap,0)} at full speed.${L[k].f<1?` <span style='color:#e8a090'>Every order here moves at ${pct(L[k].f)} speed.</span>`:''}<br><br>${OFF_TIP}`)}">${o.ic} ${L[k].n}/${fmt(L[k].cap,0)}</span>`).join('')}</span>`}
@@ -3853,6 +3866,14 @@ function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly
   else if(q.sys==='fw')toast(`${q.r>=.7?'📈 Framework target met':'📉 Framework audit: far below goal'}<br><span class="dim">${LINES[q.lid].n} · ${q.r>=.7?'+10':'−20'} PC</span>`,'',{a:'node',n:'L:'+q.lid});
   else toast(`${q.sys==='pass'?'✅ Enacted':'❌ Stripped in conference'}<br><span class="dim">${rname(RD[q.id])}</span>`,'',{a:'rtab',t:'agenda'});
   return false})}
+// aerospace rayon comes back without a program once there is a buyer big enough and a base around it
+const rayonBase=()=>S.done.filter(x=>!x.inh&&!x.priv&&x.w>=PLAY0&&PD[x.def]&&!PD[x.def].ally).length;
+function rayonReady(){if(S.fac!=='US'||S.w<PLAY0+52||!S.nodes.rayon||S.sandbox)return false;
+  if(S.projects.some(p=>PD[p.def].t.node==='rayon'&&!PD[p.def].ally)||S.plants.some(pl=>pl.kind==='node'&&pl.target==='rayon'&&!PD[pl.def]?.ally))return false;
+  return lineName('interceptors')>=S.lines.interceptors.base*1.6&&rayonBase()>=8}
+function rayonRestart(){const dur=[0,0,26,52,52,12];
+  const p={uid:uidN++,def:'d_rayon',nm:'Private US Rayon Restart',stage:0,prog:0,dur,sched:[],obs:[],gm:.6,adv:0,started:S.w,spent:0,priv:1,lm:{PERMIT:.5,LEGAL:.5}};
+  S.projects.push(p);enterStage(p);S._rayP=p.uid;log('🧵 A US firm restarts missile-grade rayon on its own money: permits, a plant and qualification still ahead.','good')}
 function eventsTick(){
   for(const e of EVENTS){
     if(!facOk(e)||e.manual)continue;if(e.once!==false&&S.fired[e.id])continue;
@@ -3990,7 +4011,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
 
 // ---- what each reform was worth, built up during play: delay avoided, schedule cut, money saved, Political Capital spent
 // delivering earns Political Capital: a finished plant +5, any other program +2, and +3 more when it lands close to plan
-function pcResult(p){if(S.histMode||p.inh)return;const def=PD[p.def];if(!def||def.kind==='maint')return;const plan=p.dur.reduce((a,b)=>a+b,0),f=(p.h||[]).find(e=>e.funded)?.w,took=S.w-(f??p.started)+(f!=null?0:0),onTime=took<=plan*1.25;
+function pcResult(p){if(S.histMode||p.inh||p.priv)return;const def=PD[p.def];if(!def||def.kind==='maint')return;const plan=p.dur.reduce((a,b)=>a+b,0),f=(p.h||[]).find(e=>e.funded)?.w,took=S.w-(f??p.started)+(f!=null?0:0),onTime=took<=plan*1.25;
   const x=(needsContract(def)?5:2)+(onTime?3:0);S.pc+=x;if(S.pcY)S.pcY.inc+=x;log(`⚖ +${x} Political Capital: ${projName(p)} delivered${onTime?' close to plan':''}.`,'good')}
 function refCredit(p,l,x){if(S.histMode||!p||p.pkg||!x)return;const def=PD[p.def];if(!def)return;
   const fs=REF_LAYER.filter(e=>e.L.includes(l)&&passed(e.r)&&(!e.tags||e.tags.some(t=>def.tags.includes(t))));if(!fs.length)return;
@@ -5135,6 +5156,11 @@ const CITES=[
  {id:'r2r',g:'US rulebook',t:'HASC advances right to repair proposal, industry pushes back',pub:'Federal News Network',d:'Jun 2026',url:'https://federalnewsnetwork.com/congress/2026/06/hasc-advances-right-to-repair-proposal-industry-pushes-back/',use:'Industry lobbying against right-to-repair and data-rights provisions.'},
  {id:'jonesamp',g:'US rulebook',t:'The US Jones Act gets a new fight and a new argument',pub:'S&P Global',d:'Mar 2016',url:'https://www.spglobal.com/energy/en/news-research/blog/crude-oil/033116-the-us-jones-act-gets-a-new-fight-and-a-new-argument',use:'American Maritime Partnership opposition to repeal.'},
  {id:'pda24',g:'Wars of 2025–26',t:'US announces $300 million package for Ukraine (55th drawdown)',pub:'DoD News via GlobalSecurity',d:'Mar 2024',url:'https://www.globalsecurity.org/wmd/library/news/ukraine/2024/03/ukraine-240312-dodnews01.htm',use:'Presidential drawdowns from US stocks; more than 70 by Dec 2024.'},
+ {id:'wsjrayon',g:'Missiles, motors & engines',t:'The Pentagon urgently needs more Patriot missiles. It’s running into a rayon problem',pub:'Wall Street Journal (via To Vima; also Jerusalem Post)',d:'Nov 2026',url:'https://www.tovima.com/wsj/the-pentagon-urgently-needs-more-patriot-missiles-its-running-into-a-rayon-problem',use:'One approved carbonized rayon for PAC-3 MSE: Czech fibre, ArianeGroup cloth, Park Aerospace prepreg; a $5M ArianeGroup line due 2028 will not meet demand; Enka in testing; L3Harris qualifying another source.'},
+ {id:'narcrep',g:'Missiles, motors & engines',t:'Replacing NARC rayon: cellulosic precursor carbon fiber',pub:'DSIAC',d:'—',url:'https://dsiac.dtic.mil/technical-inquiries/notable/replacing-narc-rayon-cellulosic-precursor-carbon-fiber',use:'North American Rayon stopped aerospace-grade rayon in 1997; Enka chosen as the replacement; concerns about pulp supply and European rayon plant closures.'},
+ {id:'nasarayon',g:'Missiles, motors & engines',t:'RSRM nozzle carbon-cloth phenolic: rayon replacement status',pub:'NASA Technical Reports Server',d:'2005',url:'https://ntrs.nasa.gov/citations/20050206415',use:'First full-scale static test of a nozzle on Enka rayon in June 2004.'},
+ {id:'avtex',g:'Missiles, motors & engines',t:'American Viscose Corporation (Avtex Fibers)',pub:'Wikipedia',d:'—',url:'https://en.wikipedia.org/wiki/American_Viscose_Corporation',use:'Front Royal plant closed 1989–90 after environmental violations and losses; made rocket-nozzle fibre for NASA. Background only.'},
+ {id:'liberty',g:'Missiles, motors & engines',t:'Liberty Fibers files for bankruptcy',pub:'Nonwovens Industry',d:'Oct 2005',url:'https://www.nonwovens-industry.com/contents/view_breaking-news/2005-10-03/liberty-fibers-files-for-bankruptcy/',use:'The Lowland, Tennessee rayon plant closed in 2005; described in 2004 as the last rayon staple maker in North America.'},
  {id:'pwstrike',g:'Missiles, motors & engines',t:'Union workers strike at Pratt & Whitney plant where F-35 engine is made',pub:'Breaking Defense',d:'May 2025',url:'https://breakingdefense.com/2025/05/union-workers-strike-at-pratt-whitney-plant-where-f-35-engine-is-made/',use:'About 3,000 machinists, 5–27 May 2025.'},
  {id:'uri',g:'Workforce',t:'The impact of Winter Storm Uri on the Texas petrochemical industry',pub:'AIChE CEP',d:'Oct 2021',url:'https://aiche.org/resources/publications/cep/2021/october/che-context-impact-winter-storm-uri-on-texas-petrochemical-industry',use:'Plant outages and industrial curtailment, Feb 2021.'},
  {id:'raapepa',g:'US rulebook',t:'BAE Systems Ordnance Systems Inc., Radford Army Ammunition Plant (CAA-03-2024-0042DA)',pub:'EPA Region 3',d:'Sep 2024',url:'https://yosemite.epa.gov/oa/rhc/epaadmin.nsf/b1168ba96e95ddef8525756e004dbe6a/4a23611e4029d16385258ba500610015!OpenDocument',use:'Administrative compliance order on consent, Clean Air Act.'},
@@ -6883,6 +6909,7 @@ function loadData(txt){const d=JSON.parse(txt);if(!d||d.v!==1||!d.S||d.S.w==null
   const cur=d.S;newGame(cur.fac);const tm=S; // fields added to the game since the save was made start from a fresh game's values
   for(const k in tm)if(!(k in cur)&&!SAVE_SKIP.has(k))cur[k]=tm[k];
   for(const id in cur.nodes)if(!cur.nodes[id].neut)cur.nodes[id].neut={amt:0,adv:0,src:''};
+  for(const id in tm.nodes)if(!cur.nodes[id]){cur.nodes[id]=tm.nodes[id];if(cur.know&&cur.know[id]==null)cur.know[id]=tm.know[id];if(cur.cut&&cur.cut[id]==null)cur.cut[id]=1}
   S=cur;uidN=Math.max(uidN,d.uidN||1);S.speed=0;S.replay=false;S.histMode=false;S.sim=false;S.queue=S.queue||[];if(S.modal==='save')S.modal=null;
   if(!S.lab&&!S.histMode)labInit();PJC.clear();viewKey='';S._vdirty=true;S._svW=S.w;S._svAt=d.at;scenUpdate();S._R=production(false)}
 function resumeSave(){let t=null;try{t=localStorage.getItem(SAVE_K)}catch(e){}if(!t)return false;
