@@ -1033,6 +1033,11 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .sc-leg i.lm{background:linear-gradient(90deg,#d0503f 0 33%,#d9a441 33% 66%,#76b357 66%)}.sc-leg i.lx{background:#0d0e0b;box-shadow:inset 0 0 0 1px #39382b}.sc-leg i.lo{height:3px;background:#6fa3dc}.sc-leg i.lk{width:2px;height:11px;background:#e6e1d3}
 .sgint{font-size:11px;color:#a8a48e;padding:4px 10px 2px;line-height:1.35}.sgrp .sgk{font-size:12px;opacity:.75}
 .sgl{display:flex;align-items:center;gap:6px;margin:3px 0 0 22px;font-size:12px;color:#d8d2bf;min-width:0}.sgl .linkn{color:#e6e1d3;white-space:nowrap}.sgl .sgd{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.sgl .sgv{margin-left:auto;font:700 12.5px var(--disp);color:#e0604c;white-space:nowrap}.sgm{font-size:11px}
+.rolls{margin:8px 0 6px;border:1px solid #cdbb8f;border-radius:4px;background:#f7f0dc;padding:6px 10px}
+.rollh{display:flex;justify-content:space-between;align-items:baseline;font:700 12px "Segoe UI",system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#5a4a26;margin-bottom:3px}.rollh span{text-transform:none;letter-spacing:0;font-weight:600;color:#6b5a35}
+.roll{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:baseline;font-size:13px;padding:3px 0;border-top:1px dotted #d6c79f}
+.roll .rw,.roll .rf{font:800 13px "Segoe UI",system-ui,sans-serif;letter-spacing:.03em;text-transform:uppercase}.roll .rw{color:#2f7a2a}.roll .rf{color:#b0281a}
+.roll .rp{font-size:11.5px;color:#7a6a48;white-space:nowrap}.roll .rthen{display:block;color:#8a2a1c;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -2239,10 +2244,10 @@ const EVENTS=[
   o:()=>{const p=boP();if(!p)return [{l:'Noted'}];const c=+(projCost(PD[p.def])*.15).toFixed(2);
    return [{dflt:1,l:`Reprice the contract (+15%, ${money(c)} from your budget; commitment +30)`,$:c,fx:()=>{const q=boP();if(q)comAdd(q,30,'Contract repriced')}},
     {l:'Guarantee its orders in writing (−10 PC; commitment +25)',pc:10,fx:()=>{const q=boP();if(q)comAdd(q,25,'Orders guaranteed in writing')}},
-    {l:'Hold it to the contract (no cost; about half the time it stays, otherwise it walks)',fx:()=>{const q=boP();if(!q)return;if(rand('r13')<.5)comAdd(q,12,'Chose to stay');else cancelProject(q,'abandoned: the builder walked away')}}]}},
+    {l:'Hold it to the contract (no cost; about half the time it stays, otherwise it walks)',fx:()=>{const q=boP();if(!q)return;const ok=rand('r13')<.5;rollRec(projName(q),'held the builder to the contract',.5,ok,'the builder walked away, and the program is lost');if(ok)comAdd(q,12,'Chose to stay');else cancelProject(q,'abandoned: the builder walked away')}}]}},
  {id:'enjoin',manual:true,once:false,ic:'⚖',t:'Court Challenges a Carve-Out',
   body:()=>`A court is asked to enjoin "${cname(CD[S._enj])}." Plaintiffs argue the emergency is neither an emergency nor yours to declare.`,
-  o:()=>[{l:'Appeal and defend it (−10 PC, 60% it survives)',pc:10,fx:()=>{if(rand('r14')>=.6)endCarve(S._enj,'struck down on appeal')}},{l:'Let it lapse',fx:()=>endCarve(S._enj,'enjoined')}]},
+  o:()=>[{l:'Appeal and defend it (−10 PC, 60% it survives)',pc:10,fx:()=>{const ok=rand('r14')<.6;rollRec(cname(CD[S._enj]),'appealed the court challenge',.6,ok,'struck down on appeal');if(!ok)endCarve(S._enj,'struck down on appeal')}},{l:'Let it lapse',fx:()=>endCarve(S._enj,'enjoined')}]},
 ];
 const pick=a=>a[Math.floor(rand('r15')*a.length)];
 const domNodes=ids=>ids.filter(id=>S.nodes[id]&&nodeSupply(id).dom>S.nodes[id].scale*.05);
@@ -3279,7 +3284,7 @@ const suppReady=()=>S.fac==='US'&&!S.supp&&suppWhy().length&&S.pc>=SUPP_PC&&S.su
 function suppAsk(){if(!suppReady())return;const why=suppWhy();S.pc-=SUPP_PC;spent('pc',SUPP_PC);S.suppFY=FYOF(S.w);
   S.supp={w0:S.w,due:S.w+8+Math.floor(rand('r27')*13),ok:rand('r28')<SUPP_OK,why:why[0]};log(`🏛 Emergency supplemental requested, citing ${why[0]}.`,'ev');
   receipt({ic:'🏛',lab:'Supplemental requested',title:'Emergency supplemental',ok:true,lines:[`Citing ${why[0]}. A vote is expected around <b>${fmtDate(S.supp.due)}</b>, if it does not stall.`,`If it passes: +${money(SUPP_AMT)}, and every new plant in your request is funded at once.`,`${SUPP_PC} PC spent.`]})}
-function suppTick(){const x=S.supp;if(!x||S.w<x.due)return;S.supp=null;
+function suppTick(){const x=S.supp;if(!x||S.w<x.due)return;S.supp=null;rollRec('Emergency supplemental','the House vote',SUPP_OK,x.ok,'stalled and died; the PC is spent');
   if(!x.ok){log('✂ The emergency supplemental stalls in the House and dies.','bad');toast('✂ <b>Emergency supplemental stalled</b><br><span class="dim">The PC is spent; try again next fiscal year</span>','bad');return}
   gainB(SUPP_AMT,'Emergency supplemental');const n=pkgItems().length;for(const p of pkgItems())p.pkg=Math.min(p.pkg,S.w-1);
   log(`🏛 Emergency supplemental enacted: +${money(SUPP_AMT)}.`,'good');if(n)enactPkg('Emergency supplemental');else toast(`🏛 <b>Emergency supplemental enacted</b><br><span class="dim">+${money(SUPP_AMT)}</span>`,'good')}
@@ -3543,6 +3548,14 @@ function complete(p){credDone(p);pcResult(p);
   }
 }
 function cancelProject(p,why){credGone(p);S.projects=S.projects.filter(x=>x!==p);pmark(p,{gone:1});S.gone.push({def:p.def,nm:projName(p),w:S.w,uid:p.uid,h:p.h,lost:p.lost,dur:p.dur,started:p.started,ct:p.ct,spent:p.spent,inh:p.inh,cancelled:why});log(`✖ ${projName(p)} ${why}. ${money(p.spent)} written off.`,'bad');toast(`✖ <b>${projName(p)}</b> ${why}`)}
+// every choice that rode on odds, and how it came out: shown in the turn report and the year in review
+function rollRec(nm,what,p,ok,then){if(S.sim||S.histMode||S.replay)return;(S.rolls=S.rolls||[]).push({w:S.w,nm,what,p:+(+p).toFixed(2),ok:!!ok,then:ok?'':then||'',auto:!!S._auto});if(S.rolls.length>300)S.rolls.shift()}
+function failWhat(f,od,def){if(!f)return '';const w=f.wait?Math.round(od?f.wait*waitMult(od,def):f.wait):0,x=[];
+  if(w)x.push(`${w} more week${w===1?'':'s'}`);if(f.spawn)x.push('a new problem: '+(OD[V(f.spawn)]?V(OD[V(f.spawn)].n):'another obstacle'));if(f.gain)x.push(`output cut to ${pct(f.gain)} of plan`);
+  if(f.adv)x.push('it now relies on Chinese inputs');if(f.yieldMul)x.push(`yield ×${fmt(f.yieldMul,2)}`);if(f.cancel)x.push(w?'then mothballed':'the program is mothballed');return x.join(', ')}
+function rollsHTML(rl,head,max=14){if(!rl.length)return '';const n=rl.filter(x=>x.ok).length,all=rl.length;
+  if(rl.length>max){const fl=rl.filter(x=>!x.ok),ok=rl.filter(x=>x.ok),keep=new Set([...fl,...ok.slice(-Math.max(0,max-fl.length))]);rl=rl.filter(x=>keep.has(x))}const more=all-rl.length;
+  return `<div class="rolls"><div class="rollh">${head}<span>${n} of ${all} worked</span></div>${rl.map(x=>`<div class="roll"><b class="${x.ok?'rw':'rf'}">${x.ok?'✔ Worked':'✘ Failed'}</b><span><b>${x.nm}</b>: ${x.what} <span class="rp">${pct(x.p)} odds${x.auto?', taken by default':''}</span>${x.then?`<span class="rthen">→ ${x.then}</span>`:''}</span></div>`).join('')}${more?`<div class="roll"><span></span><span class="rp">+ ${more} earlier choice${more===1?'':'s'} that worked</span></div>`:''}</div>`}
 function applyOpt(od,opt){
   S.pc-=opt.pc||0;spendB(opt.$||0,'Workarounds');if(opt.waiver)S.waivers++;
   const prob=optP(od,opt),ok=rand('r41')<prob,eff=ok?opt:(opt.fail||{});
@@ -3708,7 +3721,7 @@ function chooseOpt(uid,k){
   const od=OD[inst.id],opt=od.o[k];if(!opt||!optOk(opt))return;
   const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
   if(eff.gain)p.gm*=eff.gain;if(eff.adv)p.adv=Math.min(1,p.adv+eff.adv);
-  log(`${S._auto?'⏱ No decision in time. ':''}${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');
+  log(`${S._auto?'⏱ No decision in time. ':''}${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');if(prob<1)rollRec(projName(p),`${V(od.n)} → ${V(opt.l)}`,prob,ok,failWhat(opt.fail,od,PD[p.def]));
   if(eff.spawn){p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)});spawnObs(p,V(eff.spawn),true);return}
   const w=Math.round((eff.wait||0)*waitMult(od,PD[p.def]));
   if(w>0){inst.wait=w;inst.total=w;inst.label=V(opt.l)+(prob<1&&!ok?' (failed — fallback)':'');inst.after=eff.cancel?'cancel':null}
@@ -3720,7 +3733,7 @@ function chooseOps(uid,k){
   const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
   if(eff.know)S.know[pl.target]=Math.min(95,S.know[pl.target]+eff.know);
   if(eff.yieldMul)pl.yield*=eff.yieldMul;if(eff.adv)pl.adv=Math.min(1,pl.adv+eff.adv);
-  log(`${S._auto?'⏱ No decision in time. ':''}${pl.nm}: ${od.n} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');
+  log(`${S._auto?'⏱ No decision in time. ':''}${pl.nm}: ${od.n} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');if(prob<1)rollRec(pl.nm,`${od.n} → ${V(opt.l)}`,prob,ok,failWhat(opt.fail,null));
   const w=Math.round(eff.wait||0);if(w>0){pl.issue.wait=w;pl.issue.total=w;pl.issue.label=V(opt.l)}else pl.issue=null;
 }
 function projectsTick(){
@@ -3808,7 +3821,8 @@ function reformAvail(R){return facOk(R)&&!passed(R.id)&&(!R.req||passed(R.req))}
 function reformsTick(){
   if(!S.bill||--S.bill.left>0)return;
   const R=RD[S.bill.id],p=clamp(R.p+S.bill.boost,.05,.98);
-  if(rand('r48')<p){S.reforms[R.id]='passed';actRec('ref',{id:R.id});refRescale(R.id);lawRec('Law',rname(R));log(`✅ Enacted: ${rname(R)}.`,'good');R.on?.();S.queue.push({sys:'pass',id:R.id})}
+  const rok=rand('r48')<p;rollRec(rname(R),'the floor vote on your bill',p,rok,'stripped in conference; it costs less to try again');
+  if(rok){S.reforms[R.id]='passed';actRec('ref',{id:R.id});refRescale(R.id);lawRec('Law',rname(R));log(`✅ Enacted: ${rname(R)}.`,'good');R.on?.();S.queue.push({sys:'pass',id:R.id})}
   else{S.reforms[R.id]='failed';log(`❌ ${rname(R)} stripped in conference.`,'bad');S.queue.push({sys:'fail',id:R.id})}
   S.bill=null;
 }
@@ -3944,7 +3958,7 @@ function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)o
   return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
 function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play a turn soon, or end the tutorial.</span>');return}if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
   if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
-function turnDone(){S.speed=0;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap()};if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
+function turnDone(){S.speed=0;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown)};for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
   if(S.over)return '';
   return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next turn ▸ ${turnLabel(S.w)}`}</button>`}
@@ -3953,7 +3967,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
   const rows=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0;if(Math.abs(y-x)<=Math.max(1e-9,x*.005))return '';return `<tr><td>${LINES[c].n}</td><td class="num">${fmtN(x)}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num ${y>x?'okt':'redt'}">${y>x?'+':'−'}${fmtN(Math.abs(y-x))}</td></tr>`}).join('');
   const done=S.done.filter(x=>inW(x.w)&&!x.inh),gone=S.gone.filter(x=>inW(x.w)),stages=[];
   for(const p of S.projects)for(const e of p.h||[])if(e.st!=null&&inW(e.w)&&e.st>0)stages.push(`${projName(p)} → ${STEP_N[STAGES[e.st]].toLowerCase()}`);
-  const evs=S.log.filter(l=>inW(l.w)&&(l.cls==='good'||l.cls==='bad'||l.cls==='ev')).slice(0,10).map(l=>`<div class="trl ${l.cls}"><span class="mini">${fmtDate(l.w)}</span> ${linkify(l.m)}</div>`).join('');
+  const evs=S.log.filter(l=>inW(l.w)&&(l.cls==='good'||l.cls==='bad'||l.cls==='ev')&&!/ ✘ failed$/.test(l.m)).slice(0,10).map(l=>`<div class="trl ${l.cls}"><span class="mini">${fmtDate(l.w)}</span> ${linkify(l.m)}</div>`).join('');
   const n0=b.w,n1=turnEndW(n0),inN=w=>w>=n0&&w<n1,sc=S.scen&&SCD[S.scen],ahead=[];
   if(S.fac==='US'&&inN(pkgWhen()))ahead.push(`🏛 Congress votes on the FY${pkgFY()} ${billN()} around ${fmtDate(pkgWhen())}. Order the request on the NDAA tab before then.`);
   else if(S.fac==='US'&&inN(pkgWhen()-CP_WK))ahead.push(`🏛 The committees publish their marks around ${fmtDate(pkgWhen()-CP_WK)}: you will see which sectors they back.`);
@@ -3968,6 +3982,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
    ${rows?`<table class="ctable yrtab"><tr><th>Output per year</th><th class="num">Two months ago</th><th class="num">Now</th><th class="num">Change</th></tr>${rows}</table>`:'<p class="mini">No end item changed its output this turn.</p>'}
    <h5 class="yrh">This turn</h5>
    ${done.length?`<div class="yrl"><b>🏭 Finished</b><span>${done.map(x=>x.nm).join(' · ')}</span></div>`:''}${gone.length?`<div class="yrl"><b>✖ Lost</b><span class="redt">${gone.map(x=>`${x.nm} (${x.cancelled||'cancelled'})`).join(' · ')}</span></div>`:''}${stages.length?`<div class="yrl"><b>▶ Moved on</b><span>${stages.slice(0,8).join(' · ')}</span></div>`:''}
+   ${rollsHTML(r.rolls||[],'🎲 Your odds this turn')}
    ${evs?`<div class="trls">${evs}</div>`:'<p class="mini">A quiet two months.</p>'}
    <h5 class="yrh">Next turn: ${turnLabel(n0)}</h5>
    ${ahead.length?ahead.slice(0,8).map(x=>`<div class="trl">${x}</div>`).join(''):'<p class="mini">Nothing scheduled. A good time to start programs or push a reform.</p>'}
@@ -4014,6 +4029,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)
    <h5 class="yrh">What changed</h5>
    ${bl?li(`🏛 FY${bl.fy} ${billN()}`,[bl.got.length?`<span class="okt">Funded: ${bl.got.join(', ')}</span>`:'Nothing you requested was funded',...(bl.added.length?[`Added by Congress: ${bl.added.join(', ')}`]:[]),...(bl.lost.length?[`<span class="redt">Not funded: ${bl.lost.join(', ')}</span>`]:[])]):li('🏛 Congress',['No requests were in this year’s bill.'])}
    ${li('📜 Laws, rules and carve-outs',r.laws.map(x=>`${x.kind}: ${x.n}`))}
+   ${rollsHTML((S.rolls||[]).filter(x=>x.w>a.w&&x.w<=b.w),'🎲 Your odds this year')}
    ${li('🏭 Plants that started producing',r.online)}
    ${li('⛓ Bottlenecks cleared',r.cleared.map(x=>`${LINES[x.c].n}: ${ND[x.id]?.n||'line capacity'}`))}
    ${li(`${FLAGS.cn} Beijing`,[...r.cn.map(h=>h.k<0?'<span class="redt">ended the truce early</span>':`<span class="redt">${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`),`pressure ${Math.round(a.cn.heat)} → ${Math.round(b.cn.heat)} of 100`,r.truce?'the truce holds':'no truce'])}
