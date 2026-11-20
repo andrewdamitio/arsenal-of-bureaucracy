@@ -1063,6 +1063,18 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .yrkv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:2px 0;border-bottom:1px dotted #d6c79f}.yrkv b{font-weight:600;text-align:right}.yrkv b.okt{color:#2f5a24}.yrkv b.redt{color:#a3261c}
 .tra .trlab{margin:0 0 2px}.tra b{font-weight:600}
 @media(max-width:900px){.yro{grid-template-columns:minmax(0,1fr) 110px 80px;}.yro>span:nth-child(4),.yro>span:nth-child(5){display:none!important}}
+.ckp .ckh b{font:var(--ds-t1)}.ckp .ckgrid{margin:10px 0}.ckintro{margin:0 0 4px;color:#5a4e38}
+.trt.ckvt{box-shadow:inset 3px 0 0 #c9a227}.trt.ckvt>b{letter-spacing:.02em}.trt.ckvt.ok{box-shadow:inset 3px 0 0 #76b357}.trt.ckvt.ok>b{color:#2f5a24}.trt.ckvt.no{box-shadow:inset 3px 0 0 #c0452f}.trt.ckvt.no>b{color:#a3261c}.trt.ckvt.mid>b{color:#9a6a12}
+.ckm{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 96px 116px;gap:4px 10px;align-items:center;padding:5px 0;border-bottom:1px dotted #d6c79f}.ckm .ckn{font-weight:600}
+.ckm .ckt{height:10px}.ckm .ckt>i.ok{background:#76b357}.ckm .ckt>i.mid{background:#d9a441}.ckm .ckt>i.dry{background:#c9533f}
+.ckfl{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:#2b241a;z-index:2}
+.ckm .ckv{text-align:right;white-space:nowrap}.ckm .ckv em{font-style:normal;font-weight:400;color:#7a6a48}.ckst{font-weight:600;white-space:nowrap;font-size:12px}
+.ckwhy{grid-column:1/-1;font-size:11.5px;color:#7a4a10;margin-top:-2px}
+.ckm.ckmh{font:var(--ds-lab-f);letter-spacing:.06em;text-transform:uppercase;color:var(--ds-lab);border-bottom:1px solid #cdb98a;padding:0 0 4px}.ckm.ckmh>span:nth-child(3){text-align:right}.ckm.ckmh>span{white-space:nowrap}
+.ckflk{display:inline-block;width:2px;height:10px;background:#2b241a;vertical-align:-1px;margin:0 3px 0 5px}
+.cklesson{font:italic 14px/1.45 Georgia,serif;color:#2b241a;margin:10px 0}.cklesson .trlab{font-style:normal;margin:0 0 3px}
+.ckdeb{margin:10px 0 4px}.ckdeb .debc{margin:4px 0 0}
+@media(max-width:1000px){.ckdeb .debc{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -6103,12 +6115,23 @@ function holdHTML(sc,T,when){const d=T.d,pass=sc.test.cut?.8:CRISIS_WIN;
   const est=d.est!=null?`<p class="cknote">Your own estimate was ${pct(d.est)}: intelligence is never exact.</p>`:'';
   return head+big+ckWeak(d,T.ok,pass)+rows+est}
 // the left-hand column: what you make, against the mandates
-function makeHTML(r,mid){const n=mid?r.floors:r.met,of=r.ms.length;
+function makeHTML(r,mid){const n=mid?r.floors:r.met,of=r.ms.length,e0=S.rec0?.expo||0;
   const head=`<div class="ckh"><div><b>What you make</b><span>Output a year against the mandates${mid?': halfway floors now, real targets in 2035':''}</span></div><span class="ckchip ${n===of?'ok':'no'}">${n} of ${of} ${mid?'floors':'targets'} met</span></div>`;
-  const tb=mid?`<table class="ctable"><tr><th>Mandate</th><th>Halfway floor</th><th>Reached</th><th></th><th>Real target, 2035</th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.half?'okt':'redt'}">${x.ok?'✓ already at the real target':x.half?'✓ floor met':'✗ below the floor'}</td><td>${mFmt(x,x.t)}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>`
-    :`<table class="ctable"><tr><th>Mandate</th><th>Floor</th><th>Real target</th><th>Reached</th><th></th></tr>${r.ms.map(x=>`<tr><td>${x.n}</td><td>${mFmt(x,x.fl)}</td><td>${mFmt(x,x.t)}</td><td><b>${mFmt(x,x.v)}</b></td><td class="${x.ok?'okt':x.half?'st-t-tight':'redt'}">${x.ok?'✓ target met':x.half?'◐ floor met':'✗ missed'}</td></tr>${x.why?`<tr class="sc-why"><td colspan="5">↳ ${x.why}</td></tr>`:''}`).join('')}</table>`;
-  return head+tb}
+  const row=x=>{const low=x.low??(x.t<x.fl),fr=v=>low?(e0>x.t?(e0-v)/(e0-x.t):1):(x.t>0?v/x.t:1),f=clamp(fr(x.v),0,1),ff=clamp(fr(x.fl),0,1);
+    const cls=x.ok||mid&&x.half?'ok':x.half?'mid':'dry',tc=x.ok||mid&&x.half?'okt':x.half?'ckgold':'redt';
+    const st=mid?(x.ok?'✓ at the real target':x.half?'✓ floor met':'✗ below the floor'):(x.ok?'✓ target met':x.half?'◐ floor met only':'✗ missed');
+    return `<div class="ckm"><span class="ckn">${x.n}</span><div class="ckt" data-tip="${tipQ(`<b>${x.n}</b><br>Halfway floor: ${low?'at most ':''}${mFmt(x,x.fl)}<br>Real target, 2035: ${low?'at most ':''}${mFmt(x,x.t)}<br>Reached: ${mFmt(x,x.v)}`)}"><i class="${cls}" style="width:${(f*100).toFixed(1)}%"></i><span class="ckfl" style="left:${(ff*100).toFixed(1)}%"></span></div><span class="ckv"><b>${mFmt(x,x.v)}</b> <em>/ ${low?'≤ ':''}${mFmt(x,x.t)}</em></span><span class="ckst ${tc}">${st}</span>${x.why?`<span class="ckwhy">↳ ${x.why}</span>`:''}</div>`};
+  return head+`<div class="ckm ckmh"><span>Mandate</span><span>Toward 2035 <i class="ckflk"></i> floor</span><span>Now / target</span><span></span></div>`+r.ms.map(row).join('')}
 function ckGrid(sc,r,mid){return `<div class="ckgrid"><div class="ckcol">${makeHTML(r,mid)}</div><div class="ckcol ckhold">${holdHTML(sc,r.test,mid?'today':'in January 2035')}</div></div>`}
+function ckTiles(sc,r,mid){const R=S._R||production(false),race=raceIdx(R.out),r0=S.rec0?.out,race0=r0?raceIdx(null,PLAY0,c=>r0[c]??0):null,pass=sc.test.cut?.8:CRISIS_WIN,T=r.test,v=T.v??T.d?.score??0;
+  const good=mid?r.floors===r.of&&T.ok:r.verdict==='MANDATE MET',bad=mid?r.verdict.startsWith('FAR')||!T.ok&&r.floors<r.of/2:r.verdict==='SHORTFALL'||r.verdict==='TARGETS MISSED',vc=good?'ok':bad?'no':'mid';
+  const tile=(lab,v,d,cls='',tip)=>`<div class="trt ${cls}"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b>${d}</div>`;
+  const atT=r.ms.filter(x=>x.ok).length,dr=race0==null?'':Math.abs(race-race0)<.0005?'<i class="trd">no change since 2027</i>':`<i class="trd ${race>race0?'up':'dn'}">${race>race0?'▲':'▼'} ${fmt(Math.abs(race-race0)*100,0)} pt since January 2027</i>`;
+  return `<div class="trts">${tile(mid?'The 2030 checkpoint':'The 2035 verdict',r.verdict,`<i class="trd">${mid?'Real targets judged January 2035':S.scenMid?`In 2030: ${S.scenMid.verdict.toLowerCase()}`:'Final'}</i>`,'ckvt '+vc)}${
+    mid?tile('Halfway floors met',`${r.floors}/${r.of}`,`<i class="trd">${atT?`${atT} already at the real target`:'none at the real target yet'}</i>`)
+       :tile('Real targets met',`${r.met}/${r.ms.length}`,`<i class="trd">${r.half} of ${r.ms.length} halfway floors met${S.scenMid?` (${S.scenMid.floors} in 2030)`:''}</i>`)}${
+    tile(sc.test.cut?'If China cut you off':'If the fight came',pct(v),`<i class="trd ${T.ok?'up':'dn'}">${T.ok?'✓ passed':'✗ failed'} · pass ${pct(pass)}</i>`,'',sc.test.cut?'What your lines would still build with every Chinese and Russian input cut, against January 2027.':`How far your stocks and forces would cover ${SCEN[sc.test.t].short}.`)}${
+    tile('Share of the requirement',pct(race),dr,'','You and your allies, against what the plan requires.')}</div>`}
 // the Command card: the same test, as your intelligence sees it now
 function rdyRow(sc){if(S.scenRes||!S.rec0)return '';const cut=!!sc.test.cut,pass=cut?.8:CRISIS_WIN;let d,v,lo=null,hi=null,dl=null,since='';
   if(cut){d=cutDet();v=d.score}
@@ -6122,16 +6145,16 @@ function rdyRow(sc){if(S.scenRes||!S.rec0)return '';const cut=!!sc.test.cut,pass
 // January 2030, when the window opens: are you halfway there, and would what you hold be enough today?
 function scenMidJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),fl=ms.filter(x=>x.half).length;
   const verdict=fl===ms.length?(t.ok?'ON TRACK':'ON TRACK, BUT EXPOSED'):fl>=ms.length/2?'BEHIND':'FAR BEHIND';
-  S.scenMid={w:S.w,verdict,floors:fl,of:ms.length,ms:ms.map(x=>({why:x.half?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
+  S.scenMid={w:S.w,verdict,floors:fl,of:ms.length,ms:ms.map(x=>({why:x.half?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo'})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
   log(`🎯 ${sc.n}, ${fmtDate(S.w)}: ${verdict} (${fl} of ${ms.length} floors; test ${t.ok?'passed':'failed'}). Real targets are judged ${fmtDate(sc.dl)}.`,fl===ms.length?'good':'bad');if(!S.sim){S.modal='scenMid';S.speed=0}}
 function scenMidHTML(){const sc=SCD[S.scen],r=S.scenMid;
-  return `<div class="paper wide ckp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, the window opens</div><div class="bd">
-    <div class="stamp" style="font-size:22px">${r.verdict}</div><p>The first checkpoint asks whether you are halfway from where you started in January 2027 to each real target. The real targets are judged in January 2035.</p>
+  return `<div class="paper wide ckp trp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, the window opens</div><div class="bd">
+    ${ckTiles(sc,r,true)}<p class="ckintro">The first checkpoint asks whether you are halfway from where you started in January 2027 to each real target. The real targets are judged in January 2035.</p>
     ${ckGrid(sc,r,true)}</div>
-    <div class="ft debft"><button class="pbtn primary debgo" data-a="close"><b>Keep building →</b><span>Five years to the real targets, January 2035</span></button></div></div>`}
+    <div class="ft trft"><button class="pbtn" data-a="yrrec">📊 The full record</button><button class="pbtn primary" data-a="close">Keep building ▸ January 2035</button></div></div>`}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
   const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
-  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
+  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo'})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
   log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0;S.over=true;S.verdict=verdict;S.overWhy=''}
 const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
 // the picker before play starts, then the mandate card
@@ -6206,11 +6229,12 @@ function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"
 const DEBC=[['cfopen','🔁','What it would have taken','Your plan replayed from 2027 with reforms passed early.'],['timeopen','⏱','Where the time went','The weeks your programs lost, step by step.'],['briefopen','🖨','One-page brief','Your result on a single printable page.']];
 function debCards(){return `<div class="debc">${DEBC.map(([a,ic,t,d])=>`<button class="pbtn debcard" data-a="${a}"><span class="debic">${ic}</span><span class="debtx"><b>${t}</b><span>${d}</span></span></button>`).join('')}</div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
-  return `<div class="paper wide ckp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
-    <div class="stamp" style="font-size:24px">${r.verdict}</div><p>${sc.threat.replace(/You have until.*$/,'')}</p>${S.scenMid?`<p class="mini">In January 2030 you were <b>${S.scenMid.verdict.toLowerCase()}</b>: ${S.scenMid.floors} of ${S.scenMid.of} halfway floors met.</p>`:''}
+  return `<div class="paper wide ckp trp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
+    ${ckTiles(sc,r,false)}<p class="ckintro">${sc.threat.replace(/You have until.*$/,'')}</p>
     ${ckGrid(sc,r,false)}
-    <p><i>${sc.lesson}</i></p></div>
-    <div class="ft debft"><div class="debh">Debrief</div>${debCards()}<button class="pbtn primary debgo" data-a="scenstop"><b>See the full record →</b><span>Charts, decisions and every line, year by year</span></button></div></div>`}
+    <div class="tra cklesson"><span class="trlab">What it comes down to</span>${sc.lesson}</div>
+    <div class="trcol ckdeb"><div class="trh"><b>Debrief</b><span>How the result came about</span></div>${debCards()}</div></div>
+    <div class="ft trft"><button class="pbtn primary" data-a="scenstop">📊 See the full record ▸</button></div></div>`}
 
 function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   if(id.startsWith('L:')){const ps=S.projects.filter(q=>PD[q.def].t.line===c),pl=S.plants.filter(p=>p.kind==='line'&&p.target===c&&!p.full);
