@@ -1089,6 +1089,11 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .whyb{font:700 10px "Segoe UI",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#8a2a1c;background:#f5e1da;border:1px solid #e6c2b6;padding:0 5px;border-radius:2px;margin-left:4px}
 .whyn{font-size:11.5px;line-height:1.4;color:#7a6a48;margin:6px 0 0}.whyn b{color:#5a4e38}.whyc .whyn{margin-top:6px}
 @media(max-width:700px){.whys{grid-template-columns:60px 40px}}
+.ctp .ctft .pbtn.primary,.ctp .ctft .ctnow{background:#3a3020;border:1px solid #2b241a;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);color:var(--brass2);text-align:left;justify-content:center}
+.ctp .ctft .pbtn.primary b,.ctp .ctft .ctnow b{display:flex;align-items:center;gap:8px;font:600 15px Georgia,serif;color:var(--brass2)}.ctp .ctft .pbtn .vic{margin:0;stroke-width:1.7}
+.ctp .ctft .pbtn.primary .mini,.ctp .ctft .ctnow .mini{color:#cfc6ad;margin-left:26px}
+.ctp .ctft .pbtn.primary:hover:not(:disabled),.ctp .ctft .ctnow:hover:not(:disabled){background:#4d4029;border-color:#c9a227}.ctp .ctft .pbtn.primary:hover:not(:disabled) b,.ctp .ctft .ctnow:hover:not(:disabled) b{color:#fff}
+.ctp .ctft .pbtn.primary:disabled,.ctp .ctft .ctnow:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -4314,8 +4319,8 @@ function contractHTML(){
    <div class="dsec"><h4>Who builds it</h4><p class="ctsec">The builder decides how fast the plant goes up, how hard it is to qualify, and how much power the big primes hold over your later awards.</p>${bOpts}</div>
    <div class="dsec"><h4>Terms</h4><p class="ctsec">The contract type decides how long the award takes to sign, who carries cost overruns, and how sure the builder is of future orders.</p>${kOpts}</div>
    <div class="dsec"><h4>What you get</h4><p class="ctsec">The bar runs from today to 2035: grey while the plant is being funded, permitted and built, then shading to green as output ramps to full rate. A red mark is a crisis date. Below it, the end items this plant lifts, how much a year, and when each one's gap to the requirement closes, without and with the plant.</p>${previewHTML(def,c)}</div></div>
-   <div class="ft ctft"><button class="pbtn ctback" data-a="ctback">← Back</button><button class="pbtn primary" data-a="ctgo" data-m="pkg" ${S.pc>=REQ_PC(cost)?'':'disabled'}><b>🏛 Request it in the FY${pkgFY()} NDAA · ${REQ_PC(cost)} PC</b><span class="mini">If Congress funds it (~${fmtDate(pkgWhen())}), Congress pays the ${money(cost)}, not your budget; cut risk now ~${Math.round(clamp(moodOf(pkgFY()).f*(.03+.22*Math.pow(1-billSev(def).s,1.5)),.02,.75)*100)}% (${billSev(def).why.replace(/^./,c=>c.toLowerCase())}).</span></button>
-   <button class="pbtn ctnow" data-a="ctgo" data-m="now" ${S.budget>=cost-1e-9?'':'disabled'}><b>🏗 Build now · ${money(cost)} from your budget</b><span class="mini">Starts today${(()=>{const w=Math.max(0,pkgWhen()-S.w);return w>4?`, about ${Math.round(w/4.35)} months before the bill`:''})()}. Budget ${money(S.budget)}; next +${money(nextFunds().amt)} with the bill.</span></button></div></div>`}
+   <div class="ft ctft"><button class="pbtn ctback" data-a="ctback">← Back</button><button class="pbtn primary" data-a="ctgo" data-m="pkg" ${S.pc>=REQ_PC(cost)?'':'disabled'}><b>${vic('ndaa',18)}Request it in the FY${pkgFY()} NDAA · ${REQ_PC(cost)} PC</b><span class="mini">If Congress funds it (~${fmtDate(pkgWhen())}), Congress pays the ${money(cost)}, not your budget; cut risk now ~${Math.round(clamp(moodOf(pkgFY()).f*(.03+.22*Math.pow(1-billSev(def).s,1.5)),.02,.75)*100)}% (${billSev(def).why.replace(/^./,c=>c.toLowerCase())}).</span></button>
+   <button class="pbtn primary ctnow" data-a="ctgo" data-m="now" ${S.budget>=cost-1e-9?'':'disabled'}><b>${vic('fac',18)}Build now · ${money(cost)} from your budget</b><span class="mini">Starts today${(()=>{const w=Math.max(0,pkgWhen()-S.w);return w>4?`, about ${Math.round(w/4.35)} months before the bill`:''})()}. Budget ${money(S.budget)}; next +${money(nextFunds().amt)} with the bill.</span></button></div></div>`}
 /* ---------- program page: one project's story — plan vs. actual, what's blocking it, where the time went, what it will do ---------- */
 const STAGE_C=['#b8923a','#4a78c8','#6aa84f','#a0703a','#4fb3b0','#9a84c4'];
 function progRec(uid){const p=S.projects.find(x=>x.uid==uid);if(p)return {p,live:true};
