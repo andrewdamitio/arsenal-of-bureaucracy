@@ -981,7 +981,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .tpw .ft,.brief .ft,.cfp .ft{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.tpw .ft .pbtn,.brief .ft .pbtn,.cfp .ft .pbtn{display:inline-flex;width:auto;flex:none}
 .cft td.num,.cft th.num{white-space:nowrap}
 .rc-out.rc-dn b{color:#a8d48e!important}.rc-out.rc-dn b.neg{color:#e9a091!important}.rc-out[data-a]{cursor:pointer}.whyc{cursor:pointer}
-.whyp .bd{max-width:720px;font:13.5px/1.5 "Segoe UI",system-ui,sans-serif}.whyf2{font-size:14px}.whyt td,.whyt th{padding:3px 8px}.whyt tr.whyf td{border-top:2px solid #8a7850}
+.paper.whyp{width:min(900px,100%)}
 .paper .ft.debft{display:flex;flex-direction:column;gap:10px;padding:12px 18px 16px;border-top:1px solid #cdb98a;background:#e9dfc4}
 .debh{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35}
 .debc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}.debft .debc{margin:0}
@@ -1079,6 +1079,16 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .sc-sub{font-size:11px;line-height:1.35;color:#a99f80;margin:1px 0 5px}
 .sc-card .sc-m.sc-rdy{margin-bottom:9px}.nb i.rdyband{top:auto;bottom:-8px;height:4px;background:rgba(230,225,211,.38);border-left:2px solid #e6e1d3;border-right:2px solid #e6e1d3;box-shadow:none;box-sizing:border-box}
 .rdyrng{white-space:nowrap}.rdyrng i{display:inline-block;width:16px;height:4px;margin-right:5px;vertical-align:2px;background:rgba(230,225,211,.38);border-left:2px solid #e6e1d3;border-right:2px solid #e6e1d3;box-sizing:border-box}
+.trts.n3{grid-template-columns:repeat(3,minmax(0,1fr))}.trts.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.whyc{margin:0 0 10px}.whyp .trgrid{margin:0}.whyfx{margin:0 0 10px;font-size:13px}.whyfx .trlab{margin:0 0 2px}
+.whyt{width:100%;border-collapse:collapse;font:12.5px/1.35 "Segoe UI",system-ui,sans-serif}
+.whyt th{font:var(--ds-lab-f);letter-spacing:.06em;text-transform:uppercase;color:var(--ds-lab);text-align:left;padding:0 8px 4px;border-bottom:1px solid #cdb98a}
+.whyt td{padding:4px 8px;border-bottom:1px dotted #d6c79f;vertical-align:middle}.whyt th:first-child,.whyt td:first-child{padding-left:0}.whyt th:last-child,.whyt td:last-child{padding-right:0}
+.whyt .num{text-align:right;white-space:nowrap}.whyt tr.whyf td{border-top:1px solid #cdb98a;border-bottom:0;font-weight:600;padding-top:6px}
+.whys{display:inline-grid;grid-template-columns:110px 40px;gap:8px;align-items:center}.whys b{text-align:right}.whys .yrvb>i.pt{background:#b08a3e}
+.whyb{font:700 10px "Segoe UI",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#8a2a1c;background:#f5e1da;border:1px solid #e6c2b6;padding:0 5px;border-radius:2px;margin-left:4px}
+.whyn{font-size:11.5px;line-height:1.4;color:#7a6a48;margin:6px 0 0}.whyn b{color:#5a4e38}.whyc .whyn{margin-top:6px}
+@media(max-width:700px){.whys{grid-template-columns:60px 40px}}
 </style>
 </head>
 <body>
@@ -5518,6 +5528,7 @@ const VIC={cmd:'M3 10l9-6 9 6M5 9.5V20h14V9.5M10 20v-5h4v5',
  pipe:'M3 21h18M6 21V8h4v13M10 11h8v10M6 8l2-4 2 4',
  ready:'M14.5 6.5a4 4 0 00-5.4 5.1L3.5 17.2l3.3 3.3 5.6-5.6a4 4 0 005.1-5.4l-2.6 2.6-2.4-.6-.6-2.4z',
  find:'M10.5 4a6.5 6.5 0 110 13 6.5 6.5 0 010-13zM15.3 15.3L21 21',
+ calc:'M6 3h12v18H6zM8.5 6h7v3.5h-7zM9 13.5h.01M12 13.5h.01M15 13.5h.01M9 17h.01M12 17h.01M15 17h.01',
  turn:'M6 3h12M6 21h12M7.5 3v2.5c0 3 4.5 4.3 4.5 6.5s-4.5 3.5-4.5 6.5V21M16.5 3v2.5c0 3-4.5 4.3-4.5 6.5s4.5 3.5 4.5 6.5V21M9.5 19.5c.8-1.6 4.2-1.6 5 0',
  year:'M5 4.5A1.5 1.5 0 016.5 3H19v15H6.5A1.5 1.5 0 005 19.5zM5 19.5A1.5 1.5 0 006.5 21H19M9 7.5h6M9 11h6M9 14.5h3.5'};
 const vic=(k,sz=14)=>VIC[k]?`<svg class="vic" width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true"><path d="${VIC[k]}"/></svg>`:'';
@@ -6831,29 +6842,46 @@ function baseAt(w=S.w){const b=S.base;if(!b||!b.done)return null;let r=b.pts[0];
 // ---- why this number: inputs, formula and sources for the key figures
 const srcTxt=s=>s?String(s):'';
 function whyHTML(){const k=S.whyK,c=S.whyC,R=S._R||production(false),A=AL(),cs=Object.keys(LINES);let t='',body='';
-  const tbl=(head,rows,foot)=>`<table class="ctable whyt"><tr>${head.map((h,i)=>`<th class="${i?'num':''}">${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map((x,i)=>`<td class="${i?'num':''}">${x}</td>`).join('')}</tr>`).join('')}${foot?`<tr class="whyf">${foot.map((x,i)=>`<td class="${i?'num':''}">${x}</td>`).join('')}</tr>`:''}</table>`;
-  if(k==='suff'){t='Sufficiency';const rows=cs.map(c=>{const us=R.out[c].yr,al=allyOut(c),rq=reqOut(c);return [`<span class="linkn" data-a="why" data-k="line" data-c="${c}">${LINES[c].n}</span>`,fmtN(us),fmtN(al),fmtN(rq),pct(Math.min(1,(us+al)/Math.max(rq,1e-9)))]});
-    body=`<p class="whyf2">Sufficiency = the average, over the nine end-item lines, of <b>(your output + allied output) ÷ the requirement</b>, each capped at 100%.</p>${tbl(['Line','You a year','Allies a year','Requirement','Share'],rows,['<b>Average</b>','','','',`<b>${pct(raceIdx(R.out))}</b>`])}
-      <p class="mini">Capping means a line above its requirement cannot make up for one below it. Click a line for how its requirement and output are worked out.</p>`}
+  const tbl=(head,rows,foot)=>`<table class="whyt"><tr>${head.map((h,i)=>`<th class="${i?'num':''}">${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map((x,i)=>`<td class="${i?'num':''}">${x}</td>`).join('')}</tr>`).join('')}${foot?`<tr class="whyf">${foot.map((x,i)=>`<td class="${i?'num':''}">${x}</td>`).join('')}</tr>`:''}</table>`;
+  const card=(h,sub,x)=>`<div class="trcol whyc"><div class="trh"><b>${h}</b><span>${sub||''}</span></div>${x}</div>`;
+  const tile=(lab,v,d='',tip)=>`<div class="trt"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b>${d}</div>`;
+  const tiles=xs=>`<div class="trts n${xs.length}">${xs.join('')}</div>`;
+  const shr=v=>`<span class="whys"><span class="yrvb"><i class="${v>=.999?'ok':'pt'}" style="width:${(Math.min(1,v)*100).toFixed(1)}%"></i></span><b>${pct(Math.min(1,v))}</b></span>`;
+  const fx=x=>`<div class="tra whyfx"><span class="trlab">How it is worked out</span>${x}</div>`;
+  const note=(lab,x)=>`<p class="whyn"><b>${lab}</b> ${x}</p>`;
+  const dpt=(a,b,lab)=>Math.abs(a-b)<.0005?`<i class="trd">same as ${lab}</i>`:`<i class="trd ${a>b?'up':'dn'}">${a>b?'▲':'▼'} ${fmt(Math.abs(a-b)*100,0)} pt from ${lab}</i>`;
+  const weak=xs=>xs.reduce((a,b)=>b[1]<a[1]?b:a);
+  if(k==='suff'){t='Sufficiency';const sh=cs.map(c=>[c,Math.min(1,(R.out[c].yr+allyOut(c))/Math.max(reqOut(c),1e-9))]),w=weak(sh),r0=S.race0;
+    const rows=cs.map((c,i)=>[`<span class="linkn" data-a="why" data-k="line" data-c="${c}">${LINES[c].n}</span>`,fmtN(R.out[c].yr),fmtN(allyOut(c)),fmtN(reqOut(c)),shr(sh[i][1])]);
+    body=tiles([tile('Sufficiency now',pct(raceIdx(R.out)),r0!=null&&S.w>PLAY0?dpt(raceIdx(R.out),r0,'January 2027'):'<i class="trd">you + allies, against the requirement</i>'),tile('Lines at 100%',`${sh.filter(x=>x[1]>=.999).length}/${cs.length}`,'<i class="trd">each line counts up to 100%, no more</i>'),tile('Weakest line',pct(w[1]),`<i class="trd">${LINES[w[0]].n}</i>`)])
+      +fx(`The average, over the nine end-item lines, of <b>(your output + allied output) ÷ the requirement</b>, each capped at 100%.`)
+      +card('Every line','a year',tbl(['Line','You','Allies','Requirement','Share'],rows,['Average','','','',`<b>${pct(raceIdx(R.out))}</b>`]))
+      +note('Why capped:','a line above its requirement cannot make up for one below it. Click a line for how its requirement and output are worked out.')}
   else if(k==='line'){const L=LINES[c],o=R.out[c],us=o.yr,al=allyOut(c),aL=A.lines[c],base=REQ_US[c].v+(aL?.tgt||0),g=Math.max(1,cnOut(c,S.w)/Math.max(cnOut(c,PLAY0),1e-9)),rq=reqOut(c),cv=ceilVals(R,'L:'+c),dv=allyDivert(c);t=L.n;
-    const ceil=[['Factory capacity',cv.F],['Workers to run it',cv.L],['What its inputs allow',cv.M],['What Congress has ordered',cv.D]].filter(x=>x[1]!=null&&isFinite(x[1]));const lo=Math.min(...ceil.map(x=>x[1]));
-    body=`<p class="whyf2">Share = <b>(you + allies) ÷ requirement</b> = (${fmtN(us)} + ${fmtN(al)}) ÷ ${fmtN(rq)} = <b>${pct(Math.min(1,(us+al)/Math.max(rq,1e-9)))}</b>${(us+al)>rq?' (capped at 100%)':''}.</p>
-      <h5 class="th5">Your output: the lowest of its ceilings</h5>${tbl(['Ceiling','A year'],ceil.map(([n,v])=>[v<=lo*1.0001?`<b>${n}</b> ← binds`:n,fmtN(v)]))}
-      ${o.bott?`<p class="mini">Short of ${o.chain.map(i=>ND[i].n).join(' ← ')}.</p>`:''}
-      <h5 class="th5">Allied output</h5>${aL?tbl(['Ally','A year'],[...alMem().filter(m=>alMemOut(m,c)>0).map(m=>[m.n,fmtN(alMemOut(m,c))]),...(dv>.001?[['Less: your emergency buys taking their inputs','−'+pct(dv)]]:[])],[`<b>${A.n}</b>`,`<b>${fmtN(al)}</b>`])+`<p class="mini">${srcTxt(aL.src)}</p>`:`<p class="mini">${A.n} make none that counts toward this line.</p>`}
-      <h5 class="th5">The requirement</h5>${tbl(['Part','A year'],[['US target',fmtN(REQ_US[c].v)],[`${A.n}’s own planned output`,fmtN(aL?.tgt||0)],['Base',fmtN(base)],[`× ${RV().n}’s growth since 2027`,'×'+fmt(g,2)]],['<b>Requirement now</b>',`<b>${fmtN(rq)}</b>`])}
-      <p class="mini">${srcTxt(REQ_US[c].src)}</p>`}
-  else if(k==='outlook'){t='The January 2035 outlook';const rows=cs.map(c=>{const t2=trkOf('L:'+c),r=trkRows('L:'+c).slice(-1)[0],us=r&&r[4]!=null?r[4]:0;return [LINES[c].n,fmtN(us),fmtN(allyOut(c,END_W)),fmtN(reqOut(c,END_W)),pct(t2.end)]});
-    body=`<p class="whyf2">The same measure as sufficiency, in January 2035: your game is played forward with <b>every program under way finishing on its current schedule</b>, plants ramping up, and Congress ordering what new capacity adds. Existing lines keep today’s orders.</p>${tbl(['Line','You in 2035','Allies','Requirement','Share'],rows,['<b>Average</b>','','','',`<b>${pct(trkAll().end)}</b>`])}
-      <p class="mini">Not included: programs you have not started, reforms you have not passed, events, and any further slips. Programs have run late on average, so the outlook is usually optimistic.</p>`}
-  else if(k==='base'){t='Your decisions against doing nothing';const b=baseAt();
-    body=b?`<p class="whyf2">Your game is played again from January 2027 <b>with the same luck and no decisions at all</b>: no programs, orders, deals, reforms or rules beyond what was already under way, and the default for every event and problem.</p>
-      ${tbl(['','Now'],[['Your game',pct(raceIdx(R.out))],['Doing nothing',pct(b[1])]],['<b>Your decisions</b>',`<b>${raceIdx(R.out)>=b[1]?'+':'−'}${fmt(Math.abs(raceIdx(R.out)-b[1])*100,1)} pt</b>`])}
-      <p class="mini">The dashed grey line on the charts is this do-nothing game. Luck is shared where it can be, but different decisions can still change which events strike, so small differences are noise. For what reforms would have added to your plan, see <span class="linkn" data-a="cfopen">What it would have taken →</span></p>`:'<p>The do-nothing game is still being worked out in the background. Try again in a few seconds.</p>'}
-  else if(k==='expo'){t='Chinese and Russian content';const rows=S.order.map(c=>[LINES[c].n,pct(R.out[c].expo||0),fmtN(R.out[c].yr)]);
-    body=`<p class="whyf2">For each input, the share of its supply that comes from China or Russia, directly or through its own inputs. Each end item’s content is the average over its direct inputs, and the headline is the average over your lines <b>weighted by how much each makes</b>.</p>${tbl(['Line','Chinese/Russian content','Output a year'],rows,['<b>Weighted average</b>',`<b>${pct(R.exposure)}</b>`,''])}
-      <p class="mini">See where it enters on <span class="linkn" data-a="view" data-v="flow">Supply flows →</span></p>`}
-  return `<div class="paper whyp"><div class="hd"><span class="ic">🧮</span>Why this number? · ${t}</div><div class="bd">${body}<div class="ft"><button class="pbtn" data-a="close">Close</button></div></div></div>`}
+    const ceil=[['Factory capacity',cv.F],['Workers to run it',cv.L],['What its inputs allow',cv.M],['What Congress has ordered',cv.D]].filter(x=>x[1]!=null&&isFinite(x[1]));const lo=Math.min(...ceil.map(x=>x[1])),sv=Math.min(1,(us+al)/Math.max(rq,1e-9));
+    body=tiles([tile('Share of the requirement',pct(sv),(us+al)>rq?'<i class="trd up">capped at 100%</i>':`<i class="trd">${fmtN(Math.max(0,rq-us-al))} a year short</i>`),tile('You',fmtN(us),'<i class="trd">a year</i>'),tile('Allies',fmtN(al),`<i class="trd">${A.n}</i>`),tile('Requirement',fmtN(rq),'<i class="trd">a year</i>')])
+      +fx(`Share = <b>(you + allies) ÷ requirement</b> = (${fmtN(us)} + ${fmtN(al)}) ÷ ${fmtN(rq)} = <b>${pct(sv)}</b>${(us+al)>rq?' (capped at 100%)':''}.`)
+      +`<div class="trgrid">${card('Your output','the lowest ceiling binds',tbl(['Ceiling','A year'],ceil.map(([n,v])=>[v<=lo*1.0001?`<b>${n}</b> <span class="whyb">binds</span>`:n,v<=lo*1.0001?`<b>${fmtN(v)}</b>`:fmtN(v)]))+(o.bott?note('Short of',o.chain.map(i=>ND[i].n).join(' ← ')+'.'):''))}
+        ${card('The requirement','a year',tbl(['Part','A year'],[['US target',fmtN(REQ_US[c].v)],[`${A.n}’s own planned output`,fmtN(aL?.tgt||0)],['Base',fmtN(base)],[`× ${RV().n}’s growth since 2027`,'×'+fmt(g,2)]],['Requirement now',`<b>${fmtN(rq)}</b>`])+note('Source:',srcTxt(REQ_US[c].src)))}</div>`
+      +card('Allied output',A.n,aL?tbl(['Ally','A year'],[...alMem().filter(m=>alMemOut(m,c)>0).map(m=>[m.n,fmtN(alMemOut(m,c))]),...(dv>.001?[['Less: your emergency buys taking their inputs','−'+pct(dv)]]:[])],[A.n,`<b>${fmtN(al)}</b>`])+note('Source:',srcTxt(aL.src)):`<p class="trnone">${A.n} make none that counts toward this line.</p>`)}
+  else if(k==='outlook'){t='The January 2035 outlook';const ts=cs.map(c=>[c,trkOf('L:'+c)]),all=trkAll(),w=weak(ts.map(([c,x])=>[c,x.end])),nP=S.projects.filter(p=>!p.inh&&!p.pkg).length;
+    const rows=ts.map(([c,t2])=>{const r=trkRows('L:'+c).slice(-1)[0],us=r&&r[4]!=null?r[4]:0;return [LINES[c].n,fmtN(us),fmtN(allyOut(c,END_W)),fmtN(reqOut(c,END_W)),shr(t2.end)]});
+    body=tiles([tile('Outlook, January 2035',pct(all.end),dpt(all.end,all.now,'today')),tile('Lines at 100% by 2035',`${ts.filter(([,x])=>x.end>=.999).length}/${cs.length}`,`<i class="trd">${ts.filter(([,x])=>x.now>=.999).length} today</i>`),tile('Weakest line in 2035',pct(w[1]),`<i class="trd">${LINES[w[0]].n}</i>`),tile('Programs counted',nP,'<i class="trd">under way now</i>')])
+      +fx(`The same measure as sufficiency, in January 2035. Your game is played forward with <b>every program under way finishing on its current schedule</b>, plants ramping up, and Congress ordering what new capacity adds. Existing lines keep today’s orders.`)
+      +card('Every line in January 2035','a year',tbl(['Line','You in 2035','Allies','Requirement','Share'],rows,['Average','','','',`<b>${pct(all.end)}</b>`]))
+      +note('Not counted:','programs you have not started, reforms you have not passed, events, and any further slips. Programs have run late on average, so the outlook is usually optimistic.')}
+  else if(k==='base'){t='Your decisions against doing nothing';const b=baseAt(),now=raceIdx(R.out);
+    body=b?tiles([tile('Your game',pct(now),'<i class="trd">sufficiency today</i>'),tile('Doing nothing',pct(b[1]),'<i class="trd">same luck, no decisions</i>'),tile('Your decisions',Math.abs(now-b[1])<.0005?'0 pt':`${now>=b[1]?'+':'−'}${fmt(Math.abs(now-b[1])*100,1)} pt`,Math.abs(now-b[1])<.0005?'<i class="trd">no difference yet</i>':`<i class="trd ${now>=b[1]?'up':'dn'}">${now>=b[1]?'ahead of':'behind'} doing nothing</i>`)])
+      +fx(`Your game is played again from January 2027 <b>with the same luck and no decisions at all</b>: no programs, orders, deals, reforms or rules beyond what was already under way, and the default for every event and problem.`)
+      +note('On the charts:',`the dashed grey line is this do-nothing game. Luck is shared where it can be, but different decisions can still change which events strike, so small differences are noise. For what reforms would have added to your plan, see <span class="linkn" data-a="cfopen">What it would have taken →</span>`)
+      :'<p class="trnone">The do-nothing game is still being worked out in the background. Try again in a few seconds.</p>'}
+  else if(k==='expo'){t='Chinese and Russian content';const xs=S.order.map(c=>[c,R.out[c].expo||0]),hi=xs.reduce((a,b)=>b[1]>a[1]?b:a);
+    const rows=S.order.map(c=>[LINES[c].n,`<span class="whys"><span class="yrvb"><i style="width:${(Math.min(1,R.out[c].expo||0)*100).toFixed(1)}%"></i></span><b>${pct(R.out[c].expo||0)}</b></span>`,fmtN(R.out[c].yr)]);
+    body=tiles([tile('Weighted average',pct(R.exposure),S.rec0?.expo!=null&&S.w>PLAY0?`<i class="trd ${R.exposure<=S.rec0.expo?'up':'dn'}">${R.exposure<=S.rec0.expo?'▼':'▲'} from ${pct(S.rec0.expo)} in January 2027</i>`:'<i class="trd">by output</i>'),tile('Most exposed line',pct(hi[1]),`<i class="trd">${LINES[hi[0]].n}</i>`)])
+      +fx(`For each input, the share of its supply that comes from China or Russia, directly or through its own inputs. Each end item’s content is the average over its direct inputs, and the headline is the average over your lines <b>weighted by how much each makes</b>.`)
+      +card('Every line','',tbl(['Line','Chinese/Russian content','Output a year'],rows,['Weighted average',`<b>${pct(R.exposure)}</b>`,'']))
+      +note('Where it enters:','<span class="linkn" data-a="view" data-v="flow">Supply flows →</span>')}
+  return `<div class="paper whyp trp"><div class="hd"><span class="ic">${vic('calc',22)}</span>Why this number? · ${t}</div><div class="bd">${body}</div><div class="ft trft"><button class="pbtn" data-a="close">Close</button></div></div>`}
 function renderModal(){
   for(const k in CH)if(CH[k].ctx==='m')delete CH[k];CHctx='m';
   const P=S._R?.P||production(false).P;const build=()=>{let html='';
