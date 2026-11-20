@@ -1075,6 +1075,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .cklesson{font:italic 14px/1.45 Georgia,serif;color:#2b241a;margin:10px 0}.cklesson .trlab{font-style:normal;margin:0 0 3px}
 .ckdeb{margin:10px 0 4px}.ckdeb .debc{margin:4px 0 0}
 @media(max-width:1000px){.ckdeb .debc{grid-template-columns:1fr}}
+.paper .hd .ic .vic{display:block;margin:0}.pbtn .vic{vertical-align:-3px;margin-right:6px}
 </style>
 </head>
 <body>
@@ -4049,7 +4050,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
   if(FYOF(n1)===IB_RECON_END+1&&FYOF(n0)<=IB_RECON_END)ahead.push('💵 Reconciliation money ends with this fiscal year.');
   {const cn=cnNext();if(cn&&cn.yrsTo>=0&&cn.yrsTo<=1)ahead.push(`${FLAGS.cn} Beijing could reach its next step, ${cn.nx.s.toLowerCase()}, within ${cn.yrsTo<.25?'a few months':Math.round(cn.yrsTo*12)+' months'}${cn.mine?`; your plants replacing Chinese supply add ${cn.mine} pressure a year`:''}. Hedges: stockpile buys (a year of supply for these minerals), the minerals partnership, talks.`)}
   const aheadH=ahead.length?ahead.slice(0,8).map(x=>`<div class="tra">${x}</div>`).join(''):'<p class="trnone">Nothing scheduled. A good time to start programs or push a reform.</p>';
-  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">🗓</span>${turnLabel(w0)}: turn report</div><div class="bd">
+  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('turn',22)}</span>${turnLabel(w0)}: turn report</div><div class="bd">
    <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,1)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines short',`${b.short}/${S.order.length}`,dl(a.short,b.short,v=>String(Math.round(v)),-1))}${tile('Budget',money(S.budget),dl(a.budget,b.budget,v=>money(v)))}${tile('Political Capital',Math.floor(S.pc),dl(a.pc,b.pc,v=>fmt(v,0)))}</div>
    <div class="trgrid">
     <div class="trcol"><div class="trh"><b>What changed</b><span>${turnLabel(w0)}</span></div><div class="trsub">Output per year</div>${outH}${progH}</div>
@@ -4113,7 +4114,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r;
     +ah('⛓ Biggest limits now',lim.length?lim.join('<br>'):'No input holds a line back right now: line capacity is the limit.')
     +ah(`${FLAGS.cn} Beijing next`,nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year).`:'Nothing left to escalate.')
     +(S.fac==='US'?ah('🏛 Next bill',`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}. Request plants, stockpile buys and reforms before then on the NDAA & Congress tab.`):'');
-  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">📅</span>${r.y}: the year in review</div><div class="bd">
+  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('year',22)}</span>${r.y}: the year in review</div><div class="bd">
    <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,0)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines sufficient',`${b.suff}/${Object.keys(LINES).length}`,dl(a.suff,b.suff,v=>String(v)))}${tile('Bottlenecks cleared',r.cleared.length,'<i class="trd">this year</i>')}${tile('Beijing’s escalation',`${cnS().rung}/${CN_RUNGS.length}`,dl(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
    <div class="trcol yrout"><div class="trh"><b>Output per year</b><span>${r.y-1} → ${r.y} · against ${RV().n}</span></div>
     <div class="yro yrhd"><span>Line</span><span>A year ago → now</span><span>Change</span><span>${RV().n}</span><span>You vs. ${RV().n}</span></div>${outH}</div>
@@ -4122,7 +4123,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r;
     <div class="trcol"><div class="trh"><b>The year ahead</b><span>${r.y+1}</span></div>${ahead}</div>
    </div>
    ${rollsHTML((S.rolls||[]).filter(x=>x.w>a.w&&x.w<=b.w),'🎲 Your odds this year')}
-   </div><div class="ft trft"><button class="pbtn" data-a="yrrec">📊 The full record</button><button class="pbtn primary" data-a="close">Begin ${r.y+1} →</button></div></div>`}
+   </div><div class="ft trft"><button class="pbtn" data-a="yrrec">${vic('rec')}The full record</button><button class="pbtn primary" data-a="close">Begin ${r.y+1} →</button></div></div>`}
 function gameOver(why){
   if(S.over)return;S.over=true;S.overWhy=why;S.speed=0;
   if(why)S.verdict='DEFEAT';else{const x=raceIdx(S.lastOut||production(false).out),h0=S.hist.find(h=>h.w>=PLAY0&&h.prod),x0=h0?raceIdx(null,h0.w,c=>h0.prod[c]):x;S.race0=x0;S.verdict=x>=1?'ARSENAL RESTORED':x>=.75?'WITHIN REACH':x>=x0+.05?'GAINED GROUND':'OUT-BUILT'}
@@ -5513,7 +5514,9 @@ const VIC={cmd:'M3 10l9-6 9 6M5 9.5V20h14V9.5M10 20v-5h4v5',
  permits:'M8 3.5h8V7H8zM7 5H5v16h14V5h-2M8.5 12h7M8.5 16h4.5',
  pipe:'M3 21h18M6 21V8h4v13M10 11h8v10M6 8l2-4 2 4',
  ready:'M14.5 6.5a4 4 0 00-5.4 5.1L3.5 17.2l3.3 3.3 5.6-5.6a4 4 0 005.1-5.4l-2.6 2.6-2.4-.6-.6-2.4z',
- find:'M10.5 4a6.5 6.5 0 110 13 6.5 6.5 0 010-13zM15.3 15.3L21 21'};
+ find:'M10.5 4a6.5 6.5 0 110 13 6.5 6.5 0 010-13zM15.3 15.3L21 21',
+ turn:'M6 3h12M6 21h12M7.5 3v2.5c0 3 4.5 4.3 4.5 6.5s-4.5 3.5-4.5 6.5V21M16.5 3v2.5c0 3-4.5 4.3-4.5 6.5s4.5 3.5 4.5 6.5V21M9.5 19.5c.8-1.6 4.2-1.6 5 0',
+ year:'M5 4.5A1.5 1.5 0 016.5 3H19v15H6.5A1.5 1.5 0 005 19.5zM5 19.5A1.5 1.5 0 006.5 21H19M9 7.5h6M9 11h6M9 14.5h3.5'};
 const vic=(k,sz=14)=>VIC[k]?`<svg class="vic" width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true"><path d="${VIC[k]}"/></svg>`:'';
 // seven tabs; a tab that holds two views shows a switch under its title. Views keep their own ids, so every link still works.
 const VIEWS=[['cmd','Command'],['bn','Supply chain'],['imports','Abroad'],['ndaa','NDAA'],['policy','Rules & policy'],['arsenal','Stocks & needs'],['src','Sources']];
@@ -6151,7 +6154,7 @@ function scenMidHTML(){const sc=SCD[S.scen],r=S.scenMid;
   return `<div class="paper wide ckp trp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, the window opens</div><div class="bd">
     ${ckTiles(sc,r,true)}<p class="ckintro">The first checkpoint asks whether you are halfway from where you started in January 2027 to each real target. The real targets are judged in January 2035.</p>
     ${ckGrid(sc,r,true)}</div>
-    <div class="ft trft"><button class="pbtn" data-a="yrrec">📊 The full record</button><button class="pbtn primary" data-a="close">Keep building ▸ January 2035</button></div></div>`}
+    <div class="ft trft"><button class="pbtn" data-a="yrrec">${vic('rec')}The full record</button><button class="pbtn primary" data-a="close">Keep building ▸ January 2035</button></div></div>`}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
   const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
   S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo'})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
@@ -6234,7 +6237,7 @@ function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
     ${ckGrid(sc,r,false)}
     <div class="tra cklesson"><span class="trlab">What it comes down to</span>${sc.lesson}</div>
     <div class="trcol ckdeb"><div class="trh"><b>Debrief</b><span>How the result came about</span></div>${debCards()}</div></div>
-    <div class="ft trft"><button class="pbtn primary" data-a="scenstop">📊 See the full record ▸</button></div></div>`}
+    <div class="ft trft"><button class="pbtn primary" data-a="scenstop">${vic('rec')}See the full record ▸</button></div></div>`}
 
 function fixStat(id,c,R){const yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   if(id.startsWith('L:')){const ps=S.projects.filter(q=>PD[q.def].t.line===c),pl=S.plants.filter(p=>p.kind==='line'&&p.target===c&&!p.full);
@@ -6864,7 +6867,7 @@ function renderModal(){
       <h5 class="yrh">The bill</h5>${billTable()||'<p class="mini">Nothing was spent.</p>'}
       <h5 class="yrh">Where the time went <span class="mini">(${fmt(tot,0)} program-weeks lost)</span></h5>
       ${L.filter(x=>x[1].wk>0).map(([k,v])=>`<div style="display:flex;justify-content:space-between;font-size:13px;border-bottom:1px dotted #a89770"><span>${LAYERS[k].n}</span><span>${fmt(v.wk,0)} wk · ${Math.round(v.wk/Math.max(1,tot)*100)}%</span></div>`).join('')}
-      </div><div class="ft"><button class="pbtn primary" data-a="recgo">📊 See the full record</button><button class="pbtn" data-a="restart">Play again</button></div></div>`;
+      </div><div class="ft"><button class="pbtn primary" data-a="recgo">${vic('rec')}See the full record</button><button class="pbtn" data-a="restart">Play again</button></div></div>`;
   } else if(S.queue.length){
     const q=S.queue[0];
     if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${lc(L.n)}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
