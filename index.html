@@ -1057,6 +1057,12 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .paper .ft.trft{flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 18px 14px;border-top:1px solid #cdb98a;background:#e9dfc4}
 .trft .pbtn{width:auto;flex:none;font:var(--ds-btn);padding:9px 18px;border-radius:3px;text-align:center}.trft .pbtn.primary{padding:9px 22px;font-size:13.5px}
 @media(max-width:900px){.trts{grid-template-columns:repeat(2,minmax(0,1fr))}.trgrid{grid-template-columns:1fr}}
+.yrout{margin:0 0 10px}.yro{display:grid;grid-template-columns:minmax(0,1.4fr) 150px 92px 80px minmax(150px,1fr);gap:10px;align-items:center;padding:3px 0;border-bottom:1px dotted #d6c79f}
+.yro.yrhd{font:var(--ds-lab-f);letter-spacing:.06em;text-transform:uppercase;color:var(--ds-lab);border-bottom:1px solid #cdb98a;padding-bottom:4px}.yro>span:nth-child(n+2){text-align:right}.yro .trov{white-space:nowrap}
+.yrrv{color:#5a4e38;white-space:nowrap}.yrvs{display:grid!important;grid-template-columns:minmax(0,1fr) 44px;gap:8px;align-items:center}.yrvb{position:relative;height:9px;background:#e6dbbd;border:1px solid #cbbd95}.yrvb>i{position:absolute;left:0;top:0;bottom:0;background:#c9533f}.yrvb>i.ok{background:#76b357}.yrvs b{text-align:right}
+.yrkv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:2px 0;border-bottom:1px dotted #d6c79f}.yrkv b{font-weight:600;text-align:right}.yrkv b.okt{color:#2f5a24}.yrkv b.redt{color:#a3261c}
+.tra .trlab{margin:0 0 2px}.tra b{font-weight:600}
+@media(max-width:900px){.yro{grid-template-columns:minmax(0,1fr) 110px 80px;}.yro>span:nth-child(4),.yro>span:nth-child(5){display:none!important}}
 </style>
 </head>
 <body>
@@ -4072,30 +4078,39 @@ function yrOpen(){if(S.sim||S.histMode||S.replay||S.over)return;const a=S.yr0||y
     online:S.plants.filter(p=>p.start!=null&&inW(p.start)&&p.nm).map(p=>p.nm),full:S.plants.filter(p=>p.full&&p.nm&&p.fullW&&inW(p.fullW)).map(p=>p.nm),
     cn:cnS().hist.filter(h=>inW(h.w)),truce:S.truce,pcY:{...(S.pcY||{inc:0,sp:0,ev:0})},lim:Object.entries(lim).sort((x,y)=>y[1].length-x[1].length).slice(0,3)};
   S.pcY={inc:0,sp:0,ev:0};S.procY=0;S.yr0=b;S._rcpt=null;S.modal='year';S.speed=0;const tb=document.getElementById('toasts');if(tb)tb.innerHTML=''}
-function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r,d=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<.5?'<span class="mini">no change</span>':`<span class="${(v>0)===(good>0)?'okt':'redt'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</span>`};
-  const tile=(v,l,dl)=>`<div class="yrt"><b>${v}</b><span>${l}</span>${dl?`<i>${dl}</i>`:''}</div>`;
-  const rows=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0,ch=x>0?y/x-1:0,rv=cnOut(c);
-    return `<tr><td>${LINES[c].n}</td><td class="num">${fmtN(x)}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num ${ch>.005?'okt':ch<-.005?'redt':'mini'}">${Math.abs(ch)<.005?'—':(ch>0?'+':'−')+pct(Math.abs(ch))}</td><td class="num">${fmtN(rv)}</td><td class="num ${y>=rv?'okt':'redt'}">${rv>0?pct(y/rv):'—'}</td></tr>`}).join('');
-  const li=(t,xs)=>xs.length?`<div class="yrl"><b>${t}</b><span>${xs.join(' · ')}</span></div>`:'';
-  const bl=r.bill,sc=S.scen&&SCD[S.scen],nxW=sc?(S.w<sc.mid?sc.mid:sc.dl):null,dlY=sc&&nxW>S.w?yrs(nxW-S.w):null,nx=CN_RUNGS[cnS().rung],sp=b.spend-a.spend,inc=b.inc-a.inc;
-  const lim=r.lim.map(([id,cs])=>`${ND[id].n} hold${/s$/.test(ND[id].n.replace(/\s*\(.*\)$/,''))?'':'s'} back ${cs.map(c=>lc(LINES[c].n)).join(', ')}`);
-  return `<div class="paper wide yrp"><div class="hd"><span class="ic">📅</span>${r.y}: the year in review</div><div class="bd">
-   <div class="yrts">${tile(pct(b.race),'of the requirement, you + allies',d(a.race*100,b.race*100,v=>fmt(v,0)+' pt'))}${tile(`${b.suff}/${Object.keys(LINES).length}`,'lines sufficient',d(a.suff,b.suff,v=>String(v)))}${tile(r.cleared.length,`bottleneck${r.cleared.length===1?'':'s'} cleared this year`)}${tile(`${cnS().rung}/${CN_RUNGS.length}`,'Beijing’s escalation steps',d(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
-   <table class="ctable yrtab"><tr><th>Output per year</th><th class="num">A year ago</th><th class="num">Now</th><th class="num">Change</th><th class="num">${RV().n}</th><th class="num">You vs. ${RV().n}</th></tr>${rows}</table>
-   <h5 class="yrh">What changed</h5>
-   ${bl?li(`🏛 FY${bl.fy} ${billN()}`,[bl.got.length?`<span class="okt">Funded: ${bl.got.join(', ')}</span>`:'Nothing you requested was funded',...(bl.added.length?[`Added by Congress: ${bl.added.join(', ')}`]:[]),...(bl.lost.length?[`<span class="redt">Not funded: ${bl.lost.join(', ')}</span>`]:[])]):li('🏛 Congress',['No requests were in this year’s bill.'])}
-   ${li('📜 Laws, rules and carve-outs',r.laws.map(x=>`${x.kind}: ${x.n}`))}
+function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r;
+  const dl=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<.5?'<i class="trd">no change</i>':`<i class="trd ${(v>0)===(good>0)?'up':'dn'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</i>`};
+  const tile=(lab,v,d,tip)=>`<div class="trt"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b>${d||''}</div>`;
+  const chips=(lab,cls,xs)=>xs.length?`<div class="trpg"><span class="trlab">${lab}</span><div class="trchips">${xs.map(x=>`<span class="trchip ${cls}">${x}</span>`).join('')}</div></div>`:'';
+  const kv=(lab,xs)=>`<div class="trpg"><span class="trlab">${lab}</span>${xs.map(([k,v,c])=>`<div class="yrkv"><span>${k}</span><b class="${c||''}">${v}</b></div>`).join('')}</div>`;
+  // output against the rival, every line
+  const outH=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0,ch=x>0?y/x-1:0,rv=cnOut(c),vs=rv>0?y/rv:null;
+    return `<div class="yro"><span class="tron">${LINES[c].n}</span><span class="trov">${fmtN(x)} <em>→</em> <b>${fmtN(y)}</b></span><span class="trd ${ch>.005?'up':ch<-.005?'dn':''}">${Math.abs(ch)<.005?'no change':(ch>0?'▲ +':'▼ −')+pct(Math.abs(ch))}</span><span class="yrrv">${fmtN(rv)}</span><span class="yrvs"><span class="yrvb"><i class="${vs!=null&&vs>=1?'ok':''}" style="width:${vs==null?0:Math.min(100,vs*100).toFixed(1)}%"></i></span><b class="${vs!=null&&vs>=1?'okt':'redt'}">${vs==null?'—':pct(vs)}</b></span></div>`}).join('');
+  // what changed
+  const bl=r.bill,cong=bl?chips(`🏛 FY${bl.fy} ${billN()}: funded`,'ok',bl.got.length?bl.got:[])+(bl.got.length?'':`<div class="trpg"><span class="trlab">🏛 FY${bl.fy} ${billN()}</span><p class="trnone">Nothing you requested was funded.</p></div>`)+chips('Added by Congress','',bl.added)+chips('Not funded','no',bl.lost):`<div class="trpg"><span class="trlab">🏛 Congress</span><p class="trnone">No requests were in this year’s bill.</p></div>`;
+  const sp=b.spend-a.spend,inc=b.inc-a.inc;
+  const cnRows=[...r.cn.map(h=>[h.k<0?'Ended the truce early':CN_RUNGS[h.k].s+(h.f<1?' (eased by talks)':''),'step','redt']),['Pressure',`${Math.round(a.cn.heat)} → ${Math.round(b.cn.heat)} of 100`,b.cn.heat>a.cn.heat+.5?'redt':''],['Truce',r.truce?'holds':'none',r.truce?'okt':'']];
+  const chg=cong+chips('📜 Laws, rules and carve-outs','',r.laws.map(x=>`<em>${x.kind}:</em> ${x.n}`))+chips('🏭 Plants that started producing','ok',r.online)+chips('⛓ Bottlenecks cleared','ok',r.cleared.map(x=>`${LINES[x.c].n}: ${ND[x.id]?.n||'line capacity'}`))
+    +kv(`${FLAGS.cn} Beijing`,cnRows)
+    +kv('💰 Money',[['Weapons bought by Congress',money(S.procY||0)],['Came in',money(inc)],['Spent',money(sp)],['In hand',money(S.budget)],['Political Capital',`${Math.floor(S.pc)}: +${fmt(r.pcY.inc,0)} earned, −${fmt(r.pcY.sp,0)} spent, ${r.pcY.ev>=0?'+':'−'}${fmt(Math.abs(r.pcY.ev),0)} from events`]]);
+  // the year ahead
+  const sc=S.scen&&SCD[S.scen],nxW=sc?(S.w<sc.mid?sc.mid:sc.dl):null,dlY=sc&&nxW>S.w?yrs(nxW-S.w):null,nx=CN_RUNGS[cnS().rung];
+  const lim=r.lim.map(([id,cs])=>`<b>${ND[id].n}</b> hold${/s$/.test(ND[id].n.replace(/\s*\(.*\)$/,''))?'':'s'} back ${cs.map(c=>lc(LINES[c].n)).join(', ')}`);
+  const ah=(lab,x)=>`<div class="tra"><span class="trlab">${lab}</span>${x}</div>`;
+  const ahead=ah('⏱ Next checkpoint',sc&&dlY?`${sc.n}: ${dlY} to ${nxW===sc.mid?'the halfway floors':'the real targets'}, ${fmtDate(nxW)}.`:`The race runs to ${fmtDate(END_W)}.`)
+    +ah('⛓ Biggest limits now',lim.length?lim.join('<br>'):'No input holds a line back right now: line capacity is the limit.')
+    +ah(`${FLAGS.cn} Beijing next`,nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year).`:'Nothing left to escalate.')
+    +(S.fac==='US'?ah('🏛 Next bill',`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}. Request plants, stockpile buys and reforms before then on the NDAA & Congress tab.`):'');
+  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">📅</span>${r.y}: the year in review</div><div class="bd">
+   <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,0)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines sufficient',`${b.suff}/${Object.keys(LINES).length}`,dl(a.suff,b.suff,v=>String(v)))}${tile('Bottlenecks cleared',r.cleared.length,'<i class="trd">this year</i>')}${tile('Beijing’s escalation',`${cnS().rung}/${CN_RUNGS.length}`,dl(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
+   <div class="trcol yrout"><div class="trh"><b>Output per year</b><span>${r.y-1} → ${r.y} · against ${RV().n}</span></div>
+    <div class="yro yrhd"><span>Line</span><span>A year ago → now</span><span>Change</span><span>${RV().n}</span><span>You vs. ${RV().n}</span></div>${outH}</div>
+   <div class="trgrid">
+    <div class="trcol"><div class="trh"><b>What changed</b><span>${r.y}</span></div>${chg}</div>
+    <div class="trcol"><div class="trh"><b>The year ahead</b><span>${r.y+1}</span></div>${ahead}</div>
+   </div>
    ${rollsHTML((S.rolls||[]).filter(x=>x.w>a.w&&x.w<=b.w),'🎲 Your odds this year')}
-   ${li('🏭 Plants that started producing',r.online)}
-   ${li('⛓ Bottlenecks cleared',r.cleared.map(x=>`${LINES[x.c].n}: ${ND[x.id]?.n||'line capacity'}`))}
-   ${li(`${FLAGS.cn} Beijing`,[...r.cn.map(h=>h.k<0?'<span class="redt">ended the truce early</span>':`<span class="redt">${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`),`pressure ${Math.round(a.cn.heat)} → ${Math.round(b.cn.heat)} of 100`,r.truce?'the truce holds':'no truce'])}
-   ${li('💰 Money',[`${money(S.procY||0)} of weapons bought by Congress`,`${money(inc)} came in`,`${money(sp)} spent`,`${money(S.budget)} in hand`,`${Math.floor(S.pc)} Political Capital: +${fmt(r.pcY.inc,0)} earned, −${fmt(r.pcY.sp,0)} spent, ${r.pcY.ev>=0?'+':'−'}${fmt(Math.abs(r.pcY.ev),0)} from events`])}
-   <h5 class="yrh">The year ahead</h5>
-   ${li('⏱ Next checkpoint',sc&&dlY?[`${sc.n}: ${dlY} to ${nxW===sc.mid?'the halfway floors':'the real targets'}, ${fmtDate(nxW)}`]:[`The race runs to ${fmtDate(END_W)}`])}
-   ${li('⛓ Biggest limits now',lim.length?lim:['No input holds a line back right now: line capacity is the limit.'])}
-   ${li(`${FLAGS.cn} Beijing next`,[nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year)`:'nothing left to escalate'])}
-   ${S.fac==='US'?li('🏛 Next bill',[`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}; request plants, stockpile buys and reforms before then on the NDAA & Congress tab`]):''}
-   </div><div class="ft"><button class="pbtn" data-a="yrrec">📊 The full record</button><button class="pbtn primary" data-a="close">Begin ${r.y+1} →</button></div></div>`}
+   </div><div class="ft trft"><button class="pbtn" data-a="yrrec">📊 The full record</button><button class="pbtn primary" data-a="close">Begin ${r.y+1} →</button></div></div>`}
 function gameOver(why){
   if(S.over)return;S.over=true;S.overWhy=why;S.speed=0;
   if(why)S.verdict='DEFEAT';else{const x=raceIdx(S.lastOut||production(false).out),h0=S.hist.find(h=>h.w>=PLAY0&&h.prod),x0=h0?raceIdx(null,h0.w,c=>h0.prod[c]):x;S.race0=x0;S.verdict=x>=1?'ARSENAL RESTORED':x>=.75?'WITHIN REACH':x>=x0+.05?'GAINED GROUND':'OUT-BUILT'}
