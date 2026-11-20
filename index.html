@@ -1099,6 +1099,8 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 :is(.vpaper,.paper) .lpair .pbtn.sm.lcl{background:transparent;border:1px solid #a8925a;color:#5a4a26}:is(.vpaper,.paper) .lpair .pbtn.sm.lcl:hover{background:#efe3c4;border-color:#8a6d1f;color:#2b241a}
 .lpair .pbtn.sm.lgo{background:#3a3020;border:1px solid #2b241a;color:var(--brass2)}.lpair .pbtn.sm.lgo:hover:not(:disabled){background:#4d4029;border-color:#c9a227;color:#fff}.lpair .pbtn.sm.lgo:disabled{opacity:.4;cursor:not-allowed}
 .ctable.lev .lpair:has(.lgo){min-width:0;width:100%}.ctable.lev .lpair .pbtn.sm.lcl,.ctable.lev .lpair .pbtn.sm.lgo{padding:4px 6px}
+.prtab tr.prrow{cursor:grab}.prtab tr.prrow:active{cursor:grabbing}.prtab tr.prdrag{opacity:.4}.prgrip{white-space:nowrap;color:#5a4e38}.prgrip::first-letter{color:#a8925a}
+.prtab tr.prabove td{box-shadow:inset 0 3px 0 #c9a227}.prtab tr.prbelow td{box-shadow:inset 0 -3px 0 #c9a227}.prtab tr.prrow:hover td{background:rgba(201,162,39,.07)}
 </style>
 </head>
 <body>
@@ -3442,7 +3444,7 @@ function ordIdleSec(){const m=ordIdle(),cs=Object.keys(m).sort((a,b)=>m[b].gain*
 // ---- priority for scarce inputs (like DPAS rated orders): move a line, and say what moved
 function lineUses(R,l,id){return (R.out[l].lims||[]).some(x=>x.id===id||chainOf(R.P,x.id).includes(id))}
 function prioMove(i,j){if(j<0||j>=S.order.length||i===j)return;const R0=production(false),o0=S.order.slice();
-  [S.order[i],S.order[j]]=[S.order[j],S.order[i]];actRec('prio',{o:S.order.slice()});S._R=null;const R1=production(false);S._oi=null;
+  S.order.splice(j,0,...S.order.splice(i,1));actRec('prio',{o:S.order.slice()});S._R=null;const R1=production(false);S._oi=null;
   const ch=Object.keys(LINES).map(c=>({c,a:R0.out[c].yr,b:R1.out[c].yr})).filter(x=>Math.abs(x.b-x.a)>Math.max(x.a,1e-9)*.01);
   const mv=S.order[j],up=j<i;S._prioUndo=o0;
   const txt=ch.length?ch.sort((x,y)=>(y.b-y.a)/Math.max(y.a,1e-9)-(x.b-x.a)/Math.max(x.a,1e-9)).map(x=>{const d=(x.b-x.a)/Math.max(x.a,1e-9);return `<span class="${d>0?'okt':'redt'}">${LINES[x.c].n} ${d>0?'+':'−'}${Math.round(Math.abs(d)*100)}%</span>`}).join(' · '):'<span class="dim">No line’s output changes now: no input they share is short.</span>';
@@ -3453,9 +3455,9 @@ function prioSec(){const R=S._R||production(false),P=R.P;
   const rows=S.order.map((c,i)=>{const o=R.out[c],L=LINES[c],sh=shareAt(c,o.yr,S.w),root=o.bott&&!o.chain.at(-1)?.startsWith('L:')?o.chain.at(-1):null;
     const rivals=root?S.order.filter(l=>l!==c&&lineUses(R,l,root)):[],above=rivals.filter(l=>S.order.indexOf(l)<i),below=rivals.filter(l=>S.order.indexOf(l)>i);
     const st=!o.bott?`<span class="okt">Not short of any input</span>`:root?`<span class="redt">Short of <span class="linkn" data-a="node" data-n="${root}">${ND[root].n}</span></span>${rivals.length?`<div class="mini">${above.length?'After '+above.map(l=>LINES[l].n.toLowerCase()).join(', '):''}${above.length&&below.length?'; ':''}${below.length?'ahead of '+below.map(l=>LINES[l].n.toLowerCase()).join(', '):''}</div>`:'<div class="mini">No other line uses it</div>'}`:'<span class="amb">Limited by its own capacity</span>';
-    return `<tr><td class="num">${i+1}</td><td class="prarr"><button class="btn sm" data-a="prio2" data-i="${i}" data-d="-1" ${i===0?'disabled':''} aria-label="Move up">▲</button><button class="btn sm" data-a="prio2" data-i="${i}" data-d="1" ${i===S.order.length-1?'disabled':''} aria-label="Move down">▼</button></td>
+    return `<tr class="prrow" draggable="true" data-prio="${i}"><td class="num prgrip" data-tip="Drag the row to a new place">⠿ ${i+1}</td><td class="prarr"><button class="btn sm" data-a="prio2" data-i="${i}" data-d="-1" ${i===0?'disabled':''} aria-label="Move up">▲</button><button class="btn sm" data-a="prio2" data-i="${i}" data-d="1" ${i===S.order.length-1?'disabled':''} aria-label="Move down">▼</button></td>
       <td>${lineIcon(c,16,'lic sm')} <span class="linkn" data-a="node" data-n="L:${c}">${L.n}</span></td><td class="num">${fmtN(o.yr)}<span class="mini">/yr</span></td><td class="num">${pct(sh)}</td><td>${st}</td></tr>`}).join('');
-  return `<h4 class="bh">Who gets scarce inputs first</h4><p class="mini">When an input is short, every line first gets an equal share up to a quarter of its requirement, so none stops outright. Then lines are filled to their requirement in this order, the way rated defense orders (DPAS) are filled. Moving a line up protects it; the lines below it that use the same input get what is left.</p>
+  return `<h4 class="bh">Who gets scarce inputs first</h4><p class="mini">When an input is short, every line first gets an equal share up to a quarter of its requirement, so none stops outright. Then lines are filled to their requirement in this order, the way rated defense orders (DPAS) are filled. Moving a line up protects it; the lines below it that use the same input get what is left. <b>Drag a row</b> to a new place, or use the arrows.</p>
    <table class="ctable prtab"><tr><th class="num">#</th><th></th><th>Line</th><th class="num">Output</th><th class="num" data-tip="Your output plus allies, against the requirement">Of requirement</th><th>Scarce input</th></tr>${rows}</table>`}
 function ordBillSec(){const rs=ordReqs(),fy=pkgFY();
   return `<h4 class="bh">Weapons orders</h4><p class="mini">Requests to buy more than Congress funds now, so capacity you build does not sit idle. Each costs Political Capital; Congress cuts about ${Math.round(ordCut(fy)*100)}% in markup. Request from an end item’s page, or from the idle lines below.</p>${ordIdleSec()}${rs.length?`<table class="ctable"><tr><th>Line</th><th class="num">More a year</th><th class="num">Cost a year</th><th></th></tr>${rs.map(x=>`<tr><td><span class="linkn" data-a="node" data-n="L:${x.c}">${LINES[x.c].n}</span></td><td class="num">+${fmtN(x.add)}</td><td class="num">${money(x.add*UC[x.c])}</td><td><button class="btn sm" data-a="orddrop" data-c="${x.c}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No order increases in the request yet.</p>'}`}
@@ -5589,7 +5591,7 @@ function viewHTML(){
   const grp=vGroup(S.view),gN=grp.length>1?(VIEWS.find(x=>x[0]===grp[0])||[])[1]:null;
   return `<div class="vhead${gN?' vhead2':''}"><span class="ic">${gN?vic(grp[0],22):VIC[S.view]?vic(S.view,22):T[0]}</span><b>${gN||T[1]}</b><span class="mini">${fmtDate(S.w)}${gN?'':' · '+T[2]}</span><span class="dsp"></span>${VIEW_PART[S.view]&&VIEW_PART[S.view]!=='cmd'&&!S.tut?`<button class="vtour" data-a="tour" data-tip="A guided tour of this tab\u2019s parts.">🎓 Tour this tab</button>`:''}${vSubStrip()}${!['flow','src','rules','bn','permits','fac','rec','ndaa','policy','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${body}</div>`;
 }
-function hoverLocked(){if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
+function hoverLocked(){if(PDRAG)return true;if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
 // display preferences (this browser only): explanations shown, side panel open on tabs, timeline open
 const UIP=(()=>{let v={};try{v=JSON.parse(localStorage.getItem('aob_ui')||'{}')}catch(e){}return v})();
 const uiSave=()=>{try{localStorage.setItem('aob_ui',JSON.stringify(UIP))}catch(e){}};
@@ -7200,6 +7202,13 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
   }
   render();if(S)saveSoon();
 });
+// drag a line to a new place in the priority order
+let PDRAG=null;const prClr=()=>document.querySelectorAll('.prtab tr.prover').forEach(x=>x.classList.remove('prover','prabove','prbelow'));
+document.addEventListener('dragstart',e=>{const tr=e.target.closest?.('tr[data-prio]');if(!tr)return;PDRAG={i:+tr.dataset.prio,to:null};e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',tr.dataset.prio);tr.classList.add('prdrag')});
+document.addEventListener('dragover',e=>{if(!PDRAG)return;const tr=e.target.closest?.('.prtab tr[data-prio]');prClr();if(!tr){PDRAG.to=null;return}e.preventDefault();e.dataTransfer.dropEffect='move';
+  const r=tr.getBoundingClientRect(),top=e.clientY<r.top+r.height/2;tr.classList.add('prover',top?'prabove':'prbelow');PDRAG.to=+tr.dataset.prio+(top?0:1)});
+document.addEventListener('drop',e=>{if(!PDRAG)return;e.preventDefault();const {i,to}=PDRAG;PDRAG=null;prClr();if(to==null)return;const j=to>i?to-1:to;if(j!==i){prioMove(i,j);S._vdirty=true;render()}});
+document.addEventListener('dragend',()=>{PDRAG=null;prClr();document.querySelectorAll('.prtab tr.prdrag').forEach(x=>x.classList.remove('prdrag'))});
 document.addEventListener('keydown',e=>{
   if(!S||S.over||QJ||e.target.tagName==='INPUT')return;
   if((e.key==='k'&&(e.ctrlKey||e.metaKey))||e.key==='/'){e.preventDefault();qjOpen();return}
