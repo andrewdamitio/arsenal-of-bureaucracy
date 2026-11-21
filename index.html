@@ -1209,6 +1209,12 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .mpgl{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:3px 16px!important;margin-top:8px}.mpgl>div{display:flex;align-items:baseline;gap:6px;color:#6b5a35}.mpgl>div i{font-style:normal;font-size:10px;color:#b9a77c}.mpgl>div.on{color:#2b241a}.mpgl>div.on i{color:#a3261c}.mpgl>div b{min-width:20px;font-weight:700}
 .mpkv>div{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;padding:4px 0;border-bottom:1px dotted #e0d4b4;font:12.5px/1.4 "Segoe UI",system-ui,sans-serif;color:#2b241a}.mpkv>div>b{text-align:right;font-weight:700;white-space:nowrap}.mpkv>div>em{grid-column:1/-1;font-style:normal;font-size:11.5px;color:#7a6a48}.mpkv>div>em:empty{display:none}
 .mpp{margin:0 0 8px;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif;color:#2b241a}.mpempty{padding:16px 14px;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif;color:#6b5a35;background:#f3ead2;border:1px dashed #d6c79f;border-radius:3px}
+.mvp{margin:6px;padding:7px 10px 9px;background:linear-gradient(#24331f,#1b2617);border:1px solid #4f7a40;box-shadow:inset 4px 0 0 #76b357}.mvp .brh b{color:#cfe8b8}
+.mvr{display:grid;grid-template-columns:minmax(200px,34%) 1fr;gap:4px 14px;padding:5px 0;border-top:1px solid rgba(255,255,255,.07)}.mvr:first-of-type{border-top:0}.mvt b{display:block;font:600 13px "Segoe UI",system-ui,sans-serif;color:#efe6cf}.mvt b .linkn{color:inherit}.mvt>span{font:11.5px "Segoe UI",system-ui,sans-serif;color:#b9ae90}
+.mvd{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.mvc{font:600 11.5px "Segoe UI",system-ui,sans-serif;padding:1px 7px;border-radius:3px;cursor:pointer}.mvc.up{background:#2f4a26;color:#b8e0a0;border:1px solid #4f7a40}.mvc.dn{background:#4a2620;color:#f0b0a0;border:1px solid #7a4038}.mvc.none{background:none;color:#b9ae90;font-weight:400;cursor:default}
+.mvrep .mvr{border-top:1px dotted #e0d4b4}.mvrep .mvt b{color:#231d14}.mvrep .mvt>span,.mvrep .mvc.none{color:#6b5a35}.mvrep .mvc.up{background:#e3edd6;color:#2f5a24;border-color:#b9cf9e}.mvrep .mvc.dn{background:#f3d9c8;color:#7a2a1c;border-color:#d9a58c}.mvrep{margin:10px 0}
+.mvbadge{margin-left:8px;font:600 10.5px "Segoe UI",system-ui,sans-serif;padding:1px 6px;border-radius:3px;vertical-align:2px}.mvbadge.up{background:#2f4a26;color:#b8e0a0;border:1px solid #4f7a40}.mvbadge.dn{background:#4a2620;color:#f0b0a0;border:1px solid #7a4038}
+.sk .skuw{fill:#4f8a3e;stroke:#efe6cf;stroke-width:1}.sk .skuw.fresh{fill:#c9a227}
 </style>
 </head>
 <body>
@@ -3030,7 +3036,7 @@ function ordReqAdd(c,add,k){ordReqs().push({c,add,pkg:pkgW(),pc:k});spent('pc',k
 const ordPC=(c,add)=>Math.max(3,Math.round(2+1.5*add*UC[c]));
 const ordCut=fy=>clamp(moodOf(fy).f*.1*credF(),.03,.4);
 function ordAdd(c,add){add=Math.round(add*1000)/1000;if(add<=0||ordReqs().some(x=>x.c===c))return;const k=ordPC(c,add);if(S.pc<k)return;S.pc-=k;spent('pc',k);
-  ordReqs().push({c,add,pkg:pkgW(),pc:k});log(`Requested in the FY${pkgFY()} NDAA: +${fmtN(add)} ${LINES[c].u} a year (${money(add*UC[c])} a year; ${k} PC).`)}
+  ordReqs().push({c,add,pkg:pkgW(),pc:k});actRec('oreq',{c,add});log(`Requested in the FY${pkgFY()} NDAA: +${fmtN(add)} ${LINES[c].u} a year (${money(add*UC[c])} a year; ${k} PC).`)}
 function ordDrop(c){const x=ordReqs().find(y=>y.c===c);if(x){S.pc+=x.pc;spent('pc',-x.pc)}S.ordReq=ordReqs().filter(y=>y.c!==c)}
 function ordBuy(c,add){const cost=add*UC[c];if(add<=0||S.budget<cost)return;actRec('obuy',{c,add});spendB(cost,'Weapons bought now');spent('$',cost);(S.ordBuy=S.ordBuy||[]).push({c,add,left:52});
   log(`Bought from the budget: +${fmtN(add)} ${LINES[c].u} over the next year (${money(cost)}).`)}
@@ -4073,7 +4079,7 @@ const refReqs=()=>(S.refReq=S.refReq||[]),inReq=id=>refReqs().some(x=>x.id===id)
 function refPass(x){const R=RD[x.id],m=moodOf(FYOF(x.pkg)).f;return x.rider?clamp(R.p*.35/m,.05,.4):clamp((R.p+.2)/Math.sqrt(m),.25,.95)}
 function refReqCost(R,rider){return Math.round(reformCost(R)*(rider?RIDER_F:.8))}
 function refAdd(id,rider){const R=RD[id];if(!R||!reformAvail(R)||inReq(id)||S.bill?.id===id)return;const k=refReqCost(R,rider);if(S.pc<k)return;S.pc-=k;spent('pc',k);
-  refReqs().push({id,pc:k,rider:!!rider,req:R.$||0,pkg:pkgW()});(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+k;log(`🏛 ${rider?'Attached as a rider to':'Added to'} the FY${pkgFY()} NDAA: ${rname(R)} (${k} PC).`,'ev')}
+  refReqs().push({id,pc:k,rider:!!rider,req:R.$||0,pkg:pkgW()});actRec('rreq',{id});(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+k;log(`🏛 ${rider?'Attached as a rider to':'Added to'} the FY${pkgFY()} NDAA: ${rname(R)} (${k} PC).`,'ev')}
 function refDrop(id){const x=refReqs().find(y=>y.id===id);if(!x)return;S.pc+=x.pc;spent('pc',-x.pc);S.refReq=refReqs().filter(y=>y!==x)}
 function refEnact(got,lost,fy,room){const its=refReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.refReq=refReqs().filter(x=>!its.includes(x));
   for(const x of its){const R=RD[x.id],n=rname(R);if(passed(x.id))continue;
@@ -4241,7 +4247,7 @@ function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)o
   return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
 function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play a turn soon, or end the tutorial.</span>');return}if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
   if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
-function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown)};for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
+function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown),moves:S.moves||[]};S.moves=[];for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
   if(S.over)return '';
   return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next turn ▸ ${turnLabel(S.w)}`}</button>`}
@@ -4280,6 +4286,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
     <div class="trcol"><div class="trh"><b>What changed</b><span>${turnLabel(w0)}</span></div><div class="trsub">Output per year</div>${outH}${progH}</div>
     <div class="trcol"><div class="trh"><b>Coming next</b><span>${turnLabel(n0)}</span></div>${aheadH}</div>
    </div>
+   ${r.moves?.length?`<div class="trcol mvrep"><div class="trh"><b>What you set in motion last turn</b><span>and what it does by 2035</span></div>${mvRows(r.moves)}</div>`:''}
    ${tbHTML(1)}
    ${rollsHTML(r.rolls||[],'🎲 Your odds this turn')}
    <div class="trgrid">
@@ -4436,7 +4443,10 @@ function sankeySVG(R,focus,mode,attr){
     const act=id.startsWith('S:')?'':isL?`data-a="flow" data-f="${id}"`:`data-a="node" data-n="${id}"`;
     let tip=nameOf(id)+` — ${pct(val(id)/total)} of this view`;
     if(isL){const o=R.out[id.slice(2)];tip+=` · output ${pct(o.n/Math.max(o.cap,1e-9))} of capacity${o.cap>o.n*1.001?`<br><span style="color:#e8a090">Hatched: ${pct(1-o.n/Math.max(o.cap,1e-9))} of capacity idle${o.bott?`, short of ${lc(ND[o.bott].n)}`:''}</span>`:''}`}else if(!id.startsWith('S:'))tip+=` · cover ${pct(Math.min(P[id].cover,9.99))} · PRC exposure ${pct(P[id].expo)}`;
+    const uw=S.projects.filter(q=>{const d=PD[q.def];return d&&(isL?d.t.line===id.slice(2):d.t.node===id)}),fresh=(S.moves||[]).some(m=>m.acts.some(a=>a.t==='prj'&&PD[a.id]&&(isL?PD[a.id].t.line===id.slice(2):PD[a.id].t.node===id)));
+    if(uw.length)tip+=`<br><span style="color:#9fd08a">▲ ${uw.length} program${uw.length>1?'s':''} under way${fresh?', one started this turn':''}: ${uw.slice(0,3).map(q=>projName(q)).join(', ')}${uw.length>3?'…':''}</span>`;
     svg+=`<g class="nd" data-id="${id}" ${act} data-tip="${tip.replace(' — ','<br>')}"><rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${p.h}" fill="${nodeCol(id)}" stroke="#2b241a" stroke-width=".5"/>`;
+    if(uw.length)svg+=`<path class="skuw${fresh?' fresh':''}" d="M${p.x-7},${p.y+Math.min(9,p.h/2+4)}l4,-7l4,7z"/>`;
     if(p.g>0.5){const o=R.out[id.slice(2)],cut=ghostFull[id]>ghost[id]*1.001,yb=p.y+p.h+p.g;
       svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"></rect>`;
       if(cut)svg+=`<path d="M${p.x-1},${yb-2} l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4 l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4" stroke="#efe6cf" stroke-width="3" fill="none"><title>Idle capacity, shortened to fit</title></path>`}
@@ -6487,9 +6497,41 @@ function trkChip(t,k){if(!t)return '';const c=k&&k.startsWith('L:')?k.slice(2):n
 // the 2035 outlook across all lines, as the race measures it (capped shares, averaged)
 function trkAll(){const cs=Object.keys(LINES),ts=cs.map(c=>trkOf('L:'+c));return {now:ts.reduce((a,t)=>a+t.now,0)/cs.length,end:ts.reduce((a,t)=>a+t.end,0)/cs.length}}
 // when the game is paused, compare with last time and say what moved: progress gets a notice and a marker for the next turn
+// ---- what you set in motion this turn: each move you make while the clock is stopped, with what it does down the chain:
+// the capacity it adds and when, and how much each weapon line's January 2035 outlook moves (compared before and after)
+function mvRec(prev,cur){if(!mOn())return;S.moves=S.moves||[];const A=S.acts||[];if(S._actN==null){S._actN=A.length;S._mvLog=S._logN||0;return}
+  const acts=A.slice(S._actN);S._actN=A.length;const d={};
+  for(const k in cur){const a=prev?.[k];if(!a)continue;const x=(cur[k].end-a.end)*100;if(Math.abs(x)>=.05)d[k.slice(2)]=x}
+  const why=mcauseOf(S._mvLog??0,true);S._mvLog=S._logN||0;
+  if(!acts.length&&!Object.keys(d).length)return;
+  // a change with no new action of yours (a lone recalculation) joins the move before it
+  if(!acts.length&&S.moves.length){const m=S.moves.at(-1);for(const c in d)m.d[c]=(m.d[c]||0)+d[c];return}
+  S.moves.push({w:S.w,acts,d,why:why||'Your decision'})}
+// a move's title and what it builds
+function mvTitle(m){const a=m.acts.find(x=>x.t==='prj')||m.acts[0];if(!a)return {t:m.why};
+  if(a.t==='prj'&&PD[a.id]){const d=PD[a.id],tgt=d.t.node?ND[d.t.node].n:LINES[d.t.line].n,pk=a.mode==='pkg';
+    const add=d.t.node?projGain(d)/Math.max(S.nodes[d.t.node].scale,1e-9):projGain(d)*LINES[d.t.line].k/Math.max(reqOut(d.t.line),1e-9);
+    const rw=readyW(d,needsContract(d)?(a.ct||ctDefault(d)):null,!pk);
+    return {t:d.n,sub:`${pk?'requested in the NDAA':d.ally?'allied deal':'started'} · ${lc(tgt)} ${d.t.node?`+${pct(add)} of today’s supply`:`+${fmtN(projGain(d)*LINES[d.t.line].k)} a year`} from ~${dateOf(rw).getFullYear()}`,n:d.t.node||'L:'+d.t.line}}
+  if(a.t==='ref'&&RD[a.id])return {t:rname(RD[a.id]),sub:'reform'};
+  if(a.t==='deal'){const D=ALLY_DEALS.find(x=>x.id===a.id);if(D)return {t:D.n,sub:`allied deal · ${lc(LINES[D.c].n)} +${fmtN(D.add)} a year`,n:'L:'+D.c}}
+  if(a.t==='ord'||a.t==='oreq')return {t:`Orders: ${LINES[a.c].n}`,sub:`+${fmtN(a.add)} a year, requested in the NDAA`,n:'L:'+a.c};
+  if(a.t==='rreq'&&RD[a.id])return {t:rname(RD[a.id]),sub:'reform requested in the NDAA'};
+  if(a.t==='nds'&&ND[a.id])return {t:`Stockpile buy: ${ND[a.id].n}`,sub:'requested in the NDAA',n:a.id};
+  if(a.t==='nshift'&&ND[a.id])return {t:`Supplier shifts: ${ND[a.id].n}`,sub:'+15% of US capacity within ~3 months',n:a.id};
+  if(a.t==='rule'&&RD2?.[a.id])return {t:RD2[a.id].n,sub:a.on?'executive action taken':'executive action ended'};
+  return {t:m.why}}
+function mvRows(moves,big){return moves.map(m=>{const T=mvTitle(m),ls=Object.entries(m.d).filter(([,x])=>Math.abs(x)>=.05).sort((a,b)=>b[1]-a[1]);
+  return `<div class="mvr"><div class="mvt"><b>${T.n?`<span class="linkn" data-a="node" data-n="${T.n}">${T.t}</span>`:T.t}</b>${T.sub?`<span>${T.sub}</span>`:''}</div>
+    <div class="mvd">${ls.length?ls.map(([c,x])=>`<span class="mvc ${x>0?'up':'dn'}" data-a="node" data-n="L:${c}">${x>0?'▲':'▼'} ${LINES[c].n} ${x>0?'+':'−'}${fmt(Math.abs(x),1)} pt</span>`).join(''):`<span class="mvc none">${m.acts.some(a=>a.t==='oreq')?'Counts once Congress funds it and the line has capacity to fill it':'No weapon line makes more by 2035 from this alone'}${T.n&&!T.n.startsWith('L:')?`: <span class="linkn" data-a="node" data-n="${T.n}">see why on its page</span>`:''}</span>`}</div></div>`}).join('')}
+function mvPanel(){const M=S.moves||[];if(!M.length||S.tut||S.w<PLAY0)return '';
+  const tot=Object.values(M.reduce((a,m)=>{for(const c in m.d)a[c]=(a[c]||0)+m.d[c];return a},{})).reduce((a,x)=>a+x,0)/Object.keys(LINES).length;
+  return `<div class="mvp"><div class="brh"><b>Set in motion this turn</b><span>${M.length} move${M.length>1?'s':''}${Math.abs(tot)>=.05?` · the 2035 outlook ${tot>0?'+':'−'}${fmt(Math.abs(tot),1)} pt`:''}</span><span class="linkn brhide" data-a="why" data-k="outlook">The 2035 outlook →</span></div>${mvRows(M)}</div>`}
+// a weapon line's gain from this turn's moves, as a badge by its name
+function mvBadge(c){const x=(S.moves||[]).reduce((a,m)=>a+(m.d[c]||0),0);return Math.abs(x)>=.1?`<span class="mvbadge ${x>0?'up':'dn'}" data-tip="${tipQ(`Your moves this turn change its January 2035 outlook by ${x>0?'+':'−'}${fmt(Math.abs(x),1)} points of its requirement.`)}">${x>0?'▲':'▼'} ${fmt(Math.abs(x),1)} pt this turn</span>`:''}
 function trkUpdate(){if(!S||S.sim||S.histMode||S.over||S.replay||S.w<PLAY0||S.speed>0||S.modal==='scenPick')return;
   const cs=Object.keys(LINES),cur={};for(const c of cs){const t=trkOf('L:'+c);cur['L:'+c]={s:t.s,end:t.end,w:t.w}}
-  const prev=S.trk;S.trk=cur;if(S.trk0==null)S.trk0=trkAll().end;if(!prev)return;
+  const prev=S.trk;S.trk=cur;if(S.trk0==null)S.trk0=trkAll().end;try{mvRec(prev,cur)}catch(e){console.error(e)}if(!prev)return;
   const nm=k=>LINES[k.slice(2)].n,up=[],dn=[];
   for(const k in cur){const a=prev[k],b=cur[k];if(!a)continue;const d=b.end-a.end;
     if(b.s==='met'&&a.s!=='met')up.push([k,`✓ <b>${nm(k)}</b>: enough is now made to meet the requirement.`]);
@@ -6866,7 +6908,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
   const enough=cs.filter(c=>suffLine(c,out[c].yr)>=.999).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=tbHTML()+scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Sufficiency</b><br>Line by line: (your output + ${A.n}) ÷ what the plan requires, capped at 100%, averaged. The requirement is the US targets plus the allies’ own, and it rises as ${RV().n}’s output grows. Rival figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of the requirement<br>you + <span class="linkn" data-a="view" data-v="allies" data-tip="What your allies build, and the deals that add more">allies</span></span></div>${S.w>=PLAY0&&!S.histMode?(()=>{const o=trkAll(),d=o.end-(S.trk0??o.end);const b=baseAt(),dn=b?(raceIdx(S._R?S._R.out:production(false).out)-b[1])*100:null;return `${dn!=null?`<span class="rc-out rc-dn" data-a="why" data-k="base" data-tip="${tipQ('<b>Your decisions</b><br>Against your game played again with the same luck and no decisions. Click for how.')}">Your decisions: <b class="${dn>=0?'':'neg'}">${dn>=0?'+':'−'}${fmt(Math.abs(dn),1)} pt</b> against doing nothing</span>`:''}<span class="rc-out" data-a="why" data-k="outlook" data-tip="${tipQ("<b>The January 2035 outlook</b><br>The same measure in January 2035, if every program under way lands on schedule and Congress orders what new capacity adds. It moves when you start programs, strike deals and pass reforms. Click for the calculation.")}">→ <b>${pct(o.end)}</b> by January 2035${Math.abs(d)>=.005?` <em class="${d<0?'neg':''}">${d>0?'+':'−'}${Math.round(Math.abs(d)*100)} pts since you took over</em>`:''}</span>`})():''}</div>
+  let h=mvPanel()+tbHTML()+scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Sufficiency</b><br>Line by line: (your output + ${A.n}) ÷ what the plan requires, capped at 100%, averaged. The requirement is the US targets plus the allies’ own, and it rises as ${RV().n}’s output grows. Rival figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of the requirement<br>you + <span class="linkn" data-a="view" data-v="allies" data-tip="What your allies build, and the deals that add more">allies</span></span></div>${S.w>=PLAY0&&!S.histMode?(()=>{const o=trkAll(),d=o.end-(S.trk0??o.end);const b=baseAt(),dn=b?(raceIdx(S._R?S._R.out:production(false).out)-b[1])*100:null;return `${dn!=null?`<span class="rc-out rc-dn" data-a="why" data-k="base" data-tip="${tipQ('<b>Your decisions</b><br>Against your game played again with the same luck and no decisions. Click for how.')}">Your decisions: <b class="${dn>=0?'':'neg'}">${dn>=0?'+':'−'}${fmt(Math.abs(dn),1)} pt</b> against doing nothing</span>`:''}<span class="rc-out" data-a="why" data-k="outlook" data-tip="${tipQ("<b>The January 2035 outlook</b><br>The same measure in January 2035, if every program under way lands on schedule and Congress orders what new capacity adds. It moves when you start programs, strike deals and pass reforms. Click for the calculation.")}">→ <b>${pct(o.end)}</b> by January 2035${Math.abs(d)>=.005?` <em class="${d<0?'neg':''}">${d>0?'+':'−'}${Math.round(Math.abs(d)*100)} pts since you took over</em>`:''}</span>`})():''}</div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
    <div ><b>${enough}/${cs.length}</b><span>lines sufficient</span></div>
    <div data-tip="Average growth in ${RV().n}'s output over the last year. As it grows, so does what the plan requires."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth · raises the bar</span></div>
@@ -6884,7 +6926,7 @@ h+=S.order.map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOut(c),
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
     const tk=trkOf('L:'+c),loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=tk.s==='met'?' style="box-shadow:inset 6px 0 0 #76b357;border-color:rgba(118,179,87,.55)"':tk.s==='track'||tk.s==='up'?` style="box-shadow:inset 6px 0 0 ${tk.s==='track'?'#4f8fd0':'#5f9fc0'};border-color:rgba(79,143,208,.5)"`:loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.04+.22*loss).toFixed(2)}),rgba(176,69,58,0) 70%),linear-gradient(180deg,#252922,#1d201a);border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
     const alTip=a?tipQ(`<b>${A.n}</b><br>${alMem().filter(m=>alMemOut(m,c)>0).map(m=>`${m.n} ${fmtN(alMemOut(m,c))}/yr`).join(' · ')}<br>${fmtN(a.out)}/yr in Jan 2027, ${fmtN(a.tgt)}/yr planned by 2030${a.est?' (estimate)':''}<br>${a.src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${dv>.005?`<br><span style='color:#e8a090'>−${pct(dv)}: your emergency buys outrun their suppliers’ spare capacity</span>`:''}${upOf('L:'+c).size&&[...upOf('L:'+c)].some(id=>allyGrowth(id)>.01)?`<br><span style='color:#a8d48e'>Their suppliers are expanding: up to ${pct(Math.max(...[...upOf('L:'+c)].map(allyGrowth)))} of the squeeze closed</span>`:''}`):'';
-    return `<div class="rc-rrow trc" id="rc-${c}" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b></span><span class="rc-gapw">${gap}${trkChip(tk,'L:'+c)}</span></div>
+    return `<div class="rc-rrow trc" id="rc-${c}" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${mvBadge(c)}</span><span class="rc-gapw">${gap}${trkChip(tk,'L:'+c)}</span></div>
       <div class="rc-rgrid"><div>
        <div class="rc-rb"><span>${F().flag} You + allies</span><div class="nb"><i style="width:${B(us)}%;background:#5f8fc4" data-tip="You: ${fmtN(us)}/yr"></i><i style="left:${B(us)}%;width:${B(al)}%;background:#86b04f" data-tip="${alTip}"></i>${st/mx>.002?`<i class="sc-starve" style="left:${B(us+al)}%;width:${B(st)}%" data-tip="${tipQ(idleTip(c,'st',st))}"></i>`:''}${un/mx>.002?`<i class="sc-unord" style="left:${B(us+al+st)}%;width:${B(un)}%" data-tip="${tipQ(idleTip(c,'un',un))}"></i>`:''}${up>.5?`<i class="rc-up" style="left:${B(us+al+st+un)}%;width:${B(up)}%" data-tip="${tipQ(`<b>Yours on order: +${fmtN(up)}/yr</b><br>Line capacity from plants under construction and plants still ramping up. Upstream limits can still hold it back.`)}"></i>`:''}<span class="mk rc-req" style="left:${B(rq).toFixed(1)}%" data-tip="Requirement: ${fmtN(rq)}/yr"></span></div><span class="v"><b>${fmtN(us)}</b> + <span data-tip="${alTip}" class="rc-al">${fmtN(al)}</span>${dv>.005?` <span class="red" data-tip="${alTip}">−${pct(dv)}</span>`:''} <span class="dim">/ ${fmtN(rq)}</span></span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
