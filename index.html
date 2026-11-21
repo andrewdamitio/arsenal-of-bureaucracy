@@ -1132,6 +1132,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .pvord{margin:8px 0 4px;padding:7px 10px;background:#f1ecf6;border:1px solid #cbbfdc;box-shadow:inset 3px 0 0 #7a5fb0;border-radius:2px;font:12.5px/1.45 "Segoe UI",system-ui,sans-serif;color:#2b241a}
 .pvordh{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#5a4590;margin-bottom:2px}.pvord p{margin:0 0 5px}
 .pvordr{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px;padding:4px 0;border-top:1px solid #ddd3ea}.pvordr>span:first-child{flex:1;min-width:240px}
+.pvih .pvzm{margin-left:auto;font:600 11.5px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none}.pvih{display:flex;align-items:baseline;gap:6px}
 </style>
 </head>
 <body>
@@ -2739,11 +2740,15 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   const W=330,H=110,Lm=40,Rm=8,T=8,Bm=20,x0=S.w,x1=END_W,X=t=>Lm+(W-Lm-Rm)*(t-x0)/Math.max(1,x1-x0);
   const OR=baseO?((live?baseO:altO).out[k]||[]):null,drawO=!!OR&&ts.some(t=>{const a=v(OR,t),b=v(withR,t);return a!=null&&b!=null&&a-b>Math.max(1e-9,Math.abs(b)*.02)});
   const vals=ts.flatMap(t=>[v(withR,t),v(woR,t),drawO?v(OR,t):null]).filter(x=>x!=null);
-  const need=ts.map(t=>{const r=at(withR,t);return r?r[5]/nrm:null});const top=Math.max(1e-9,...vals,...need.filter(x=>x!=null))*1.15,Y=y=>T+(H-T-Bm)*(1-Math.min(y,top)/top);
+  const need=ts.map(t=>{const r=at(withR,t);return r?r[5]/nrm:null}),nd=need.filter(x=>x!=null),mxV=Math.max(0,...vals),mxN=Math.max(0,...nd);
+  // when the output is a sliver of the requirement, zoom to the output (the requirement is then named, not drawn); the player can switch back
+  const canZm=mxV>0&&mxN>mxV*4,zm=canZm&&!UIP.pvFull;
+  const top=zm?mxV*1.25:Math.max(1e-9,...vals,...nd)*1.15,Y=y=>T+(H-T-Bm)*(1-Math.min(y,top)/top);
   const pth=rows=>ts.map((t,i)=>{const y=v(rows,t);return y==null?'':(i?'L':'M')+X(t).toFixed(1)+','+Y(y).toFixed(1)}).join('');
   let g=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(0)}" y2="${Y(0)}" stroke="#8a7850"/>`;for(let q=0;q<=2;q++){const y=top*q/2;g+=`<text x="${Lm-4}" y="${Y(y)+3}" text-anchor="end">${fmtN(y)}</text>`}
   for(let y=dateOf(S.w).getFullYear()+1;y<=END_Y;y+=2)g+=`<text x="${X(weekOf(y,0,1))}" y="${H-5}" text-anchor="middle">${y}</text>`;
-  g+=`<path d="${ts.map((t,i)=>{const r=at(withR,t);return r&&r[5]!=null?(i?'L':'M')+X(t).toFixed(1)+','+Y(r[5]/nrm).toFixed(1):''}).join('')}" fill="none" stroke="${CHC.req}" stroke-width="1.3" stroke-dasharray="6 4"/>`;
+  if(zm)g+=`<text x="${W-Rm}" y="${T+2}" text-anchor="end" fill="${CHC.req}" style="font-weight:600">↑ ${isL?'US requirement':'Defense need'} ${fmtN(Math.min(...nd))}–${fmtN(mxN)}, above the chart</text>`;
+  else g+=`<path d="${ts.map((t,i)=>{const r=at(withR,t);return r&&r[5]!=null?(i?'L':'M')+X(t).toFixed(1)+','+Y(r[5]/nrm).toFixed(1):''}).join('')}" fill="none" stroke="${CHC.req}" stroke-width="1.3" stroke-dasharray="6 4"/>`;
   g+=`<path d="${pth(withR)}" fill="none" stroke="${CHC.usL}" stroke-width="3"/><path d="${pth(woR)}" fill="none" stroke="${CHC.alt}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
   if(drawO)g+=`<path d="${pth(OR)}" fill="none" stroke="${CHC.ord}" stroke-width="2" stroke-dasharray="7 3"/>`;
   if(wOn<=END_W)g+=`<line x1="${X(wOn)}" x2="${X(wOn)}" y1="${T}" y2="${H-Bm}" stroke="${CHC.usL}" stroke-dasharray="2 2" opacity=".7"/>`;
@@ -2755,7 +2760,7 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   // lines where funded orders, not this capacity, would be the limit
   const ordLs=(()=>{if(!baseO||!S.ord)return [];const wO=live?baseO:altO,woO=live?altO:baseO,wT=live?base:alt,woT=live?alt:base,vv=(P,c)=>{const r=at(P.out['L:'+c]||[],ref);return r&&r[4]!=null?r[4]:0};
     return Object.keys(LINES).map(c=>{const X0=ordOf(c);if(!isFinite(X0))return null;const gO=vv(wO,c)-vv(woO,c),g=vv(wT,c)-vv(woT,c),Y0=vv(wO,c);return gO>0&&gO-g>LINES[c].k*.002?{c,gO,g:Math.max(0,g),Y0,X0}:null}).filter(Boolean).sort((a,b)=>(b.gO-b.g)/LINES[b.c].k-(a.gO-a.g)/LINES[a.c].k).slice(0,3)})();
-  return `<div class="pvimp"><div class="pvih">Against the status quo <span>${isL?LINES[k.slice(2)].n.toLowerCase()+' a year':lc(ND[k].n)+', '+im.unit}</span></div>
+  return `<div class="pvimp"><div class="pvih">Against the status quo <span>${isL?LINES[k.slice(2)].n.toLowerCase()+' a year':lc(ND[k].n)+', '+im.unit}</span>${canZm?`<span class="linkn pvzm" data-a="pvzoom" data-tip="${tipQ(zm?'Zoomed to the output so the change shows. Click to scale the chart to the requirement instead.':'Scaled to the requirement. Click to zoom to the output, so the change shows.')}">${zm?'⤢ Show the requirement':'⤡ Zoom to the output'}</span>`:''}</div>
     ${rsk?`<div class="pvc">Expected weeks lost to ${rsk.R.n} problems: ${rsk.rows.map(r=>`${projName(r.p)} <b>${Math.round(r.e0)}</b> → <b class="${r.on?'green':''}">${Math.round(r.e1)}</b>${r.on?'':' (finished too late to help it)'}`).join(' · ')}.</div>`:''}
     <svg class="pvisvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=ts.map(t=>{const r=at(withR,t);return {w:t,v:{A:v(withR,t),Z:v(woR,t),N:r&&r[5]!=null?r[5]/nrm:null,...(drawO?{O:v(OR,t)}:{})}}});CC[id]={W,H,Lm,Rm,T,B:Bm,x0,x1,top,rows,outK:'A',outN:rsk||live?'With this':'With this',mix:im?.mix,ke:im?.ke,keys:[['A','With this',CHC.usL],['Z',rsk||live?'Without it':'Status quo',CHC.alt,1],['N',isL?'US requirement':'Defense need',CHC.req,1],...(drawO?[['O','With this, if Congress orders it',CHC.ord,1]]:[])]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg>
     <div class="pvilg"><span><i style="background:${CHC.usL}"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Defense need'}</span>${drawO?`<span><i style="background:${CHC.ord}"></i>With this, if Congress orders it</span>`:''}</div>
@@ -3257,10 +3262,14 @@ const COM_ASK=30,COM_WALK=8,lcAll=n=>String(n).replace(/\b[A-Z][a-z]+\b/g,w=>w.t
 // weeks behind plan, counted from when the program was funded (the wait for the NDAA vote is not the program's delay)
 const fundWk=p=>p.cong?(p.h||[]).find(e=>e.funded)?.w??null:null;
 function behindOf(p,now=S.w){const f=fundWk(p),planDone=p.dur.slice(0,p.stage).reduce((a,b)=>a+b,0)+p.prog;return f!=null?(now-f)-(planDone-p.dur[0]):now-(p.started??now)-planDone}
+// the share of a weapon-line plant's new capacity that funded orders cover (orders requested but not yet funded count half); null for other plants
+function ordCover(def,gm=1){const c=def.t.line;if(!c||S.histMode||!S.ord||!isFinite(ordOf(c)))return null;const add=projGain(def,gm)*LINES[c].k;if(add<=1e-9)return null;
+  const rq=ordReqs().find(x=>x.c===c),head=ordOf(c)+(rq?rq.add*.5:0)-lineCap(c)*LINES[c].k;return clamp(head/add,0,1)}
 function comStart(def,ct){let c=65;if(ct?.k==='my')c+=15;else if(ct?.k==='cp')c+=5;else if(ct?.k==='fp')c-=5;
   if(passed('multiyear')&&['mun','msl'].includes(officeOf(def)))c+=10;
   if(passed('pricefloor')&&def.tags.includes('dumpable'))c+=10;
   if(ruleOn('rOSC')&&['greenfield','mine','smelter'].some(t=>def.tags.includes(t)))c+=5;
+  if((ordCover(def)??0)>=.75)c+=5;
   return clamp(c,20,100)}
 const comHas=p=>!!p&&needsContract(PD[p.def]);
 function comOf(p){if(!comHas(p))return null;if(p.com==null)p.com=p.com0=p.inh?75:comStart(PD[p.def],p.ct);return p.com}
@@ -3272,11 +3281,12 @@ function comTick(){if(S.histMode)return;
     else if(p.obs.length){const L=OD[p.obs[0].id].layer;comAdd(p,L==='MARKET'?-.5:-.25,L==='MARKET'?'No firm orders or prices to plan on':'Stalled: '+lcAll(LAYERS[L].n))}
     else{const behind=behindOf(p);
       if(behind>26&&!p.inh)comAdd(p,-.06,'Running late');else if(p.com<p.com0)comAdd(p,.08,'Steady progress')}
-    if(def.t.line&&S.lastOut?.[def.t.line]?.ordLim)comAdd(p,-.15,'Congress has not ordered what the lines can already make');
+    {const oc=ordCover(def,p.gm);if(oc!=null){if(oc<.25)comAdd(p,-.12,'No orders for what it will make');else if(oc>.75)comAdd(p,.06,'Orders waiting for its output')}}
     if(p.com<COM_WALK){cancelProject(p,'abandoned: the builder walked away');continue}
     if(p.com<COM_ASK&&!(p.comAsk>S.w-52)&&!S.queue.some(q=>q.ev==='builderOut')){p.comAsk=S.w;S._bo=p.uid;queueEvent('builderOut')}}}
 function comHTML(p){const c=comOf(p);if(c==null)return '';const by=Object.entries(p.comBy||{}).filter(x=>Math.abs(x[1])>=.5).sort((a,b)=>a[1]-b[1]),def=PD[p.def];
-  const tips=[!p.ct||p.ct.k!=='my'?'a multiyear order at award':'',!passed('multiyear')&&['mun','msl'].includes(officeOf(def))?'the Multiyear Orders reform':'',!passed('pricefloor')&&def.tags.includes('dumpable')?'Strategic Price Floors':'',p.obs.length?'clearing what it is stuck on':''].filter(Boolean);
+  const oc=ordCover(def,p.gm);
+  const tips=[oc!=null&&oc<.75?`funded orders for what it will make (now ${pct(oc)} covered; request them on the plant’s page or the NDAA tab)`:'',!p.ct||p.ct.k!=='my'?'a multiyear order at award':'',!passed('multiyear')&&['mun','msl'].includes(officeOf(def))?'the Multiyear Orders reform':'',!passed('pricefloor')&&def.tags.includes('dumpable')?'Strategic Price Floors':'',p.obs.length?'clearing what it is stuck on':''].filter(Boolean);
   return `<div class="dsec"><h4>Builder commitment</h4><div class="comrow"><div class="combar"><i style="width:${c}%;background:${c>=60?'#4f8a3e':c>=COM_ASK?'#c9982a':'#b8402f'}"></i><span style="left:${COM_ASK}%" data-tip="Below ${COM_ASK}: the builder asks for relief"></span><span style="left:${COM_WALK}%" data-tip="Below ${COM_WALK}: the builder walks away"></span></div><b class="${c>=60?'okt':c>=COM_ASK?'st-t-tight':'redt'}">${Math.round(c)} · ${comWord(c)}</b></div>
     <p class="mini" style="margin:4px 0">The builder puts its own money, people and plant space into this. Its commitment opened at ${Math.round(p.com0)} and moves with how the program goes. Below ${COM_ASK} it asks you for relief; below ${COM_WALK} it stops work and the program is lost.</p>
     ${by.length?`<div class="comby">${by.map(([k,v])=>`<span class="${v<0?'dn':'up'}">${v<0?'▼':'▲'} ${k} <b>${v<0?'−':'+'}${fmt(Math.abs(v),0)}</b></span>`).join('')}</div>`:'<div class="mini">Nothing has moved it yet.</div>'}
@@ -7291,6 +7301,7 @@ document.addEventListener('pointerdown',e=>{
     case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'qj':setTimeout(qjOpen,0);break;
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'pvzoom':UIP.pvFull=!UIP.pvFull;uiSave();S._vdirty=true;break;
     case 'brgo':S.view=b.dataset.v;S._vdirty=true;if(b.dataset.j)S._jump=b.dataset.j;if(b.dataset.s)S._scrollTo=b.dataset.s;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'brno':(S.briefNo=S.briefNo||{})[b.dataset.k]=S.w;S._vdirty=true;break;
     case 'brtog':UIP.nobrief=!UIP.nobrief;uiSave();S._vdirty=true;break;
