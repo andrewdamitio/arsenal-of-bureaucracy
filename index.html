@@ -6075,7 +6075,7 @@ function obsBlock(od,inst,action,uid,extra=''){
   if(inst.wait>0)h+=`<div class="waiting">${inst.label} — <b>${inst.wait}</b> wk remaining${inst.after==='cancel'?' <span class="red">(project will be mothballed)</span>':''}</div><div class="prog" style="margin:5px 0 0"><i style="width:${(1-inst.wait/inst.total)*100}%;background:${LAYERS[od.layer].c}"></i></div>`;
   else{const dk=defOpt(od);
     if(dk>=0&&!TURN())h+=dTimer(inst.due,V(od.o[dk].l));
-    h+=`<div class="ochoose">Choose how to get past it. Each way trades time against Political Capital, money and risk.${dk>=0&&!TURN()?' If you do nothing, the outlined choice happens when the timer runs out.':TURN()?' The turn waits for your choice.':''}</div><div class="opts">${od.o.map((o,k)=>`<button class="btn opt ${k===dk?'dflt':''}" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'}><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span><span class="ox">${optExplain(od,o)}</span></button>`).join('')}</div>`;}
+    h+=`<div class="ochoose">Choose how to get past it. Each way trades time against Political Capital, money and risk.${dk>=0&&!TURN()?' If you do nothing, the outlined choice happens when the timer runs out.':TURN()?' The turn waits for your choice.':''}</div><div class="opts">${od.o.map((o,k)=>`<button class="btn opt ${k===dk&&!TURN()?'dflt':''}" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'}><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span><span class="ox">${optExplain(od,o)}</span></button>`).join('')}</div>`;}
   return h+more+`</div>`;
 }
 function spark(t){
