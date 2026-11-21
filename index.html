@@ -1215,6 +1215,9 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .mvrep .mvr{border-top:1px dotted #e0d4b4}.mvrep .mvt b{color:#231d14}.mvrep .mvt>span,.mvrep .mvc.none{color:#6b5a35}.mvrep .mvc.up{background:#e3edd6;color:#2f5a24;border-color:#b9cf9e}.mvrep .mvc.dn{background:#f3d9c8;color:#7a2a1c;border-color:#d9a58c}.mvrep{margin:10px 0}
 .mvbadge{margin-left:8px;font:600 10.5px "Segoe UI",system-ui,sans-serif;padding:1px 6px;border-radius:3px;vertical-align:2px}.mvbadge.up{background:#2f4a26;color:#b8e0a0;border:1px solid #4f7a40}.mvbadge.dn{background:#4a2620;color:#f0b0a0;border:1px solid #7a4038}
 .sk .skuw{fill:#4f8a3e;stroke:#efe6cf;stroke-width:1}.sk .skuw.fresh{fill:#c9a227}
+.stjump{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:8px;padding-top:6px;border-top:1px dotted #d6c79f;font:600 12px "Segoe UI",system-ui,sans-serif}
+.dsec.pgsel{box-shadow:inset 4px 0 0 #b8860b;padding-left:10px}tr.dksel>td{background:#f6e7b8!important}tr.dksel>td:first-child{box-shadow:inset 4px 0 0 #b8860b}tr.jumpto>td{animation:jmprow 2.2s ease-out both}
+.pgback{margin-left:12px;font:600 11.5px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none}
 </style>
 </head>
 <body>
@@ -3471,7 +3474,7 @@ function progDocket(p,live){const def=PD[p.def],h=p.h||[],stEv=h.filter(e=>e.st!
     const sub=[...(st==='permit'&&rr?[`<div class="dks"><span>Review route</span><b class="${rr.cls}">${rr.n}</b><em>${rr.d}</em></div>`]:[]),
       ...mine.map(o=>`<div class="dks ${o.open?'open':''}"><span>${o.open?'⛔':'↳'} ${V(OD[o.id].n)}</span><b>${fmtDate(o.w0)} · ${Math.max(0,Math.round(o.w1-o.w0))} wk${o.open?' and counting':''}</b>${o.how?`<em>${o.how}</em>`:''}</div>`),
       ...(st==='build'&&p.xf?[`<div class="dks"><span>⚡ Large power transformer</span><b>${p.xf.res?'from the reserve':'ordered '+fmtDate(p.xf.ord)} · ${S.w>=p.xf.due?'delivered':'due '+fmtDate(p.xf.due)}</b></div>`]:[])].join('');
-    return `<tr class="${done?'dkd':cur?'dkc':'dkf'}"><td>${k+1}</td><td><b>${STEP_N[st]}</b><div class="mini">${office[st]}</div>${sub}</td><td>${s0==null?'—':done||cur?fmtDate(s0):'not before '+fmtDate(s0)}</td><td class="num">${pl}</td><td class="num">${act==null?'—':Math.round(act)+(cur?'…':'')}</td><td class="num">${over>0.5?`<span class="redt">+${Math.round(over)}</span>`:act!=null&&done&&over<-0.5?`<span class="okt">−${Math.round(-over)}</span>`:''}</td></tr>`}).join('');
+    return `<tr id="dk-${p.uid}-${i}" class="${done?'dkd':cur?'dkc':'dkf'}${pstSel(p,live)===i?' dksel':''}"><td>${k+1}</td><td><b>${STEP_N[st]}</b><div class="mini">${office[st]}</div>${sub}</td><td>${s0==null?'—':done||cur?fmtDate(s0):'not before '+fmtDate(s0)}</td><td class="num">${pl}</td><td class="num">${act==null?'—':Math.round(act)+(cur?'…':'')}</td><td class="num">${over>0.5?`<span class="redt">+${Math.round(over)}</span>`:act!=null&&done&&over<-0.5?`<span class="okt">−${Math.round(-over)}</span>`:''}</td></tr>`}).join('');
   const lost=Object.entries(p.lost||{}).filter(x=>x[1]>.5).sort((a,b)=>b[1]-a[1]),g=p.pledge;
   return `<table class="ctable dkt"><tr><th></th><th>Step</th><th>Start</th><th class="num">Plan wk</th><th class="num">Actual wk</th><th class="num">Against plan</th></tr>${rows}
     <tr class="dktot"><td></td><td><b>${live?'So far':'Total'}</b>${lost.length?`<div class="mini">Weeks lost, by cause: ${lost.map(([k,v])=>`${lcAll(LAYERS[k]?.n||k)} ${Math.round(v)}`).join(' · ')}</div>`:''}${g?`<div class="mini">🤝 Pledged to the committees: under construction by ${fmtDate(g.due)}${g.done?` · <span class="${g.done==='kept'?'okt':'redt'}">${g.done}</span>`:''}</div>`:''}</td><td>${live?'expected '+fmtDate(S.w+remW(p)):endW!=null?fmtDate(endW):''}</td><td class="num">${planT}</td><td class="num">${Math.round(actT)}</td><td></td></tr></table>`}
@@ -4627,6 +4630,7 @@ const MILE_TIP={'Funding approved and obligated':'Congress has appropriated the 
 const stageTip=st=>tipQ(`<b>${STAGE_L[st]}</b><br>${STAGE_WHY[st]}`);
 // ---- one stage of a program, opened from its box: how it went against plan, who handles it, the problems it hit and how they
 // were cleared, how its planned length was set, the policies that apply to it, and what can still go wrong in it
+const pstSel=(p,live)=>(S.pstage||{})[p.uid]??(live?p.stage:null);
 function stageDetail(p,live,i){const def=PD[p.def],st=STAGES[i],h=p.h||[],pl=p.dur[i]||0,base=def.dur?.[i]||0;
   const stEv=h.filter(e=>e.st!=null),startOf=j=>j===0?(p.started??null):(stEv.find(e=>e.st===j)?.w??null),endW=live?null:(h.find(e=>e.done||e.gone)?.w??p.w??S.w);
   const nextStart=j=>{for(let k=j+1;k<STAGES.length;k++){const w=startOf(k);if(w!=null)return w}return endW};
@@ -4654,7 +4658,8 @@ function stageDetail(p,live,i){const def=PD[p.def],st=STAGES[i],h=p.h||[],pl=p.d
     <div class="stdg"><div><span class="trlab">Who handles it</span><p>${office}</p>${planLine?`<span class="trlab">How the plan was set</span><p>${planLine}</p>`:''}${extra?`<p class="mini">${extra}</p>`:''}</div>
      <div><span class="trlab">What happened</span>${obs.length?obs.map(o=>`<div class="dks ${o.open?'open':''}"><span>${o.open?'⛔':'↳'} ${V(OD[o.id].n)}</span><b>${fmtDate(o.w0)} · ${Math.max(0,Math.round(o.w1-o.w0))} wk${o.open?' and counting':''}</b>${o.how?`<em>${o.how}</em>`:''}</div>`).join(''):`<p class="mini">${done?'No problems: it ran on its own schedule.':cur?'No problems so far.':'Not reached yet.'}</p>`}
       ${risk.length?`<span class="trlab">What can still go wrong here</span>${risk.map(([o,c])=>`<div class="dks"><span>${V(o.n)}</span><b>${pct(Math.min(1,c))} odds</b><em>${LAYERS[o.layer].n}</em></div>`).join('')}`:''}</div></div>
-    ${pol.length?`<span class="trlab">Policies that apply to this stage</span><div class="qlvs">${pol.join('')}</div>`:''}</div>`}
+    ${pol.length?`<span class="trlab">Policies that apply to this stage</span><div class="qlvs">${pol.join('')}</div>`:''}
+    <div class="stjump"><span class="linkn" data-a="ovjump" data-s="#dk-${p.uid}-${i}">This stage in the docket ↓</span>${st==='permit'&&permitsFor(def,'b').length?`<span class="linkn" data-a="ovjump" data-s="#pg-permit">Every permit, with its agency and dates ↓</span>`:''}${st==='qual'&&live&&p.stage<=4&&!def.ally?`<span class="linkn" data-a="ovjump" data-s="#pg-qual">Qualification: odds, test ranges and the policies that shorten it ↓</span>`:''}</div></div>`}
 function progStages(p,live){const def=PD[p.def],stEv=(p.h||[]).filter(e=>e.st!=null),startOf=i=>i===0?(p.started??null):(stEv.find(e=>e.st===i)?.w??null);
   const endW=live?null:((p.h||[]).find(e=>e.done||e.gone)?.w??p.w??S.w);
   const nextStart=i=>{for(let j=i+1;j<STAGES.length;j++){const w=startOf(j);if(w!=null)return w}return endW};
@@ -4680,7 +4685,7 @@ function qualBox(p,live){const def=PD[p.def];if(!p.dur[4]||def.ally)return '';co
   if(def.t.node)lever(!!(S.nflags[def.t.node]||{}).test,'Test ranges at this plant (its page)','problems half as likely here');
   lever(carveOn('cvQual'),'Emergency qualification authority (Policy tab)','waits 40% shorter while it lasts; more quality escapes');
   const rg=poolState().ranges;
-  return `<div class="dsec"><h4>Qualification</h4><p class="mini" style="margin:0 0 6px">Before a new line's output can go into weapons, the service that buys it has to certify it. The plant makes test lots; they are fired, flown or inspected against the specification, and for propellants and explosives aged and safety-tested too. Then every production lot is sampled before it ships. Test ranges are shared, so programs queue for them.</p>
+  return `<div class="dsec${pstSel(p,live)===4?' pgsel':''}" id="pg-qual"><h4>Qualification <span class="linkn pgback" data-a="ovjump" data-s="#ov .psteps">↑ Back to the stages</span></h4><p class="mini" style="margin:0 0 6px">Before a new line's output can go into weapons, the service that buys it has to certify it. The plant makes test lots; they are fired, flown or inspected against the specification, and for propellants and explosives aged and safety-tested too. Then every production lot is sampled before it ships. Test ranges are shared, so programs queue for them.</p>
    <div class="qlst"><div><b>${p.dur[4]} wk</b><span>planned qualification${st==='qual'?`, week ${Math.floor(p.prog)} now`:''}</span></div><div><b>${odds.length?pct(1-odds.reduce((a,x)=>a*(1-x[1]),1)):'Low'}</b><span>odds of a qualification problem</span></div><div data-tip="${tipQ(`<b>Shared test ranges</b><br>Every program in qualification needs time at the same ranges. They have room for about ${fmt(rg.cap,0)} at once; with more than that, every test in the queue slows down. ${rg.d} program${rg.d===1?' is':'s are'} testing now.`)}"><b>${rg.d} of ${fmt(rg.cap,0)}</b><span>places at the shared test ranges taken now${rg.d>=rg.cap?': full, so tests slow down':''}</span></div></div>
    ${odds.length?`<div class="mini" style="margin:4px 0">Problems it may hit: ${odds.map(([o,c])=>`${V(o.n)} (${pct(c)})`).join(' · ')}</div>`:''}
    <div class="qlvs">${rows.join('')}</div></div>`}
@@ -4694,9 +4699,9 @@ function progHTML(uid){
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}${live&&STAGE_WHY[STAGES[Math.min(p.stage,5)]]?`<div class="pwhy">${STAGE_WHY[STAGES[Math.min(p.stage,5)]]}</div>`:''}</div>
    <div class="dsec"><h4>Progress</h4>${progStages(p,live)}</div>
    <!--WILL-->
-   ${qualBox(p,live)}${live?comHTML(p):''}<div class="dsec"><h4>Docket <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· every step, who handles it, and planned against actual weeks</span></h4>${progDocket(p,live)}</div>
+   ${qualBox(p,live)}${live?comHTML(p):''}<div class="dsec" id="pg-docket"><h4>Docket <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">· every step, who handles it, and planned against actual weeks</span></h4>${progDocket(p,live)}</div>
    <div class="dsec"><h4>Plan vs. actual</h4>${progGantt(p,live)}</div>
-   <div class="dsec"><h4>Permits <span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
+   <div class="dsec${pstSel(p,live)===2?' pgsel':''}" id="pg-permit"><h4>Permits <span class="linkn pgback" data-a="ovjump" data-s="#ov .psteps">↑ Back to the stages</span><span class="linkn" data-a="pmgo" style="float:right;text-transform:none;letter-spacing:0;font-weight:400">📋 All permits →</span></h4>${permitDocket(p,live,pl)}</div>`;
   if(live&&ucaOK(p)){const rem=Math.round(p.dur[1]-p.prog);h=h.replace('<div class="dsec"><h4>Plan vs. actual</h4>',`<div class="dsec"><h4>Speed up contracting</h4><div class="ucab"><div><b>⚡ Undefinitized contract action</b><div class="mini">Let the contractor start now and settle the price later, as the Army did to replenish GMLRS and NASAMS. Contracting ends in about 4 weeks instead of ${rem}. Until the price is set the government carries the cost risk: the DoD Inspector General found $1.2 billion in profit never adjusted down.[c:ucaig]</div><div class="mini" style="margin-top:3px">Costs 10% of the price now, with a 1-in-4 chance of a cost overrun when construction starts.</div></div><button class="pbtn primary" data-a="uca" data-u="${p.uid}">Issue · ${money(ucaCost(p))}</button></div></div>`+'<div class="dsec"><h4>Plan vs. actual</h4>')}
   if(live&&p.obs.length){const o=p.obs[0];h=h.replace('<div class="dsec"><h4>Plan vs. actual</h4>',`<div class="dsec stucksec${o.wait?'':' due'}" id="stuck"><h4>Why it's stuck${o.wait?'':' <span class="stuckdue">your decision</span>'}</h4>${obsBlock(OD[o.id],o,'opt',p.uid)}${p.obs.length>1?`<p class="mini">${p.obs.length-1} more waiting behind it: ${p.obs.slice(1).map(x=>V(OD[x.id].n)).join(', ')}</p>`:''}</div>`+'<div class="dsec"><h4>Plan vs. actual</h4>')}
   else if(live&&p.qf<1){const st=poolState()[p.qk];h+=`<div class="dsec"><h4>Why it's slow</h4><p>${POOLS[p.qk].ic} <b>${POOLS[p.qk].n}</b>: ${st.d} projects in ${STAGE_L[POOLS[p.qk].stage].toLowerCase()} want room for ${fmt(st.cap,1)}. Everyone in the queue moves at ×${fmt(st.f,2)}.</p></div>`}
@@ -7587,7 +7592,7 @@ function renderModal(){
   ov.dataset.stk=stk?'1':'';
   CHctx='v';markOff(ov);
   if(html&&closable()){const pp=ov.querySelector('.ov2 .paper')||ov.querySelector('.paper');if(pp){const r=pp.getBoundingClientRect(),x=document.createElement('button');x.className='xclose';x.dataset.a=stk?'ctback':'close';x.title='Close (Esc)';x.textContent='✕';x.style.top=(r.top+7)+'px';x.style.left=(r.right-41)+'px';ov.appendChild(x)}}
-  if(S._ovScroll){ov.querySelector(S._ovScroll)?.scrollIntoView({block:'start'});S._ovScroll=null}
+  if(S._ovScroll){const el=ov.querySelector(S._ovScroll);if(el){el.scrollIntoView({block:/^#dk-/.test(S._ovScroll)?'center':'start'});el.classList.remove('jumpto');void el.offsetWidth;el.classList.add('jumpto')}S._ovScroll=null}
   // a program page that opens with a decision waiting goes straight to it
   if(S.modal==='prog'&&!sameK&&!stk){const el=ov.querySelector('#stuck.due');if(el){el.scrollIntoView({block:'center'});el.classList.add('jumpto')}}
   if(S.modal==='node'){const on=document.querySelector('#ov .dsbi.on');if(on&&S._dsbSel!==S.sel){on.scrollIntoView({block:'nearest'});S._dsbSel=S.sel}}else S._dsbSel=null;
