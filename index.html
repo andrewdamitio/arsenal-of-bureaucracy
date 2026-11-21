@@ -1183,6 +1183,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .sbtest{margin-top:6px}
 tr.jumpto>td{animation:jmprow 2.2s ease-out both}@keyframes jmprow{0%,35%{background:#f6e2a6}100%{background:transparent}}
 tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 4px 0 0 #b8860b}
+.pvilg i.cw{height:0;border-top:2px dotted #2f62a0}.pvilg i.cwo{height:0;border-top:2px dotted #9a968a}
 </style>
 </head>
 <body>
@@ -2732,6 +2733,17 @@ function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def?alt.de
   const res={w:S.w,n:S.projects.length,u:uidN,out};if(alt)S._cpjX.m[key]=res;else S._cpj=res;return res}
 // what a program does against the status quo: this item's supply over time, and each end item's output
 // why a program adds nothing by 2035: the item's own lowest ceiling, or what limits its end items first
+// why an option adds nothing by 2035, read from the projection at January 2035: too late, already covered, or which ceiling binds
+function impWhy2(def,k,isL,withR,woR,wOn,nrm,im){if(wOn>END_W)return 'it would not be ready before January 2035';
+  const a=withR.at(-1),b=woR.at(-1);if(!a||!b)return impWhy(def,k,isL,withR);
+  if(isL){const F=a[1],L=a[2],M=a[3],O=a[4],D=a[6],lim=x=>x!=null&&O>=x*.99&&x<F*.98;
+    if(lim(D))return 'Congress has not ordered more than the line could already make';
+    if(lim(M))return 'the line runs short of its parts first, so the new capacity would sit idle'+(()=>{const o=(S._R||production(false)).out[def.t.line];return o?.bott?` (today: ${lc(ND[o.chain.at(-1)||o.bott].n)})`:''})();
+    if(lim(L))return 'there would not be enough workers to staff it';
+    return impWhy(def,k,isL,withR)}
+  const N=b[5],T=b[8],u=im?.unit.replace(/ supplied a year$/,'')||'';
+  if(N!=null&&T!=null&&T>=N*.99){const short=((S._R||production(false)).P[k]?.cover??1)<.995;return `${short?'by then the programs under way close the gap':'it is not short'}: your lines ${short?'will':'already'} get all they can use of it (enough for ${fmtN(N/nrm)} ${u} a year), so the extra capacity would sit idle until the lines themselves grow`}
+  return impWhy(def,k,isL,withR)}
 function impWhy(def,k,isL,withR){const R=S._R||production(false),last=withR.at(-1);
   if(isL){const o=R.out[def.t.line];if(o?.bott)return 'the line is held back first by '+lc(ND[o.chain.at(-1)].n)+(o.chain.length>1?' (short of '+lc(ND[o.chain[0]].n)+')':'');if(o?.ordLim)return 'Congress has not ordered more than the line can already make';if(o&&o.labF<.98)return 'there are not enough workers to staff it'}
   if(!isL&&last){const c=[[1,'F'],[2,'L'],[3,'M']].filter(([i])=>last[i]!=null).sort((a,b)=>last[a[0]]-last[b[0]])[0];if(c&&c[1]==='L')return 'there are not enough workers to staff it by 2035';
@@ -2790,7 +2802,8 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   const ts=withR.map(r=>r[0]),v=(rows,t)=>{const r=at(rows,t);const x=r?r[col]:null;return x==null?null:x/nrm};
   const W=330,H=110,Lm=40,Rm=8,T=8,Bm=20,x0=S.w,x1=END_W,X=t=>Lm+(W-Lm-Rm)*(t-x0)/Math.max(1,x1-x0);
   const OR=baseO?((live?baseO:altO).out[k]||[]):null,drawO=!!OR&&ts.some(t=>{const a=v(OR,t),b=v(withR,t);return a!=null&&b!=null&&a-b>Math.max(1e-9,Math.abs(b)*.02)});
-  const vals=ts.flatMap(t=>[v(withR,t),v(woR,t),drawO?v(OR,t):null]).filter(x=>x!=null);
+  const vc=(rows,t)=>{const r=at(rows,t);const x=r?r[1]:null;return x==null?null:x/nrm},drawC=!rsk&&ts.some(t=>{const a=vc(withR,t),b=vc(woR,t);return a!=null&&b!=null&&a-b>Math.max(1e-9,Math.abs(b)*.02)});
+  const vals=ts.flatMap(t=>[v(withR,t),v(woR,t),drawO?v(OR,t):null,drawC?vc(withR,t):null,drawC?vc(woR,t):null]).filter(x=>x!=null);
   const need=ts.map(t=>{const r=at(withR,t);return r?r[5]/nrm:null}),nd=need.filter(x=>x!=null),mxV=Math.max(0,...vals),mxN=Math.max(0,...nd);
   // when the output is a sliver of the requirement, zoom to the output (the requirement is then named, not drawn); the player can switch back
   const canZm=mxV>0&&mxN>mxV*4,zm=canZm&&!UIP.pvFull;
@@ -2802,6 +2815,7 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   else g+=`<path d="${ts.map((t,i)=>{const r=at(withR,t);return r&&r[5]!=null?(i?'L':'M')+X(t).toFixed(1)+','+Y(r[5]/nrm).toFixed(1):''}).join('')}" fill="none" stroke="${CHC.req}" stroke-width="1.3" stroke-dasharray="6 4"/>`;
   g+=`<path d="${pth(withR)}" fill="none" stroke="${CHC.usL}" stroke-width="3"/><path d="${pth(woR)}" fill="none" stroke="${CHC.alt}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
   if(drawO)g+=`<path d="${pth(OR)}" fill="none" stroke="${CHC.ord}" stroke-width="2" stroke-dasharray="7 3"/>`;
+  if(drawC){const pc=rows=>ts.map((t,i)=>{const y=vc(rows,t);return y==null?'':(i?'L':'M')+X(t).toFixed(1)+','+Y(y).toFixed(1)}).join('');g+=`<path d="${pc(woR)}" fill="none" stroke="${CHC.alt}" stroke-width="1.2" stroke-dasharray="1 3"/><path d="${pc(withR)}" fill="none" stroke="${CHC.us}" stroke-width="1.6" stroke-dasharray="1 3"/>`}
   if(wOn<=END_W)g+=`<line x1="${X(wOn)}" x2="${X(wOn)}" y1="${T}" y2="${H-Bm}" stroke="${CHC.usL}" stroke-dasharray="2 2" opacity=".7"/>`;
   // end items: output a year at a reference year, and the total through 2035
   const ref=Math.min(END_W,Math.max(wOn+52,weekOf(2030,0,1))),refY=dateOf(ref).getFullYear();
@@ -2813,9 +2827,9 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
     return Object.keys(LINES).map(c=>{const X0=ordOf(c);if(!isFinite(X0))return null;const gO=vv(wO,c)-vv(woO,c),g=vv(wT,c)-vv(woT,c),Y0=vv(wO,c);return gO>0&&gO-g>LINES[c].k*.002?{c,gO,g:Math.max(0,g),Y0,X0}:null}).filter(Boolean).sort((a,b)=>(b.gO-b.g)/LINES[b.c].k-(a.gO-a.g)/LINES[a.c].k).slice(0,3)})();
   return `<div class="pvimp"><div class="pvih">Against the status quo <span>${isL?LINES[k.slice(2)].n.toLowerCase()+' a year':lc(ND[k].n)+', '+im.unit}</span>${canZm?`<span class="linkn pvzm" data-a="pvzoom" data-tip="${tipQ(zm?'Zoomed to the output so the change shows. Click to scale the chart to the requirement instead.':'Scaled to the requirement. Click to zoom to the output, so the change shows.')}">${zm?'⤢ Show the requirement':'⤡ Zoom to the output'}</span>`:''}</div>
     ${rsk?`<div class="pvc">Expected weeks lost to ${rsk.R.n} problems: ${rsk.rows.map(r=>`${projName(r.p)} <b>${Math.round(r.e0)}</b> → <b class="${r.on?'green':''}">${Math.round(r.e1)}</b>${r.on?'':' (finished too late to help it)'}`).join(' · ')}.</div>`:''}
-    <svg class="pvisvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=ts.map(t=>{const r=at(withR,t);return {w:t,v:{A:v(withR,t),Z:v(woR,t),N:r&&r[5]!=null?r[5]/nrm:null,...(drawO?{O:v(OR,t)}:{})}}});CC[id]={W,H,Lm,Rm,T,B:Bm,x0,x1,top,rows,outK:'A',outN:rsk||live?'With this':'With this',mix:im?.mix,ke:im?.ke,keys:[['A','With this',CHC.usL],['Z',rsk||live?'Without it':'Status quo',CHC.alt,1],['N',isL?'US requirement':'Demand from your lines',CHC.req,1],...(drawO?[['O','With this, if Congress orders it',CHC.ord,1]]:[])]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg>
-    <div class="pvilg"><span><i style="background:${CHC.usL}"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Demand from your lines'}</span>${drawO?`<span><i style="background:${CHC.ord}"></i>With this, if Congress orders it</span>`:''}</div>
-    ${(()=>{const tb=eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):'';return tb||(ordLs.length?`<div class="pvc">No end item makes more by 2035 with today’s orders: Congress has not ordered what the new capacity could make (below).</div>`:`<div class="pvc">No end item makes more by 2035: ${impWhy(def,k,isL,withR)}.</div>`)})()}
+    <svg class="pvisvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=ts.map(t=>{const r=at(withR,t);return {w:t,v:{A:v(withR,t),Z:v(woR,t),N:r&&r[5]!=null?r[5]/nrm:null,...(drawO?{O:v(OR,t)}:{}),...(drawC?{C:vc(withR,t),K:vc(woR,t)}:{})}}});CC[id]={W,H,Lm,Rm,T,B:Bm,x0,x1,top,rows,outK:'A',outN:rsk||live?'With this':'With this',mix:im?.mix,ke:im?.ke,keys:[['A','With this',CHC.usL],['Z',rsk||live?'Without it':'Status quo',CHC.alt,1],['N',isL?'US requirement':'Demand from your lines',CHC.req,1],...(drawO?[['O','With this, if Congress orders it',CHC.ord,1]]:[]),...(drawC?[['C','Capacity with this',CHC.us,1],['K','Capacity without',CHC.alt,1]]:[])]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg>
+    <div class="pvilg"><span><i style="background:${CHC.usL}"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Demand from your lines'}</span>${drawO?`<span><i style="background:${CHC.ord}"></i>With this, if Congress orders it</span>`:''}${drawC?`<span><i class="cw"></i>Capacity with this</span><span><i class="cwo"></i>Capacity without</span>`:''}</div>
+    ${(()=>{const tb=eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):'';return tb||(ordLs.length?`<div class="pvc">No end item makes more by 2035 with today’s orders: Congress has not ordered what the new capacity could make (below).</div>`:`<div class="pvc">No end item makes more by 2035: ${impWhy2(def,k,isL,withR,woR,wOn,nrm,im)}.</div>`)})()}
     ${(()=>{const ls=ordLs;if(!ls.length)return '';
       return `<div class="pvord"><div class="pvordh">Funded orders hold it back</div><p>A line makes only what Congress has ordered. ${live?'This program':'This plant'} adds capacity, but without more orders ${ls.every(x=>x.g<LINES[x.c].k*.002)?'it would sit idle':'much of it would sit idle'}.</p>${ls.map(x=>{const st=ordStep(x.c),add=Math.max(st,Math.ceil((x.Y0-x.X0)/st)*st),rq=ordReqs().find(q=>q.c===x.c),u=LINES[x.c].u;
         return `<div class="pvordr"><span><b>${LINES[x.c].n}</b>: +${fmtN(x.gO)} ${u} a year by ${refY} if Congress orders it, ${x.g>=LINES[x.c].k*.002?`+${fmtN(x.g)} with today’s orders`:'none with today’s orders'}. Ordered now: ${fmtN(x.X0)} a year.</span>${rq?`<span class="okt">✓ +${fmtN(rq.add)} a year requested in the FY${FYOF(rq.pkg)} NDAA</span>`:x.Y0>x.X0?`<button class="pbtn sm primary" data-a="ordadd" data-c="${x.c}" data-v="${add}" ${S.pc>=ordPC(x.c,add)?'':'disabled'} data-tip="${tipQ(`<b>Request orders in the FY${pkgFY()} NDAA</b><br>+${fmtN(add)} ${u} a year, about ${money(add*UC[x.c])} a year, paid by Congress if it funds them (vote ~${fmtDate(pkgWhen())}). The line makes what it can of them until the new capacity lands.`)}">Request +${fmtN(add)} a year · ${ordPC(x.c,add)} PC</button>`:''}</div>`}).join('')}</div>`})()}
