@@ -1189,6 +1189,17 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .bngrid>div:nth-child(3) .bnc.nsh{display:block}.bnc.nsh .nshd{margin:2px 0 0 2px;white-space:normal!important;text-align:left!important;color:#6b5a35}
 .bnc.nsh.on{padding:6px 8px;background:#e8f0dc;border:1px solid #b9cf9e;border-radius:4px;box-shadow:inset 3px 0 0 #4f8a3e}.nshon{font:600 13px "Segoe UI",system-ui,sans-serif;color:#2f5a24}.bnc.nsh.on .nshstop{float:right;width:auto!important;padding:1px 10px}
 .nshstrip{margin:0 0 8px;padding:6px 10px;background:#e8f0dc;border:1px solid #b9cf9e;border-radius:3px;box-shadow:inset 3px 0 0 #4f8a3e;font:12.5px "Segoe UI",system-ui,sans-serif;color:#2b241a}
+.mpc{margin-top:10px}.mph5{margin:10px 0 4px;font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35}
+.mprow{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr 92px;gap:8px;align-items:center;padding:3px 0;font:12.5px "Segoe UI",system-ui,sans-serif;color:#2b241a}.mprow>b{text-align:right;font-weight:600}
+.mpbar{position:relative;height:9px;background:#efe6cf;border-left:1px solid #b9a77c}.mpbar i{position:absolute;left:0;top:0;bottom:0}.mpbar i.g{background:#6a9a52}.mpbar i.b{background:#c0574a}
+.mpnet{margin-top:6px;padding-top:5px;border-top:1px solid #e0d4b4;font:12.5px "Segoe UI",system-ui,sans-serif}
+.mpled>div{display:grid;grid-template-columns:86px 56px 1fr;gap:6px;padding:2px 0;font:12px/1.4 "Segoe UI",system-ui,sans-serif;color:#2b241a;border-bottom:1px dotted #e0d4b4}.mpled .mpw{color:#7a6a48}.mpled b{text-align:right}
+.mpdo{margin:4px 0;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif;color:#2b241a}.mpdo b{color:#231d14}.mplv{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.mpg{margin:10px 0 4px}.mpgt{position:relative;height:14px;background:#e4d9bb;border-radius:3px;box-shadow:inset 0 0 0 1px #d6c79f}.mpgt>i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.mpgt>span{position:absolute;top:-5px;bottom:-5px;width:2px;background:#6b5a35}.mpgt>span.on{background:#a3261c}.mpgt>span em{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font:600 10.5px "Segoe UI",system-ui,sans-serif;font-style:normal;color:#6b5a35}
+.mpgl{display:flex;flex-wrap:wrap;gap:2px 16px;margin-top:6px;font:12px "Segoe UI",system-ui,sans-serif;color:#6b5a35}.mpgl .on{color:#a3261c}.mpgl b{font-weight:700}
+.mpch{display:block;width:100%;height:auto}.mpch text{font:10.5px "Segoe UI",system-ui,sans-serif;fill:#6b5a35}.mpkt td{vertical-align:middle}
+.mpscroll{max-height:340px;overflow:auto;border:1px solid #e0d4b4;border-radius:3px;padding:0 6px}.mpscroll .whyt th{position:sticky;top:0;background:#f7f1e1;z-index:1}.mplv .lpair{display:flex!important;gap:6px}.mplv .lpair .pbtn{width:auto!important}
 </style>
 </head>
 <body>
@@ -7202,6 +7213,73 @@ function baseTick(){if(!S||S.sim||S.histMode||S.replay||CFQ||S.w<PLAY0||(!S.scen
 function baseAt(w=S.w){const b=S.base;if(!b||!b.done)return null;let r=b.pts[0];for(const p of b.pts){if(p[0]<=w)r=p;else break}return r}
 // ---- why this number: inputs, formula and sources for the key figures
 const srcTxt=s=>s?String(s):'';
+// ---- one page for every measure, built the same way: where it stands now and its thresholds, its history, what feeds it
+// (the live weekly flows, then the one-off changes with their causes), what it changes at today's level, and what you can do.
+const MP={tile:(lab,v,d='',tip)=>`<div class="trt"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b>${d}</div>`,
+  card:(h,sub,x,cls='')=>`<div class="trcol mpc ${cls}"><div class="trh"><b>${h}</b><span>${sub||''}</span></div>${x}</div>`,
+  d:(v,f,good)=>Math.abs(v)<1e-9?'<i class="trd">no change</i>':`<i class="trd ${(v>0)===good?'up':'dn'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</i>`,
+  // a signed bar: one cause and how much it adds or takes a year
+  row:(n,v,sc,f,good,link)=>`<div class="mprow"><span class="mpn">${link?`<span class="linkn" ${link}>${n}</span>`:n}</span><span class="mpbar"><i class="${(v>0)===good?'g':'b'} ${v<0?'neg':''}" style="width:${Math.min(50,Math.abs(v)/Math.max(sc,1e-9)*50).toFixed(1)}%"></i></span><b class="${(v>0)===good?'okt':'redt'}">${v>0?'+':v<0?'−':''}${f(Math.abs(v))}</b></div>`,
+  // the ledger: one-off changes with their causes
+  ledger:(L,f,good,max=10)=>L&&L.length?`<div class="mpled">${L.slice(0,max).map(x=>`<div><span class="mpw">${fmtDate(x.w)}</span><b class="${(x.d>0)===good?'okt':'redt'}">${x.d>0?'+':'−'}${f(Math.abs(x.d))}</b><span>${x.why}</span></div>`).join('')}${L.length>max?`<div class="mini">+ ${L.length-max} earlier</div>`:''}</div>`:'<p class="trnone">Nothing has moved it in one go yet.</p>',
+  // a gauge from lo to hi with thresholds marked
+  gauge:(v,lo,hi,marks,col)=>{const X=x=>((x-lo)/(hi-lo)*100).toFixed(1);return `<div class="mpg"><div class="mpgt"><i style="width:${X(Math.max(lo,Math.min(hi,v)))}%;background:${col}"></i>${marks.map(m=>`<span style="left:${X(m.v)}%" class="${v>=m.v?'on':''}"><em>${m.v}</em></span>`).join('')}</div><div class="mpgl">${marks.map(m=>`<div class="${v>=m.v?'on':''}"><b>${m.v}</b> ${m.l}</div>`).join('')}</div></div>`},
+  // the history since January 2027, with threshold lines and the one-off changes as dots
+  chart:(pts,o={})=>{if(!pts||pts.length<2)return '<p class="trnone">The history starts once the game has run a few weeks.</p>';
+    const W=640,H=150,L=40,R=14,T=10,B=22,x0=PLAY0,x1=Math.max(S.w,PLAY0+52),vs=pts.map(p=>p[1]),lo=o.lo??Math.min(0,...vs),hi=(o.hi??(Math.max(...vs,...(o.marks||[]).map(m=>m.v))*1.1))||1;
+    const X=w=>L+(W-L-R)*(w-x0)/Math.max(1,x1-x0),Y=v=>T+(H-T-B)*(1-(v-lo)/Math.max(1e-9,hi-lo));
+    let g='';for(let q=0;q<=2;q++){const v=lo+(hi-lo)*q/2;g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e0d4b4"/><text x="${L-5}" y="${Y(v)+3}" text-anchor="end">${(o.f||fmtN)(v)}</text>`}
+    for(let y=dateOf(x0).getFullYear();y<=dateOf(x1).getFullYear();y++){const w=weekOf(y,0,1);if(w>=x0&&w<=x1)g+=`<text x="${X(w)}" y="${H-6}" text-anchor="middle">${y}</text>`}
+    for(const m of o.marks||[])if(m.v>lo&&m.v<hi)g+=`<line x1="${L}" x2="${W-R}" y1="${Y(m.v)}" y2="${Y(m.v)}" stroke="${m.col||'#b8860b'}" stroke-dasharray="4 3"/><text x="${W-R}" y="${Y(m.v)-3}" text-anchor="end" fill="${m.col||'#8a6a1f'}">${m.l}</text>`;
+    g+=`<path d="${pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join('')}" fill="none" stroke="#2f62a0" stroke-width="2.2"/>`;
+    const at=w=>{let r=pts[0];for(const p of pts){if(p[0]<=w)r=p;else break}return r[1]};
+    for(const d of (o.dots||[]).slice(0,40))g+=`<circle cx="${X(d.w)}" cy="${Y(at(d.w))}" r="3.5" fill="${d.good?'#4f8a3e':'#a3261c'}" stroke="#f7f1e1"><title>${fmtDate(d.w)}: ${d.t}</title></circle>`;
+    return `<svg class="mpch" viewBox="0 0 ${W} ${H}">${g}</svg>`},
+  // a measure's series from the four-weekly history, with today's value at the end
+  series:(k,now)=>{const i=MH_I[k],pts=(S.mh||[]).map(r=>[r[0],r[i]]);if(now!=null)pts.push([S.w,now]);return pts},
+  yearAgo:(k)=>{const i=MH_I[k],r=(S.mh||[]).filter(x=>x[0]<=S.w-52).at(-1)||(S.mh||[])[0];return r?r[i]:null}};
+function mpageWrap(parts){return `<div class="trts n${parts.tiles.length}">${parts.tiles.join('')}</div>${parts.gauge||''}
+  ${MP.card(parts.chartT||'History',parts.chartSub??('since January 2027'+(parts.dotsNote?' · dots are one-off changes; hover for the cause':'')),parts.chart)}
+  <div class="trgrid">${MP.card('What feeds it',parts.feedsSub||'',parts.feeds)}${MP.card('What it changes','at today’s level',parts.does)}</div>
+  ${parts.levers?MP.card('What you can do','',parts.levers):''}`}
+const MPAGE={
+ strain:()=>{const v=S.strain,ya=MP.yearAgo('strain'),R=S._R||production(false),P=R.P,ids=S.divIds||[];
+   const per=id=>(P[id]?.div||0)/Math.max(P[id]?.civFull||1e-9,1e-9)*(ND[id].civ||0)*DIV_STRAIN*52;
+   const rows=ids.map(id=>[id,per(id)]).filter(x=>x[1]>.05).sort((a,b)=>b[1]-a[1]),rec=v>0||rows.length?-.35*52:0,net=rows.reduce((a,x)=>a+x[1],0)+rec;
+   const nxt=[[30,'shortages make the news'],[50,'Congress holds a hearing'],[70,'a guns-versus-butter backlash']].find(m=>v<m[0]);
+   const sc=Math.max(1,...rows.map(x=>x[1]),Math.abs(rec)),f1=x=>fmt(x,1);
+   const feeds=(rows.length?rows.map(([id,x])=>MP.row(`Defense orders take civilian ${lc(ND[id].n)}`,x,sc,f1,false,`data-a="node" data-n="${id}"`)).join(''):'<p class="mini">No defense orders are taking civilian supply right now.</p>')
+     +(rec?MP.row('Recovery as supply returns to normal',rec,sc,f1,false):'')+`<div class="mpnet">${net<0&&v<.5?'Recovery outpaces what feeds it: <b class="okt">strain stays at zero</b>':`Net at today’s pace: <b class="${net>0?'redt':'okt'}">${net>=0?'+':'−'}${fmt(Math.abs(net),1)} a year</b>${net<0&&v>0?`, back to zero in about ${Math.ceil(v/Math.abs(net)*12)} months`:''}`}</div>
+     <h5 class="mph5">One-off jumps</h5>${MP.ledger(S.mlog?.strain,f1,false)}<p class="mini">Executive actions add strain once: DPA priority ratings +4, a national emergency +5, a Taft-Hartley injunction +8, deferring civilian megaprojects +10, drone bans up to +20.</p>`;
+   const odds=v>50?15:v>30?5:0,pcw=v/60;
+   const does=`${MP.row('Political Capital lost to it',-pcw*52,Math.max(1,pcw*52),x=>fmt(x,0)+' PC a year',true,'data-a="why" data-k="pc"')}
+     <div class="mpdo"><b>Elections</b> the odds that the next election helps you are ${odds?`<span class="redt">${odds} points lower</span>`:'not affected'} (−5 above 30, −15 above 50)${v>50?'; above 50 on election day costs another 10 PC':''}.</div>
+     <div class="mpdo"><b>Events</b> ${[[30,'Shortages make the news',20],[50,'Congress holds a hearing',40],[70,'Guns-versus-butter backlash',55]].map(([t,n,lo2])=>`<span class="${v>=t?'redt':''}">${t}: ${n}${S.strainUp?.[({30:'strainNews',50:'strainHearing',70:'strainCrisis'})[t]]?' (fired; it can fire again once strain drops below '+lo2+')':''}</span>`).join(' · ')}.</div>`;
+   const levers=`${ids.length?`<div class="mpdo"><b>Give civilian buyers their supply back</b> for a year: strain stops building from that item, and defense goes short of it.</div><div class="mplv">${ids.map(id=>`<button class="pbtn sm" data-a="prio" data-n="${id}">Waive for ${lc(ND[id].n)}</button>`).join('')}</div>`:''}
+     <div class="mpdo">Hold off on the executive actions above while strain is high; the <span class="linkn" data-a="rtab" data-t="home">Home Front panel</span> shows it week by week.</div>`;
+   return {t:'Civilian strain',ic:'🛒',body:mpageWrap({tiles:[MP.tile('Strain now',`${Math.round(v)} / 100`,ya!=null?MP.d(v-ya,x=>fmt(x,0)+' in a year',false):''),MP.tile('Next threshold',nxt?nxt[0]:'—',`<i class="trd">${nxt?nxt[1]:'all three passed'}</i>`),MP.tile('At today’s pace',`${net>=0?'+':'−'}${fmt(Math.abs(net),0)}`,'<i class="trd">a year</i>')],
+     gauge:MP.gauge(v,0,100,[{v:30,l:'shortages make the news; election odds −5'},{v:50,l:'Congress holds a hearing; election odds −15'},{v:70,l:'a guns-versus-butter backlash'}],v>=50?'#a3261c':v>=30?'#c9982a':'#4f8a3e'),
+     chart:MP.chart(MP.series('strain',v),{lo:0,hi:Math.max(40,...(S.mh||[]).map(r=>r[3]),v+10),f:x=>fmt(x,0),marks:[{v:30,l:'30'},{v:50,l:'50',col:'#a3261c'},{v:70,l:'70',col:'#a3261c'}],dots:(S.mlog?.strain||[]).map(x=>({w:x.w,t:`${x.d>0?'+':''}${fmt(x.d,1)}: ${x.why}`,good:x.d<0}))}),dotsNote:1,
+     feeds,feedsSub:'a year, at today’s pace',does,levers})}},
+ know:(c)=>{const R=S._R||production(false),f1=x=>fmt(x,1);
+   const learn=id=>S.plants.filter(pl=>pl.target===id).reduce((a,pl)=>a+(pl.full?.01:.05)*52,0);
+   const start=kn=>Math.min(.55,.05+kn*.003),rampMo=kn=>rampWeeks(kn,start(kn),1)/4.35;
+   const effects=kn=>`<div class="mpdo"><b>A new plant here starts</b> at about ${pct(start(kn))} of its capacity and reaches full rate in about <b>${fmt(rampMo(kn),0)} months</b> (at know-how ${Math.min(95,Math.round(kn)+20)}: ${fmt(rampMo(Math.min(95,kn+20)),0)} months).</div>
+     <div class="mpdo"><b>Operating permits</b> are contested at renewal ${fmt(1.3-kn/100,2)}× as often as the baseline (from 1.3× at 0 to 0.35× at 95).</div>`;
+   if(c&&ND[c]){const kn=S.know[c]??40,h=(S.mhk?.[c]||[]).slice(),k0=h[0]?.[1]??kn;h.push([S.w,kn]);const L=(S.mlog?.know||[]).filter(x=>x.id===c),lr=learn(c);
+     const pls=S.plants.filter(pl=>pl.target===c),progs=PROJECTS.filter(d=>d.t.node===c&&d.kind==='know');
+     return {t:`Know-how: ${ND[c].n}`,ic:'🛠',body:mpageWrap({tiles:[MP.tile('Know-how now',`${Math.round(kn)} / 100`,MP.d(kn-k0,x=>fmt(x,0)+' since Jan 2027',true)),MP.tile('Learning by running plants',lr>0?`+${fmt(lr,1)}`:'0',`<i class="trd">a year, from ${pls.length} plant${pls.length===1?'':'s'} here</i>`),MP.tile('Ceiling','95','<i class="trd">no industry is perfect</i>')],
+       chart:MP.chart(h,{lo:0,hi:100,f:x=>fmt(x,0),dots:L.map(x=>({w:x.w,t:`${x.d>0?'+':''}${fmt(x.d,0)}: ${x.why}`,good:x.d>0}))}),dotsNote:1,
+       feeds:(pls.length?pls.map(pl=>MP.row(`Running ${pl.nm}${pl.full?'':' (ramping)'}`,(pl.full?.01:.05)*52,2.6,f1,true,`data-a="prog" data-u="${pl.uid}"`)).join(''):'<p class="mini">No plant here is running yet to learn from.</p>')+`<h5 class="mph5">One-off changes</h5>${MP.ledger(L,x=>fmt(x,0),true)}`,feedsSub:'a year',
+       does:effects(kn),
+       levers:`${progs.length?`<div class="mpdo">A workforce program for this item adds <b>+20</b> when it finishes and cuts labor problems here by 40%.</div><div class="mplv">${progs.map(d=>launchBtn(d)).join('')}</div>`:''}<div class="mpdo">Modernisation and test-capacity programs add +5; the allied expert visa reform adds +15 to every item. <span class="linkn" data-a="node" data-n="${c}">${ND[c].n}: the item page →</span> · <span class="linkn" data-a="why" data-k="know">Every item’s know-how →</span></div>`})}}
+   const ids=ORDER.filter(id=>S.know[id]!=null),avg=ids.reduce((a,id)=>a+S.know[id],0)/Math.max(1,ids.length),low=ids.slice().sort((a,b)=>S.know[a]-S.know[b]);
+   const ch=id=>{const h=S.mhk?.[id];return h&&h.length?S.know[id]-h[0][1]:0},moved=ids.filter(id=>Math.abs(ch(id))>=.5).length,learning=ids.filter(id=>learn(id)>0).length;
+   const rows=low.map(id=>`<tr><td><span class="linkn" data-a="why" data-k="know" data-c="${id}">${ND[id].n}</span><div class="mini">Tier ${ND[id].t}</div></td><td class="num"><span class="whys"><span class="yrvb"><i style="width:${S.know[id]}%"></i></span><b>${Math.round(S.know[id])}</b></span></td><td class="num">${Math.abs(ch(id))>=.5?`<span class="${ch(id)>0?'okt':'redt'}">${ch(id)>0?'+':'−'}${fmt(Math.abs(ch(id)),0)}</span>`:'<span class="dim">—</span>'}</td><td class="num">${learn(id)>0?`<span class="okt">+${fmt(learn(id),1)}</span>`:'<span class="dim">—</span>'}</td></tr>`).join('');
+   return {t:'Know-how',ic:'🛠',body:mpageWrap({tiles:[MP.tile('Average over every item',fmt(avg,0),`<i class="trd">${ids.length} items, 0 to 100</i>`),MP.tile('Lowest',`${Math.round(S.know[low[0]])}`,`<i class="trd">${ND[low[0]].n}</i>`),MP.tile('Learning now',`${learning}`,`<i class="trd">items with plants running; ${moved} moved since Jan 2027</i>`)],
+     chartT:'Every item',chartSub:'lowest first; open one for its history',chart:`<p class="mini" style="margin:0 0 6px">How practised US industry is at making each item: its skilled workers, tooling and process knowledge. Each item has its own history; open one below.</p><div class="mpscroll"><table class="whyt mpkt"><tr><th>Item, lowest first</th><th class="num">Know-how</th><th class="num">Since Jan 2027</th><th class="num">Learning a year</th></tr>${rows}</table></div>`,
+     feeds:`<div class="mpdo"><b>Running plants</b> teach it: +2.6 a year for each plant still ramping up, +0.5 for each at full rate.</div><div class="mpdo"><b>Programs</b>: a workforce program adds +20 to its item, modernisation and test capacity +5, the allied expert visa reform +15 everywhere.</div><div class="mpdo"><b>Losses</b>: retirements and lost suppliers take it away in one go.</div><h5 class="mph5">One-off changes, every item</h5>${MP.ledger((S.mlog?.know||[]).map(x=>({...x,why:`${ND[x.id]?.n||x.id}: ${x.why}`})),x=>fmt(x,0),true)}`,feedsSub:'',
+     does:`<p class="mini" style="margin:0 0 4px">For an item at know-how 30 against one at 70:</p><div class="mpdo"><b>New plants start</b> at ${pct(start(30))} against ${pct(start(70))} of capacity, and reach full rate in about ${fmt(rampMo(30),0)} months against ${fmt(rampMo(70),0)}.</div><div class="mpdo"><b>Operating permits</b> are contested at renewal ${fmt(1.3-.3,1)}× against ${fmt(1.3-.7,1)}× the baseline.</div>`})}}};
 function whyHTML(){const k=S.whyK,c=S.whyC,R=S._R||production(false),A=AL(),cs=Object.keys(LINES);let t='',body='';
   const tbl=(head,rows,foot)=>`<table class="whyt"><tr>${head.map((h,i)=>`<th class="${i?'num':''}">${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map((x,i)=>`<td class="${i?'num':''}">${x}</td>`).join('')}</tr>`).join('')}${foot?`<tr class="whyf">${foot.map((x,i)=>`<td class="${i?'num':''}">${x}</td>`).join('')}</tr>`:''}</table>`;
   const card=(h,sub,x)=>`<div class="trcol whyc"><div class="trh"><b>${h}</b><span>${sub||''}</span></div>${x}</div>`;
@@ -7212,7 +7290,8 @@ function whyHTML(){const k=S.whyK,c=S.whyC,R=S._R||production(false),A=AL(),cs=O
   const note=(lab,x)=>`<p class="whyn"><b>${lab}</b> ${x}</p>`;
   const dpt=(a,b,lab)=>Math.abs(a-b)<.0005?`<i class="trd">same as ${lab}</i>`:`<i class="trd ${a>b?'up':'dn'}">${a>b?'▲':'▼'} ${fmt(Math.abs(a-b)*100,0)} pt from ${lab}</i>`;
   const weak=xs=>xs.reduce((a,b)=>b[1]<a[1]?b:a);
-  if(k==='suff'){t='Sufficiency';const sh=cs.map(c=>[c,Math.min(1,(R.out[c].yr+allyOut(c))/Math.max(reqOut(c),1e-9))]),w=weak(sh),r0=S.race0;
+  if(MPAGE[k]){const r=MPAGE[k](c);t=r.t;body=r.body}
+  else if(k==='suff'){t='Sufficiency';const sh=cs.map(c=>[c,Math.min(1,(R.out[c].yr+allyOut(c))/Math.max(reqOut(c),1e-9))]),w=weak(sh),r0=S.race0;
     const rows=cs.map((c,i)=>[`<span class="linkn" data-a="why" data-k="line" data-c="${c}">${LINES[c].n}</span>`,fmtN(R.out[c].yr),fmtN(allyOut(c)),fmtN(reqOut(c)),shr(sh[i][1])]);
     body=tiles([tile('Sufficiency now',pct(raceIdx(R.out)),r0!=null&&S.w>PLAY0?dpt(raceIdx(R.out),r0,'January 2027'):'<i class="trd">you + allies, against the requirement</i>'),tile('Lines at 100%',`${sh.filter(x=>x[1]>=.999).length}/${cs.length}`,'<i class="trd">each line counts up to 100%, no more</i>'),tile('Weakest line',pct(w[1]),`<i class="trd">${LINES[w[0]].n}</i>`)])
       +fx(`The average, over the nine end-item lines, of <b>(your output + allied output) ÷ the requirement</b>, each capped at 100%.`)
@@ -7242,7 +7321,7 @@ function whyHTML(){const k=S.whyK,c=S.whyC,R=S._R||production(false),A=AL(),cs=O
       +fx(`For each input, the share of its supply that comes from China or Russia, directly or through its own inputs. Each end item’s content is the average over its direct inputs, and the headline is the average over your lines <b>weighted by how much each makes</b>.`)
       +card('Every line','',tbl(['Line','Chinese/Russian content','Output a year'],rows,['Weighted average',`<b>${pct(R.exposure)}</b>`,'']))
       +note('Where it enters:','<span class="linkn" data-a="view" data-v="flow">Supply flows →</span>')}
-  return `<div class="paper whyp trp"><div class="hd"><span class="ic">${vic('calc',22)}</span>Why this number? · ${t}</div><div class="bd">${body}</div><div class="ft trft"><span class="linkn trall" data-a="view" data-v="stats">All the numbers explained →</span><button class="pbtn" data-a="close">Close</button></div></div>`}
+  return `<div class="paper whyp trp"><div class="hd"><span class="ic">${vic(MPAGE[k]?'stats':'calc',22)}</span>${MPAGE[k]?t:'Why this number? · '+t}</div><div class="bd">${body}</div><div class="ft trft"><span class="linkn trall" data-a="view" data-v="stats">All the numbers explained →</span><button class="pbtn" data-a="close">Close</button></div></div>`}
 function renderModal(){
   for(const k in CH)if(CH[k].ctx==='m')delete CH[k];CHctx='m';
   const P=S._R?.P||production(false).P;const build=()=>{let html='';
