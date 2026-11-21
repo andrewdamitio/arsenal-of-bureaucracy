@@ -1144,6 +1144,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .suppsec .supprow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.suppsec .supprow .mini{flex:1;min-width:260px}
 .cstory{margin:8px 0 6px;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif}
 .mktop{float:right;font:600 11.5px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none}.vbody>.crumb{margin:0 0 6px}
+.skone{font:12px "Segoe UI",system-ui,sans-serif;color:#6b5a35;font-style:italic}
 </style>
 </head>
 <body>
@@ -5730,9 +5731,9 @@ function flowBody(){
   const vt=`<div class="skctl"><span class="lab">Display</span><div class="seg">${B(fv==='diag','data-a="flowv" data-v="diag"','Flow diagram','Material flowing from raw sources through each tier of the supply chain into end items')}${B(fv==='table','data-a="flowv" data-v="table"','Sourcing table','Every item: what share is made at home, by allies, by neutral countries and by China or Russia')}</div>`;
   if(fv==='table')return vt+'</div>'+madeBody();
   return vt+`<span class="lab">End item</span><div class="chips">${B(f==='all','data-a="flow" data-f="all"','All end items')}${S.order.map(l=>B(f==='L:'+l,`data-a="flow" data-f="L:${l}"`,LINES[l].n,'',lineIcon(l,16,'lic sm'))).join('')}${f!=='all'&&!f.startsWith('L:')?B(1,'',ND[f].n):''}</div>
-     <span class="lab">Measure</span><div class="row2"><span class="sublab">Band width</span><div class="seg">${B(m==='det','data-a="flowm" data-m="det"','Deterrence value','Each end item counts by how much it adds to deterrence, so a submarine outweighs a shell')}${B(m==='out','data-a="flowm" data-m="out"','Output volume','Each end item counts by its output relative to the 2027 US production rate')}</div>
+     <span class="lab">Measure</span><div class="row2"><span class="sublab">Band width</span>${f.startsWith('L:')?`<span class="skone">Not used with one end item: both measures draw the same picture. They differ when end items are compared, under <span class="linkn" data-a="flow" data-f="all">All end items</span> or for a part.</span>`:`<div class="seg">${B(m==='det','data-a="flowm" data-m="det"','Deterrence value','Each end item counts by how much it adds to deterrence, so a submarine outweighs a shell')}${B(m==='out','data-a="flowm" data-m="out"','Output volume','Each end item counts by its output relative to the 2027 US production rate')}</div>`}
      <span class="sublab">Credit value to</span><div class="seg">${B(at==='mat','data-a="flowa" data-m="mat"','Raw-material origin','All value traced down to where the raw material came from')}${B(at==='va','data-a="flowa" data-m="va"','Each manufacturing step','Each domestic manufacturing step keeps half the value of its output; the rest traces upstream')}</div></div>
-     <div class="skguide"><b>How to read it.</b> Left to right: raw sources feed four tiers of the supply chain, which feed the end items on the right. A band's width is its share of ${m==='det'?'deterrence value':'output'}; its tint shows China or Russia content. Bars: <b style="color:#4f7a40">green</b> supplied, <b style="color:#a87a1a">amber</b> tight, <b style="color:#b8402f">red</b> short. Hover to trace a chain; click to open its page.</div></div>
+     <div class="skguide"><b>How to read it.</b> Left to right: raw sources feed four tiers of the supply chain, which feed the end items on the right. A band's width is its share of ${f.startsWith('L:')?'what flows into '+lc(LINES[f.slice(2)].n):m==='det'?'deterrence value: a submarine outweighs a shell':'output, each end item against its 2027 production rate'}; its tint shows China or Russia content. Bars: <b style="color:#4f7a40">green</b> supplied, <b style="color:#a87a1a">amber</b> tight, <b style="color:#b8402f">red</b> short. Hover to trace a chain; click to open its page.</div></div>
     ${f!=='all'?(()=>{const isL=f.startsWith('L:'),nm=isL?LINES[f.slice(2)].n:ND[f].n,ic=isL?lineIcon(f.slice(2),22,'lic'):ND[f].ic;
       return `<div class="flfocus"><span class="ffi">${ic}</span><div><div class="ffk">Selected</div><b>${nm}</b><span class="mini">${isL?'Everything it is made from, traced back to raw sources.':'Its inputs back to raw sources, and the end items it feeds. Everything else is hidden.'}</span></div><span class="dsp"></span><button class="pbtn sm" data-a="node" data-n="${f}">Open its page →</button><button class="pbtn sm" data-a="flow" data-f="all">Show all end items</button></div>`})():''}
     <div style="padding:8px 0 0">${sankeySVG(S._R||production(false),f,m,at)}</div>
@@ -5751,7 +5752,7 @@ const uiSave=()=>{try{localStorage.setItem('aob_ui',JSON.stringify(UIP))}catch(e
 const xpOn=()=>!!UIP.xp||!!(S&&S.tut);
 // Standing explanations: paragraphs that say what a section is for. With explanations hidden they fold into an ⓘ by their heading
 // (hover to read, click to open in place). Status lines and anything short stay.
-const XP_SEL=['.pintro','.alintro','.rbintro','.xintro','.wmfoot','.skguide','.bnsort>.mini:last-child','.sc-test','.ordsec>p.mini','.ctsec','.rc-leg',
+const XP_SEL=['.pintro','.alintro','.rbintro','.xintro','.wmfoot','.bnsort>.mini:last-child','.sc-test','.ordsec>p.mini','.ctsec','.rc-leg',
   '.dsec>h4+p.mini','h4.bh+p.mini','h3+p.mini','h2+.sub','h2+p.mini','.dsec>p.mini:first-of-type','.acard>p.mini'];
 const XP_OPEN=new Set();
 function xpPass(root){if(!root)return;const on=xpOn();document.body.classList.toggle('xpoff',!on);if(on)return;
