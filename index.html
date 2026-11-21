@@ -1129,6 +1129,9 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .bngrid>div:nth-child(3) .bnc{row-gap:2px;margin:3px 0 9px}.bngrid>div:nth-child(3) .bnc .vfm{justify-self:start}.bngrid>div:nth-child(3) .bnc .mini.bnrdy{white-space:normal;line-height:1.3}
 .bngrid h5 .bnrk{margin-left:6px;font:600 10px "Segoe UI",system-ui,sans-serif;letter-spacing:.02em;text-transform:none;color:#8a7850;cursor:help;border-bottom:1px dotted #b9a77c}
 .bngrid>div:nth-child(3) .bnc.bnmore{display:block;margin:0 0 8px;font-size:12px}
+.pvord{margin:8px 0 4px;padding:7px 10px;background:#f1ecf6;border:1px solid #cbbfdc;box-shadow:inset 3px 0 0 #7a5fb0;border-radius:2px;font:12.5px/1.45 "Segoe UI",system-ui,sans-serif;color:#2b241a}
+.pvordh{font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#5a4590;margin-bottom:2px}.pvord p{margin:0 0 5px}
+.pvordr{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px;padding:4px 0;border-top:1px solid #ddd3ea}.pvordr>span:first-child{flex:1;min-width:240px}
 </style>
 </head>
 <body>
@@ -2720,13 +2723,13 @@ function riskShift(def,wOn){const R=RISK_K[def.kind],id=def.t.node;if(!R||!id)re
     const on=wOn<=reach,e=on?e1:e0;if(e0<.5)continue;S0[p.uid]=e0;S1[p.uid]=e;rows.push({p,e0,e1:e,on,reach})}
   fl[R.flag]=was;if(!was)delete fl[R.flag];return {R,S0,S1,rows}}
 function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint')return '';
-  let base,alt,rsk=null;
+  let base,alt,rsk=null,baseO=null,altO=null;
   if(RISK_K[def.kind]){const lp=live&&S.projects.find(x=>x.uid===live),wT=lp?S.w+remW(lp):previewOf(def,null).wPlan;rsk=riskShift(def,wT);const R=RISK_K[def.kind],head=`<div class="pvimp"><div class="pvih">Against the status quo</div><div class="pvc">This adds no capacity. It makes ${R.n} problems at this plant ${def.kind==='test'?'half':'less than a third'} as likely, so programs here finish sooner and their output arrives earlier.`;
     if(!rsk.rows.length)return head+` No program here still has ${R.n} work ahead of it, so it changes nothing yet; it will protect the plants you start here later.</div></div>`;
     if(!rsk.rows.some(r=>r.on))return head+` It would be finished too late to help the programs here now (${rsk.rows.map(r=>projName(r.p)).join(', ')}); it will protect the plants you start later.</div></div>`;
     // live: the status quo is the world without the upgrade, so the comparison is (expected delays without) against (with)
     base=ceilProj({shift:rsk.S1});alt=ceilProj({shift:rsk.S0})}
-  else{base=ceilProj();alt=live?ceilProj({drop:live}):ceilProj({def,w:wOn})}
+  else{base=ceilProj();alt=live?ceilProj({drop:live}):ceilProj({def,w:wOn});if(S.ord){baseO=ceilProj({ordFull:1});altO=live?ceilProj({drop:live,ordFull:1}):ceilProj({def,w:wOn,ordFull:1})}}
   if(rsk&&!live)live=-1; // in the risk comparison, base is always 'with' and alt 'without'
   // compare on the status-quo time grid: take each alternative series at or before each time
   const at=(rows,t)=>{let r=null;for(const x of rows){if(x[0]<=t)r=x;else break}return r};
@@ -2734,24 +2737,32 @@ function impactHTML(def,wOn,live){if(S.histMode||!S.lab||!def||def.kind==='maint
   const B0=base.out[k]||[],A0=alt.out[k]||[];const withR=live?B0:A0,woR=live?A0:B0;
   const ts=withR.map(r=>r[0]),v=(rows,t)=>{const r=at(rows,t);const x=r?r[col]:null;return x==null?null:x/nrm};
   const W=330,H=110,Lm=40,Rm=8,T=8,Bm=20,x0=S.w,x1=END_W,X=t=>Lm+(W-Lm-Rm)*(t-x0)/Math.max(1,x1-x0);
-  const vals=ts.flatMap(t=>[v(withR,t),v(woR,t)]).filter(x=>x!=null);
+  const OR=baseO?((live?baseO:altO).out[k]||[]):null,drawO=!!OR&&ts.some(t=>{const a=v(OR,t),b=v(withR,t);return a!=null&&b!=null&&a-b>Math.max(1e-9,Math.abs(b)*.02)});
+  const vals=ts.flatMap(t=>[v(withR,t),v(woR,t),drawO?v(OR,t):null]).filter(x=>x!=null);
   const need=ts.map(t=>{const r=at(withR,t);return r?r[5]/nrm:null});const top=Math.max(1e-9,...vals,...need.filter(x=>x!=null))*1.15,Y=y=>T+(H-T-Bm)*(1-Math.min(y,top)/top);
   const pth=rows=>ts.map((t,i)=>{const y=v(rows,t);return y==null?'':(i?'L':'M')+X(t).toFixed(1)+','+Y(y).toFixed(1)}).join('');
   let g=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(0)}" y2="${Y(0)}" stroke="#8a7850"/>`;for(let q=0;q<=2;q++){const y=top*q/2;g+=`<text x="${Lm-4}" y="${Y(y)+3}" text-anchor="end">${fmtN(y)}</text>`}
   for(let y=dateOf(S.w).getFullYear()+1;y<=END_Y;y+=2)g+=`<text x="${X(weekOf(y,0,1))}" y="${H-5}" text-anchor="middle">${y}</text>`;
   g+=`<path d="${ts.map((t,i)=>{const r=at(withR,t);return r&&r[5]!=null?(i?'L':'M')+X(t).toFixed(1)+','+Y(r[5]/nrm).toFixed(1):''}).join('')}" fill="none" stroke="${CHC.req}" stroke-width="1.3" stroke-dasharray="6 4"/>`;
   g+=`<path d="${pth(withR)}" fill="none" stroke="${CHC.usL}" stroke-width="3"/><path d="${pth(woR)}" fill="none" stroke="${CHC.alt}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+  if(drawO)g+=`<path d="${pth(OR)}" fill="none" stroke="${CHC.ord}" stroke-width="2" stroke-dasharray="7 3"/>`;
   if(wOn<=END_W)g+=`<line x1="${X(wOn)}" x2="${X(wOn)}" y1="${T}" y2="${H-Bm}" stroke="${CHC.usL}" stroke-dasharray="2 2" opacity=".7"/>`;
   // end items: output a year at a reference year, and the total through 2035
   const ref=Math.min(END_W,Math.max(wOn+52,weekOf(2030,0,1))),refY=dateOf(ref).getFullYear();
   const eRows=Object.keys(LINES).map(c=>{const a=(live?base:alt).out['L:'+c]||[],b=(live?alt:base).out['L:'+c]||[];let tot=0,prev=S.w;
     for(const t of ts){const ra=at(a,t),rb=at(b,t);if(ra&&rb&&ra[4]!=null&&rb[4]!=null)tot+=(ra[4]-rb[4])*(t-prev)/52;prev=t}
     const ra=at(a,ref),rb=at(b,ref),d=ra&&rb?(ra[4]||0)-(rb[4]||0):0;return {c,d,tot}}).filter(r=>Math.abs(r.tot)>LINES[r.c].k*.002||Math.abs(r.d)>LINES[r.c].k*.002).sort((a,b)=>b.tot/LINES[b.c].k-a.tot/LINES[a.c].k);
+  // lines where funded orders, not this capacity, would be the limit
+  const ordLs=(()=>{if(!baseO||!S.ord)return [];const wO=live?baseO:altO,woO=live?altO:baseO,wT=live?base:alt,woT=live?alt:base,vv=(P,c)=>{const r=at(P.out['L:'+c]||[],ref);return r&&r[4]!=null?r[4]:0};
+    return Object.keys(LINES).map(c=>{const X0=ordOf(c);if(!isFinite(X0))return null;const gO=vv(wO,c)-vv(woO,c),g=vv(wT,c)-vv(woT,c),Y0=vv(wO,c);return gO>0&&gO-g>LINES[c].k*.002?{c,gO,g:Math.max(0,g),Y0,X0}:null}).filter(Boolean).sort((a,b)=>(b.gO-b.g)/LINES[b.c].k-(a.gO-a.g)/LINES[a.c].k).slice(0,3)})();
   return `<div class="pvimp"><div class="pvih">Against the status quo <span>${isL?LINES[k.slice(2)].n.toLowerCase()+' a year':lc(ND[k].n)+', '+im.unit}</span></div>
     ${rsk?`<div class="pvc">Expected weeks lost to ${rsk.R.n} problems: ${rsk.rows.map(r=>`${projName(r.p)} <b>${Math.round(r.e0)}</b> → <b class="${r.on?'green':''}">${Math.round(r.e1)}</b>${r.on?'':' (finished too late to help it)'}`).join(' · ')}.</div>`:''}
-    <svg class="pvisvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=ts.map(t=>{const r=at(withR,t);return {w:t,v:{A:v(withR,t),Z:v(woR,t),N:r&&r[5]!=null?r[5]/nrm:null}}});CC[id]={W,H,Lm,Rm,T,B:Bm,x0,x1,top,rows,outK:'A',outN:rsk||live?'With this':'With this',mix:im?.mix,ke:im?.ke,keys:[['A','With this',CHC.usL],['Z',rsk||live?'Without it':'Status quo',CHC.alt,1],['N',isL?'US requirement':'Defense need',CHC.req,1]]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg>
-    <div class="pvilg"><span><i style="background:${CHC.usL}"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Defense need'}</span></div>
-    ${(()=>{const tb=eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):'';return tb||`<div class="pvc">No end item makes more by 2035: ${impWhy(def,k,isL,withR)}.</div>`})()}
+    <svg class="pvisvg cch" data-c="${(()=>{const id='cc'+(++CCn),rows=ts.map(t=>{const r=at(withR,t);return {w:t,v:{A:v(withR,t),Z:v(woR,t),N:r&&r[5]!=null?r[5]/nrm:null,...(drawO?{O:v(OR,t)}:{})}}});CC[id]={W,H,Lm,Rm,T,B:Bm,x0,x1,top,rows,outK:'A',outN:rsk||live?'With this':'With this',mix:im?.mix,ke:im?.ke,keys:[['A','With this',CHC.usL],['Z',rsk||live?'Without it':'Status quo',CHC.alt,1],['N',isL?'US requirement':'Defense need',CHC.req,1],...(drawO?[['O','With this, if Congress orders it',CHC.ord,1]]:[])]};return id})()}" viewBox="0 0 ${W} ${H}">${g}<g class="hov"></g></svg>
+    <div class="pvilg"><span><i style="background:${CHC.usL}"></i>${rsk?'With this':live?'With this program':'With this'}</span><span><i class="d"></i>${rsk?'Without it':live?'Without it':'Status quo'}</span><span><i class="r"></i>${isL?'US requirement':'Defense need'}</span>${drawO?`<span><i style="background:${CHC.ord}"></i>With this, if Congress orders it</span>`:''}</div>
+    ${(()=>{const tb=eRows.length?impTable(eRows.slice(0,4).map(r=>r.c),live?base:alt,live?alt:base,at,ts):'';return tb||(ordLs.length?`<div class="pvc">No end item makes more by 2035 with today’s orders: Congress has not ordered what the new capacity could make (below).</div>`:`<div class="pvc">No end item makes more by 2035: ${impWhy(def,k,isL,withR)}.</div>`)})()}
+    ${(()=>{const ls=ordLs;if(!ls.length)return '';
+      return `<div class="pvord"><div class="pvordh">Funded orders hold it back</div><p>A line makes only what Congress has ordered. ${live?'This program':'This plant'} adds capacity, but without more orders ${ls.every(x=>x.g<LINES[x.c].k*.002)?'it would sit idle':'much of it would sit idle'}.</p>${ls.map(x=>{const st=ordStep(x.c),add=Math.max(st,Math.ceil((x.Y0-x.X0)/st)*st),rq=ordReqs().find(q=>q.c===x.c),u=LINES[x.c].u;
+        return `<div class="pvordr"><span><b>${LINES[x.c].n}</b>: +${fmtN(x.gO)} ${u} a year by ${refY} if Congress orders it, ${x.g>=LINES[x.c].k*.002?`+${fmtN(x.g)} with today’s orders`:'none with today’s orders'}. Ordered now: ${fmtN(x.X0)} a year.</span>${rq?`<span class="okt">✓ +${fmtN(rq.add)} a year requested in the FY${FYOF(rq.pkg)} NDAA</span>`:x.Y0>x.X0?`<button class="pbtn sm primary" data-a="ordadd" data-c="${x.c}" data-v="${add}" ${S.pc>=ordPC(x.c,add)?'':'disabled'} data-tip="${tipQ(`<b>Request orders in the FY${pkgFY()} NDAA</b><br>+${fmtN(add)} ${u} a year, about ${money(add*UC[x.c])} a year, paid by Congress if it funds them (vote ~${fmtDate(pkgWhen())}). The line makes what it can of them until the new capacity lands.`)}">Request +${fmtN(add)} a year · ${ordPC(x.c,add)} PC</button>`:''}</div>`}).join('')}</div>`})()}
     <div class="pvnote">Projected on a copy of your game: every program lands when now expected, new plants ramp up and firms hire. Luck and new decisions will move it.</div></div>`}
 
 // one chart palette everywhere: blue = you, green = allies, red = China or Russia, gold dashed = the requirement or need;
