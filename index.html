@@ -1181,6 +1181,8 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .sbm-key{display:flex;align-items:center;gap:6px;font:11px "Segoe UI",system-ui,sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:#6b5a35}.sbm-key i{display:inline-block;margin-left:8px}
 .sbm-key .k-now{width:14px;height:8px;background:#2f62a0;border-radius:1px}.sbm-key .k-fl{width:0;height:12px;border-left:2px dashed #b8860b}.sbm-key .k-tg{width:3px;height:12px;background:#231d14}
 .sbtest{margin-top:6px}
+tr.jumpto>td{animation:jmprow 2.2s ease-out both}@keyframes jmprow{0%,35%{background:#f6e2a6}100%{background:transparent}}
+tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 4px 0 0 #b8860b}
 </style>
 </head>
 <body>
@@ -3634,7 +3636,7 @@ function billBody(){const fy=pkgFY(),cp=cprioOf(fy),pl=pkgPlan(),room=pkgRoom(),
   const odds=x=>x.st==='out'?'<span class="redt">Not funded: below the money line</span>':(()=>{const q=cutP(x.p),b=billSev(PD[x.p.def]);return `<span class="${q>.25?'amb':'okt'}">~${Math.round(q*100)}% cut risk</span>${x.p.champ?' <span class="mini">(championed)</span>':''}<div class="mini">${b.why}</div>`})();
   let line=false,rows='';pl.forEach((x,i)=>{const p=x.p;
     if(!line&&x.st!=='in'&&pl.slice(i).every(y=>y.st!=='in')){line=true;rows+=`<tr class="bl-line"><td colspan="6">— The money line: Congress has about ${money(room)} for requests this year. Everything below is not funded, and its PC is lost. —</td></tr>`}
-    rows+=`<tr class="${x.st==='out'?'bl-out':''}"><td class="bl-ord"><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="-1" ${i?'':'disabled'} title="Higher priority">▲</button><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="1" ${i<pl.length-1?'':'disabled'} title="Lower priority">▼</button></td>
+    rows+=`<tr id="bl-${p.uid}" class="${x.st==='out'?'bl-out':''}${S._blHi===p.uid?' blhl':''}"><td class="bl-ord"><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="-1" ${i?'':'disabled'} title="Higher priority">▲</button><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="1" ${i<pl.length-1?'':'disabled'} title="Lower priority">▼</button></td>
       <td><b class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</b><div class="mini">${(()=>{const k=officeOf(PD[p.def]);return `${OFFICES[k].n}${cp?.hi.includes(k)?' · <span class="okt">Congress backs</span>':cp?.lo===k?' · <span class="redt">Congress questions</span>':''}`})()}</div></td><td>${tgt(p)}<div class="mini">${gainOf(p)}</div></td><td class="num">${money(p.req)}<div class="mini">${p.pc||0} PC spent</div></td><td>${odds(x)}</td>
       <td class="bl-act">${p.pledge?`<span class="mini okt" data-tip="${tipQ('You told the committees construction would be under way by this date. Keeping it raises your standing; missing it costs 6 standing and 5 PC.')}">🤝 Pledged: building by ${fmtDate(p.pledge.due)}</span>`:`<button class="btn sm" data-a="bpl" data-u="${p.uid}" data-tip="${tipQ(`<b>Pledge a start date</b><br>Tell the committees construction will be under way by ${fmtDate(pledgeDue(p))}. Cuts this request's markup risk by 40%. Keep it and your standing rises by 5; miss it and you lose 6 standing and 5 PC. No cost now.`)}">🤝 Pledge a start</button>`}${p.champ?'<span class="mini okt">✓ Championed</span>':''}
         <button class="btn sm" data-a="bnow" data-u="${p.uid}" ${S.budget>=p.req-1e-9?'':'disabled'} data-tip="${tipQ(`<b>Build now</b><br>Take it out of the request and pay ${money(p.req)} from your budget; it starts today. The ${p.pc||0} PC comes back.`)}">🏗 Build now</button>
@@ -3670,8 +3672,8 @@ function startProject(id,ct,mode){
   S.projects.push(p);enterStage(p);actRec('prj',{id,ct:ct||null,mode:mode||null});
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
   if(!S.histMode){const v=launchVerdict(def),pv=previewOf(def,ct),yr=w=>w>=END_W?'after 2035':'~'+dateOf(w).getFullYear(),tgt=def.t.node?ND[def.t.node].n:LINES[def.t.line].n;
-    receipt({ic:def.nt?'🌐':def.ally?'🤝':pk?'🏛':'🏗',lab:def.nt?'Offtake signed with a neutral supplier':def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:`data-a="prog" data-u="${p.uid}"`,actL:pk?'Track the request →':'Open the program →',
-      lines:[`Raises <b>${tgt}</b>.${pk?` ${rk} Political Capital spent. Congress votes on the FY${FYOF(p.pkg)} ${billN()} ~${fmtDate(pkgWhen())}; if it funds the plant, Congress pays the ${money(c)}, not your budget. It is likelier to cut it the less it holds back output.`:pv.isPlant?` The ${OFFICES[officeOf(def)].n} office runs the contract, permits and construction.`:''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''}, if it slips as much as your programs have so far${pk?'':` · ${money(c)} committed`}.`]})}
+    receipt({ic:def.nt?'🌐':def.ally?'🤝':pk?'🏛':'🏗',lab:def.nt?'Offtake signed with a neutral supplier':def.ally?'Allied deal signed':pk?`Requested in the FY${FYOF(p.pkg)} NDAA`:pv.isPlant?'New plant started':'Started',title:def.n,ok:v?.ok,act:pk?`data-a="blgo" data-u="${p.uid}"`:`data-a="prog" data-u="${p.uid}"`,actL:pk?'Track the request on the NDAA tab →':'Open the program →',
+      lines:[`Raises <b>${lc(tgt)}</b>.${pk?` ${rk} Political Capital spent. Congress votes on the FY${FYOF(p.pkg)} ${billN()} ~${fmtDate(pkgWhen())}; if it funds the plant, Congress pays the ${money(c)}, not your budget. It is likelier to cut it the less it holds back output.`:pv.isPlant?` The ${OFFICES[officeOf(def)].n} office runs the contract, permits and construction.`:''}`,v?`<span class="${v.ok?'okt':'amb'}">${v.t}.</span>`:'',`${pv.isPlant?'Output':'Online'} <b>${yr(pv.wOn)}</b>${pv.isPlant&&pv.wFull<END_W?`, full rate <b>${yr(pv.wFull)}</b>`:''}, if it slips as much as your programs have so far${pk?'':` · ${money(c)} committed`}.`]})}
 }
 const pmark=(p,e)=>(p.h=p.h||[]).push({w:S.w,...e}),plose=(p,l,x)=>{(p.lost=p.lost||{})[l]=(p.lost[l]||0)+x;refCredit(p,l,x)};
 // start work before the price is settled: contracting ends in ~4 weeks, the government carries the cost risk
@@ -4175,7 +4177,7 @@ function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)o
   return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
 function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play a turn soon, or end the tutorial.</span>');return}if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
   if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
-function turnDone(){S.speed=0;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown)};for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
+function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown)};for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
   if(S.over)return '';
   return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next turn ▸ ${turnLabel(S.w)}`}</button>`}
@@ -4672,7 +4674,7 @@ function bnBody(){
        ${p.div>1e-9?`<div class="bnc mini">🏭 Defense orders already take ${pct(p.div/Math.max(p.need,1e-9))} of need from civilian buyers</div>`:prioOff(id)?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}">🏭 Restore defense priority</button></div>`:''}</div></div></div>`}).join('');
   return h+prS}
 /* ---------- getting around: one back stack for every jump, and a finder for everything ---------- */
-const NAV_ACTS=new Set(['brgo','prjump','pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
+const NAV_ACTS=new Set(['blgo','brgo','prjump','pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
 // where Back goes, in words
 function backLbl(){const t=S.navH?.at(-1);if(!t)return '';if(t.modal==='node'&&t.sel)return t.sel.startsWith('L:')?LINES[t.sel.slice(2)]?.n:ND[t.sel]?.n;
   if(t.modal==='prog'){const r=progRec(t.selP);return r?(r.p.nm||PD[r.p.def].n):'the program'}if(t.modal)return 'the previous page';return SUBN[t.view]||(VIEWS.find(v=>v[0]===t.view)?.[1]||'the map')}
@@ -5866,7 +5868,7 @@ function mountView(st0){
   slot.replaceWith(viewEl);if(S.view==='flow')skPlates(viewEl.querySelector('svg.sk'));if(viewEl.dataset.fresh){viewEl.scrollTop=0;delete viewEl.dataset.fresh}else viewEl.scrollTop=st;
   if(S._citeScroll){const el=viewEl.querySelector('#cite-'+S.citeHi);if(el)el.scrollIntoView({block:'center'});S._citeScroll=false}
   const sk=viewEl.querySelector('.skwrap');if(sk&&S._skScroll!=null)sk.scrollLeft=S._skScroll;
-  if(S._scrollTo){const el=viewEl.querySelector(S._scrollTo);if(el){el.scrollIntoView({block:S._scrollTo.startsWith('#rl-')?'center':'start'});el.classList.remove('jumpto');void el.offsetWidth;el.classList.add('jumpto')}S._scrollTo=null}
+  if(S._scrollTo){const el=viewEl.querySelector(S._scrollTo);if(el){el.scrollIntoView({block:/^#(rl|bl)-/.test(S._scrollTo)?'center':'start'});el.classList.remove('jumpto');void el.offsetWidth;el.classList.add('jumpto')}S._scrollTo=null}
 }
 
 /* =====================================================================
@@ -7438,6 +7440,7 @@ document.addEventListener('pointerdown',e=>{
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'pvzoom':UIP.pvFull=!UIP.pvFull;uiSave();S._vdirty=true;break;
     case 'sbrief':S.modal='sbrief';S.speed=0;break;
+    case 'blgo':S._blHi=+b.dataset.u;S._rcpt=null;renderReceipt();S.view='ndaa';S._vdirty=true;S._scrollTo='#bl-'+b.dataset.u;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'brgo':S.view=b.dataset.v;S._vdirty=true;if(b.dataset.j)S._jump=b.dataset.j;if(b.dataset.s)S._scrollTo=b.dataset.s;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'brno':(S.briefNo=S.briefNo||{})[b.dataset.k]=S.w;S._vdirty=true;break;
     case 'brtog':UIP.nobrief=!UIP.nobrief;uiSave();S._vdirty=true;break;
