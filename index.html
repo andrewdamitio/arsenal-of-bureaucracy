@@ -165,7 +165,7 @@ table.oob td b{font-family:Georgia;font-size:12.5px}table.oob .d{display:block;f
 .sktool .pbtn{font-size:12px;padding:3px 9px}.sktool .pbtn.on{background:#3a3020;color:var(--brass2)}
 .sktool .lab{color:#6b5a35;margin:0 4px 0 8px;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.06em;min-width:92px}
 .sk{display:block;width:100%;height:auto;background:#efe6cf;border:1px solid #cbbd95}
-.sk text{font:12px "Segoe UI",system-ui,sans-serif;fill:#231d14;cursor:pointer}.sk .lbg{fill:#efe6cf;fill-opacity:.94}.sk .nd:hover .lbg{fill:#f8f1dc;fill-opacity:1;stroke:#a8915a}.sk text.ch{pointer-events:none}.sk .nd:hover text{fill:#000;text-decoration:underline}
+.sk text{font:12px "Segoe UI",system-ui,sans-serif;fill:#231d14;cursor:pointer}.sk text.ch{pointer-events:none}.sk .nd:hover text{fill:#000;text-decoration:underline}
 .sk text .sub{font-size:11.5px;fill:#5a4e38}
 .sk text.ch{font-weight:700;font-size:11.5px;fill:#5a4a28;letter-spacing:.07em}
 .billt td,.billt th{text-align:right}.billt td:first-child,.billt th:first-child{text-align:left}.billt .billsum td{border-top:2px solid #8a7850}
@@ -4207,6 +4207,7 @@ function sankeyFlows(R,focus,mode,attr){const alpha=attr==='va'?.5:0;
   return {links};
 }
 // shorter names where the full one will not fit a column of the flow chart (the tooltip keeps the full name)
+let SKID=0;
 const SKN={linters:'Cotton linters',chem:'Nitric acid & ammonia',propchem:'Propellant binders',nc:'Nitrocellulose',machine_tools:'Machine tools & presses',micro:'Rad-hard microelectronics',blades:'Turbine blades',fiber:'Optical fiber',composites:'Composites & motor cases',tantcap:'Capacitors & passives',sub_parts:'Sub valves & pumps'};
 function sankeySVG(R,focus,mode,attr){
   const {links}=sankeyFlows(R,focus,mode,attr);
@@ -4244,11 +4245,12 @@ function sankeySVG(R,focus,mode,attr){
   const nameOf=id=>id.startsWith('S:')?SRC[id].n:id.startsWith('L:')?LINES[id.slice(2)].n:ND[id].n;
   const nodeCol=id=>{if(id.startsWith('S:'))return SRC[id].c;if(id.startsWith('L:')){const o=R.out[id.slice(2)],r=o.n/Math.max(o.cap,1e-9);return r>=.999?'#6a8f5a':r>=.8?'#d9a441':'#d0503f'}
     const st=nodeStatus(P[id]);return {ok:'#6a8f5a',idle:'#6a8f5a',tight:'#d9a441',short:'#d0503f',cut:'#8a1f15'}[st]};
-  let svg=`<svg class="sk" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="skh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#f0c4ba"/><rect width="3" height="6" fill="#d0503f"/></pattern></defs>`;
+  let svg=`<svg class="sk" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="skh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#f0c4ba"/><rect width="3" height="6" fill="#d0503f"/></pattern><filter id="skb${SKID}" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="3"/></filter><mask id="skm${SKID}" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="#fff"/><g class="skmh" filter="url(#skb${SKID})"></g></mask></defs><g mask="url(#skm${SKID})">`;
   ['Sources','Tier 1 · Raw','Tier 2 · Processed','Tier 3 · Components','Tier 4 · Subsystems','End items'].forEach((t,c)=>{svg+=`<text class="ch" x="${colX(c)}" y="18">${t.toUpperCase()}</text>`});svg+=`<line x1="0" x2="${W}" y1="25" y2="25" stroke="#cbbd95"/>`;
   links.forEach((l,i)=>{const a=pos[l.s],b=pos[l.t],x0=a.x+nodeW,x1=b.x,w=Math.max(.6,l.v*k),xm=(x0+x1)/2;
     const col=l.s.startsWith('S:')?SRC[l.s].c:mix(P[l.s]?.expo||0);
     svg+=`<path class="lk" data-s="${l.s}" data-t="${l.t}" d="M${x0},${l.y0}C${xm},${l.y0} ${xm},${l.y1} ${x1},${l.y1}L${x1},${l.y1+w}C${xm},${l.y1+w} ${xm},${l.y0+w} ${x0},${l.y0+w}Z" fill="${col}" opacity=".42" data-tip="${nameOf(l.s)} → ${nameOf(l.t)}<br><b>${pct(l.v/total)}</b> of this view's value"></path>`});
+  svg+='</g>';SKID++;
   for(const id of ids){const p=pos[id],isL=id.startsWith('L:');
     const act=id.startsWith('S:')?'':isL?`data-a="flow" data-f="${id}"`:`data-a="node" data-n="${id}"`;
     let tip=nameOf(id)+` — ${pct(val(id)/total)} of this view`;
@@ -4259,7 +4261,7 @@ function sankeySVG(R,focus,mode,attr){
       if(cut)svg+=`<path d="M${p.x-1},${yb-2} l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4 l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4" stroke="#efe6cf" stroke-width="3" fill="none"><title>Idle capacity, shortened to fit</title></path>`}
     const ty=labY[id],cyy=p.y+(p.h+p.g)/2;
     if(Math.abs(ty-4.5-cyy)>5)svg+=`<path d="M${p.x+nodeW},${cyy}L${p.x+nodeW+3},${ty-4.5}" stroke="#8a7850" stroke-width=".6" fill="none"/>`;
-    svg+=`<rect class="lbg" x="${p.x+nodeW+2}" y="${ty-12}" width="${Math.min(isL?240:175,nameOf(id).length*6.8+8)}" height="${isL?31:16}" rx="2"/>`;
+    svg+=`<rect class="lbg" x="${p.x+nodeW+2}" y="${ty-12}" width="${Math.min(isL?240:175,nameOf(id).length*6.8+8)}" height="${isL?31:16}" fill="transparent"/>`;
     const gap=(W-left-right-nodeW)/5-nodeW-10,mx=Math.floor(gap/6.1),nm1=nameOf(id),nm0=nm1.length>mx&&SKN[id]?SKN[id]:nm1.length>mx?nm1.replace(/ *\(.*\)$/,''):nm1,nm=!isL&&nm0.length>mx?nm0.slice(0,mx-1).trimEnd()+'…':nm0;
     svg+=isL?`<text x="${p.x+nodeW+5}" y="${ty-6}"><tspan font-weight="600">${nm}</tspan><tspan x="${p.x+nodeW+5}" dy="15" class="sub">${pct(R.out[id.slice(2)].n/Math.max(R.out[id.slice(2)].cap,1e-9))} of capacity in use</tspan></text>`:`<text x="${p.x+nodeW+4}" y="${ty}">${nm}</text>`;
     svg+=`</g>`}
@@ -4269,7 +4271,7 @@ function sankeySVG(R,focus,mode,attr){
   return svg+`<div class="sklegend">${summary}<span><i style="background:linear-gradient(90deg,rgb(138,133,120),rgb(192,72,58))"></i>Link tint = PRC/Russia content of the flowing material</span><span><i style="background:#d0503f"></i>Node red = short / cut</span><span><i style="background:url(#skh);background:repeating-linear-gradient(45deg,#d0503f 0 3px,#f0c4ba 3px 6px)"></i>Lost line output</span></div>`;
 }
 // fit each label's paper plate to its text (needs the chart on the page, so it is re-run after mounting)
-function skPlates(svg){if(!svg||svg.dataset.fit)return;for(const n of svg.querySelectorAll('.nd')){const t=n.querySelector('text'),r=n.querySelector('rect.lbg');if(!t||!r)continue;const b=t.getBBox();if(!(b.width>0))return;r.setAttribute('x',b.x-3);r.setAttribute('y',b.y);r.setAttribute('width',b.width+6);r.setAttribute('height',b.height)}svg.dataset.fit=1}
+function skPlates(svg){if(!svg||svg.dataset.fit)return;const mh=svg.querySelector('.skmh');let h='';for(const n of svg.querySelectorAll('.nd')){const t=n.querySelector('text'),r=n.querySelector('rect.lbg');if(!t||!r)continue;const b=t.getBBox();if(!(b.width>0))return;r.setAttribute('x',b.x-3);r.setAttribute('y',b.y);r.setAttribute('width',b.width+6);r.setAttribute('height',b.height);h+=`<rect x="${b.x-2}" y="${b.y+1}" width="${b.width+4}" height="${b.height-2}" fill="#000" fill-opacity=".88"/>`}if(mh)mh.innerHTML=h;svg.dataset.fit=1}
 function attachSankey(root=ov){
   const svg=root.querySelector('svg.sk');if(!svg)return;
   const lks=[...svg.querySelectorAll('.lk')],nds=[...svg.querySelectorAll('.nd')];
