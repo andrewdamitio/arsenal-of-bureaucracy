@@ -2647,7 +2647,31 @@ function doCeasefire(){const E=S.enemy.eu;E.war=false;E.pm*=.85;S.ceasefire=true
 /* =====================================================================
    SIM — supply graph
    ===================================================================== */
-function log(m,cls=''){S.log.unshift({w:S.w,m,cls});if(S.log.length>250)S.log.pop()}
+function log(m,cls=''){S.log.unshift({w:S.w,m,cls});if(S.log.length>250)S.log.pop();S._logN=(S._logN||0)+1}
+// ---- measures: every change that is not part of a measure's steady weekly flow is written down with its cause, so each
+// measure's page can show what moved it. Changes are found by comparing snapshots: around each week's tick (less the weekly
+// flows, which the pages show live) and between screen updates (what the player just did). The cause is the event answered,
+// or the first log line written since the last snapshot.
+const MLOG_MAX=200,MLOG_K=['pc','strain','lev','know'];
+const mOn=()=>S&&!S.sim&&!S.histMode&&!CF_RUN&&!S.replay;
+function msnap(){return {pc:S.pc,strain:S.strain,lev:S.lev,know:{...S.know},n:S._logN||0}}
+const mclean=m=>String(m).replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').replace(/^[^A-Za-z0-9(“"$−+]+/,'').replace(/\s+/g,' ').trim().slice(0,150);
+// the log line that best explains a change: news of the same kind (good news for a gain, bad for a loss) first, then any event
+function mcauseOf(n0,good){const k=(S._logN||0)-n0;if(k<=0)return null;const L=S.log.slice(0,Math.min(k,S.log.length)).reverse();const p=L.find(l=>l.cls===(good?'good':'bad'))||L.find(l=>l.cls==='ev')||L[0];return p?mclean(p.m):null}
+function mattr(a,why,fl={}){if(!mOn()||!a)return;const L=S.mlog=S.mlog||{};for(const k of MLOG_K)L[k]=L[k]||[];
+  // strain and leverage rising is bad news; Political Capital and know-how rising is good
+  const push=(k,d,x)=>{const good=(k==='strain'||k==='lev')?d<0:d>0;L[k].unshift({w:S.w,d:+d.toFixed(2),why:why||mcauseOf(a.n,good)||'Unexplained change',...x});if(L[k].length>MLOG_MAX)L[k].pop()};
+  const dpc=S.pc-a.pc-(fl.pc||0);if(Math.abs(dpc)>=.5)push('pc',dpc);
+  const ds=S.strain-a.strain-(fl.strain||0);if(Math.abs(ds)>=.3)push('strain',ds);
+  const dl=S.lev-a.lev;if(Math.abs(dl)>=.3)push('lev',dl);
+  for(const id in S.know){const d=(S.know[id]||0)-(a.know[id]??S.know[id]);if(Math.abs(d)>=.5)push('know',d,{id})}}
+// the screen-update checkpoint: whatever changed since the last one was the player's doing
+function mcheck(){if(!mOn())return;if(S._mcp)mattr(S._mcp,S._mcause);S._mcp=msnap();S._mcause=null}
+// history: the measures every four weeks; know-how per item only when it has moved
+function mhist(force){if(!mOn())return;S.mh=S.mh||[];const last=S.mh.at(-1);if(!force&&last&&S.w-last[0]<4)return;
+  S.mh.push([S.w,+S.pc.toFixed(1),+S.budget.toFixed(3),+S.strain.toFixed(1),+S.lev.toFixed(1),+(cnS().heat||0).toFixed(1),+credOf().toFixed(1)]);
+  S.mhk=S.mhk||{};for(const id in S.know){const h=(S.mhk[id]=S.mhk[id]||[]),v=+(S.know[id]||0).toFixed(1);if(!h.length||Math.abs(h.at(-1)[1]-v)>=.3)h.push([S.w,v])}}
+const MH_I={pc:1,budget:2,strain:3,lev:4,cn:5,cred:6};
 function tmod(kind,id,mult,weeks,label){S.tmods.push({kind,id,mult,left:weeks,label})}
 function tm(kind,id){let m=1;for(const x of S.tmods)if(x.kind===kind&&x.id===id)m*=x.mult;return m}
 // Buyers and their suppliers hold stocks of imported materials and parts. When an export ban or sanction cuts a source, those stocks
@@ -3946,7 +3970,7 @@ function autoDecide(){
 function chooseOpt(uid,k){
   const p=S.projects.find(x=>x.uid==uid);if(!p)return;const inst=p.obs[0];if(!inst||inst.wait>0)return;
   const od=OD[inst.id],opt=od.o[k];if(!opt||!optOk(opt))return;
-  const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
+  S._mcause=`${mclean(V(od.n))} (${mclean(projName(p))}): ${mclean(optSplit(V(opt.l))[0])}`;const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
   if(eff.gain)p.gm*=eff.gain;if(eff.adv)p.adv=Math.min(1,p.adv+eff.adv);
   log(`${S._auto?'⏱ No decision in time. ':''}${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');if(prob<1)rollRec(projName(p),`${V(od.n)} → ${V(opt.l)}`,prob,ok,failWhat(opt.fail,od,PD[p.def]));
   if(eff.spawn){p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)});spawnObs(p,V(eff.spawn),true);return}
@@ -3957,7 +3981,7 @@ function chooseOpt(uid,k){
 function chooseOps(uid,k){
   const pl=S.plants.find(x=>x.uid==uid);if(!pl||!pl.issue||pl.issue.wait>0)return;
   const od=OPSD[pl.issue.id],opt=od.o[k];if(!opt||!optOk(opt))return;
-  const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
+  S._mcause=`${mclean(V(od.n))} (${mclean(pl.nm||'plant')}): ${mclean(optSplit(V(opt.l))[0])}`;const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
   if(eff.know)S.know[pl.target]=Math.min(95,S.know[pl.target]+eff.know);
   if(eff.yieldMul)pl.yield*=eff.yieldMul;if(eff.adv)pl.adv=Math.min(1,pl.adv+eff.adv);
   log(`${S._auto?'⏱ No decision in time. ':''}${pl.nm}: ${od.n} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');if(prob<1)rollRec(pl.nm,`${od.n} → ${V(opt.l)}`,prob,ok,failWhat(opt.fail,null));
@@ -4142,7 +4166,7 @@ const STRAIN_EV=[['strainNews',30,20],['strainHearing',50,40],['strainCrisis',70
 function topDiv(){const P=(S._R||production(false)).P,ids=(S.divIds||[]).filter(id=>P[id]);return ids.sort((a,b)=>P[b].div/Math.max(P[b].civFull||1e-9,1e-9)*(ND[b].civ||0)-P[a].div/Math.max(P[a].civFull||1e-9,1e-9)*(ND[a].civ||0))[0]||null}
 function homeTick(lastOut){
   const nPrio=S.divIds||[]; // items where defense orders are taking civilian supply
-  S.strain=clamp(S.strain+MOB[S.mob].strain+(S.divLoad||0)*DIV_STRAIN-.35,0,100);
+  {const a=S.strain;S.strain=clamp(S.strain+MOB[S.mob].strain+(S.divLoad||0)*DIV_STRAIN-.35,0,100);S._sflow=S.strain-a}
   {const a=S.pc;S.pc=Math.min(250,Math.max(0,S.pc+pcRate()));S._pcInc=S.pc-a}
   if(nPrio.length&&rand('r51')<.006*nPrio.length*(.5+S.strain/50)&&!S.queue.some(q=>q.ev==='diversion')){S._div=nPrio[Math.floor(rand('r52')*nPrio.length)];queueEvent('diversion')}
   S.strainUp=S.strainUp||{};for(const [e,hi,lo] of STRAIN_EV){if(S.strain>=hi&&!S.strainUp[e]){S.strainUp[e]=1;if(e==='strainNews'||e==='strainHearing')S._sdiv=topDiv();queueEvent(e)}else if(S.strain<lo)S.strainUp[e]=0}
@@ -4156,7 +4180,8 @@ function homeTick(lastOut){
   for(const lid in S.fw){const f=S.fw[lid];if(S.w>=f.due){const got=lastOut[lid]?.n||0,r=got/f.target;S.queue.push({sys:'fw',lid,r});S.pc=Math.max(0,S.pc+(r>=.7?10:-20));delete S.fw[lid]}}
 }
 /* ---------- weekly tick ---------- */
-function tick(){
+function tick(){if(mOn()){if(S._mcp)mattr(S._mcp,S._mcause);S._mcause=null}const _ma=mOn()?msnap():null;S._sflow=0;S._pcInc=0;tick0();if(_ma){mattr(_ma,null,{pc:S._pcInc||0,strain:S._sflow||0});mhist();S._mcp=msnap()}}
+function tick0(){
   if(S.over)return;
   pcPre();S.w++;
   if(S.fac==='US'&&(S.histMode?fyStart():billNow())){const fb=S.histMode?F().fyBudget:fyBud(S.w);gainB(fb,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(fb)}.`,'good');
@@ -7344,7 +7369,7 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
 // does a supply move on this item touch a line's current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.budget=9999}}
-function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
+function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
 const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
@@ -7518,7 +7543,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'scenstop':S.over=true;S.speed=0;S.verdict=S.scenRes.verdict;S.overWhy='';S.modal=null;S.view='rec';S._vdirty=true;break;
     case 'rcptx':if(S._rcpt)S._rcpt.gone=true;renderReceipt();return;
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
-    case 'evopt':{const q=S.queue[0];let out=null;if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);const a=outSnap();if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.();S.pc=Math.max(0,S.pc);const rows=outDiff(a);const pj=q._pj&&q._pj.w===S.w?q._pj:null;if(rows.length||pj)out={sys:'outcome',ev:q.ev,ch:optSplit(V(o.l))[0],rows,pj,k:+b.dataset.k}}}S.queue.shift();if(out)S.queue.unshift(out);S.pc=Math.max(0,S.pc);break}
+    case 'evopt':{const q=S.queue[0];let out=null;if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);S._mcause=`${mclean(V(ED[q.ev].t))}: ${mclean(optSplit(V(o.l))[0])}`;const a=outSnap();if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.();S.pc=Math.max(0,S.pc);const rows=outDiff(a);const pj=q._pj&&q._pj.w===S.w?q._pj:null;if(rows.length||pj)out={sys:'outcome',ev:q.ev,ch:optSplit(V(o.l))[0],rows,pj,k:+b.dataset.k}}}S.queue.shift();if(out)S.queue.unshift(out);S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;clearSave();break;
     case 'cntalk':cnTalk();break;
     case 'bnsort':S.bnSort=b.dataset.v;S._vdirty=true;break;
