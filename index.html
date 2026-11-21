@@ -1145,6 +1145,10 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .cstory{margin:8px 0 6px;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif}
 .mktop{float:right;font:600 11.5px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none}.vbody>.crumb{margin:0 0 6px}
 .skone{font:12px "Segoe UI",system-ui,sans-serif;color:#6b5a35;font-style:italic}
+.paper.sbrief{width:min(1040px,100%)}.sbrief .trt .trd{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}.sbrief .trts{margin:10px 0}.sbrief .trgrid{margin-top:10px}
+.sbrief .sbt td{vertical-align:top}.sbrief .sbt td .mini{font-size:11px;color:#7a6a48;margin-top:2px;line-height:1.35}.sbrief .sbt td.num{white-space:nowrap}
+.sbl{margin:4px 0 6px;padding-left:18px;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif;color:#2b241a}.sbl li{margin:2px 0}.sbp{margin:4px 0 8px;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif;color:#2b241a}
+.sbre{margin-right:auto;color:#7a6a48}.sc-ch .sc-brief{margin-left:8px;font:600 11.5px "Segoe UI",system-ui,sans-serif;color:#dcc78e}
 </style>
 </head>
 <body>
@@ -6433,12 +6437,45 @@ function tbHTML(paper){if(!S||UIP.nobrief||S.tut||S.w<PLAY0||S.histMode||S.repla
   const cards=mv.map(x=>`<div class="brc"><div class="brk"><span>${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button></div><div class="brt">${x.t}</div><div class="brw">${x.why}</div><div class="bra">${x.act}</div></div>`).join('');
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><span>${mv.length?`${mv.length===1?'One move':mv.length===2?'Two moves':'Three moves'} worth making now, ranked by points of sufficiency where known`:'Nothing pressing'}</span><span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide the brief</span></div>${mv.length?`<div class="brcs">${cards}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
+// ---- the mandate brief: what the scenario is, what you must reach and by when, how you are judged, and what you can do about it.
+// Opens when a game starts; the mandate card on Command reopens it.
+function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYear(),r0=S.rec0||{};
+  const tile=(lab,v,d)=>`<div class="trt"><span>${lab}</span><b>${v}</b><i class="trd">${d}</i></div>`;
+  const levers=`<div class="trcol"><div class="trh"><b>What you can do</b><span>each turn is two months</span></div><ul class="sbl">
+     <li><b>Build plants</b> for the parts and weapons in short supply: <span class="linkn" data-a="view" data-v="bn">Supply chain → Bottlenecks</span> ranks them by the output they cost.</li>
+     <li><b>Ask Congress</b> for plants, orders and reforms in each year’s NDAA, decided every December: <span class="linkn" data-a="view" data-v="ndaa">NDAA</span>. A line makes only what Congress has ordered.</li>
+     <li><b>Act on your own authority</b>: Defense Production Act priorities, emergency powers, waivers: <span class="linkn" data-a="view" data-v="policy">Rules & policy</span>.</li>
+     <li><b>Buy from allies</b>: co-production deals and allied supply: <span class="linkn" data-a="view" data-v="allies">Allies & imports</span>.</li>
+     <li><b>Answer what comes up</b>: lawsuits, permits, strikes and supplier trouble stop programs until you choose a way past them.</li></ul>
+     <p class="whyn">The <b>brief at the top of Command</b> suggests the moves worth making each turn.</p></div>`;
+  if(!sc)return `<div class="paper trp sbrief"><div class="hd"><span class="ic">🏁</span>The open race</div><div class="bd">
+    <p class="ckintro">January 2027. No targets are handed to you: rebuild what you judge matters most, and measure yourself against China or Russia, line by line. The game ends in January 2035.</p>
+    <div class="trts n3">${tile('You start with',money(S.budget),`and ${Math.floor(S.pc)} Political Capital`)}${tile('Measured by','Sufficiency',`what you and your allies make against what the plan requires; ${pct(raceIdx((S._R||production(false)).out))} now`)}${tile('The game ends','Jan 2035','with a debrief of what you did and what it cost')}</div>
+    <div class="trgrid">${levers}</div></div><div class="ft trft"><button class="pbtn primary" data-a="close">Start →</button></div></div>`;
+  const rows=sc.mand.map(m=>{const x=mandVal(m),show=x.show||fmtN,u=m.c?` <span class="mini">${LINES[m.c].u} a year</span>`:'';
+    const fl=m.kind==='expo'?`≤ ${pct((r0.expo??S.exposure)*x.fl)}`:show(x.fl),tg=m.kind==='expo'?`≤ ${pct(x.t??m.tgt)}`:show(x.t??m.tgt);
+    return `<tr><td><b>${m.n}</b><div class="mini">${m.src||''}</div></td><td class="num">${show(x.v)}${u}</td><td class="num">${fl}</td><td class="num"><b>${tg}</b></td></tr>`}).join('');
+  const cut=!!sc.test.cut,pass=cut?.8:CRISIS_WIN;
+  const test=cut?`<b>If China cut you off:</b> what every line would still build with no Chinese or Russian inputs, against January 2027. You pass at ${pct(pass)}.`
+    :`<b>If the fight came today:</b> how far your stocks and forces would last in ${SCEN[sc.test.t].short}. Your intelligence gives you an estimate on Command; the checkpoints judge the true figure. You pass at ${pct(pass)}.`;
+  return `<div class="paper trp sbrief"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: your mandate</div><div class="bd">
+   <p class="ckintro">${sc.threat}</p>
+   <div class="trts">${tile('Halfway check',`Jan ${yr(sc.mid)}`,'the halfway floors and the test: a progress check, not a grade')}${tile('Final verdict',`Jan ${yr(sc.dl)}`,'the real targets; the game ends')}${tile('You start with',money(S.budget),`and ${Math.floor(S.pc)} Political Capital; Congress adds money each December`)}${tile('Against',RIVALS[sc.rival].n,'whose output sets how much is enough')}</div>
+   <div class="trcol"><div class="trh"><b>What you must reach</b><span>today, halfway floor in ${yr(sc.mid)}, real target in ${yr(sc.dl)}</span></div>
+     <table class="whyt sbt"><tr><th>Target</th><th class="num">Today</th><th class="num">Floor, ${yr(sc.mid)}</th><th class="num">Target, ${yr(sc.dl)}</th></tr>${rows}</table>
+     <p class="whyn"><b>And a test, judged at both dates.</b> ${test}</p></div>
+   <div class="trgrid">${levers}
+    <div class="trcol"><div class="trh"><b>How it is judged</b><span>and what to expect</span></div>
+     <p class="sbp">In January ${yr(sc.mid)} you see how many halfway floors you meet and whether you pass the test. In January ${yr(sc.dl)} the verdict counts the real targets you reach.</p>
+     <p class="sbp">These are real public goals on real timelines, and the United States is not on track for most of them. Plants take years, inputs come from the rival you are racing, and the rules slow everything down. Meeting some of them, and seeing what it would take to meet the rest, is the game.</p>
+     <div class="tra"><span class="trlab">What to watch</span>${sc.lesson}</div></div></div>
+   </div><div class="ft trft"><span class="mini sbre">Reopen it any time from the mandate card on Command.</span><button class="pbtn primary" data-a="close">Start the first turn →</button></div></div>`}
 function scenCard(){
   if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2035. You can still pick a scenario until the clock starts.</span></div>`:'';
   if(false){
     return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">Real targets on real timelines: the US is not on track for most of them. The floors show how close you can get. Or close this and play the open race to 2035.</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
   const sc=SCD[S.scen],mid=S.scenMid,nextW=mid||S.w>=sc.mid?sc.dl:sc.mid,left=nextW-S.w,res=S.scenRes;
-  return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b>${res?`<span class="sc-v">${res.verdict}</span>`:`${mid?`<span class="sc-midv" data-tip="${tipQ(`January 2030: ${mid.floors} of ${mid.of} halfway floors met; the test ${mid.test.ok?'passed':'failed'}.`)}">2030: ${mid.verdict}</span>`:''}<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${nextW===sc.mid?'the halfway check':'the final targets'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}</span>`}</div>
+  return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="linkn sc-brief" data-a="sbrief" data-tip="The scenario, your targets, and how you are judged">Mandate brief</span>${res?`<span class="sc-v">${res.verdict}</span>`:`${mid?`<span class="sc-midv" data-tip="${tipQ(`January 2030: ${mid.floors} of ${mid.of} halfway floors met; the test ${mid.test.ok?'passed':'failed'}.`)}">2030: ${mid.verdict}</span>`:''}<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${nextW===sc.mid?'the halfway check':'the final targets'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}</span>`}</div>
     ${sc.mand.map((m,mi,ms)=>{const x=mandVal(m),tm=res?null:trkMand(m,x),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
       return `${m.kind==='keep'?`<div class="sc-sep" data-tip="${tipQ('<b>If China cuts you off</b><br>The same five lines with no Chinese or Russian inputs: the share of output you keep.<br>Weakest: '+(()=>{const {by}=keepOf(m.lines);return m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>LINES[c].n+' '+pct(by[c])).join(', ')})())}">Cutoff test</div><div class="sc-sub">If China stopped selling today: how much of these five lines’ output you would still build once its parts run out. Floor ${pct(x.fl)} in 2030, target ${pct(t)} in 2035.</div>`:''}<div class="sc-m${m.kind==='keep'?' sc-keep':''}${m.c?' trc':''}"${m.c?` data-n="L:${m.c}"`:''}><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}"><span class="sc-st ${x.ok?'met':tm?.s==='track'?'on':x.half?'half':'no'}" data-tip="${tipQ(x.ok?'<b>Target met</b>':tm?.s==='track'?`<b>On track</b><br>What is under way reaches the target by about ${dateOf(tm.w).getFullYear()}, if Congress orders what new capacity adds.`:x.half?'<b>Halfway floor met</b>':'<b>Below the halfway floor</b>')}">${x.ok?'✓':tm?.s==='track'?'↗':x.half?'◐':'○'}</span> ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.kind==='keep'?`<span data-tip="${tipQ(mandWhy(m))}">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the halfway floor, judged January 2030. End: the real target, judged January 2035."><i style="width:${f*100}%;background:${x.ok?'#76b357':tm?.s==='track'?'#4f8fd0':x.half?'#d9a441':'#d0503f'}"></i>${m.c&&!res?idleSegs(m.c,f,t,m):''}${tm&&tm.v!=null&&tm.v/t>f+.005?`<i class="sc-out" style="width:${Math.min(1,tm.v/t)*100}%" data-tip="${tipQ(`<b>January 2035 outlook: ${mFmt(m,tm.v)}/yr</b><br>With everything under way, if Congress orders what new capacity adds.`)}"></i>`:''}<span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>${!res&&m.c&&!ms.slice(mi+1).some(z=>z.c)?scLeg():''}`}).join('')}
     ${rdyRow(sc)}<div class="sc-test">${res?`Test: ${res.test.txt}`:`✓ target met · ↗ on track for the target · ◐ halfway floor met · ○ neither yet. January 2030 judges the halfway floors and ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}; January 2035 judges the real targets.`}</div></div>`}
@@ -7144,6 +7181,7 @@ function renderModal(){
   } else if(S.modal==='node'&&S.sel){
     html=dossierHTML(S.sel,P);
   } else if(S.modal==='suppc'){html=suppConfHTML()
+  } else if(S.modal==='sbrief'){html=scenBriefHTML()
   } else if(S.modal==='cf'){html=cfHTML()
   } else if(S.modal==='time'){html=timeHTML()
   } else if(S.modal==='why'){html=whyHTML()
@@ -7277,7 +7315,7 @@ document.addEventListener('pointerdown',e=>{
   if(a==='tpace'&&!S){TPACE=b.dataset.m;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
   if(a==='ttut'){clearSave();newGame('US');S.sandbox=false;S.modal=null;S.queue=[];chooseScen('taiwan');S.modal=null;S.view='cmd';S.tut={i:0,sc:-1};S.tourAuto=1;S.toured={};render();saveGame();return}
-  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];if(TSEL==='open')S.scenSkip=true;else chooseScen(TSEL);sbxFill();render();saveGame();return}
+  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];if(TSEL==='open')S.scenSkip=true;else chooseScen(TSEL);sbxFill();S.modal='sbrief';render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
@@ -7349,6 +7387,7 @@ document.addEventListener('pointerdown',e=>{
     case 'qj':setTimeout(qjOpen,0);break;
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'pvzoom':UIP.pvFull=!UIP.pvFull;uiSave();S._vdirty=true;break;
+    case 'sbrief':S.modal='sbrief';S.speed=0;break;
     case 'brgo':S.view=b.dataset.v;S._vdirty=true;if(b.dataset.j)S._jump=b.dataset.j;if(b.dataset.s)S._scrollTo=b.dataset.s;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'brno':(S.briefNo=S.briefNo||{})[b.dataset.k]=S.w;S._vdirty=true;break;
     case 'brtog':UIP.nobrief=!UIP.nobrief;uiSave();S._vdirty=true;break;
