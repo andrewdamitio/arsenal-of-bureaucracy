@@ -1169,6 +1169,18 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .sbres{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:10px;padding-top:12px;border-top:1px dotted #cdb98a;font:13px "Segoe UI",system-ui,sans-serif;color:#4a3f2a}.sbres b{font-weight:700;color:#2b241a}
 .sbrief .ft{flex:none;border-top:1px solid #cdb98a;background:#efe5cc}
 @media (max-width:900px){.sbhero.art{grid-template-columns:1fr;padding:0 24px}.sbart{min-height:260px;max-height:300px;border-right:0;border-bottom:1px solid #d6c79f}.sbtitle{font-size:34px}}
+.sbms{margin:2px 0 8px}.sbm{display:grid;grid-template-columns:minmax(230px,32%) 1fr 104px;gap:4px 26px;align-items:center;padding:12px 0 10px;border-top:1px dotted #d6c79f}.sbm:first-child{border-top:0}
+.sbm-n b{font:600 14px "Segoe UI",system-ui,sans-serif;color:#231d14}.sbm-n .mini{margin-top:3px;font-size:11.5px;line-height:1.4;color:#7a6a48}
+.sbm-v{position:relative;padding:20px 0 20px;cursor:default}.sbm-track{position:relative;height:12px;background:#e4d9bb;border-radius:2px;box-shadow:inset 0 0 0 1px #d6c79f}
+.sbm-now{position:absolute;left:0;top:0;bottom:0;background:#2f62a0;border-radius:2px}
+.sbm-fl{position:absolute;top:-5px;bottom:-5px;width:0;border-left:2px dashed #b8860b}.sbm-tg{position:absolute;top:-6px;bottom:-6px;width:3px;margin-left:-1px;background:#231d14}
+.sbm-l{position:absolute;white-space:nowrap;font:12px "Segoe UI",system-ui,sans-serif;transform:translateX(-50%)}.sbm-l.l{transform:none}.sbm-l.r{transform:translateX(-100%)}
+.sbm-now-l{top:0;color:#2f62a0}.sbm-now-l b{font-weight:700}.sbm-now-l em{font-style:normal;color:#6b5a35;margin-left:2px}
+.sbm-b{bottom:0}.sbm-b.ra{transform:translateX(-100%);padding-right:6px}.sbm-b.la{transform:none;padding-left:6px}.sbm-b .f{color:#8a6a1f}.sbm-b .t{color:#231d14}
+.sbm-x{display:flex;flex-direction:column;align-items:flex-end;text-align:right}.sbm-x b{font:600 24px/1 var(--disp);color:#7a2a1c}.sbm-x b.okt{font-size:17px;color:#2f6a24}.sbm-x span{font:11px "Segoe UI",system-ui,sans-serif;color:#7a6a48;margin-top:3px}
+.sbm-key{display:flex;align-items:center;gap:6px;font:11px "Segoe UI",system-ui,sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:#6b5a35}.sbm-key i{display:inline-block;margin-left:8px}
+.sbm-key .k-now{width:14px;height:8px;background:#2f62a0;border-radius:1px}.sbm-key .k-fl{width:0;height:12px;border-left:2px dashed #b8860b}.sbm-key .k-tg{width:3px;height:12px;background:#231d14}
+.sbtest{margin-top:6px}
 </style>
 </head>
 <body>
@@ -6480,16 +6492,28 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
   if(!sc)return `<div class="paper sbrief"><div class="sbin">${hero}<div class="trgrid">${levers}
      <div class="trcol"><div class="trh"><b>How it is measured</b><span>and when it ends</span></div><p class="sbp">Sufficiency: what you and your allies make against what the plan requires, line by line. You start at <b>${pct(raceIdx((S._R||production(false)).out))}</b>. The game ends in January 2035 with a debrief of what you did and what it cost.</p></div></div></div>
      <div class="ft trft"><button class="pbtn primary" data-a="close">Start the first turn →</button></div></div>`;
-  const rows=sc.mand.map(m=>{const x=mandVal(m),show=x.show||fmtN,u=m.c?` <span class="mini">${LINES[m.c].u} a year</span>`:'';
-    const fl=m.kind==='expo'?`≤ ${pct((r0.expo??S.exposure)*x.fl)}`:show(x.fl),tg=m.kind==='expo'?`≤ ${pct(x.t??m.tgt)}`:show(x.t??m.tgt);
-    return `<tr><td><b>${m.n}</b><div class="mini">${m.src||''}</div></td><td class="num">${show(x.v)}${u}</td><td class="num">${fl}</td><td class="num"><b>${tg}</b></td></tr>`}).join('');
+  const rows=sc.mand.map(m=>{const x=mandVal(m),show=x.show||fmtN,low=m.kind==='expo',now=x.v,flv=low?(r0.expo??S.exposure)*x.fl:x.fl,tg=x.t??m.tgt;
+    const top=m.pct&&!low?Math.max(1,now,tg):Math.max(now,tg,flv)*(low?1.15:1),P=v=>Math.max(0,Math.min(100,v/Math.max(top,1e-12)*100)),at=p=>p<7?'l':p>93?'r':'c';
+    const met=low?now<=tg*1.0001:now>=tg*.999,unit=m.c?` ${LINES[m.c].u} a year`:'';
+    const need=met?'<b class="okt">Met today</b><span>hold it to 2035</span>':low?`<b>−${pct(1-tg/Math.max(now,1e-9))}</b><span>to cut by 2035</span>`:m.pct?`<b>+${fmt((tg-now)*100,0)} pts</b><span>needed by 2035</span>`:`<b>×${fmt(tg/Math.max(now,1e-9),tg/now<10?1:0)}</b><span>needed by 2035</span>`;
+    const pn=P(now),pf=P(flv),pt=P(tg),flL=`<span class="f">${yr(sc.mid)} floor ${low?'≤ ':''}${show(flv)}</span>`,tgL=`<span class="t">${yr(sc.dl)} target ${low?'≤ ':''}<b>${show(tg)}</b></span>`;
+    // labels under the track: each on its outer side of its mark, or as one label when the marks are close
+    const side=(p,left)=>left?(p<18?'la':'ra'):(p>72?'ra':'la'),lo2=Math.min(pf,pt),hi2=Math.max(pf,pt);
+    const below=hi2-lo2<30?`<span class="sbm-l sbm-b ${hi2>55?'ra':'la'}" style="left:${hi2>55?hi2:lo2}%">${pf<=pt?flL+' · '+tgL:tgL+' · '+flL}</span>`
+      :`<span class="sbm-l sbm-b ${side(pf,pf<pt)}" style="left:${pf}%">${flL}</span><span class="sbm-l sbm-b ${side(pt,pt<pf)}" style="left:${pt}%">${tgL}</span>`;
+    return `<div class="sbm"><div class="sbm-n"><b>${m.n}</b><div class="mini">${m.src||''}</div></div>
+      <div class="sbm-v" data-tip="${tipQ(`<b>${m.n}</b><br>Today: ${show(now)}${unit}<br>Halfway floor, ${yr(sc.mid)}: ${low?'at most ':''}${show(flv)}<br>Target, ${yr(sc.dl)}: ${low?'at most ':''}${show(tg)}`)}">
+        <span class="sbm-l sbm-now-l ${at(pn)}" style="left:${pn}%">Today <b>${show(now)}</b>${m.c?` <em>${LINES[m.c].u} a year</em>`:''}</span>
+        <div class="sbm-track"><i class="sbm-now" style="width:${pn}%"></i><span class="sbm-fl" style="left:${pf}%"></span><span class="sbm-tg" style="left:${pt}%"></span></div>
+        ${below}</div>
+      <div class="sbm-x">${need}</div></div>`}).join('');
   const cut=!!sc.test.cut,pass=cut?.8:CRISIS_WIN;
   const test=cut?`<b>If China cut you off:</b> what every line would still build with no Chinese or Russian inputs, against January 2027. You pass at ${pct(pass)}.`
     :`<b>If the fight came today:</b> how far your stocks and forces would last in ${SCEN[sc.test.t].short}. Your intelligence gives you an estimate on Command; the checkpoints judge the true figure. You pass at ${pct(pass)}.`;
   return `<div class="paper sbrief"><div class="sbin">${hero}
-   <div class="trcol sbmust"><div class="trh"><b>What you must reach</b><span>today, halfway floor in ${yr(sc.mid)}, real target in ${yr(sc.dl)}</span></div>
-     <table class="whyt sbt"><tr><th>Target</th><th class="num">Today</th><th class="num">Floor, ${yr(sc.mid)}</th><th class="num">Target, ${yr(sc.dl)}</th></tr>${rows}</table>
-     <p class="whyn"><b>And a test, judged at both dates.</b> ${test}</p></div>
+   <div class="trcol sbmust"><div class="trh"><b>What you must reach</b><span class="sbm-key"><i class="k-now"></i>Today <i class="k-fl"></i>${yr(sc.mid)} halfway floor <i class="k-tg"></i>${yr(sc.dl)} target</span></div>
+     <div class="sbms">${rows}</div>
+     <div class="tra sbtest"><span class="trlab">And a test, judged at both dates</span>${test}</div></div>
    <div class="trgrid">${levers}
     <div class="trcol"><div class="trh"><b>How it is judged</b><span>and what to expect</span></div>
      <p class="sbp">In January ${yr(sc.mid)} you see how many halfway floors you meet and whether you pass the test: a progress check, not a grade. In January ${yr(sc.dl)} the verdict counts the real targets you reach.</p>
