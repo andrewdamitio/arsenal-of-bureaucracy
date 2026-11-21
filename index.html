@@ -1203,6 +1203,9 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .eor.eorl{cursor:pointer}.eor.eorl:hover span{text-decoration:underline}.eor.eorl em{font-style:normal;color:#8a7850}.khl{cursor:pointer}.khl:hover{border-color:#8a6a1f}
 .stv2{display:flex;align-items:center;gap:10px;margin:2px 0 6px}.stv2>b{font:var(--ds-num);font-size:24px;color:#231d14}.stv2 .trd{font-size:11.5px}.stv2 .stsp{margin-left:auto}.stgo{font:600 11.5px "Segoe UI",system-ui,sans-serif!important;letter-spacing:0!important;text-transform:none!important}
 .whyp .trt .trd{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.35}
+.pstep.pick{cursor:pointer}.pstep.pick:hover{border-color:#8a6a1f}.pstep.sel{box-shadow:0 0 0 2px #b8860b}
+.stdet{margin-top:8px}.stdet.stcur{margin-top:6px;border-top:1px dashed #cdb98a}.stdg{display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;margin:6px 0}.stdg p{margin:2px 0 8px;font:12.5px/1.5 "Segoe UI",system-ui,sans-serif;color:#2b241a}
+.stdet .trlab{display:block;margin-top:4px}.stdet .qlvs{display:grid;grid-template-columns:1fr 1fr;gap:2px 18px;margin-top:4px}@media(max-width:900px){.stdg,.stdet .qlvs{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -4609,18 +4612,50 @@ const MILE_TIP={'Funding approved and obligated':'Congress has appropriated the 
  'First long-term orders':'Buyers commit to multi-year orders, so the plant can hire and buy inputs.','Steady input contracts':'Suppliers sign steady contracts for the plant’s inputs.','Running at rate':'The plant runs at its full nameplate capacity.',
  'Partner expands its line':'The allied producer adds capacity under the agreement.','Shipments begin':'Output starts arriving in the United States.'};
 const stageTip=st=>tipQ(`<b>${STAGE_L[st]}</b><br>${STAGE_WHY[st]}`);
+// ---- one stage of a program, opened from its box: how it went against plan, who handles it, the problems it hit and how they
+// were cleared, how its planned length was set, the policies that apply to it, and what can still go wrong in it
+function stageDetail(p,live,i){const def=PD[p.def],st=STAGES[i],h=p.h||[],pl=p.dur[i]||0,base=def.dur?.[i]||0;
+  const stEv=h.filter(e=>e.st!=null),startOf=j=>j===0?(p.started??null):(stEv.find(e=>e.st===j)?.w??null),endW=live?null:(h.find(e=>e.done||e.gone)?.w??p.w??S.w);
+  const nextStart=j=>{for(let k=j+1;k<STAGES.length;k++){const w=startOf(k);if(w!=null)return w}return endW};
+  const done=live?i<p.stage:true,cur=live&&i===p.stage,s0=startOf(i),s1=done?nextStart(i):null,took=done&&s0!=null&&s1!=null?s1-s0:cur&&s0!=null?S.w-s0:null;
+  // problems hit in this stage: each obstacle by when it struck, and how it was cleared
+  const stageAt=w=>{let r=0;for(let j=0;j<STAGES.length;j++){const s=startOf(j);if(s!=null&&s<=w)r=j}return r};
+  const obs=[];for(const e of h)if(e.ob){const c=h.find(x=>x.clr===e.ob&&x.w>=e.w&&!x._u);if(c)c._u=1;if(stageAt(e.w)===i)obs.push({id:e.ob,w0:e.w,w1:c?c.w:(live?S.w:endW??S.w),open:!c&&live,how:c?.how})}for(const e of h)delete e._u;
+  const office={approp:p.cong||p.pkg?'Congress: the defense committees, then the comptroller':'The comptroller, obligating funds from your budget',contract:`The ${OFFICES[officeOf(def)].n} acquisition office`,permit:'The lead federal agency and state regulators',build:def.ally?'The allied partner':p.ct?BUILDERS[p.ct.b].n:'The builder',qual:'The service’s qualification authority and the test ranges',ramp:'The program office, the services and suppliers'}[st];
+  const status=done?(took!=null?`took <b>${took} weeks</b> against a plan of ${pl}${took>pl*1.1?` <span class="redt">(+${took-pl})</span>`:took<pl*.9?` <span class="okt">(${pl-took} early)</span>`:''}`:'done'):cur?`week <b>${Math.floor(p.prog)}</b> of ${pl}${p.obs.length?` · <span class="redt">${p.obs[0].wait?'paused':'stopped'}: ${V(OD[p.obs[0].id].n)}</span>`:''}`:`not started · planned ${pl} weeks`;
+  // how the plan was set: the standard length, then reforms in force, then the contract terms
+  const rf=REF_STAGE.filter(x=>x.st===st&&refFits(x,def)),tm=p.ct?ctTerms(def,p.ct):null,ctM=tm?tm.durM[i]:1;
+  const planLine=base?`Standard for this kind of program: <b>${base} wk</b>${rf.filter(x=>passed(x.r)).map(x=>` · ${rname(RD[x.r])}: ×${fmt(x.m,2)}`).join('')}${Math.abs(ctM-1)>.01?` · contract terms (${BUILDERS[p.ct.b].n.toLowerCase()}): ×${fmt(ctM,2)}`:''} → this program’s plan: <b>${pl} wk</b>.`:'';
+  // policies that apply here: reforms that shorten this stage, and reforms that make its problems rarer
+  const ods=OBSTACLES.filter(o=>o.stage===st&&obsChance(o,def)>.005),layers=[...new Set(ods.map(o=>o.layer))];
+  const lyr=REF_LAYER.filter(x=>x.L.some(l=>layers.includes(l))&&(!x.tags||x.tags.some(t=>def.tags.includes(t)))&&RD[x.r]&&!rf.some(y=>y.r===x.r));
+  const go=r=>{const R=RD[r];return R?`<span class="linkn" data-a="brgo" data-v="${vehOf(R)==='ndaa'?'ndaa':'policy'}" data-j="${r}">${rname(R)}</span>`:r};
+  const pol=[...rf.map(x=>`<div class="qlv ${passed(x.r)?'on':''}"><b>${passed(x.r)?'✓':'○'} ${go(x.r)}</b><span>${x.t}</span></div>`),...lyr.map(x=>`<div class="qlv ${passed(x.r)?'on':''}"><b>${passed(x.r)?'✓':'○'} ${go(x.r)}</b><span>makes ${x.L.map(l=>LAYERS[l].n.replace(/\b([A-Z])([a-z])/g,(m,p,q)=>p.toLowerCase()+q)).join(' and ')} problems ${pct(1-x.c)} rarer and ${pct(1-x.w)} shorter</span></div>`)];
+  if(st==='qual'){if(RD2?.rJETO)pol.push(`<div class="qlv ${ruleOn('rJETO')?'on':''}"><b>${ruleOn('rJETO')?'✓':'○'} Joint qualification</b><span>one sign-off for every service: 25% shorter for energetics and motors (Rules & policy)</span></div>`);if(RD2?.rConcQual)pol.push(`<div class="qlv ${ruleOn('rConcQual')?'on':''}"><b>${ruleOn('rConcQual')?'✓':'○'} Qualify from pilot lots</b><span>up to half of qualification overlaps the end of construction (Rules & policy)</span></div>`)}
+  const extra=st==='approp'?(p.cong||p.pkg?`Requested in the NDAA: it waits for the December vote${p.pkg?`, ~${fmtDate(pkgWhen())}`:''}. A continuing resolution freezes new starts until full-year funding passes.`:'Paid from your budget: the comptroller obligates the money before the contract can be signed.')
+    :st==='permit'?(()=>{const rr=reviewRoute(def),pb=permitsFor(def,'b');return `${rr?`Review route: <b>${rr.n}</b> (${rr.d}). `:''}${pb.length?`${pb.length} permits to build: ${pb.map(x=>x.n).join(', ')}.`:''}`})()
+    :st==='build'?(p.xf?`Large power transformer: ${p.xf.res?'from the strategic reserve':`ordered ${fmtDate(p.xf.ord)}`}, due ${fmtDate(p.xf.due)}.`:xfNeeds(def)?`Needs a large power transformer: about ${xfLead()} weeks at today’s lead time.`:'')
+    :st==='qual'?`Test ranges are shared: ${poolState().ranges?.d??0} of ${fmt(poolState().ranges?.cap??0,0)} places taken now.`:'';
+  const risk=!done?ods.map(o=>[o,obsChance(o,def)*(p.lm?.[o.layer]??1)]).filter(x=>x[1]>.02).sort((a,b)=>b[1]-a[1]).slice(0,5):[];
+  return `<div class="pdet stdet"><div class="pdh"><b>${STEP_N[st]}</b> · ${status}${s0!=null?` · <span class="mini">${done?`${fmtDate(s0)} to ${fmtDate(s1??S.w)}`:`since ${fmtDate(s0)}`}</span>`:''}</div>
+    <div class="stdg"><div><span class="trlab">Who handles it</span><p>${office}</p>${planLine?`<span class="trlab">How the plan was set</span><p>${planLine}</p>`:''}${extra?`<p class="mini">${extra}</p>`:''}</div>
+     <div><span class="trlab">What happened</span>${obs.length?obs.map(o=>`<div class="dks ${o.open?'open':''}"><span>${o.open?'⛔':'↳'} ${V(OD[o.id].n)}</span><b>${fmtDate(o.w0)} · ${Math.max(0,Math.round(o.w1-o.w0))} wk${o.open?' and counting':''}</b>${o.how?`<em>${o.how}</em>`:''}</div>`).join(''):`<p class="mini">${done?'No problems: it ran on its own schedule.':cur?'No problems so far.':'Not reached yet.'}</p>`}
+      ${risk.length?`<span class="trlab">What can still go wrong here</span>${risk.map(([o,c])=>`<div class="dks"><span>${V(o.n)}</span><b>${pct(Math.min(1,c))} odds</b><em>${LAYERS[o.layer].n}</em></div>`).join('')}`:''}</div></div>
+    ${pol.length?`<span class="trlab">Policies that apply to this stage</span><div class="qlvs">${pol.join('')}</div>`:''}</div>`}
 function progStages(p,live){const def=PD[p.def],stEv=(p.h||[]).filter(e=>e.st!=null),startOf=i=>i===0?(p.started??null):(stEv.find(e=>e.st===i)?.w??null);
   const endW=live?null:((p.h||[]).find(e=>e.done||e.gone)?.w??p.w??S.w);
   const nextStart=i=>{for(let j=i+1;j<STAGES.length;j++){const w=startOf(j);if(w!=null)return w}return endW};
+  const sel=(S.pstage||{})[p.uid]??(live?p.stage:null),pick=i=>`data-a="pstage" data-u="${p.uid}" data-i="${i}"`;
   const cells=STAGES.map((st,i)=>{const pl=p.dur[i]||0;if(!pl)return p.inh&&(!live||i<p.stage)?`<div class="pstep done" data-tip="${stageTip(st)}"><b>✓ ${STEP_N[st]}</b><span>Done before 2027</span></div>`:`<div class="pstep skip" data-tip="${stageTip(st)}"><b>${STEP_N[st]}</b><span>Not needed for this program</span></div>`;
     const done=live?i<p.stage:!!(p.h||[]).find(e=>e.done),cur=live&&i===p.stage,s0=startOf(i),s1=nextStart(i),took=done&&s0!=null&&s1!=null?s1-s0:null;
-    return `<div class="pstep ${done?'done':cur?'cur':''}" data-tip="${stageTip(st)}"><b>${done?'✓ ':cur?'▶ ':''}${STEP_N[st]}</b><span>${cur?`week ${Math.floor(p.prog)} of ${pl}`:done?(took!=null?`${took} wk (plan ${pl})`:'done'):`plan ${pl} wk`}</span>${took!=null&&took>pl*1.15?`<i class="late">+${took-pl} wk</i>`:''}</div>`}).join('');
+    return `<div class="pstep pick ${done?'done':cur?'cur':''} ${sel===i?'sel':''}" ${pick(i)} data-tip="${stageTip(st)}<br><i>Click for what happened in this stage and the policies that apply.</i>"><b>${done?'✓ ':cur?'▶ ':''}${STEP_N[st]}</b><span>${cur?`week ${Math.floor(p.prog)} of ${pl}`:done?(took!=null?`${took} wk (plan ${pl})`:'done'):`plan ${pl} wk`}</span>${took!=null&&took>pl*1.15?`<i class="late">+${took-pl} wk</i>`:''}</div>`}).join('');
   let det='';
+  if(sel!=null&&sel!==(live?p.stage:-1)&&p.dur[sel])return `<div class="psteps">${cells}</div>${stageDetail(p,live,sel)}`;
   if(live&&p.dur[p.stage]){const st=STAGES[p.stage],pl=p.dur[p.stage],f=Math.min(1,p.prog/pl),ms=(def.ally&&MILES_ALLY[st])||MILES[st]||[],wait=p.obs[0]?.wait||0,stEnd=S.w+wait+Math.max(0,pl-p.prog);
     let firstOpen=true;const ml=ms.map(([n,t])=>{const ok=f>=t-1e-9,curM=!ok&&firstOpen;if(!ok)firstOpen=false;return `<li class="${ok?'ok':curM?'now':''}"${MILE_TIP[n]?` data-tip="${tipQ(`<b>${n}</b><br>${MILE_TIP[n]}`)}"`:''}>${ok?'✓':curM?'▶':'○'} ${n}</li>`}).join('');
     det=`<div class="pdet"><div class="pdh"><b>${STEP_N[st]}</b> · ${pct(f)} done · week ${Math.floor(p.prog)} of ${pl}${p.obs.length?` · <span class="redt">${p.obs[0].wait?'paused':'stopped'}: ${V(OD[p.obs[0].id].n)}</span>`:''}</div>
       <div class="pbar"><i style="width:${(f*100).toFixed(1)}%"></i></div><ul class="pmiles">${ml}</ul>${p.xf?`<div class="mini">⚡ Large power transformer: ${p.xf.res?'from the strategic reserve':'ordered '+fmtDate(p.xf.ord)}, ${S.w>=p.xf.due?'<span class="okt">delivered</span>':`due <b>${fmtDate(p.xf.due)}</b>${st==='build'&&f>=1?' · <span class="redt">construction is done except energizing; waiting on it</span>':''}`}</div>`:xfNeeds(def)&&p.stage<2&&!p.inh?`<div class="mini">⚡ Needs a large power transformer, ordered at contract award: about ${xfLead()} weeks at today's lead time.</div>`:''}
-      <div class="mini">This stage should finish about <b>${fmtDate(stEnd)}</b>; the whole program about <b>${fmtDate(S.w+remW(p))}</b>${slipF().f>1.05?`, or ${fmtDate(S.w+Math.round(remW(p)*slipF().f))} if it slips like your programs so far`:''}.</div></div>`}
+      <div class="mini">This stage should finish about <b>${fmtDate(stEnd)}</b>; the whole program about <b>${fmtDate(S.w+remW(p))}</b>${slipF().f>1.05?`, or ${fmtDate(S.w+Math.round(remW(p)*slipF().f))} if it slips like your programs so far`:''}.</div></div>${stageDetail(p,live,p.stage).replace('class="pdet stdet"','class="pdet stdet stcur"')}`}
   return `<div class="psteps">${cells}</div>${det}`}
 function qualBox(p,live){const def=PD[p.def];if(!p.dur[4]||def.ally)return '';const st=STAGES[p.stage],past=!live||p.stage>4;if(past)return '';
   const rows=[],od=OBSTACLES.filter(o=>o.layer==='QUAL'&&o.stage==='qual'&&facOk(o)),odds=od.map(o=>[o,obsChance(o,def)]).filter(x=>x[1]>.01);
@@ -7624,6 +7659,7 @@ document.addEventListener('pointerdown',e=>{
     case 'goback':navBackG();break;
     case 'home':if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}S.view='cmd';break;
     case 'ovjump':S._ovScroll=b.dataset.s;break;
+    case 'pstage':{const u=b.dataset.u,i=+b.dataset.i;S.pstage=S.pstage||{};S.pstage[u]=S.pstage[u]===i?null:i}break;
     case 'ovtop':for(const q of ['.dmain','.paper','.bd'])for(const el of ov.querySelectorAll(q))el.scrollTop=0;break;
     case 'supp':if(suppReady()){S.suppBack=S.modal;S.modal='suppc';S.speed=0}break;
     case 'suppgo':S.modal=S.suppBack||null;S.suppBack=null;suppAsk();break;
