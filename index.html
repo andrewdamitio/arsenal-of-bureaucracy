@@ -1110,6 +1110,19 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .stc .trh b{font:var(--ds-t1)}.stv{font:var(--ds-num)!important;font-size:17px!important;letter-spacing:0!important;text-transform:none!important;color:#2b241a!important}
 .stk p{margin:0 0 4px;font:12.5px/1.45 "Segoe UI",system-ui,sans-serif;color:#2b241a}.stk .trlab{margin:6px 0 1px}.stl{margin-top:auto;padding-top:6px;font-size:12px}
 .trft .trall{margin-right:auto;font-size:12.5px}
+.brf{margin:6px;padding:7px 10px 9px;background:linear-gradient(#2a2717,#1d1b12);border:1px solid #8a6a1f;box-shadow:inset 4px 0 0 #c9a227}
+.brh{display:flex;align-items:baseline;gap:10px;margin:0 0 6px}.brh b{font:700 13px Georgia,serif;color:#f3dc9a;letter-spacing:.02em}.brh>span{font:12px "Segoe UI",system-ui,sans-serif;color:#b9ae90}.brh .brhide{margin-left:auto;font-size:11.5px;color:#9c916f}
+.brcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px}
+.brc{display:flex;flex-direction:column;gap:3px;padding:6px 8px 7px;background:rgba(243,234,210,.06);border:1px solid #4a4128;border-radius:3px}
+.brk{display:flex;align-items:center;gap:6px;font:700 10.5px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#c9b27a}.brk b{margin-left:auto;font:600 12px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none;color:#9fd08a}
+.brx{background:none;border:0;color:#8a7f60;cursor:pointer;font-size:12px;padding:0 0 0 4px;line-height:1}.brk span+.brx{margin-left:auto}.brx:hover{color:#f3dc9a}
+.brt{font:600 13px "Segoe UI",system-ui,sans-serif;color:#efe6cf;line-height:1.3}.brw{font:12px/1.4 "Segoe UI",system-ui,sans-serif;color:#cfc6ad;flex:1}.brw b{color:#efe6cf}.brw .vfm{margin-left:2px}
+.bra{margin-top:3px;display:flex;flex-wrap:wrap;gap:4px}.brnone{margin:0;font:12px "Segoe UI",system-ui,sans-serif;color:#b9ae90}
+.brf.brp{margin:10px 0;background:#f7f0dd;border-color:#cdb98a}.brp .brh b{color:#2b241a}.brp .brh>span{color:#6b5a35}.brp .brh .brhide{color:#8a7850}.brp .brc{background:#fbf7ec;border-color:#d6c79f}
+.brp .brk{color:#7a6a48}.brp .brk b{color:#2f6a24}.brp .brt{color:#2b241a}.brp .brw{color:#4a3f2a}.brp .brw b{color:#2b241a}.brp .brx{color:#a8915a}.brp .brx:hover{color:#2b241a}.brp .brnone{color:#6b5a35}
+.bra .lpair{display:flex!important;gap:4px;flex-wrap:wrap}.bra .lpair .pbtn{width:auto!important}
+.brf:not(.brp) .pbtn{background:#2f2a1c!important;color:#e6dcc0!important;border:1px solid #6e5f3c!important;box-shadow:none!important}.brf:not(.brp) .pbtn:hover:not([disabled]){border-color:#c9a227!important;color:#fff!important}
+.brf:not(.brp) .pbtn.primary,.brf:not(.brp) .pbtn.lgo{background:#c9a227!important;color:#1d1b12!important;border-color:#c9a227!important}.brf:not(.brp) .pbtn.primary:hover:not([disabled]),.brf:not(.brp) .pbtn.lgo:hover:not([disabled]){background:#e0b83a!important;color:#1d1b12!important}.brf .pbtn[disabled]{opacity:.45}
 </style>
 </head>
 <body>
@@ -3480,7 +3493,7 @@ function ndsSec(){const P=S._R?.P||production(false).P,left0=pkgRoom()-pkgPlan()
   const rows=ndsReqs().map(x=>{const ok=left>=x.req-1e-9;if(ok)left-=x.req;else left=-1;const q=ndsCut(x.id);
     return `<tr class="${ok?'':'bl-out'}"><td>${pill(x.id,P)}<div class="mini">holds ${fmt((S.stock[x.id]||0)/Math.max(S.nodes[x.id].scale,1e-9),0)} weeks now</div></td><td class="num">${money(x.req)}</td><td>${ok?`<span class="okt">~${Math.round(q*100)}% cut risk</span>`:'<span class="redt">Not funded: below the money line</span>'}</td><td><button class="btn sm" data-a="ndsdrop" data-n="${x.id}" data-tip="Take it out of the request.">✕</button></td></tr>`}).join('');
   const sh=Object.keys(ND).filter(id=>ndsOk(id)&&P[id]&&P[id].cover<1&&!ndsReqs().some(x=>x.id===id)).sort((a,b)=>P[a].cover-P[b].cover).slice(0,6);
-  return `<div class="dsec"><h4>Stockpile buys</h4><p class="mini" style="margin:0 0 6px">The NDAA authorizes National Defense Stockpile purchases. Each buy is about ${NDS_WK} weeks of demand for one material, ${money(NDS_C)}, and it drains only when supply falls short. Each costs ${REQ_PC(NDS_C)} PC to request; Congress pays for the ones it funds, after the plants above, from what is left of its money.</p>
+  return `<div class="dsec" id="nds"><h4>Stockpile buys</h4><p class="mini" style="margin:0 0 6px">The NDAA authorizes National Defense Stockpile purchases. Each buy is about ${NDS_WK} weeks of demand for one material, ${money(NDS_C)}, and it drains only when supply falls short. Each costs ${REQ_PC(NDS_C)} PC to request; Congress pays for the ones it funds, after the plants above, from what is left of its money.</p>
     ${rows?`<table class="ctable bl-t"><tr><th>Material</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:'<p class="mini">No stockpile buys in the request.</p>'}
     ${sh.length?`<div class="mini" style="margin-top:6px">Short now: ${sh.map(id=>`<button class="btn sm" data-a="ndsadd" data-n="${id}" ${S.pc>=REQ_PC(NDS_C)?'':'disabled'}>+ ${ND[id].n} · ${REQ_PC(NDS_C)} PC</button>`).join(' ')}</div>`:''}</div>`}
 // the reform agenda: bills you push through Congress, shown on the NDAA tab
@@ -4100,6 +4113,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
     <div class="trcol"><div class="trh"><b>What changed</b><span>${turnLabel(w0)}</span></div><div class="trsub">Output per year</div>${outH}${progH}</div>
     <div class="trcol"><div class="trh"><b>Coming next</b><span>${turnLabel(n0)}</span></div>${aheadH}</div>
    </div>
+   ${tbHTML(1)}
    ${rollsHTML(r.rolls||[],'🎲 Your odds this turn')}
    <div class="trgrid">
     <div class="trcol"><div class="trh"><b>Problems your programs hit</b><span>${probs.length||'none'}</span></div>${probH}</div>
@@ -4537,7 +4551,7 @@ function bnBody(){
        ${p.div>1e-9?`<div class="bnc mini">🏭 Defense orders already take ${pct(p.div/Math.max(p.need,1e-9))} of need from civilian buyers</div>`:prioOff(id)?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}">🏭 Restore defense priority</button></div>`:''}</div></div></div>`}).join('');
   return h+prS}
 /* ---------- getting around: one back stack for every jump, and a finder for everything ---------- */
-const NAV_ACTS=new Set(['prjump','pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
+const NAV_ACTS=new Set(['brgo','prjump','pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
 // where Back goes, in words
 function backLbl(){const t=S.navH?.at(-1);if(!t)return '';if(t.modal==='node'&&t.sel)return t.sel.startsWith('L:')?LINES[t.sel.slice(2)]?.n:ND[t.sel]?.n;
   if(t.modal==='prog'){const r=progRec(t.selP);return r?(r.p.nm||PD[r.p.def].n):'the program'}if(t.modal)return 'the previous page';return SUBN[t.view]||(VIEWS.find(v=>v[0]===t.view)?.[1]||'the map')}
@@ -6296,6 +6310,43 @@ function starveGroups(R){const cs=Object.keys(LINES),g={};
     (g[root]=g[root]||{id:root,ls:[],pt:0}).ls.push({c,st,chain:o.chain});g[root].pt+=(suffLine(c,o.capYr)-suffLine(c,o.yr))/cs.length*100}
   for(const x of Object.values(g))x.ls.sort((a,b)=>(suffLine(b.c,R.out[b.c].capYr)-suffLine(b.c,R.out[b.c].yr))-(suffLine(a.c,R.out[a.c].capYr)-suffLine(a.c,R.out[a.c].yr)));
   return Object.values(g).sort((a,b)=>b.pt-a.pt||b.ls.length-a.ls.length)}
+// ---- this turn's brief: up to three moves, drawn from what the game already works out (the player still chooses)
+// the best-value option to start among ds, once every option's value for money is known
+function tbPick(ds){const ok=ds.filter(d=>!S.projects.some(p=>p.def===d.id)&&canStart(d)&&(!d.req||passed(d.req))),v=ok.map(d=>[d,vfmOf(d)]);
+  if(v.some(x=>x[1]==null))return null; // still being worked out: the move appears once it is known, rather than appearing and then vanishing
+  return v.filter(x=>typeof x[1]==='number'&&x[1]>0).sort((a,b)=>b[1]-a[1])[0]?.[0]||null}
+function tbMoves(){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')return [];
+  const R=S._R||production(false),cs=Object.keys(LINES),no=S.briefNo||{},hid=k=>no[k]!=null&&S.w<no[k]+8,mv=[];
+  // Beijing's next step, when it is close
+  {const n=cnNext();if(n&&n.yrsTo>=0&&n.yrsTo<=1){const ids=CN_MIN().filter(id=>ndsOk(id)&&!ndsReqs().some(x=>x.id===id));
+    if(ids.length)mv.push({k:'hedge',urgent:1,lab:'Hedge',t:`Beijing’s next step: ${n.nx.s.toLowerCase()}`,why:`About ${n.yrsTo<.25?'a few months':Math.round(n.yrsTo*12)+' months'} away. A stockpile buy holds a year of supply of ${ids.slice(0,3).map(id=>lc(ND[id].n)).join(', ')}${ids.length>3?' and more':''}.`,act:`<button class="pbtn sm" data-a="brgo" data-v="ndaa" data-s="#nds">Stockpile buys →</button>`})}}
+  // the part costing the most output, with the best-value fix you can start (skipped if what is under way already closes the gap)
+  for(const g of starveGroups(R)){const id=g.id;if(!ND[id]||!R.P[id]||g.pt<.1)continue;const cov=bnCover({id,short:R.P[id].need-R.P[id].avail0},R.P);if(cov.n&&cov.share<=.05)continue;
+    const d=tbPick(leversFor(id));if(!d)continue;
+    mv.push({k:'fix:'+id,pt:g.pt,ptl:'up to',lab:'Fix a bottleneck',t:ND[id].n,why:`Built ${g.ls.length>1?'lines':'line'} for ${g.ls.map(x=>lc(LINES[x.c].n)).join(', ')} ${g.ls.length>1?'stand':'stands'} idle for want of it.${cov.n?` What is under way closes ${pct(1-cov.share)} of the gap${cov.lastW?` by about ${dateOf(cov.lastW).getFullYear()}`:''}.`:''} Best value: <b>${d.n}</b> ${vfmChip(d)}`,act:launchBtn(d)});break}
+  // the weapon line held back by its own capacity that a new plant would lift most, with the best-value plant you can start
+  {let best=null;
+    for(const c of cs){const o=R.out[c];if(o.bott||o.ordLim||suffLine(c,o.yr)>=.999)continue;
+      const d=tbPick(PROJECTS.filter(d=>facOk(d)&&d.t.line===c));if(!d)continue;const add=projGain(d)*lineMultOf(c)*LINES[c].k,pt=(suffLine(c,o.yr+add)-suffLine(c,o.yr))/cs.length*100;
+      if(pt>=.1&&(!best||pt>best.pt))best={c,d,add,pt,n:S.projects.filter(p=>PD[p.def]?.t.line===c).length}}
+    if(best){const {c,d,add,pt,n}=best;mv.push({k:'line:'+c,pt,ptl:'up to',lab:'Build line capacity',t:LINES[c].n,why:`The line itself is the limit: it makes ${pct(suffLine(c,R.out[c].yr))} of the requirement with allies.${n?` ${n} program${n>1?'s':''} for it already under way.`:''} Best value: <b>${d.n}</b>, +${fmtN(add)} ${LINES[c].u} a year ${vfmChip(d)}`,act:launchBtn(d)})}}
+  // capacity built but not ordered
+  {const m=ordIdle(),ls=cs.filter(c=>m[c]);if(ls.length){const pt=ls.reduce((a,c)=>a+m[c].d*100,0),pcs=ls.map(c=>ordPC(c,m[c].add)),pc=pcs.reduce((a,b)=>a+b,0);
+    mv.push({k:'ord',pt,lab:'Order idle capacity',t:ls.map(c=>LINES[c].n).join(', '),why:`Built but not ordered: lines make only what Congress orders. Requesting full orders in the next ${billN()} adds this once it passes.`,act:`<button class="pbtn sm primary" data-a="ordall" ${S.pc>=Math.min(...pcs)?'':'disabled'}>Request orders · ${Math.round(pc)} PC</button>`})}}
+  // the open allied deal that adds most per PC
+  {const rv=S.rival||'pac',n=cs.length,cur={};for(const c of cs)cur[c]={s:R.out[c].yr+allyOut(c),rq:Math.max(reqOut(c),1e-9)};
+    const ds=ALLY_DEALS.filter(D=>D.t===rv&&!D.stock&&!alS(D.m).deals[D.id]&&cur[D.c]).map(D=>{const x=cur[D.c],g=(Math.min(1,(x.s+D.add)/x.rq)-Math.min(1,x.s/x.rq))/n*100;return {D,g,per:g/Math.max(1,D.pc)}}).filter(x=>x.g>=.05).sort((a,b)=>b.per-a.per||b.g-a.g);
+    const b=ds[0];if(b)mv.push({k:'deal:'+b.D.id,pt:b.g,lab:'Allied deal',t:`${AFLAG[b.D.m]} ${b.D.n}`,why:`${LINES[b.D.c].n}: +${fmtN(b.D.add)} a year at full rate, after ${yrs(b.D.ramp||0)}. The most added per PC of any open deal.`,act:`<button class="pbtn sm primary" data-a="aldeal" data-d="${b.D.id}" ${alDealOk(b.D)?'':'disabled'}>Sign · ${b.D.pc} PC${b.D.$?' · '+money(b.D.$):''}</button>`})}
+  // the reform aimed at what has delayed your programs most
+  {const open=x=>RD[x.r]&&reformAvail(RD[x.r])&&!refReqs().some(q=>q.id===x.r)&&S.bill?.id!==x.r,td=timeData();
+    const top=Object.entries(td.byCause).sort((a,b)=>b[1]-a[1]).find(([L,v])=>v>=26&&REF_LAYER.some(x=>x.L.includes(L)&&open(x)));
+    if(top){const [L,v]=top,x=REF_LAYER.find(x=>x.L.includes(L)&&open(x)),Rf=RD[x.r],nd=vehOf(Rf)==='ndaa',st=REF_STAGE.find(q=>q.r===x.r);
+      mv.push({k:'ref:'+x.r,lab:'Reform',t:rname(Rf),why:`Your programs have lost ${fmt(v,0)} program-weeks to ${LAYERS[L].n.replace(/\b([A-Z])([a-z])/g,(m,a,b)=>a.toLowerCase()+b)}. This reform makes those delays rarer and shorter${st?`; also ${st.t}`:''}.`,act:`<button class="pbtn sm" data-a="brgo" data-v="${nd?'ndaa':'policy'}" data-j="${x.r}">${nd?'On the NDAA tab':'On Rules & policy'} →</button>`})}}
+  const pts=mv.filter(x=>x.pt!=null&&!x.urgent).sort((a,b)=>b.pt-a.pt);
+  return [...mv.filter(x=>x.urgent),...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>!hid(x.k)).slice(0,3)}
+function tbHTML(paper){if(!S||UIP.nobrief||S.tut||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves();
+  const cards=mv.map(x=>`<div class="brc"><div class="brk"><span>${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button></div><div class="brt">${x.t}</div><div class="brw">${x.why}</div><div class="bra">${x.act}</div></div>`).join('');
+  return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><span>${mv.length?`${mv.length===1?'One move':mv.length===2?'Two moves':'Three moves'} worth making now, ranked by points of sufficiency where known`:'Nothing pressing'}</span><span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide the brief</span></div>${mv.length?`<div class="brcs">${cards}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
 function scenCard(){
   if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2035. You can still pick a scenario until the clock starts.</span></div>`:'';
@@ -6561,7 +6612,7 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
   const enough=cs.filter(c=>suffLine(c,out[c].yr)>=.999).length;
   const cg=Math.exp(cs.reduce((a,c)=>a+Math.log(cnOut(c)/Math.max(cnOut(c,S.w-52),1e-9)),0)/cs.length)-1;
   const cleared=cs.reduce((a,c)=>a+(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).length,0);
-  let h=scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Sufficiency</b><br>Line by line: (your output + ${A.n}) ÷ what the plan requires, capped at 100%, averaged. The requirement is the US targets plus the allies’ own, and it rises as ${RV().n}’s output grows. Rival figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of the requirement<br>you + <span class="linkn" data-a="view" data-v="allies" data-tip="What your allies build, and the deals that add more">allies</span></span></div>${S.w>=PLAY0&&!S.histMode?(()=>{const o=trkAll(),d=o.end-(S.trk0??o.end);const b=baseAt(),dn=b?(raceIdx(S._R?S._R.out:production(false).out)-b[1])*100:null;return `${dn!=null?`<span class="rc-out rc-dn" data-a="why" data-k="base" data-tip="${tipQ('<b>Your decisions</b><br>Against your game played again with the same luck and no decisions. Click for how.')}">Your decisions: <b class="${dn>=0?'':'neg'}">${dn>=0?'+':'−'}${fmt(Math.abs(dn),1)} pt</b> against doing nothing</span>`:''}<span class="rc-out" data-a="why" data-k="outlook" data-tip="${tipQ("<b>The January 2035 outlook</b><br>The same measure in January 2035, if every program under way lands on schedule and Congress orders what new capacity adds. It moves when you start programs, strike deals and pass reforms. Click for the calculation.")}">→ <b>${pct(o.end)}</b> by January 2035${Math.abs(d)>=.005?` <em class="${d<0?'neg':''}">${d>0?'+':'−'}${Math.round(Math.abs(d)*100)} pts since you took over</em>`:''}</span>`})():''}</div>
+  let h=tbHTML()+scenCard()+`<div class="rc-rhead"><div class="rc-rbig" data-tip="<b>Sufficiency</b><br>Line by line: (your output + ${A.n}) ÷ what the plan requires, capped at 100%, averaged. The requirement is the US targets plus the allies’ own, and it rises as ${RV().n}’s output grows. Rival figures are intelligence estimates.">${raceGauge(idx)}<div class="rc-gnum"><b class="${idx>=1?'green':idx>=.6?'gold':'red'}">${pct(idx)}</b><span>of the requirement<br>you + <span class="linkn" data-a="view" data-v="allies" data-tip="What your allies build, and the deals that add more">allies</span></span></div>${S.w>=PLAY0&&!S.histMode?(()=>{const o=trkAll(),d=o.end-(S.trk0??o.end);const b=baseAt(),dn=b?(raceIdx(S._R?S._R.out:production(false).out)-b[1])*100:null;return `${dn!=null?`<span class="rc-out rc-dn" data-a="why" data-k="base" data-tip="${tipQ('<b>Your decisions</b><br>Against your game played again with the same luck and no decisions. Click for how.')}">Your decisions: <b class="${dn>=0?'':'neg'}">${dn>=0?'+':'−'}${fmt(Math.abs(dn),1)} pt</b> against doing nothing</span>`:''}<span class="rc-out" data-a="why" data-k="outlook" data-tip="${tipQ("<b>The January 2035 outlook</b><br>The same measure in January 2035, if every program under way lands on schedule and Congress orders what new capacity adds. It moves when you start programs, strike deals and pass reforms. Click for the calculation.")}">→ <b>${pct(o.end)}</b> by January 2035${Math.abs(d)>=.005?` <em class="${d<0?'neg':''}">${d>0?'+':'−'}${Math.round(Math.abs(d)*100)} pts since you took over</em>`:''}</span>`})():''}</div>
    <div data-fk="race"><b class="${d==null?'':d>=.5?'green':d<=-.5?'red':''}">${d==null?'—':(d>=0?'+':'')+fmt(d,0)+' pt'}</b><span>vs. a year ago</span></div>
    <div ><b>${enough}/${cs.length}</b><span>lines sufficient</span></div>
    <div data-tip="Average growth in ${RV().n}'s output over the last year. As it grows, so does what the plan requires."><b class="red">+${pct(cg)}</b><span>${RV().n}'s growth · raises the bar</span></div>
@@ -7118,6 +7169,7 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
    <button class="ti-btn primary" data-a="close">Resume ›</button>
    <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
    <button class="ti-btn" data-a="turnmode" data-tip="Two-month turns stop for every decision. Continuous play runs week by week and takes the default when a decision times out.">${S.turnMode===false?'Continuous play · switch to two-month turns':'Two-month turns · switch to continuous play'}</button>
+   <button class="ti-btn" data-a="brtog" data-tip="A short list at the top of Command and in each turn report: the bottleneck fix, orders, allied deal or reform worth making now.">${UIP.nobrief?'Turn brief hidden · show it':'Turn brief shown · hide it'}</button>
    <button class="ti-btn" data-a="xptog" data-tip="Section explanations fold into an ⓘ by each heading; hover it to read, click to open in place. They are always shown during the tutorial.">${UIP.xp?'Explanations shown · fold them into ⓘ':'Explanations folded into ⓘ · show them all'}</button>
    <div class="gm-row"><button class="ti-btn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="ti-btn gm-danger" data-a="savenew" data-tip="Starts over from the title screen. This game's browser save is replaced; download a file first to keep it.">New game</button></div>
    <p class="ti-note">The game saves itself in this browser every four game weeks and when you close the tab. Clearing site data erases it, so download a file to keep a copy or move the game to another computer.</p>
@@ -7205,6 +7257,9 @@ document.addEventListener('pointerdown',e=>{
     case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'qj':setTimeout(qjOpen,0);break;
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'brgo':S.view=b.dataset.v;S._vdirty=true;if(b.dataset.j)S._jump=b.dataset.j;if(b.dataset.s)S._scrollTo=b.dataset.s;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'brno':(S.briefNo=S.briefNo||{})[b.dataset.k]=S.w;S._vdirty=true;break;
+    case 'brtog':UIP.nobrief=!UIP.nobrief;uiSave();S._vdirty=true;break;
     case 'prjump':S.view='bn';S._vdirty=true;S._scrollTo='#prio';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rbgo':S.view=b.dataset.r&&RD2[b.dataset.r]&&isExec(RD2[b.dataset.r])?'policy':'rules';S.rbTab='rules';S._vdirty=true;S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
