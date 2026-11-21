@@ -6248,7 +6248,7 @@ const SCENS=[
         {n:'Drones',c:'drones',tgt:330000,src:'The Army plans to buy a million drones over two to three years; Ukraine and Russia each build about 4 million a year.[c:army1m]'}],
   test:{t:'eu',n:'eastern-flank campaign'},
   lesson:'A long war is won by volume: energetics, shell bodies, rocket motors and cheap drones, most of whose parts come from China.'},
- {id:'cutoff',n:'The Rare-Earth Cutoff',rival:'pac',ic:'🧲',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
+ {id:'cutoff',n:'The Rare-Earth Cutoff',rival:'pac',ic:'🧲',art:'art/rare-earth-mine.webp',artAlt:'Pen-and-ink drawing of an open-pit mine in a desert valley, with a mountain range behind',artPos:'62% 50%',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
   threat:'January 2027: the trade truce collapses. Beijing reimposes its export bans and tightens rare-earth licensing, the way it did in 2023 and 2025.[c:truce] You have until January 2030 to get halfway to a base that keeps running without China, and until January 2035 to finish.',
   setup:()=>{S.truce=false;cnS().heat=30;S.fired.truce27=1;S.inbox=(S.inbox||[]).filter(x=>x.ev!=='truce27');applyChinaBan();cutAll(['ndpr','hree','magnets'],.4);log(`${FLAGS.cn} The truce collapses: export bans are back, and rare-earth licenses stop coming.`,'bad')},
   mand:[{n:'Magnet demand met without China',kind:'magnets',tgt:.9,pct:1,src:'MP Materials’ 10X plant (2028) and the 2027 DFARS ban on Chinese magnets.[c:mp10x,dfars7018]'},
