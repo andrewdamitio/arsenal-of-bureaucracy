@@ -6241,7 +6241,7 @@ const SCENS=[
         {n:'All five above, if China cuts you off',kind:'keep',lines:['interceptors','strike','subs','surface','drones'],tgt:.8,pct:1,src:'A war over Taiwan ends Chinese exports to the US on day one. Measured across the five lines above: the share of today’s output (or January 2027’s, if higher) you would still build with no Chinese or Russian inputs, before stocks run down. Beijing’s 2023–25 bans on gallium, germanium, antimony and rare earths were the preview.[c:truce]'}],
   test:{t:'pac',n:'Taiwan Strait campaign'},
   lesson:'Interceptors, strike missiles and air-to-air missiles all wait on the same solid rocket motors and seekers; ships and submarines on yards that take a decade to grow; drones on cells, magnets and boards that come from China. Whatever still needs China stops the day the fighting starts.'},
- {id:'flank',n:'The Eastern Flank',rival:'eu',ic:FLAGS.ru,mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
+ {id:'flank',n:'The Eastern Flank',rival:'eu',ic:FLAGS.ru,art:'art/eastern-flank.webp',artAlt:'Pen-and-ink relief map of NATO’s eastern flank, from the Baltic states and Poland to Romania and Bulgaria, the frontline members shaded',artPos:'58% 45%',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
   threat:'Germany’s military chief points to 2029 and its intelligence service to 2030 as the year Russia could be ready to test NATO.[c:bund29,bnd30] You have until January 2030 to get halfway to the volume a long war on the flank would eat, and until January 2035 to reach it.',
   mand:[{n:'155mm artillery shells',c:'shells',tgt:1.2e6,src:'The Army’s goal: 100,000 shells a month.[c:dodig]'},
         {n:'Army precision fires (GMLRS, PrSM)',c:'fires',tgt:16000,src:'The US share of the Army’s planned 19,002 rockets a year.[c:gmlrs19k]'},
@@ -6474,7 +6474,7 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
   const res=`<div class="sbres"><span><b>${money(S.budget)}</b> to build with, more each December</span><span><b>${Math.floor(S.pc)}</b> Political Capital</span>${sc?`<span>Against <b>${RIVALS[sc.rival].f||''} ${RIVALS[sc.rival].n}</b></span>`:''}</div>`;
   // the situation: the lede before the deadlines, and the deadlines after
   const th=sc?sc.threat:'No targets are handed to you. Rebuild what you judge matters most, and measure yourself against China or Russia, line by line.',k=th.indexOf(' You have until'),lede=k>0?th.slice(0,k):th,rest=k>0?th.slice(k+1):'';
-  const hero=`<div class="sbhero${sc?.art?' art':''}">${sc?.art?`<figure class="sbart"><img src="${sc.art}" alt="${sc.artAlt||''}"></figure>`:''}
+  const hero=`<div class="sbhero${sc?.art?' art':''}">${sc?.art?`<figure class="sbart"><img src="${sc.art}" alt="${sc.artAlt||''}"${sc.artPos?` style="object-position:${sc.artPos}"`:''}></figure>`:''}
     <div class="sbtext"><div class="sbeye">${sc?'Your mandate':'The open race'} · ${fmtDate(S.w)}</div><h1 class="sbtitle">${sc?sc.n:'The open race'}</h1><div class="sbrule"></div>
      <p class="sblede">${lede}</p>${rest?`<p class="sbbody">${rest}</p>`:''}${tl}${res}</div></div>`;
   if(!sc)return `<div class="paper sbrief"><div class="sbin">${hero}<div class="trgrid">${levers}
