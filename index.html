@@ -6557,8 +6557,7 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
      <li><b>Ask Congress</b> for plants, orders and reforms in each year’s NDAA, decided every December: <span class="linkn" data-a="view" data-v="ndaa">NDAA</span>. A line makes only what Congress has ordered.</li>
      <li><b>Act on your own authority</b>: Defense Production Act priorities, emergency powers, waivers: <span class="linkn" data-a="view" data-v="policy">Rules & policy</span>.</li>
      <li><b>Buy from allies</b>: co-production deals and allied supply: <span class="linkn" data-a="view" data-v="allies">Allies & imports</span>.</li>
-     <li><b>Answer what comes up</b>: lawsuits, permits, strikes and supplier trouble stop programs until you choose a way past them.</li></ul>
-     <p class="whyn">The <b>brief at the top of Command</b> suggests the moves worth making each turn.</p></div>`;
+     <li><b>Answer what comes up</b>: lawsuits, permits, strikes and supplier trouble stop programs until you choose a way past them.</li></ul></div>`;
   // the three dates, spaced to scale
   const x0=PLAY0,x1=END_W,X=w=>((w-x0)/(x1-x0)*100).toFixed(1);
   const pts=sc?[[S.w,'Today','you take office'],[sc.mid,`January ${yr(sc.mid)}`,'halfway check'],[sc.dl,`January ${yr(sc.dl)}`,'final verdict']]:[[S.w,'Today','you take office'],[END_W,'January 2035','the game ends']];
@@ -6599,7 +6598,7 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
      <p class="sbp">In January ${yr(sc.mid)} you see how many halfway floors you meet and whether you pass the test: a progress check, not a grade. In January ${yr(sc.dl)} the verdict counts the real targets you reach.</p>
      <p class="sbp">These are real public goals on real timelines, and the United States is not on track for most of them. Plants take years, inputs come from the rival you are racing, and the rules slow everything down. Meeting some of them, and seeing what it would take to meet the rest, is the game.</p>
      <div class="tra"><span class="trlab">What to watch</span>${sc.lesson}</div></div></div></div>
-   <div class="ft trft"><span class="mini sbre">Reopen it any time from the mandate card on Command.</span><button class="pbtn primary" data-a="close">Start the first turn →</button></div></div>`}
+   <div class="ft trft"><button class="pbtn primary" data-a="close">Start the first turn →</button></div></div>`}
 function scenCard(){
   if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2035. You can still pick a scenario until the clock starts.</span></div>`:'';
   if(false){
