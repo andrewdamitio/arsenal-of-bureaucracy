@@ -1893,6 +1893,8 @@ const RULES=[
   eff:{wait:{PROCURE:.85},chance:{reqcreep:.7}},up:['more staff in every portfolio office','contracting waits ×0.85','requirements creep less (×0.7)']},
  {id:'rNDAA26',dom:'acq',kind:'law',n:'FY2026 NDAA: portfolio executives in law, commercial solutions openings',since:'18 Dec 2025',c:'ndaa26',
   eff:{chance:{far:.8,cas:.8}},up:['full competitions less often (×0.8)','cost-accounting fights less often (×0.8)']},
+ {id:'rEO14372',dom:'acq',kind:'exec',n:'No buybacks or dividends at underperforming contractors (EO 14372)',since:'7 Jan 2026',c:'eo14372',pc:[12,8],
+  eff:{},up:['contractors that deliver late cannot buy back shares or raise dividends','incentive pay tied to on-time delivery and more output','prime leverage settles 5 lower'],dn:['covers only new and renewed contracts','primes warn it will scare off investors']},
  {id:'rRFO',dom:'acq',kind:'exec',n:'Revolutionary FAR Overhaul (deviations now, final rules pending)',since:'2025 · proposed rules Jun 2026',c:'rfo',pc:[8,15],
   eff:{wait:{far:.85,protest:.9}},up:['source selection shorter (×0.85)'],dn:['two rulebooks during the transition']},
  {id:'rProtest',dom:'acq',kind:'law',n:'Task-order protests only above $35M (FY2025 NDAA)',since:'23 Dec 2024',c:'protest35',on0:1,
@@ -1989,7 +1991,7 @@ function rulesBody0(){
 const RLINKS={
  permit:[['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
  qual:[['seekCommon','Common seekers and guidance: fewer variants, faster qualification.'],['qualReform','Accept test data from similar items: qualify a new line by comparison with one already qualified.'],['cvQual','Emergency qualification authority: accept allied qualifications now.']],
- acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['acqWorkforce','More contracting officers.'],['cvQual','Accept allied qualification data now.']],
+ acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['acqWorkforce','More contracting officers.'],['r2rReform','Military right to repair and technical data. [c:r2rstrip]'],['cvQual','Accept allied qualification data now.']],
  source:[['energSrc','Second sources for sole-source energetics, ammonium perchlorate first.'],['cotsAlloc','Commercial parts and allocation orders for defense electronics.'],['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Ensuring Naval Readiness Act: allied yards build Navy ships when cheaper. [c:s406] The Senate’s FY27 NDAA markup would instead strip the presidential exception and cap foreign construction at two ships per class. [c:sasc27]'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
  export:[['itarReform','Extend license-free trade to Japan and Korea.'],['nds','Stockpile what Beijing can switch off.']],
  money:[['crAnomaly','Let funded projects keep moving under a CR.'],['dpaFund','Recapitalize DPA Title III.'],['pricefloor','Price floors and offtake.'],['cvDPA3','Waive DPA funding limits now.']],
@@ -2228,8 +2230,9 @@ const REFORMS=[
  {id:'dpaFund',fac:['US'],n:'Recapitalize DPA Title III',d:'Refills the Defense Production Act fund: Title III grants against Chinese dumping succeed 30% more often. Costs $2B.',pc:20,$:2,wk:16,p:.75},
  {id:'pricefloor',n:'Strategic Price Floors & Offtake',d:'Extends the $110/kg price floor the Pentagon gave MP Materials to other minerals: private lenders fund 45% of mines, refineries and metal plants. Unlocks price-floor contracts; Chinese price-collapse obstacles −65%.',pc:35,wk:16,p:.6},
  {id:'multiyear',n:'Multiyear Orders for the Whole Munitions Base',d:'Firm orders years ahead: suppliers pay 40% of new munitions and missile plants themselves; funding and ramp-up take 40% less time; demand-signal obstacles −75%; shell, interceptor & strike lines +10%. One contract covers years of buys, so the munitions and missile offices each run 2 more programs at full speed.',pc:30,wk:20,p:.7},
- {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Contract awards take 40% less time; protests, cost-accounting and prime objections −50%. Standard terms mean fewer bespoke negotiations: every acquisition office runs 1.5 more programs at full speed. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15;queueEvent('blitz')}},
- {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Blocks further prime mergers and puts a second source on key subsystems. Every acquisition office runs 0.5 more programs at full speed. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20;queueEvent('blitz')}},
+ {id:'acq',fac:['US'],n:'Fixed-Price & New-Entrant Pathway',d:'Contract awards take 40% less time; protests, cost-accounting and prime objections −50%. Standard terms mean fewer bespoke negotiations: every acquisition office runs 1.5 more programs at full speed. Prime leverage −15. The primes will notice.',pc:40,wk:20,p:.55,on:()=>{S.lev-=15}},
+ {id:'r2rReform',fac:['US'],n:'Military Right to Repair and Technical Data',d:'Contracts must give the services the technical data, tools and parts to repair what they buy, instead of waiting on the contractor. Ships, submarines and aircraft count 5% more; prime leverage −10. Both chambers passed it in 2025, and conference stripped it.',pc:24,wk:20,p:.5,on:()=>{S.lev-=10;for(const c of ['surface','subs','aircraft'])S.q[c]*=1.05}},
+ {id:'antitrust',fac:['US'],req:'acq',n:'Recompete Sole-Source Lines',d:'Blocks further prime mergers and puts a second source on key subsystems. Every acquisition office runs 0.5 more programs at full speed. Prime leverage −20.',pc:50,wk:26,p:.4,on:()=>{S.lev-=20}},
  {id:'saws',fac:['US'],n:'Shipyard Wage Authority (SAWS)',d:'Lets the submarine builders pull labor money forward from boats not yet started to raise wages now, without new appropriations. Shipyards and their suppliers hire 60% faster and keep more of the people they train. The Navy proposed it in 2024; it stalled in Congress and the budget office is skeptical.',pc:25,wk:16,p:.5,on:()=>{if(S.lab)for(const k of SAWS_K)if(S.lab[k]!=null)S.lab[k]+=staffOf(k,true)*.06}},
  {id:'pubYards',fac:['US'],n:'Public Shipyard Expansion Act',d:'Authorizes and funds a fifth public naval shipyard and lets the government own new construction yards run by contractors. Unlocks the Fifth Public Naval Shipyard (maintenance) and the Government-Owned Construction Yard (new boats). Both are long, costly builds that need workers the existing yards also want.',pc:45,wk:26,p:.45},
  {id:'energSrc',fac:['US'],n:'Second Sources for Sole-Source Energetics',d:'Funds second sources and warm standby lines for propellants and explosives with one US maker, ammonium perchlorate first. Existing energetics plants run 15% more, and new energetics plants cost 20% less.',pc:30,$:1,wk:16,p:.6,on:()=>{for(const n of NODES)if(n.arch==='energetic'&&n.ss)S.nodes[n.id].base*=1.15}},
@@ -2415,11 +2418,11 @@ const EVENTS=[
   body:()=>S._cf?"The guns fall silent along the front. Russian factories keep running at war tempo — but the output now goes into depots instead of the front. Russia’s in-service stocks begin to climb.":"Talks collapse. The war of attrition grinds on, consuming Russian output nearly as fast as it is produced.",o:[{l:'Watch the depots.',fx:()=>{if(S._cf)S.pc+=8}}]},
  
  {id:'japanBuild',pre:"December 2022: Japan set a goal of 2% of GDP for defense by fiscal 2027.[c:jp2pct]",fac:['US'],at:[30,90],ic:'🇯🇵',t:'Japan Accelerates Its Buildup',body:"Tokyo accelerates defense spending ahead of its 2% target. Allied forces in the Indo-Pacific +10%.",fx:()=>{S.allied.pac*=1.1},o:[{l:'Arigatō.'}]},
- {id:'buyback',pre:"RTX ran a $10 billion buyback in 2023, and the primes kept buying back shares in 2024 despite the Navy Secretary’s public criticism.[c:buyback24]",p:.005,once:false,cond:()=>S.lev>45,ic:'💼',t:{US:'Prime Announces $10B Buyback'},
+ {id:'buyback',pre:"RTX ran a $10 billion buyback in 2023, and the primes kept buying back shares in 2024 despite the Navy Secretary’s public criticism.[c:buyback24]",p:.005,once:false,cond:()=>S.lev>(ruleOn('rEO14372')?60:45),ic:'💼',t:{US:'Prime Announces $10B Buyback'},
   body:{US:"Citing “supply chain headwinds” for late deliveries, a prime contractor announces a $10 billion share repurchase and a dividend increase."},
-  o:[{l:'Publicly shame them (−6 PC, leverage −4)',pc:6,fx:()=>{S.lev-=4}},{l:'Say nothing (leverage +3)',fx:()=>{S.lev+=3}}]},
- {id:'blitz',pre:"2025–26: industry groups lobbied against military right-to-repair and data-rights provisions in the NDAA.[c:r2r]",manual:true,once:false,ic:'🎩',t:{US:'K Street Mobilizes'},body:"Having read your reform, the incumbents discover deep concerns about “quality,” “proven performance,” and “jobs in your district.” Op-eds appear. Retired generals appear in them.",
-  o:[{l:'Absorb it (−15 PC)',pc:15},{l:'Cut a deal (−5 PC, leverage +8)',pc:5,fx:()=>{S.lev+=8}},{dflt:1,l:'Stay quiet (no PC; your bill’s chance of passing −10%)',fx:()=>{if(S.bill)S.bill.boost-=.1}}]},
+  o:()=>[...(ruleOn('rEO14372')?[{l:'Flag it as underperforming under EO 14372 (−4 PC; leverage −6; the buyback is blocked)',pc:4,fx:()=>{S.lev-=6}}]:[]),{l:'Publicly shame them (−6 PC; leverage −4)',pc:6,fx:()=>{S.lev-=4}},{l:'Say nothing (leverage +3)',fx:()=>{S.lev+=3}}]},
+ {id:'blitz',pre:"2025–26: industry groups lobbied against military right-to-repair and data-rights provisions in the NDAA.[c:r2r]",manual:true,once:false,ic:'🎩',t:{US:'K Street Mobilizes'},body:()=>`Having read ${S._blz&&RD[S._blz]?'<b>'+rname(RD[S._blz])+'</b>':'your reform'}, the incumbents discover deep concerns about “quality,” “proven performance,” and “jobs in your district.” Op-eds appear. Retired generals appear in them. The more leverage the primes hold, the harder they push: ${pct(blitzP())} odds of a blitz like this at ${Math.round(S.lev)}.`,
+  o:[{l:'Answer it in the press and the districts (−15 PC; its odds hold)',pc:15},{l:'Cut a deal (−5 PC; leverage +8; its odds hold)',pc:5,fx:()=>{S.lev+=8}},{dflt:1,l:'Stay quiet (its odds −10 points)',fx:()=>{if(S.bill&&(!S._blz||S.bill.id===S._blz))S.bill.boost-=.1;else{const x=refReqs().find(y=>y.id===S._blz);if(x)x.adj=(x.adj||0)-.1}}}]},
  {id:'unions',pre:"2015–17: maritime unions and the American Maritime Partnership fought Senator McCain’s Jones Act reform bills.[c:jonesamp]",manual:true,ic:'⚓',t:'The Maritime Coalition Mobilizes',body:"Domestic yards, maritime unions, and a bipartisan caucus describe Jones Act reform as “surrendering American shipbuilding” — which, to be fair, mostly already happened.",
   o:[{l:'Fight it (−15 PC, pass chance +10%)',pc:15,fx:()=>{if(S.bill)S.bill.boost+=.1}},{l:'Let it play out (pass chance −10%)',fx:()=>{if(S.bill)S.bill.boost-=.1}}]},
  {id:'gao',p:.005,once:false,ic:'📑',t:{US:'GAO: Industrial Base “Fragile”'},
@@ -3229,6 +3232,7 @@ const HIST=[
  {fac:['US'],w0:weekOf(2025,6,4),t:'Reconciliation law adds ~$150B for defense through FY2029, including $25B for munitions and $100B of Office of Strategic Capital loan authority (Jul 2025)',fx:()=>{setRule('rOBBBA',true);setRule('rOSC',true)},c:'obbba'},
  {fac:['US'],w0:weekOf(2025,10,7),t:'Hegseth memo turns the Defense Acquisition System into the Warfighting Acquisition System, run by portfolio acquisition executives (7 Nov 2025)',fx:()=>setRule('rWAS',true),c:'was'},
  {fac:['US'],w0:weekOf(2025,11,18),t:'FY2026 NDAA signed: portfolio executives in law, commercial solutions openings expanded (18 Dec 2025)',fx:()=>setRule('rNDAA26',true),c:'ndaa26'},
+ {fac:['US'],w0:weekOf(2026,0,7),t:'Executive Order 14372, Prioritizing the Warfighter in Defense Contracting: no buybacks or dividends at underperforming contractors (7 Jan 2026)',fx:()=>setRule('rEO14372',true),c:'eo14372'},
  {fac:['US'],w0:weekOf(2026,1,6),t:'FY2026 defense appropriations enacted after a short lapse: $838.7B, with multiyear authority for critical munitions (Feb 2026)',fx:()=>setRule('rMYP',true),c:'fy26approp'},
  {fac:['US'],w0:weekOf(2026,6,10),t:'Endangered Species Act: the regulatory definition of “harm” is rescinded (Jul 2026)',fx:()=>setRule('rESA',true),c:'esaharm'},
  {fac:['US'],w0:weekOf(2025,8,15),t:'State reinterprets the missile-technology rules: military drones are now reviewed for export like fighter jets (Sep 2025)',fx:()=>setRule('rMTCR',true),c:'mtcr'},
@@ -3698,7 +3702,7 @@ function agendaHTML(mode){const nd=mode!=='bills'&&S.fac==='US';
   const row=Rf=>{const ok=reformAvail(Rf),c=reformCost(Rf),fail=S.reforms[Rf.id]==='failed',v=vehOf(Rf),q=refReqs().find(x=>x.id===Rf.id),fy=pkgFY();
     const btns=q?`<span class="sub gold">${q.rider?'Rider on':'In'} the FY${FYOF(q.pkg)} NDAA · ~${Math.round(refPass(q)*100)}%</span> <button class="btn sm" data-a="refdrop" data-r="${Rf.id}" data-tip="Take it out; the PC comes back.">✕</button>`
       :v==='ndaa'?`<button class="btn sm" data-a="refadd" data-r="${Rf.id}" ${ok&&S.pc>=refReqCost(Rf)?'':'disabled'} data-tip="${tipQ(`<b>Add it to the FY${fy} NDAA</b><br>Decided with the bill on 18 December. It has about ${anP(refPass({id:Rf.id,pkg:pkgW()}))} chance of surviving conference this year.${Rf.$?` Its ${money(Rf.$)} comes out of Congress’s money for requests.`:''}`)}">+ FY${fy%100} NDAA · ${refReqCost(Rf)} PC${Rf.$?' · '+money(Rf.$):''}</button>`
-      :`<button class="btn sm" data-a="intro" data-r="${Rf.id}" ${!S.bill&&ok&&S.pc>=c&&(!Rf.$||Rf.$<=S.budget)?'':'disabled'}>Bill · ${c} PC${Rf.$?' + '+money(Rf.$):''} · ${Rf.wk} wk · ${Math.round(Rf.p*100)}% odds</button>${v==='rider'?` <button class="btn sm" data-a="refadd" data-r="${Rf.id}" data-k="rider" ${ok&&S.pc>=refReqCost(Rf,1)&&S.bill?.id!==Rf.id?'':'disabled'} data-tip="${tipQ(`<b>Attach as a rider to the FY${fy} NDAA</b><br>It is not defense law, so conference usually strips it. It has about ${anP(refPass({id:Rf.id,pkg:pkgW(),rider:1}))} chance of surviving. Manchin’s permitting amendment and the SAFE Banking Act both failed this way.`)}">Rider · ${refReqCost(Rf,1)} PC</button>`:''}`;
+      :`<button class="btn sm" data-a="intro" data-r="${Rf.id}" ${!S.bill&&ok&&S.pc>=c&&(!Rf.$||Rf.$<=S.budget)?'':'disabled'}>Bill · ${c} PC${Rf.$?' + '+money(Rf.$):''} · ${Rf.wk} wk · ${Math.round(Rf.p*primeFightF(Rf.id)*100)}% odds</button>${v==='rider'?` <button class="btn sm" data-a="refadd" data-r="${Rf.id}" data-k="rider" ${ok&&S.pc>=refReqCost(Rf,1)&&S.bill?.id!==Rf.id?'':'disabled'} data-tip="${tipQ(`<b>Attach as a rider to the FY${fy} NDAA</b><br>It is not defense law, so conference usually strips it. It has about ${anP(refPass({id:Rf.id,pkg:pkgW(),rider:1}))} chance of surviving. Manchin’s permitting amendment and the SAFE Banking Act both failed this way.`)}">Rider · ${refReqCost(Rf,1)} PC</button>`:''}`;
     return `<div class="ref ${fail?'fail':''}" id="ag-${Rf.id}" data-fk="ag:${Rf.id}"><span class="nm">${rname(Rf)}${fail?' <span class="sub red">(failed: retry 40% off)</span>':''}</span><span class="rbtns">${btns}</span><span class="d">${Rf.req&&!passed(Rf.req)?`<span class="red">Requires ${rname(RD[Rf.req])}.</span> `:''}${Rf.d}</span></div>`};
   const open=REFORMS.filter(R=>facOk(R)&&!passed(R.id));
   if(S.fac==='US'){const A=open.filter(R=>vehOf(R)==='ndaa'),B=open.filter(R=>vehOf(R)!=='ndaa');
@@ -3802,7 +3806,7 @@ function spawnObs(p,id,front){
   notify(`⛔ <b>${V(od.n)}</b><br><span class="dim">${projName(p)}</span>`,'',{a:'prog',u:p.uid});
   if(p.ct&&!S.histMode&&od.stage!=='event'){ // the contract decides who eats the delay
     if(p.ct.k==='cp'){const x=.06*p.price;if(S.budget>=x){spendB(x,'Cost-plus delays');p.spent+=x;log(`🧾 Cost-plus: ${projName(p)} bills ${money(x)} for the delay.`,'bad')}else if(!p.obs.some(i=>i.id==='costOverrun'))spawnObs(p,'costOverrun')}
-    if(p.ct.k==='fp'&&rand('r40')<.22&&!p.obs.some(i=>i.id==='reprice'))spawnObs(p,'reprice')}
+    if(p.ct.k==='fp'&&rand('r40')<.22*(p.ct.b==='prime'?reaF():1)&&!p.obs.some(i=>i.id==='reprice'))spawnObs(p,'reprice')}
 }
 function complete(p){credDone(p);pcResult(p);
   const def=PD[p.def];const plan=(p.dur||[]).reduce((a,b)=>a+b,0);
@@ -3827,7 +3831,7 @@ function complete(p){credDone(p);pcResult(p);
   } else {
     const kind=def.t.node?'node':'line',target=def.t.node||def.t.line,kn=S.know[target];
     const tm=ctTerms(def,p.ct),y0=Math.min(.55,.05+kn*.003+tm.y0);
-    labCrew(kind==='line'?'L:'+target:target,g);S.plants.push({uid:p.uid,def:p.def,nm:projName(p),kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w,rampM:tm.rampM,ops:permitsFor(def,'o').map((x,i)=>({id:x.id,next:S.w+Math.round(x.yrs*52*(.5+((p.uid*7+i*13)%10)/20)),last:null}))});
+    labCrew(kind==='line'?'L:'+target:target,g);S.plants.push({uid:p.uid,def:p.def,nm:projName(p),b:p.ct?.b||null,kind,target,gain:g,yield:y0,adv:p.adv,issue:null,full:false,start:S.w,rampM:tm.rampM,ops:permitsFor(def,'o').map((x,i)=>({id:x.id,next:S.w+Math.round(x.yrs*52*(.5+((p.uid*7+i*13)%10)/20)),last:null}))});
     log(`🎗 Ribbon cutting: ${projName(p)}${p.inh?'':' after '+yrs(S.w-p.started)}. Output starts at ${pct(y0)} of nameplate.`,'good');
     toast(`🎗 <b>${projName(p)}</b> built<br><span class="dim">Ramping from ${pct(y0)} of nameplate</span>`,'good',{a:'prog',u:p.uid});
   }
@@ -4075,20 +4079,20 @@ function plantsTick(){sitesTick();
 /* ---------- reforms & carve-outs ---------- */
 function introduce(id){
   const R=RD[id];if(S.bill||!reformAvail(R)||inReq(id)||vehOf(R)==='ndaa')return;const c=reformCost(R);if(S.pc<c||(R.$>0&&R.$>S.budget))return;
-  S.pc-=c;(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+c;spendB(R.$||0,'Reforms');S.bill={id,left:R.wk,total:R.wk,boost:0,whips:0};log(`📜 Introduced: ${rname(R)}.`,'ev');R.onStart?.();
+  S.pc-=c;(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+c;spendB(R.$||0,'Reforms');S.bill={id,left:R.wk,total:R.wk,boost:0,whips:0};log(`📜 Introduced: ${rname(R)}.`,'ev');R.onStart?.();blitzMaybe(id);
 }
 function whip(){if(!S.bill||S.pc<10||S.bill.whips>=3)return;S.pc-=10;S.bill.whips++;S.bill.boost+=.1}
 // Reforms the Armed Services and defense appropriations committees write ride the annual bill: they go into the request for
 // Political Capital and are decided on 18 December. The rest (permitting, courts, Jones Act, visas, trade, broad labor law) are
 // stand-alone bills; one can be attached to the NDAA as a rider, at a premium and with a high chance it is stripped in
 // conference, as Manchin’s permitting amendment (Dec 2022) and the SAFE Banking Act (FY2022, FY2023) were.[c:manchin22][c:safebank]
-const NDAA_REF=['multiyear','ibfPerm','energSrc','seekCommon','cotsAlloc','saws','pubYards','acq','qualReform','antitrust','itarReform','ceDefense','byrnes','dpaMin','dpaFund','pricefloor','acqWorkforce','slep','readiness','crAnomaly'];
+const NDAA_REF=['multiyear','ibfPerm','energSrc','seekCommon','cotsAlloc','saws','pubYards','acq','qualReform','antitrust','itarReform','ceDefense','byrnes','dpaMin','dpaFund','pricefloor','acqWorkforce','slep','readiness','crAnomaly','r2rReform'];
 const vehOf=R=>S.fac!=='US'?'own':NDAA_REF.includes(R.id)?'ndaa':'rider',RIDER_F=1.4;
 const refReqs=()=>(S.refReq=S.refReq||[]),inReq=id=>refReqs().some(x=>x.id===id);
-function refPass(x){const R=RD[x.id],m=moodOf(FYOF(x.pkg)).f;return x.rider?clamp(R.p*.35/m,.05,.4):clamp((R.p+.2)/Math.sqrt(m),.25,.95)}
+function refPass(x){const R=RD[x.id],m=moodOf(FYOF(x.pkg)).f,pf=primeFightF(x.id),a=x.adj||0;return x.rider?clamp(R.p*.35/m*pf+a,.03,.4):clamp((R.p+.2)/Math.sqrt(m)*pf+a,.15,.95)}
 function refReqCost(R,rider){return Math.round(reformCost(R)*(rider?RIDER_F:.8))}
 function refAdd(id,rider){const R=RD[id];if(!R||!reformAvail(R)||inReq(id)||S.bill?.id===id)return;const k=refReqCost(R,rider);if(S.pc<k)return;S.pc-=k;spent('pc',k);
-  refReqs().push({id,pc:k,rider:!!rider,req:R.$||0,pkg:pkgW()});actRec('rreq',{id});(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+k;log(`🏛 ${rider?'Attached as a rider to':'Added to'} the FY${pkgFY()} NDAA: ${rname(R)} (${k} PC).`,'ev')}
+  refReqs().push({id,pc:k,rider:!!rider,req:R.$||0,pkg:pkgW()});actRec('rreq',{id});blitzMaybe(id);(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+k;log(`🏛 ${rider?'Attached as a rider to':'Added to'} the FY${pkgFY()} NDAA: ${rname(R)} (${k} PC).`,'ev')}
 function refDrop(id){const x=refReqs().find(y=>y.id===id);if(!x)return;S.pc+=x.pc;spent('pc',-x.pc);S.refReq=refReqs().filter(y=>y!==x)}
 function refEnact(got,lost,fy,room){const its=refReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.refReq=refReqs().filter(x=>!its.includes(x));
   for(const x of its){const R=RD[x.id],n=rname(R);if(passed(x.id))continue;
@@ -4106,7 +4110,7 @@ function reformCost(R){return Math.round(R.pc*(S.reforms[R.id]==='failed'?.6:1))
 function reformAvail(R){return facOk(R)&&!passed(R.id)&&(!R.req||passed(R.req))}
 function reformsTick(){
   if(!S.bill||--S.bill.left>0)return;
-  const R=RD[S.bill.id],p=clamp(R.p+S.bill.boost,.05,.98);
+  const R=RD[S.bill.id],p=clamp(R.p*primeFightF(R.id)+S.bill.boost,.05,.98);
   const rok=rand('r48')<p;rollRec(rname(R),'the floor vote on your bill',p,rok,'stripped in conference; it costs less to try again');
   if(rok){S.reforms[R.id]='passed';actRec('ref',{id:R.id});refRescale(R.id);lawRec('Law',rname(R));log(`✅ Enacted: ${rname(R)}.`,'good');R.on?.();S.queue.push({sys:'pass',id:R.id})}
   else{S.reforms[R.id]='failed';log(`❌ ${rname(R)} stripped in conference.`,'bad');S.queue.push({sys:'fail',id:R.id})}
@@ -4131,6 +4135,26 @@ function carvesTick(){
     else if(CD[id].court&&!S.queue.some(q=>q.ev==='enjoin')&&rand('r49')<CD[id].court){S._enj=id;queueEvent('enjoin')}}}
 }
 const L_U=c=>LINES[c].u;
+// ---- prime leverage: the structure of the base sets the level it moves toward
+// It starts at 70 (75 before EO 14372). Awards and plants move it for good, reforms and laws too; an event's effect fades.
+const PRIME_REF=['acq','antitrust','r2rReform'],PRIME_CUT={acq:15,antitrust:20,r2rReform:10},LEV_BASE=75,LEV_DRIFT=.2;
+function levTarget(){const P=[],add=(n,v,note,link)=>{if(Math.abs(v)>=.05)P.push([n,v,note,link])};
+  const aw=(S.acts||[]).filter(a=>a.t==='prj'&&a.ct&&PD[a.id]&&needsContract(PD[a.id])&&!builderFixed(PD[a.id]));
+  const np=aw.filter(a=>a.ct.b==='prime').length,ne=aw.filter(a=>a.ct.b==='entrant').length;
+  add('Programs awarded to incumbent primes',Math.min(20,np*2),`${np} so far · +2 each, up to +20`);
+  add('Programs awarded to new entrants',-Math.min(15,ne*1.5),`${ne} so far · −1.5 each, up to −15`);
+  const ss=[...new Set(S.plants.filter(pl=>pl.b==='entrant'&&pl.full&&ND[pl.target]?.ss).map(pl=>pl.target))];
+  add('New entrants at full rate on single-source items',-Math.min(15,ss.length*3),ss.length?ss.map(i=>lc(ND[i].n)).join(', '):'−3 for each item that gains a second source');
+  for(const k in PRIME_CUT)if(passed(k))add(rname(RD[k]),-PRIME_CUT[k],'law');
+  if(passed('energSrc'))add(rname(RD.energSrc),-5,'law: second sources for propellants and explosives');
+  if(ruleOn('rEO14372'))add('EO 14372: no buybacks at underperforming contractors',-5,'executive action','data-a="view" data-v="policy"');
+  const v=clamp(LEV_BASE+P.reduce((a,x)=>a+x[1],0),0,100);return {v,P}}
+function levDrift(){if(S.histMode||S.replay)return;S.lev=clamp(S.lev+(levTarget().v-S.lev)*LEV_DRIFT/52,0,100)}
+// the primes fight the reforms that cut their leverage: weaker odds, and a lobbying blitz when you push one
+const primeFightF=id=>PRIME_REF.includes(id)?clamp(1-Math.max(0,S.lev-50)/150,.6,1):1;
+const blitzP=()=>clamp((S.lev-40)/60,0,.85);
+const reaF=()=>clamp(S.lev/60,.5,1.6);
+function blitzMaybe(id){if(!PRIME_REF.includes(id)||S.histMode)return;if(rand('rblz'+id+S.w)<blitzP()){S._blz=id;queueEvent('blitz')}}
 function queueEvent(id){S.queue.push({ev:id})}
 function infoOnly(q){if(q.read||q.sys==='outcome')return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
 function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(true)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
@@ -4232,7 +4256,7 @@ function tick0(){
   if(S.histMode)histTick();
   for(const c in S.ready)S.ready[c]+=(readyTarget(c,R).t-S.ready[c])/26;
   for(const t of ['pac','eu']){enemyStep(S.enemy[t],S.w);S.allied[t]*=Math.pow(1+F().alliedG[t],1/52)}
-  S.lev=clamp(S.lev,0,100);
+  S.lev=clamp(S.lev,0,100);levDrift();
   projectsTick();plantsTick();if(!S.histMode)autoDecide();reformsTick();carvesTick();scenUpdate();homeTick(R.out);
   if(!S.histMode){eventsTick();drainInfo()}
   if(S.w%2===0)S.hist.push(snapshot());
@@ -5533,7 +5557,10 @@ const CITES=[
  {id:'pepcon',g:'Munitions & energetics',t:'The PEPCON explosion',pub:'Clark County Fire Department',d:'1988',url:'https://www.clarkcountynv.gov/government/departments/fire/the-pepcon-explosion',use:'4 May 1988, Henderson NV; one of two US ammonium perchlorate producers.'},
  {id:'holston19',g:'Munitions & energetics',t:'Army probes fire at Holston ammunition plant; explosion felt in the area',pub:'WJHL',d:'Jan 2019',url:'https://www.wjhl.com/news/local/army-probes-fire-at-holston-ammunition-plant-explosion-felt-in-the-area/amp',use:'Operations stood down after the January 2019 fire and explosion.'},
  {id:'buyback24',g:'Policy & trade',t:'Defense companies keep up momentum on share repurchases despite Navy leader’s criticism',pub:'Breaking Defense',d:'May 2024',url:'https://breakingdefense.com/2024/05/defense-companies-keep-up-momentum-on-share-repurchases-despite-navy-leaders-criticism/',use:'Primes bought back shares after the Navy Secretary urged investment.'},
- {id:'r2r',g:'US rulebook',t:'HASC advances right to repair proposal, industry pushes back',pub:'Federal News Network',d:'Jun 2026',url:'https://federalnewsnetwork.com/congress/2026/06/hasc-advances-right-to-repair-proposal-industry-pushes-back/',use:'Industry lobbying against right-to-repair and data-rights provisions.'},
+ {id:'eo14372',g:'US rulebook',t:'Executive Order 14372, Prioritizing the Warfighter in Defense Contracting',pub:'Federal Register',d:'Jan 2026',url:'https://www.govinfo.gov/content/pkg/FR-2026-01-13/html/2026-00554.htm',use:'Bars buybacks and dividends at underperforming defense contractors in new and renewed contracts, and ties incentive pay to delivery.'},
+{id:'dibcomp22',g:'US rulebook',t:'State of Competition within the Defense Industrial Base',pub:'Department of Defense',d:'Feb 2022',url:'https://media.defense.gov/2022/Feb/15/2002939087/-1/-1/1/STATE-OF-COM-PETITION-WITHIN-THE-DEFENSE-INDUSTRIAL-BASE.PDF',use:'Aerospace and defense primes fell from 51 to 5; about 90% of missiles come from three sources. Sets the starting leverage.'},
+{id:'r2rstrip',g:'US rulebook',t:'Right-to-repair reforms mostly stripped from final FY26 NDAA',pub:'Defense Daily',d:'Dec 2025',url:'https://www.defensedaily.com/right-to-repair-reforms-mostly-stripped-from-final-fy-26-ndaa/congress/',use:'Both chambers passed military right-to-repair provisions; conference removed them after industry lobbying.'},
+{id:'r2r',g:'US rulebook',t:'HASC advances right to repair proposal, industry pushes back',pub:'Federal News Network',d:'Jun 2026',url:'https://federalnewsnetwork.com/congress/2026/06/hasc-advances-right-to-repair-proposal-industry-pushes-back/',use:'Industry lobbying against right-to-repair and data-rights provisions.'},
  {id:'jonesamp',g:'US rulebook',t:'The US Jones Act gets a new fight and a new argument',pub:'S&P Global',d:'Mar 2016',url:'https://www.spglobal.com/energy/en/news-research/blog/crude-oil/033116-the-us-jones-act-gets-a-new-fight-and-a-new-argument',use:'American Maritime Partnership opposition to repeal.'},
  {id:'pda24',g:'Wars of 2025–26',t:'US announces $300 million package for Ukraine (55th drawdown)',pub:'DoD News via GlobalSecurity',d:'Mar 2024',url:'https://www.globalsecurity.org/wmd/library/news/ukraine/2024/03/ukraine-240312-dodnews01.htm',use:'Presidential drawdowns from US stocks; more than 70 by Dec 2024.'},
  {id:'wsjrayon',g:'Missiles, motors & engines',t:'The Pentagon urgently needs more Patriot missiles. It’s running into a rayon problem',pub:'Wall Street Journal (via To Vima; also Jerusalem Post)',d:'Nov 2026',url:'https://www.tovima.com/wsj/the-pentagon-urgently-needs-more-patriot-missiles-its-running-into-a-rayon-problem',use:'One approved carbonized rayon for PAC-3 MSE: Czech fibre, ArianeGroup cloth, Park Aerospace prepreg; a $5M ArianeGroup line due 2028 will not meet demand; Enka in testing; L3Harris qualifying another source.'},
@@ -6959,7 +6986,7 @@ function renderGame(){
     ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short',`<b>Weapon lines short of parts: ${shortL} of ${S.order.length}</b><br>The game tracks ${S.order.length} weapon lines. One counts here when a part or material it needs is short, so it makes less than its own factories could.${shortL?'<br>'+S.order.filter(c=>R.out[c].bott).map(c=>`• ${LINES[c].n}: short of ${lc(ND[R.out[c].chain.at(-1)||R.out[c].bott]?.n||'parts')}`).join('<br>'):''}<br>Click for its page.`,'why','data-k="short"',shortL?'rwarn':'')}
     ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'PRC exposure','<b>PRC and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Click for its page.','why','data-k="expo"')}
     ${S.sandbox?'':res(`${Math.round(S.strain)}`,'Civilian strain',`<b>Civilian strain: ${Math.round(S.strain)} of 100</b><br>How hard the defense push squeezes civilian buyers. Above 30 it costs elections and starts events.<br>Click for its page.`,'why','data-k="strain"',S.strain>=50?'ralert':S.strain>=30?'rwarn':'')}
-    ${S.sandbox?'':res(`${Math.round(S.lev)}`,'Prime leverage',`<b>Prime contractors’ leverage: ${Math.round(S.lev)} of 100</b><br>How much bargaining power the big contractors hold. Above 50 their work costs more; above 60 they push back more often.<br>Click for its page.`,'why','data-k="lev"',S.lev>=60?'rwarn':'')}
+    ${S.sandbox?'':res(`${Math.round(S.lev)}`,'Prime leverage',`<b>Prime contractors’ leverage: ${Math.round(S.lev)} of 100</b><br>How much bargaining power the big contractors hold. Above 50 their work costs more and they fight reforms that cut it; above 60 they push back more often.<br>Heading toward ${Math.round(levTarget().v)}, set by who holds the base.<br>Click for its page.`,'why','data-k="lev"',S.lev>=60?'rwarn':'')}
     <div class="spacer"></div>
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
@@ -7128,7 +7155,7 @@ let CF_RUN=false,CFQ=null;
 const actRec=(t,o)=>{if(S&&!S.sim&&!S.histMode&&!S.replay&&!CF_RUN&&S.w>=PLAY0)(S.acts=S.acts||[]).push({w:S.w,t,...o})};
 const CF_PK=[
  {k:'permit',n:'Permitting',ic:'📋',d:'Brownfield exclusion, the SPEED Act, litigation reform, FAST-41, Clean Air and Clean Water rules, endangered-species rule',ids:['ceDefense','nepaReform','judRev','rFAST','rNSR','rWOTUS','rESA','rCEQ']},
- {k:'acq',n:'Acquisition & contracting',ic:'🖋',d:'Fixed-price and new-entrant pathway, multiyear orders, acquisition workforce, new starts under CRs, FAR overhaul, portfolio executives',ids:['acq','multiyear','acqWorkforce','crAnomaly','antitrust','rRFO','rWAS']},
+ {k:'acq',n:'Acquisition & contracting',ic:'🖋',d:'Fixed-price and new-entrant pathway, multiyear orders, acquisition workforce, new starts under CRs, FAR overhaul, portfolio executives',ids:['acq','multiyear','acqWorkforce','crAnomaly','antitrust','r2rReform','rRFO','rWAS','rEO14372']},
  {k:'qual',n:'Qualification & testing',ic:'🧪',d:'Joint qualification, supplier test data, qualifying from pilot lots',ids:['qualReform','rJETO','rQData','rConcQual']},
  {k:'supply',n:'Supply chains & minerals',ic:'⛓',d:'DPA minerals emergency and funding, a permanent industrial base fund, price floors, second sources, common seekers, commercial parts, strategic capital, minerals partnership',ids:['dpaMin','ibfPerm','dpaFund','pricefloor','energSrc','seekCommon','cotsAlloc','rOSC','rMSP']},
  {k:'labor',n:'Workforce & shipyards',ic:'👷',d:'Industrial workforce act, technical expert visas, shipyard wages, public shipyards, allied repair yards, Jones Act reform',ids:['workforce','expertVisa','saws','pubYards','byrnes','jonesReform']},
@@ -7289,7 +7316,7 @@ const srcTxt=s=>s?String(s):'';
 // (the live weekly flows, then the one-off changes with their causes), what it changes at today’s level, and what you can do.
 const MP={tile:(lab,v,d='',tip)=>`<div class="trt"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b>${d}</div>`,
   card:(h,sub,x,cls='')=>`<div class="trcol mpc ${cls}"><div class="trh"><b>${h}</b><span>${sub||''}</span></div>${x}</div>`,
-  d:(v,f,good)=>Math.abs(v)<1e-9?'<i class="trd">no change</i>':`<i class="trd ${(v>0)===good?'up':'dn'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</i>`,
+  d:(v,f,good)=>Math.abs(v)<1e-9||/^[^1-9]*$/.test(f(Math.abs(v)))?'<i class="trd">no change</i>':`<i class="trd ${(v>0)===good?'up':'dn'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</i>`,
   // a signed bar: one cause and how much it adds or takes a year
   row:(n,v,sc,f,good,link,plain)=>`<div class="mprow"><span class="mpn">${link?`<span class="linkn" ${link}>${n}</span>`:n}</span><span class="mpbar"><i class="${(v>0)===good?'g':'b'} ${v<0?'neg':''}" style="width:${Math.min(50,Math.abs(v)/Math.max(sc,1e-9)*50).toFixed(1)}%"></i></span><b class="${(v>0)===good?'okt':'redt'}">${plain?'':v>0?'+':v<0?'−':''}${f(Math.abs(v))}</b></div>`,
   // the ledger: one-off changes with their causes
@@ -7373,17 +7400,26 @@ Object.assign(MPAGE,{
    return {t:'Lines short of parts',body:`<div class="trts n3">${MP.tile('Short of parts',`${cs.length} of ${S.order.length}`,'<i class="trd">weapon lines making less than their factories could</i>')}${MP.tile('Full lines',`${S.order.length-cs.length}`,'<i class="trd">held by their own capacity or orders instead</i>')}${MP.tile('Parts behind it',`${new Set(cs.map(c=>R.out[c].chain.at(-1)||R.out[c].bott)).size}`,'<i class="trd">different parts or materials</i>')}</div>
      ${MP.card('Each short line','and what it is short of',rows?`<table class="whyt"><tr><th>Line</th><th>Short of</th><th class="num">Output lost</th></tr>${rows}</table>`:'<p class="trnone">No line is short of parts right now.</p>')}
      <p class="whyn"><span class="linkn" data-a="view" data-v="bn">Bottlenecks →</span> ranks the parts by the output they cost and lists what would fix each one.</p>`}},
- lev:()=>{const v=S.lev,ya=MP.yearAgo('lev'),L=S.mlog?.lev||[],f0=x=>fmt(x,0);
-   const prem=Math.max(0,v-50)/200,tagged=(v-50)/100,obs=Math.max(.2,v/60);
-   const awards=(S.acts||[]).filter(a=>a.t==='prj'&&a.ct?.b==='prime').length;
-   return {t:'Prime contractors’ leverage',body:mpageWrap({tiles:[MP.tile('Leverage now',`${Math.round(v)} / 100`,ya!=null?MP.d(v-ya,x=>fmt(x,0)+MP.yl(),false):''),MP.tile('Problems from the primes',`${fmt(obs,2)}×`,'<i class="trd">as often as at a leverage of 60</i>'),MP.tile('Price of prime-built work',prem>0?`+${pct(prem)}`:'No premium','<i class="trd">on contracts a prime builds</i>')],
-     gauge:MP.gauge(v,0,100,[{v:45,l:'Primes may announce stock buybacks'},{v:50,l:'Prime-built work starts to cost more'},{v:60,l:'Problems from the primes come more often than usual'}],v>=60?'#a3261c':v>=45?'#c9982a':'#4f8a3e'),
+ lev:()=>{const v=S.lev,ya=MP.yearAgo('lev'),L=S.mlog?.lev||[],f0=x=>fmt(x,0),T=levTarget(),eo=ruleOn('rEO14372');
+   const prem=Math.max(0,v-50)/200,tagged=(v-50)/100,obs=Math.max(.2,v/60),pf=primeFightF('acq'),bz=blitzP(),rf=reaF();
+   const sc=Math.max(5,...T.P.map(x=>Math.abs(x[1])));
+   const dir=Math.abs(T.v-v)<.5?'<i class="trd">where the structure puts it</i>':`<i class="trd">${T.v<v?'falling':'rising'} about ${fmt(Math.abs(T.v-v)*LEV_DRIFT,1)} a year now</i>`;
+   return {t:'Prime contractors’ leverage',body:mpageWrap({tiles:[MP.tile('Leverage now',`${Math.round(v)} / 100`,ya!=null?MP.d(v-ya,x=>fmt(x,0)+MP.yl(),false):''),MP.tile('Heading toward',`${Math.round(T.v)}`,dir),MP.tile('Price of prime-built work',prem>0?`+${pct(prem)}`:'No premium','<i class="trd">on contracts a prime builds</i>')],
+     gauge:MP.gauge(v,0,100,[{v:45,l:'primes may announce stock buybacks'},{v:50,l:'prime-built work starts to cost more; the primes start to fight reforms'},{v:60,l:'problems from the primes come more often than usual'}],v>=60?'#a3261c':v>=45?'#c9982a':'#4f8a3e'),
      chart:MP.chart(MP.series('lev',v),{lo:0,hi:100,f:f0,marks:[{v:45,l:'45'},{v:50,l:'50'},{v:60,l:'60',col:'#a3261c'}],dots:L.map(x=>({w:x.w,t:`${x.d>0?'+':''}${fmt(x.d,0)}: ${x.why}`,good:x.d<0}))}),dotsNote:1,
-     feeds:`<p class="mpp">How much bargaining power the big defense contractors hold over you. It does not drift on its own: only your awards, reforms and events move it.</p>
-       ${MP.kv([['Each contract awarded to an incumbent prime','+3',`${awards} so far`],['Fixed-Price & New-Entrant Pathway (reform)','−15',passed('acq')?'passed':'not passed'],['Recompete Sole-Source Lines (reform)','−20',passed('antitrust')?'passed':'not passed'],['A deal with the primes to end a lobbying blitz','+8','event'],['A stock buyback you let pass','+3','event'],['A stock buyback you shame publicly','−4','event']],false)}
-       <h5 class="mph5">What has moved it</h5>${MP.ledger(L,f0,false)}`,feedsSub:'',
-     does:`${MP.kv([['Problems from the primes (protests, pushback on changes)',`${fmt(obs,2)}×`,'as often as at 60; never below 0.2×'],['Contracts a prime builds',prem>0?`+${pct(prem)}`:'no premium','rises above 50; each award adds +3'],['Programs that are prime work by nature',tagged>0?`+${pct(tagged)}`:tagged<0?`−${pct(-tagged)}`:'list price','1% for each point away from 50'],['Stock buybacks',v>45?'possible':'not possible','above 45']],v>=50)}`,
-     levers:`<p class="mpp">Award contracts to <b>new entrants</b> instead of incumbents: on the contract screen they cost 20% less, build 15% faster and add no leverage. Pass the acquisition reforms on the <span class="linkn" data-a="view" data-v="ndaa">NDAA tab</span>: the Fixed-Price & New-Entrant Pathway first, then Recompete Sole-Source Lines.</p>`})}},
+     feeds:`<p class="mpp">Leverage comes from how concentrated the base is. Aerospace and defense primes fell from 51 to 5 after the Cold War, and three sources make about 90% of US missiles.[c:dibcomp22] When one or two firms make a weapon or a part, they set the terms.</p>
+       <p class="mpp">It moves toward the level the structure sets, about a fifth of the way each year. An award or an event moves it at once; what does not change the structure fades.</p>
+       ${MP.row('Where the base stood before 2026',LEV_BASE,sc,f0,false)}${T.P.map(([n,x,note,lk])=>MP.row(`${n}${note?`<span class="mini" style="display:block">${note}</span>`:''}`,x,sc,f0,false,lk||'')).join('')}
+       <div class="mpnet">The structure puts it at <b class="${T.v>=60?'redt':T.v<50?'okt':''}">${Math.round(T.v)}</b>${Math.abs(T.v-v)>=.5?`; it stands at ${Math.round(v)} now`:''}.</div>
+       <h5 class="mph5">What has moved it at once</h5>${MP.ledger(L,f0,false)}`,feedsSub:'what sets the level it moves toward',
+     does:`${MP.kv([['Problems from the primes (protests, pushback on changes)',`${fmt(obs,2)}×`,'As often as at 60; never below 0.2×.'],
+       ['Contracts a prime builds',prem>0?`+${pct(prem)}`:'No premium','Rises above 50.'],
+       ['Programs that are prime work by nature',tagged>0?`+${pct(tagged)}`:tagged<0?`−${pct(-tagged)}`:'List price','1% for each point away from 50.'],
+       ['Odds for reforms that cut leverage',`${fmt(pf,2)}×`,'Fixed-Price & New-Entrant Pathway, Recompete Sole-Source Lines, Military Right to Repair. Lower above 50: 0.8× at 80.'],
+       ['A K Street blitz when you push one',pct(bz),'Starts above 40. Answer it with PC, a deal, or weaker odds.'],
+       ['Requests for Equitable Adjustment on fixed-price prime work',`${fmt(rf,2)}×`,'As often as at 60.'],
+       ['Stock buybacks',v<=45?'Not possible':eo&&v<=60?'Blocked for now':'Possible',eo?'Above 45; EO 14372 holds them off until 60.':'Above 45.']],v>=50)}`,
+     levers:`<p class="mpp">Award contracts to <b>new entrants</b> instead of incumbents: on the contract screen they cost 20% less and build 15% faster, and each one lowers leverage. A new entrant at full rate on an item with a single US maker gives it a second source and lowers it more. Pass the acquisition reforms on the <span class="linkn" data-a="view" data-v="ndaa">NDAA tab</span>: the Fixed-Price & New-Entrant Pathway first, then Recompete Sole-Source Lines, and Military Right to Repair; push them while leverage is low, or the primes fight harder. EO 14372 is ${eo?'in force':'<b>reversed</b>'} on the <span class="linkn" data-a="view" data-v="policy">Rules & policy tab</span>.</p>`})}},
  pc:()=>{const v=S.pc,ya=MP.yearAgo('pc'),parts=pcParts(),rate=pcRate()*52,L=S.mlog?.pc||[],f0=x=>fmt(x,0);
    const sc=Math.max(1,...parts.map(x=>Math.abs(x[1]*52)));
    const el=S.queue.some(q=>q.ev==='election')?null:null,odds=elecOdds();
@@ -7445,7 +7481,7 @@ function statsBody(){const R=S._R||production(false),cs=Object.keys(LINES),sc=S.
    card('expo','','PRC exposure',pct(S.exposure),'',(S.hist||[]).filter(h=>h.expo!=null&&h.w>=PLAY0).map(h=>[h.w,h.expo]),'US, allied and neutral supply replacing Chinese supply, against output growth.','What a cutoff or a war would take away.')];
   const back=[
    card('strain','','Civilian strain',`${Math.round(S.strain)} / 100`,chg('strain',S.strain,false,x=>fmt(x,0)+MP.yl()),MP.series('strain',S.strain),divs?(strNet<0&&S.strain<.5?`Defense orders take civilian supply of ${divs} item${divs>1?'s':''}, but recovery outpaces it.`:`Defense orders taking civilian supply of ${divs} item${divs>1?'s':''}: net ${strNet>=0?'+':'−'}${fmt(Math.abs(strNet),0)} a year.`):'Nothing is building it; it recovers 18 a year.',`Costs ${fmt(S.strain/60*52,0)} PC a year${S.strain>30?`; election odds −${S.strain>50?15:5} points`:''}.`),
-   card('lev','','Prime contractors’ leverage',`${Math.round(S.lev)} / 100`,chg('lev',S.lev,false,x=>fmt(x,0)+MP.yl()),MP.series('lev',S.lev),`${(S.mlog?.lev||[])[0]?`Last moved by: ${S.mlog.lev[0].why}`:'Only your awards, reforms and events move it.'}`,`Prime problems ${fmt(Math.max(.2,S.lev/60),2)}× as often as at 60; prime-built work ${S.lev>50?`+${pct((S.lev-50)/200)}`:'no premium'}.`),
+   card('lev','','Prime contractors’ leverage',`${Math.round(S.lev)} / 100`,chg('lev',S.lev,false,x=>fmt(x,0)+MP.yl()),MP.series('lev',S.lev),`${(S.mlog?.lev||[])[0]?`Last moved by: ${S.mlog.lev[0].why}`:`Heading toward ${Math.round(levTarget().v)}: awards, second sources and laws set the level.`}`,`Prime problems ${fmt(Math.max(.2,S.lev/60),2)}× as often as at 60; prime-built work ${S.lev>50?`+${pct((S.lev-50)/200)}`:'no premium'}.`),
    card('cn','','Beijing’s pressure',`${Math.round(cn.heat)} / 100`,chg('cn',cn.heat,false,x=>fmt(x,0)+MP.yl()),MP.series('cn',cn.heat),dr?`${dr[0]}: ${dr[1]>=0?'+':'−'}${fmt(Math.abs(dr[1]),0)} a year.`:'—',nx?`Next step, ${nx.s.toLowerCase()}, possible above ${nx.th}.`:'Every step taken.'),
    card('cred','','Standing with the committees',`${Math.round(credOf())} / 100`,chg('cred',credOf(),true,x=>fmt(x,0)+MP.yl()),MP.series('cred',credOf()),(S.credLog||[])[0]?`Last moved by: ${S.credLog[0].why}`:'Delivering what Congress funded raises it.',`Cut risk on requests ${fmt(credF(),2)}×.`),
    card('know','','Know-how',`${fmt(avgK,0)} average`,'',null,`Lowest: <b>${ND[lowK].n}</b> at ${Math.round(S.know[lowK])}.`,'New plants start higher and ramp faster where it is high.'),
