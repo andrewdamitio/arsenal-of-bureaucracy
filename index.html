@@ -1214,7 +1214,7 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .mvd{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.mvc{font:600 11.5px "Segoe UI",system-ui,sans-serif;padding:1px 7px;border-radius:3px;cursor:pointer}.mvc.up{background:#2f4a26;color:#b8e0a0;border:1px solid #4f7a40}.mvc.dn{background:#4a2620;color:#f0b0a0;border:1px solid #7a4038}.mvc.none{background:none;color:#b9ae90;font-weight:400;cursor:default}
 .mvrep .mvr{border-top:1px dotted #e0d4b4}.mvrep .mvt b{color:#231d14}.mvrep .mvt>span,.mvrep .mvc.none{color:#6b5a35}.mvrep .mvc.up{background:#e3edd6;color:#2f5a24;border-color:#b9cf9e}.mvrep .mvc.dn{background:#f3d9c8;color:#7a2a1c;border-color:#d9a58c}.mvrep{margin:10px 0}
 .mvbadge{margin-left:8px;font:600 10.5px "Segoe UI",system-ui,sans-serif;padding:1px 6px;border-radius:3px;vertical-align:2px}.mvbadge.up{background:#2f4a26;color:#b8e0a0;border:1px solid #4f7a40}.mvbadge.dn{background:#4a2620;color:#f0b0a0;border:1px solid #7a4038}
-.sk .skuw{fill:#4f8a3e;stroke:#efe6cf;stroke-width:1}.sk .skuw.fresh{fill:#c9a227}
+
 .stjump{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:8px;padding-top:6px;border-top:1px dotted #d6c79f;font:600 12px "Segoe UI",system-ui,sans-serif}
 .dsec.pgsel{box-shadow:inset 4px 0 0 #b8860b;padding-left:10px}tr.dksel>td{background:#f6e7b8!important}tr.dksel>td:first-child{box-shadow:inset 4px 0 0 #b8860b}tr.jumpto>td{animation:jmprow 2.2s ease-out both}
 .pgback{margin-left:12px;font:600 11.5px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none}
@@ -4479,7 +4479,6 @@ function sankeySVG(R,focus,mode,attr){
     const uw=S.projects.filter(q=>{const d=PD[q.def];return d&&(isL?d.t.line===id.slice(2):d.t.node===id)}),fresh=(S.moves||[]).some(m=>m.acts.some(a=>a.t==='prj'&&PD[a.id]&&(isL?PD[a.id].t.line===id.slice(2):PD[a.id].t.node===id)));
     if(uw.length)tip+=`<br><span style='color:#9fd08a'>▲ ${uw.length} program${uw.length>1?'s':''} under way${fresh?', one started this turn':''}: ${uw.slice(0,3).map(q=>projName(q)).join(', ')}${uw.length>3?'…':''}</span>`;
     svg+=`<g class="nd" data-id="${id}" ${act} data-tip="${tipQ(tip.replace(' — ','<br>'))}"><rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${p.h}" fill="${nodeCol(id)}" stroke="#2b241a" stroke-width=".5"/>`;
-    if(uw.length)svg+=`<path class="skuw${fresh?' fresh':''}" d="M${p.x-7},${p.y+Math.min(9,p.h/2+4)}l4,-7l4,7z"/>`;
     if(p.g>0.5){const o=R.out[id.slice(2)],cut=ghostFull[id]>ghost[id]*1.001,yb=p.y+p.h+p.g;
       svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"></rect>`;
       if(cut)svg+=`<path d="M${p.x-1},${yb-2} l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4 l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4" stroke="#efe6cf" stroke-width="3" fill="none"><title>Idle capacity, shortened to fit</title></path>`}
