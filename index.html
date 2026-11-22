@@ -1460,6 +1460,44 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 #reel .rlb{background:transparent;border:1px solid var(--edge2);color:var(--cream);border-radius:4px;padding:3px 9px;font:600 12px var(--f-body);cursor:pointer;min-width:32px}
 #reel .rlb:hover{border-color:var(--brass2)}#reel .rlb.on{background:#ffffff14;border-color:var(--brass2);color:var(--brass2)}
 #reel .rlgo{background:linear-gradient(#c9952a,#a8781c);border:1px solid #e0b24a;color:#231a0c;border-radius:4px;padding:5px 12px;font:700 13px var(--f-body);cursor:pointer;white-space:nowrap}
+#app .rc-rb{grid-template-columns:124px minmax(0,1fr) 150px}#app .rc-rb>span:first-child{font:600 12.5px var(--f-body);letter-spacing:0;text-transform:none;overflow:hidden;text-overflow:ellipsis}
+/* ===================== phones: a two-row top bar, a bottom bar that always leads back, readable charts ===================== */
+#mnav{display:none}
+@media (max-width:760px){
+ #top{height:auto!important;flex-wrap:wrap;overflow:visible;padding:6px 8px 4px;gap:2px 4px;position:sticky;top:0}
+ #top .logo{flex:1 1 auto;order:0;font-size:13px!important;letter-spacing:.04em!important;margin:0}
+ #top .logo small{font-size:9px!important}
+ #top .spacer,#top .tsep,#top .aptog{display:none!important}
+ #top .rmenu{order:1;margin:0;height:34px;padding:2px 8px}
+ #top .date{order:2;font-size:12.5px;padding:0 4px}
+ #top .turnbtn{order:3;font-size:12px;padding:4px 8px;height:34px}
+ #top .res:not(.rmenu){order:4;flex:1 1 22%;height:36px;padding:2px 4px;align-items:center}
+ #top .res:not(.rmenu) b{font-size:14px}#top .res:not(.rmenu) span{font-size:8.5px}
+ #top .res[data-k="req"],#top .res[data-k="short"],#top .res[data-k="strain"],#top .res[data-k="lev"]{display:none}
+ #app #views{padding:4px 6px 0}#app #views .vbtn{padding:6px 10px 7px;font-size:13px}
+ #main{display:flex!important;flex-direction:column}
+ #main>#needs{order:-1}
+ #decbar.dbturn{flex-direction:column;align-items:stretch}#decbar .dbs{flex-direction:column}
+ #toasts{top:auto!important;bottom:64px!important;left:8px!important;right:8px!important;width:auto!important}
+ body{padding-bottom:58px}
+ #mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;gap:6px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(20,22,17,.97);border-top:1px solid var(--edge2);box-shadow:0 -4px 14px #0008}
+ #mnav button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:40px;border-radius:6px;border:1px solid var(--edge2);background:var(--frame2);color:var(--cream);font:600 13.5px var(--f-body)}
+ #mnav button.go{background:linear-gradient(#c9952a,#a8781c);border-color:#e0b24a;color:#231a0c}
+ #mnav button:disabled{opacity:.4}
+ /* pop-ups fill the screen, with their close button kept in reach */
+ #ov{inset:0!important;padding:0!important;z-index:68!important}
+ #ov .paper{width:100%!important;max-width:100%!important;max-height:calc(100vh - 58px)!important;border-radius:0!important;margin:0 0 58px}
+ .xclose{z-index:69!important}
+ /* charts keep their size and scroll sideways rather than shrink */
+ *:has(>svg.ceilsvg),*:has(>svg.pjsvg),*:has(>svg.lc),*:has(>svg.mpch),*:has(>svg.sk),*:has(>svg.rtl){overflow-x:auto}
+ svg.ceilsvg{min-width:720px}svg.lc{min-width:420px}svg.sk{min-width:900px}svg.rtl{min-width:640px}
+ /* the title screen */
+ #title.ti3 .t3-brand h1{font-size:30px!important;letter-spacing:.06em}#title.ti3 .t3-brand h1 small{font-size:16px!important}
+ .t3-pitch{font-size:15.5px}.t3-how{grid-template-columns:1fr}
+ .t3-cards{grid-template-columns:1fr 1fr!important}.t3-thumb{height:80px}.t3-tg{columns:1}
+ .t3-bar{flex-direction:row;justify-content:space-between;gap:10px}.t3-bar>div span{display:none}
+}
+@media (max-width:760px){#toasts{position:fixed!important;transform:none!important;align-items:stretch}#toasts .toast{max-width:none!important;width:auto!important}#top .res[data-k="expo"]{display:none}}
 </style>
 </head>
 <body>
@@ -7483,7 +7521,7 @@ function renderGame(){
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog','🏗 Pipeline'],['fac','🏭 Factories'],['home','🏛 Home']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
   const nd=`<h2>Arming against <span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
-  const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').slice(0,140)}</span>`:''}${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
+  const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').slice(0,140)}</span>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
   document.body.classList.toggle('replaying',!!S.replay);
@@ -8076,7 +8114,7 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
 // does a supply move on this item touch a line’s current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.budget=9999}}
-function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
+function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
 const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
@@ -8116,6 +8154,10 @@ window.addEventListener('pagehide',()=>saveGame());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame()});
 let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
+// phones: a bottom bar that always leads back, to the page before or to Command
+function mnav(){let el=document.getElementById('mnav');if(!S||S.over&&S.modal==='end'){if(el)el.remove();return}if(!el){el=document.createElement('div');el.id='mnav';document.body.appendChild(el)}
+  const m=closable(),must=S.modal&&!m,home=S.view==='cmd'&&!S.modal;
+  const h=`<button data-a="${m?'close':'goback'}" ${m||S.navH?.length?'':'disabled'}>${m?'✕ Close':'‹ Back'}</button><button data-a="home" ${home||must?'disabled':''}>⌂ Command</button>`;if(el.innerHTML!==h)el.innerHTML=h}
 document.addEventListener('pointerdown',e=>{
   if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
