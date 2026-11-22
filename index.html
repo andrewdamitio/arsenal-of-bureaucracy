@@ -1504,6 +1504,23 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 @media (hover:none){.xpi{min-width:28px;min-height:28px}}
 body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g-no-expo #top [data-k="expo"],body.g-no-req #top [data-k="req"]{display:none}
 .t3-optg{grid-template-columns:repeat(3,1fr)}
+/* the process strip: one grid, equal boxes, numbered in order, odds at the foot of each */
+#view .rbdom .steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;counter-reset:rstep;align-items:stretch}
+#view .rbdom .steps .sarr{display:none}
+#view .rbdom .rstep{display:flex;flex-direction:column;gap:2px;min-height:86px;margin:0;padding:8px 10px;border-radius:5px;counter-increment:rstep;position:relative;box-sizing:border-box}
+#view .rbdom .rstep>b{padding-left:22px;line-height:1.25}
+#view .rbdom .rstep::before{content:counter(rstep);position:absolute;left:9px;top:8px;width:16px;height:16px;border-radius:50%;background:#e4d9bb;color:#6b5a35;font:700 10.5px/16px var(--f-body);text-align:center}
+#view .rbdom .rstep.hot::before{background:#a3261c;color:#fff}#view .rbdom .rstep.warm::before{background:#c9952a;color:#231a0c}
+#view .rbdom .rstep .odds{margin-top:auto;padding-top:4px}
+/* area headings */
+#view .rbdom{margin:14px 0;border:1px solid var(--paperEdge);border-radius:7px;background:var(--paperCard);padding:0 14px 12px;overflow:hidden}
+#view .rbdom .pdh{margin:0 -14px 8px;padding:11px 16px;background:linear-gradient(#ece2c6,#e4d7b4);border-bottom:1px solid var(--paperEdge);border-left:4px solid var(--gold);align-items:center;gap:10px}
+#view .rbdom .pdh .ic{font-size:22px}#view .rbdom .pdh b{font:700 21px var(--f-head);color:#231d14;letter-spacing:.005em}
+#view .rbdom .pdh .pdcar{font-size:13px;color:#8a6a1f}#view .rbdom.pdom0 .pdh{margin-bottom:0}#view .rbdom.pdom0{padding-bottom:0}
+#view .pdbar.pdne{grid-column:1/-1}.pdnel{flex:1 1 100%;font:12.5px var(--f-body)}.pdnel ul{margin:4px 0 0;padding-left:18px;columns:2;column-gap:24px}.pdnel li{break-inside:avoid;margin:1px 0}
+#app #view .rbdom .steps{grid-template-columns:repeat(auto-fit,minmax(124px,1fr))}
+#app #view .rbdom .pdh>b{font:700 22px var(--f-head)!important;color:#231d14}#app #view .rbdom .pdh .ic{font-size:24px}#app #view .rbdom .pdh .pdsum{font-size:12.5px}
+#app #view .rbdom .rstep .odds{font:700 15px var(--f-body)}
 </style>
 </head>
 <body>
@@ -4048,7 +4065,7 @@ function polDomHTML(D){const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id);
   const exA=rs.filter(r=>isExec(r)&&!ruleOn(r.id)),refs=ids.filter(x=>RD[x]&&!passed(x)).map(x=>RD[x]),cvs=ids.filter(x=>CD[x]&&!carveOn(x)).map(x=>CD[x]);
   const nCan=exA.length+refs.length+cvs.length,nIn=inF.length;
   const worst=D.steps?Math.max(0,...D.steps.flatMap(([,ids2])=>ids2.map(i=>OD[i]).filter(o=>o&&facOk(o)).map(o=>oddsMax(o).c))):0;
-  const open=(S.domOpen||{permit:1})[D.id];
+  const open=S.domOpen?!!S.domOpen[D.id]:true;
   const head=`<div class="rbh pdh" data-a="domtog" data-d="${D.id}"><span class="pdcar">${open?'▾':'▸'}</span><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span><span class="pdsum">${nIn} in force · ${nCan} you can change${D.steps?` · up to ${pct(worst)} odds a step stalls a program`:''}${lost?` · ${fmt(lost,0)} wk lost`:''}${stalled.length?` · <span class="redt">${stalled.length} stalled now</span>`:''}${Object.keys(S.rproc||{}).some(x=>RD2[x]?.dom===D.id)?' · <span class="gold">action under way</span>':''}</span></div>`;
   if(!open)return `<div class="rbdom pdom0" id="rb-${D.id}">${head}</div>`;
   const steps=D.steps?D.steps.map(([nm,ids2,t])=>{const os=ids2.map(i=>OD[i]).filter(o=>o&&facOk(o));const odds=os.map(o=>oddsMax(o)),mx=Math.max(0,...odds.map(x=>x.c));
@@ -4068,7 +4085,8 @@ function polBody(){if(S.fac!=='US')return agendaHTML();
   const onX=RULES.filter(r=>isExec(r)&&ruleOn(r.id)).length,und=Object.keys(S.rproc||{}).length,all=[...DOMAINS,XDOM];
   let bill='';if(S.bill){const Rf=RD[S.bill.id],p=clamp(Rf.p*primeFightF(Rf.id)+S.bill.boost,.05,.98);
     bill=`<div class="pdbar"><b>📜 On the floor: ${rname(Rf)}</b><span class="mini">${S.bill.left} wk to the vote · pass chance <b class="gold">${Math.round(p*100)}%</b></span><button class="btn sm" data-a="whip" ${S.pc<10||S.bill.whips>=3?'disabled':''}>Whip votes (10 PC, +10%)</button></div>`}
-  const ne=`<div class="pdbar ${S.ne?'on':''}"><b>🚨 National emergency on the defense industrial base</b><span class="mini">${S.ne?`Declared ${fmtDate(S.ne.since)}; renewed each year for ${NE_RENEW} PC.`:'The legal trigger for the emergency powers marked 🔒: permitting, the Jones Act waiver, qualification and hiring.'}</span>${S.ne?'<span class="sub green">In force</span>':`<button class="btn sm" data-a="ne" ${S.pc>=NE_COST?'':'disabled'}>${NE_COST} PC · declare</button>`}</div>`;
+  const neP=CARVES.filter(C=>facOk(C)&&(C.need==='ne'||C.need==='cut')),neL=neP.map(C=>`<span class="linkn" data-a="remedy" data-r="${C.id}">${cname(C)}</span>${C.need==='cut'?' <span class="mini">(otherwise needs a foreign supply cut)</span>':''}${carveOn(C.id)?' <span class="okt">✓ in force</span>':''}`),nxR=S.ne?S.ne.since+52*Math.ceil((S.w-S.ne.since+1)/52):null;
+  const ne=`<div class="pdbar pdne ${S.ne?'on':''}"><b>🚨 National emergency on the defense industrial base</b><span class="mini">${S.ne?`Declared ${fmtDate(S.ne.since)} under the National Emergencies Act. Renewal of ${NE_RENEW} PC due ${fmtDate(nxR)}; if you cannot pay, it lapses and every power resting on it ends.`:`Declared under the National Emergencies Act, it is the legal trigger for the emergency powers below. It costs ${NE_COST} PC now, adds 5 to civilian strain, and ${NE_RENEW} PC a year to keep; if you cannot pay, it lapses and the powers resting on it end. It does nothing by itself: each power is then used, and paid for, separately.`}</span><div class="pdnel"><span class="mini">${S.ne?'Powers it allows':'What it unlocks'}:</span><ul>${neL.map(x=>`<li>${x}</li>`).join('')}</ul></div>${S.ne?'<span class="sub green">In force</span>':`<button class="btn sm" data-a="ne" ${S.pc>=NE_COST?'':'disabled'}>Declare · ${NE_COST} PC</button>`}</div>`;
   return `<div class="poltop"><p class="mini">Each area of the rulebook: how its process works today, what governs it, and what you can change. <b>Executive actions</b> act fastest and pick a route, but a new administration can undo them unless written into law; <b>emergency powers</b> act in weeks and lapse; <b>bills</b> are slow and permanent, one on the floor at a time. ${onX} executive actions in force${und?`, ${und} under way`:''}.</p>
    <div class="pdbars">${ne}${(()=>{const nr=refReqs().length,nc=codReqs().length;return `<div class="pdbar"><b>🏛 FY${pkgFY()} NDAA request</b><span class="mini">${nr||nc?`${nr} reform${nr===1?'':'s'}${nc?` and ${nc} executive action${nc===1?'':'s'} to write into law`:''}, decided with the bill about ${fmtDate(pkgWhen())}.`:`No reforms in it yet. NDAA reforms sit under the area they change; the bill is decided about ${fmtDate(pkgWhen())}.`}</span><span class="linkn" data-a="view" data-v="ndaa">NDAA & Congress →</span></div>`})()}${bill||`<div class="pdbar"><b>📜 No stand-alone bill on the floor</b><span class="mini">One at a time. Bills sit under the area they change.</span></div>`}</div>
    <div class="pdctl"><span class="linkn" data-a="domall" data-v="1">Open every area</span> · <span class="linkn" data-a="domall" data-v="0">Fold them all</span></div></div>
@@ -8339,7 +8357,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'fcf':S.fcF=b.dataset.v;break;
     case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;S._vdirty=true;break;
     case 'rbtab':S.rbTab=b.dataset.t;S._vdirty=true;break;
-    case 'domtog':{const o=(S.domOpen=S.domOpen||{permit:1});o[b.dataset.d]=!o[b.dataset.d];S._vdirty=true;break}
+    case 'domtog':{if(!S.domOpen){S.domOpen={};for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1}const o=S.domOpen;o[b.dataset.d]=!o[b.dataset.d];S._vdirty=true;break}
     case 'domall':{S.domOpen={};if(b.dataset.v==='1')for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1;S._vdirty=true;break}
     case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'qj':setTimeout(qjOpen,0);break;
@@ -8353,10 +8371,10 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'bnmore':(S.bnMore=S.bnMore||{})[b.dataset.n]=!(S.bnMore[b.dataset.n]);S._vdirty=true;break;
     case 'prjump':S.view='bn';S._vdirty=true;S._scrollTo='#prio';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'rbgo':S.view='policy';(S.domOpen=S.domOpen||{permit:1})[b.dataset.r&&RD2[b.dataset.r]?RD2[b.dataset.r].dom:b.dataset.d]=1;S._vdirty=true;S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'rbgo':S.view='policy';(S.domOpen=S.domOpen||Object.fromEntries([...DOMAINS,XDOM].map(x=>[x.id,1])))[b.dataset.r&&RD2[b.dataset.r]?RD2[b.dataset.r].dom:b.dataset.d]=1;S._vdirty=true;S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rtab':if(b.dataset.t==='agenda'){S.view='ndaa';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break}S.rtab=b.dataset.t;S._rtTop=true;break;
     case 'rival':if((!S.scen||(SCD[S.scen]?.open&&S.w===PLAY0))&&S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];document.getElementById('toasts')?.replaceChildren();log(`You now measure yourself against ${RV().n}.`)}break;
-    case 'remedy':if(S.modal==='prog')S.modal=null;{const R=RD[b.dataset.r];S.view=CD[b.dataset.r]||(R&&vehOf(R)!=='ndaa')?'policy':'ndaa';if(S.view==='policy'){const dm=domOf(b.dataset.r);if(dm)(S.domOpen=S.domOpen||{permit:1})[dm]=1}S.modal=null;S.navBack=[]}S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
+    case 'remedy':if(S.modal==='prog')S.modal=null;{const R=RD[b.dataset.r];S.view=CD[b.dataset.r]||(R&&vehOf(R)!=='ndaa')?'policy':'ndaa';if(S.view==='policy'){const dm=domOf(b.dataset.r);if(dm)(S.domOpen=S.domOpen||Object.fromEntries([...DOMAINS,XDOM].map(x=>[x.id,1])))[dm]=1}S.modal=null;S.navBack=[]}S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
     case 'arsenal':S.view=({stock:'arsenal',pipe:'fac',ready:'ready'})[b.dataset.t]||'arsenal';if(S.modal==='node'){S.modal=null;S.navBack=[]}break;
