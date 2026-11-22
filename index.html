@@ -2258,7 +2258,13 @@ function ruleChance(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES
 function ruleWait(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)&&r.eff.wait)m*=1+((r.eff.wait[o.id]??r.eff.wait[o.layer]??1)-1)*ruleStr(r.id);return m}
 function ruleLine(lid){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.line?.[lid])m*=1+(r.eff.line[lid]-1)*ruleStr(r.id);return m}
 function ruleCost(def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.cost&&ruleFits(r,def))m*=1+(r.eff.cost-1)*ruleStr(r.id);return m}
-function setRule(id,on){const r=RD2[id];if(!!S.rules[id]===on)return;S.rules[id]=on;if(r.slots)S.slots+=on?r.slots:-r.slots}
+function setRule(id,on){const r=RD2[id];if(!!S.rules[id]===on)return;S.rules[id]=on;if(r.slots)S.slots+=on?r.slots:-r.slots;ruleRescale(id,on)}
+// executive actions that change how long a stage takes reach programs already under way: what is left of the current stage, and every stage still ahead
+function ruleRescale(id,on){if(!S.projects)return;const qi=STAGES.indexOf('qual'),bi=STAGES.indexOf('build');
+  for(const p of S.projects){const def=PD[p.def];if(!def||def.ally||!p.dur[qi])continue;
+    if(id==='rJETO'&&['energetic','srm'].some(t=>def.tags.includes(t))){const m=on?.75:1/.75;if(qi>p.stage||p.pkg)p.dur[qi]=Math.max(1,Math.round(p.dur[qi]*m));else if(qi===p.stage)p.dur[qi]=Math.max(1,Math.round(p.prog+Math.max(0,p.dur[qi]-p.prog)*m))}
+    if(id==='rConcQual'&&qualTag(def)&&(p.stage<=bi||p.pkg)){if(on&&!p._ov){const ov=Math.min(Math.round(p.dur[qi]*.5),Math.round((p.dur[bi]||0)*.25));if(ov>0){p.dur[qi]=Math.max(1,p.dur[qi]-ov);p._ov=ov}}else if(!on&&p._ov){p.dur[qi]+=p._ov;p._ov=0}}}
+  try{PJC.clear()}catch(e){}}
 function toggleRule(id,k){const r=RD2[id],on=ruleOn(id);if(!on){ruleStart(id,k);return}if(codified(id))return;const cost=r.pc[1];if(!['exec','proposed'].includes(r.kind)||S.pc<cost)return;if(S.rroute)delete S.rroute[id];
   S.pc-=cost;actRec('rule',{id,on:!on});if(!on&&r.onOn)r.onOn();else if(on&&r.onOff)r.onOff();else setRule(id,!on);S.pages+=on?80:200;if(!on)S.rulesSince[id]=fmtDate(S.w);
   log(`⚖ ${KIND[r.kind][0]}: ${on?'reversed':r.kind==='proposed'?'finalized':'adopted'} — ${r.n} (${cost} PC).`,'ev');lawRec(on?'Reversed':r.kind==='proposed'?'Rule finalized':'Executive action',r.n);flash('rl:'+id,on?'bad':'good')}
