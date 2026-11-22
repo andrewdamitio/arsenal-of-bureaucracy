@@ -1235,6 +1235,7 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .pdctl{margin:8px 0 0;font:12px "Segoe UI",system-ui,sans-serif}.rbdom .pdh{cursor:pointer;user-select:none}.rbdom .pdh:hover b{text-decoration:underline}.pdcar{width:14px;color:#8a6a1f}.pdsum{font:12px "Segoe UI",system-ui,sans-serif;color:#6b5a35}
 .rbdom.pdom0{padding-bottom:6px}.pdsec{margin:10px 0 4px}.pdsec>h5{margin:0 0 6px;font:700 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6b5a35;border-bottom:1px solid #e0d4b4;padding-bottom:3px}
 .pdsec>h5>span{text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px;color:#8a7a58}.pdstall{margin:4px 0 0}.rbcan .ndaaref{margin-top:6px}
+.sbriv{display:inline-flex;align-items:center;gap:6px}.sbriv .btn{background:#fbf6e8;color:#3a2e1c;border:1px solid #c9b88a}.sbriv .btn.on{background:#3a2e1c;color:#f3e6c4;border-color:#3a2e1c}
 </style>
 </head>
 <body>
@@ -6169,10 +6170,10 @@ const PLAYABLE=['US']; // the game is the US defense industrial base; Europe app
 let TMODE='std',TSEL='taiwan',TPACE='turn';
 function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k='';document.getElementById('receipt')?.remove();const tb=document.getElementById('toasts');if(tb)tb.innerHTML='';document.body.classList.remove('hasdec');const sv=savedInfo(),ago=sv?Math.max(0,Math.round((Date.now()-sv.at)/60000)):0,agoT=ago<1?'just now':ago<60?ago+' min ago':ago<1440?Math.round(ago/60)+' h ago':Math.round(ago/1440)+' days ago';
   // the welcome screen: what the game is, the quick ways in, then a new game set up in three choices
-  const SC=[...SCENS.map(sc=>({id:sc.id,ic:sc.ic,n:sc.n,sub:`Against ${RIVALS[sc.rival].n}`,sc})),{id:'open',ic:'🏁',n:'Open race',sub:'No mandate'}],cur=SC.find(x=>x.id===TSEL)||SC[0];
+  const SC=[...SCENS.filter(sc=>!sc.open).map(sc=>({id:sc.id,ic:sc.ic,n:sc.n,sub:`Against ${RIVALS[sc.rival].n}`,sc})),{id:'open',ic:'🏁',n:'Open race',sub:'Your own race',sc:SCD.open}],cur=SC.find(x=>x.id===TSEL)||SC[0];
   const det=cur.sc?`<p>${cur.sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,'')}</p>
-      <div class="ti-dk">What you must reach, a year</div><ul>${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:''}</li>`).join('')}</ul>
-      <div class="ti-chk"><div><b>January ${dateOf(cur.sc.mid).getFullYear()}</b><span>halfway floors, and a test of what you hold that day</span></div><div><b>January ${dateOf(cur.sc.dl).getFullYear()}</b><span>the real targets</span></div></div>`
+      <div class="ti-dk">${cur.sc.open?'What you are measured on':'What you must reach, a year'}</div><ul>${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:m.kind==='suff'?` <b>65%</b> against China, <b>85%</b> against Russia`:m.kind==='lines'?` <b>${m.tgt} of 9</b>`:m.kind==='margin'?` <b>+${fmt(m.tgt*100,0)} pt</b>`:''}</li>`).join('')}</ul>
+      <div class="ti-chk"><div><b>January ${dateOf(cur.sc.mid).getFullYear()}</b><span>halfway floors, and a test of what you hold that day</span></div><div><b>January ${dateOf(cur.sc.dl).getFullYear()}</b><span>${cur.sc.open?'the verdict':'the real targets'}</span></div></div>`
     :`<p>No targets are handed to you. Set your own priorities, choose which rival to measure yourself against, and switch between them as you play.</p>
       <div class="ti-chk"><div><b>Every year</b><span>your output against China’s or Russia’s, line by line</span></div><div><b>January 2035</b><span>the real targets are judged, and the game ends</span></div></div>`;
   const rad=(a,attr,on,n,d)=>`<button class="ti-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
@@ -6507,14 +6508,22 @@ const SCENS=[
         {n:'PRC and Russian content cut in half',kind:'expo',tgt:.5,low:1,pct:1,src:'Measured against January 2027.'},
         {n:'Drone and aircraft output held',kind:'hold',lines:['drones','aircraft'],tgt:1,pct:1,src:'Both at least at their January 2027 level.'}],
   test:{cut:1,n:'full Chinese cutoff'},
-  lesson:'Independence costs output before it pays: every magnet, cell and wafer not bought from China has to be mined, refined and qualified somewhere else first.'}];
+  lesson:'Independence costs output before it pays: every magnet, cell and wafer not bought from China has to be mined, refined and qualified somewhere else first.'},
+ {id:'open',open:1,n:'The Open Race',rival:'pac',ic:'🏁',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
+  threat:'No crisis is assigned to you. China and Russia both out-produce the United States, and the gap widens every year. Decide what matters most, and measure yourself against either rival, line by line: choose before the first turn. You have until January 2030 for a halfway check, and until January 2035 for the verdict.',
+  mand:[{n:'Sufficiency: you and your allies against the requirement',kind:'suff',get tgt(){return S?.rival==='eu'?.85:.65},pct:1,src:'Across all nine weapon lines: what you and Japan, South Korea and Taiwan build a year, against what the plan requires against your rival. Each line counts up to 100%. The target is 65% against China and 85% against Russia, whose requirement grows more slowly and whose theater allies cover more of.'},
+        {n:'Weapon lines that fully meet their requirement',kind:'lines',tgt:3,src:'Lines where you and your allies build at least what the plan requires, out of nine.'},
+        {n:'What your decisions add, against doing nothing',kind:'margin',tgt:.08,pct:1,top:.16,src:'The same game, with the same luck, played again with no decisions at all. Your choices should be worth eight points of sufficiency.'},
+        {n:'Chinese and Russian content cut by a third',kind:'expo',tgt:2/3,low:1,pct:1,src:'The share of what your lines use that comes from China or Russia, measured against January 2027.'}],
+  test:{get t(){return S?.rival==='eu'?'eu':'pac'},get n(){return S?.rival==='eu'?'eastern-flank campaign':'Taiwan Strait campaign'}},
+  lesson:'Nothing forces a focus, which is the trap. The lines share motors, seekers, yards and Chinese inputs: spread money thin and no line reaches its requirement; fix the shared parts and several lines rise at once.'}];
 const SCD=Object.fromEntries(SCENS.map(x=>[x.id,x]));
 // each mandate’s current value, whether the real target is met, and the halfway floor
 // what the given lines would still build with every Chinese and Russian input cut, as a share of what they build now
 function keepOf(lines){const k=`${S.w}|${S.projects.length}|${S.plants.length}|${S.spot?.length||0}|${S.budget.toFixed(3)}`;if(S._kpc?.k===k)return S._kpc.v;
   const now=production(false).out;NO_PRC=true;let cut;try{cut=production(false).out}finally{NO_PRC=false}
   const by=Object.fromEntries(lines.map(c=>{const d=Math.max(now[c].yr,S.rec0?.out?.[c]||0);return [c,d>1e-9?Math.min(1,cut[c].yr/d):1]})),v=lines.reduce((a,c)=>a+by[c],0)/lines.length;S._kpc={k,v:{v,by}};return S._kpc.v}
-function mandFloor(m){const r0=S.rec0||{};if(m.kind==='keep')return .65;if(m.c){const a=r0.out?.[m.c]??0;return a+(m.tgt-a)/2}if(m.kind==='magnets')return m.tgt*.6;if(m.kind==='expo')return .75;if(m.kind==='hold')return .9;return m.tgt}
+function mandFloor(m){const r0=S.rec0||{};if(m.kind==='keep')return .65;if(m.c){const a=r0.out?.[m.c]??0;return a+(m.tgt-a)/2}if(m.kind==='magnets')return m.tgt*.6;if(m.kind==='expo')return 1-(1-m.tgt)/2;if(m.kind==='hold')return .9;if(m.kind==='suff'){const a=r0.out?raceIdx(null,PLAY0,c=>r0.out[c]??0):m.tgt;return a+(m.tgt-a)/2}if(m.kind==='lines')return Math.ceil(m.tgt/2)-1||1;if(m.kind==='margin')return m.tgt/2;return m.tgt}
 function mandVal(m){const r0=S.rec0||{},x=mandValRaw(m),fl=mandFloor(m);
   const half=m.kind==='expo'?S.exposure<=(r0.expo||S.exposure)*fl:x.v>=fl*.999;return {...x,fl,half:x.ok||half}}
 function mandValRaw(m){const r0=S.rec0||{};
@@ -6522,7 +6531,10 @@ function mandValRaw(m){const r0=S.rec0||{};
   if(m.kind==='magnets'){const P=(S._R||production(false)).P.magnets,x=srcSplit('magnets',(S._R||production(false)).P),v=P.need>1e-6?Math.min(1,(x.dom+x.ally+x.neut+x.spot)/P.need):1;return {v,ok:v>=m.tgt,show:pct}}
   if(m.kind==='expo'){const t=(r0.expo||S.exposure)*m.tgt;return {v:S.exposure,ok:S.exposure<=t,t,show:pct}}
   if(m.kind==='hold'){const v=Math.min(...m.lines.map(c=>outOf(c)/Math.max(r0.out?.[c]||1e-9,1e-9)));return {v,ok:v>=.999,show:pct}}
-  if(m.kind==='keep'){const {v}=keepOf(m.lines);return {v,ok:v>=m.tgt-1e-9,show:pct}}}
+  if(m.kind==='keep'){const {v}=keepOf(m.lines);return {v,ok:v>=m.tgt-1e-9,show:pct}}
+  if(m.kind==='suff'){const v=raceIdx((S._R||production(false)).out);return {v,ok:v>=m.tgt-1e-9,show:pct}}
+  if(m.kind==='lines'){const out=(S._R||production(false)).out,v=Object.keys(LINES).filter(c=>suffLine(c,out[c].yr)>=.999).length;return {v,ok:v>=m.tgt,show:v=>`${Math.round(v)} of ${Object.keys(LINES).length}`}}
+  if(m.kind==='margin'){const b=baseAt(),v=b?raceIdx((S._R||production(false)).out)-b[1]:0;return {v,ok:!!b&&v>=m.tgt-1e-9,pend:!b,show:v=>`${v>=0?'+':'−'}${fmt(Math.abs(v)*100,1)} pt`}}}
 // the test: would it have been enough?
 function scenTest(sc){const T=sc.test;
   if(T.cut){const r0=S.rec0?.out||{},now=Object.fromEntries(Object.keys(LINES).map(c=>[c,{yr:Math.max(r0[c]??0,1e-9)}]));NO_PRC=true;const cut=production(false).out;NO_PRC=false;
@@ -6537,6 +6549,8 @@ function mandWhy(m){const R=S._R||production(false);
   if(m.kind==='magnets'){const P=R.P.magnets;return P.starvedBy?'Short of '+chainOf(R.P,'magnets').slice(1).map(i=>lc(ND[i].n)).join(' ← '):'Not enough non-Chinese magnet capacity yet'}
   if(m.kind==='hold'){const c=m.lines.reduce((a,c)=>outOf(c)/Math.max(S.rec0?.out?.[c]||1e-9,1e-9)<outOf(a)/Math.max(S.rec0?.out?.[a]||1e-9,1e-9)?c:a);const o=R.out[c];return LINES[c].n+': '+(o.bott?'short of '+ND[o.chain.at(-1)].n:'line capacity')}
   if(m.kind==='keep'){const {by}=keepOf(m.lines);return 'Without China: '+m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>`${LINES[c].n} ${pct(by[c])}`).join(', ')}
+  if(m.kind==='suff'||m.kind==='lines'){const cs=Object.keys(LINES).map(c=>[c,suffLine(c,R.out[c].yr)]).filter(x=>x[1]<.999).sort((a,b)=>m.kind==='lines'?b[1]-a[1]:a[1]-b[1]);return (m.kind==='lines'?'Closest: ':'Weakest: ')+cs.slice(0,2).map(([c,v])=>`${LINES[c].n} ${pct(v)}`).join(', ')}
+  if(m.kind==='margin'){const b=baseAt();return b?`Doing nothing would stand at ${pct(b[1])}`:'The comparison game is still being played'}
   if(m.kind==='expo'){const P=R.P,top=ORDER.filter(id=>P[id].need>1e-6).sort((a,b)=>P[b].prc*(1-P[b].expo*0)-P[a].prc).slice(0,2);return 'Still buying from China: '+top.map(id=>ND[id].n).join(', ')}
   return ''}
 // ---- the stocks test, line by line. The score is a weighted harmonic mean, so the weakest lines count hardest:
@@ -6575,20 +6589,20 @@ function holdHTML(sc,T,when){const d=T.d,pass=sc.test.cut?.8:CRISIS_WIN;
   return head+big+ckWeak(d,T.ok,pass)+rows+est}
 // the left-hand column: what you make, against the mandates
 function makeHTML(r,mid){const n=mid?r.floors:r.met,of=r.ms.length,e0=S.rec0?.expo||0;
-  const head=`<div class="ckh"><div><b>What you make</b><span>Output a year against the mandates${mid?': halfway floors now, real targets in 2035':''}</span></div><span class="ckchip ${n===of?'ok':'no'}">${n} of ${of} ${mid?'floors':'targets'} met</span></div>`;
+  const head=`<div class="ckh"><div><b>What you make</b><span>${SCD[S.scen]?.open?`Against your targets${mid?': halfway floors now, targets in 2035':''}`:`Output a year against the mandates${mid?': halfway floors now, real targets in 2035':''}`}</span></div><span class="ckchip ${n===of?'ok':'no'}">${n} of ${of} ${mid?'floors':'targets'} met</span></div>`;
   const row=x=>{const low=x.low??(x.t<x.fl),fr=v=>low?(e0>x.t?(e0-v)/(e0-x.t):1):(x.t>0?v/x.t:1),f=clamp(fr(x.v),0,1),ff=clamp(fr(x.fl),0,1);
     const cls=x.ok||mid&&x.half?'ok':x.half?'mid':'dry',tc=x.ok||mid&&x.half?'okt':x.half?'ckgold':'redt';
     const st=mid?(x.ok?'✓ at the real target':x.half?'✓ floor met':'✗ below the floor'):(x.ok?'✓ target met':x.half?'◐ floor met only':'✗ missed');
     return `<div class="ckm"><span class="ckn">${x.n}</span><div class="ckt" data-tip="${tipQ(`<b>${x.n}</b><br>Halfway floor: ${low?'at most ':''}${mFmt(x,x.fl)}<br>Real target, 2035: ${low?'at most ':''}${mFmt(x,x.t)}<br>Reached: ${mFmt(x,x.v)}`)}"><i class="${cls}" style="width:${(f*100).toFixed(1)}%"></i><span class="ckfl" style="left:${(ff*100).toFixed(1)}%"></span></div><span class="ckv"><b>${mFmt(x,x.v)}</b> <em>/ ${low?'≤ ':''}${mFmt(x,x.t)}</em></span><span class="ckst ${tc}">${st}</span>${x.why?`<span class="ckwhy">↳ ${x.why}</span>`:''}</div>`};
-  return head+`<div class="ckm ckmh"><span>Mandate</span><span>Toward 2035 <i class="ckflk"></i> floor</span><span>Now / target</span><span></span></div>`+r.ms.map(row).join('')}
+  return head+`<div class="ckm ckmh"><span>${SCD[S.scen]?.open?'Target':'Mandate'}</span><span>Toward 2035 <i class="ckflk"></i> floor</span><span>Now / target</span><span></span></div>`+r.ms.map(row).join('')}
 function ckGrid(sc,r,mid){return `<div class="ckgrid"><div class="ckcol">${makeHTML(r,mid)}</div><div class="ckcol ckhold">${holdHTML(sc,r.test,mid?'today':'in January 2035')}</div></div>`}
 function ckTiles(sc,r,mid){const R=S._R||production(false),race=raceIdx(R.out),r0=S.rec0?.out,race0=r0?raceIdx(null,PLAY0,c=>r0[c]??0):null,pass=sc.test.cut?.8:CRISIS_WIN,T=r.test,v=T.v??T.d?.score??0;
   const good=mid?r.floors===r.of&&T.ok:r.verdict==='MANDATE MET',bad=mid?r.verdict.startsWith('FAR')||!T.ok&&r.floors<r.of/2:r.verdict==='SHORTFALL'||r.verdict==='TARGETS MISSED',vc=good?'ok':bad?'no':'mid';
   const tile=(lab,v,d,cls='',tip)=>`<div class="trt ${cls}"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b>${d}</div>`;
   const atT=r.ms.filter(x=>x.ok).length,dr=race0==null?'':Math.abs(race-race0)<.0005?'<i class="trd">no change since 2027</i>':`<i class="trd ${race>race0?'up':'dn'}">${race>race0?'▲':'▼'} ${fmt(Math.abs(race-race0)*100,0)} pt since January 2027</i>`;
-  return `<div class="trts">${tile(mid?'The 2030 checkpoint':'The 2035 verdict',r.verdict,`<i class="trd">${mid?'Real targets judged January 2035':S.scenMid?`In 2030: ${S.scenMid.verdict.toLowerCase()}`:'Final'}</i>`,'ckvt '+vc)}${
+  return `<div class="trts">${tile(mid?'The 2030 checkpoint':'The 2035 verdict',r.verdict,`<i class="trd">${mid?(SCD[S.scen]?.open?'Targets judged January 2035':'Real targets judged January 2035'):S.scenMid?`In 2030: ${S.scenMid.verdict.toLowerCase()}`:'Final'}</i>`,'ckvt '+vc)}${
     mid?tile('Halfway floors met',`${r.floors}/${r.of}`,`<i class="trd">${atT?`${atT} already at the real target`:'none at the real target yet'}</i>`)
-       :tile('Real targets met',`${r.met}/${r.ms.length}`,`<i class="trd">${r.half} of ${r.ms.length} halfway floors met${S.scenMid?` (${S.scenMid.floors} in 2030)`:''}</i>`)}${
+       :tile(SCD[S.scen]?.open?'Targets met':'Real targets met',`${r.met}/${r.ms.length}`,`<i class="trd">${r.half} of ${r.ms.length} halfway floors met${S.scenMid?` (${S.scenMid.floors} in 2030)`:''}</i>`)}${
     tile(sc.test.cut?'If China cut you off':'If the fight came',pct(v),`<i class="trd ${T.ok?'up':'dn'}">${T.ok?'✓ passed':'✗ failed'} · pass ${pct(pass)}</i>`,'',sc.test.cut?'What your lines would still build with every Chinese and Russian input cut, against January 2027.':`How far your stocks and forces would cover ${SCEN[sc.test.t].short}.`)}${
     tile('Share of the requirement',pct(race),dr,'','You and your allies, against what the plan requires.')}</div>`}
 // the Command card: the same test, as your intelligence sees it now
@@ -6604,18 +6618,18 @@ function rdyRow(sc){if(S.scenRes||!S.rec0)return '';const cut=!!sc.test.cut,pass
 // January 2030, when the window opens: are you halfway there, and would what you hold be enough today?
 function scenMidJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),fl=ms.filter(x=>x.half).length;
   const verdict=fl===ms.length?(t.ok?'ON TRACK':'ON TRACK, BUT EXPOSED'):fl>=ms.length/2?'BEHIND':'FAR BEHIND';
-  S.scenMid={w:S.w,verdict,floors:fl,of:ms.length,ms:ms.map(x=>({why:x.half?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo'})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
+  S.scenMid={w:S.w,verdict,floors:fl,of:ms.length,ms:ms.map(x=>({why:x.half?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo',kind:x.m.kind})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
   log(`🎯 ${sc.n}, ${fmtDate(S.w)}: ${verdict} (${fl} of ${ms.length} floors; test ${t.ok?'passed':'failed'}). Real targets are judged ${fmtDate(sc.dl)}.`,fl===ms.length?'good':'bad');if(!S.sim){S.modal='scenMid';S.speed=0}}
 function scenMidHTML(){const sc=SCD[S.scen],r=S.scenMid;
-  return `<div class="paper wide ckp trp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, the window opens</div><div class="bd">
-    ${ckTiles(sc,r,true)}<p class="ckintro">The first checkpoint asks whether you are halfway from where you started in January 2027 to each real target. The real targets are judged in January 2035.</p>
+  return `<div class="paper wide ckp trp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2030, ${sc.open?'the halfway check':'the window opens'}</div><div class="bd">
+    ${ckTiles(sc,r,true)}<p class="ckintro">The first checkpoint asks whether you are halfway from where you started in January 2027 to each ${sc.open?'target. The targets are':'real target. The real targets are'} judged in January 2035.</p>
     ${ckGrid(sc,r,true)}</div>
     <div class="ft trft"><button class="pbtn" data-a="yrrec">${vic('rec')}The full record</button><button class="pbtn primary" data-a="close">Keep building ▸ January 2035</button></div></div>`}
 function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m),m})),t=scenTest(sc),met=ms.filter(x=>x.ok).length;
-  const half=ms.filter(x=>x.half).length,verdict=!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
-  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo'})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
+  const half=ms.filter(x=>x.half).length,verdict=sc.open?(!t.ok?'SHORTFALL':met===ms.length?'ARSENAL RESTORED':met>=ms.length/2?'GAINED GROUND':'OUT-BUILT'):!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
+  S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo',kind:x.m.kind})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
   log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0;S.over=true;S.verdict=verdict;S.overWhy=''}
-const mFmt=(x,v)=>x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
+const mFmt=(x,v)=>x.kind==='margin'?`${v>=0?'+':'−'}${fmt(Math.abs(v)*100,1)} pt`:x.kind==='lines'?`${Math.round(v)} of ${Object.keys(LINES).length}`:x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
 // the picker before play starts, then the mandate card
 
 // ---- the 2035 outlook. The game is played forward to January 2035 with every program under way, assuming Congress orders what
@@ -6754,19 +6768,19 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
   const x0=PLAY0,x1=END_W,X=w=>((w-x0)/(x1-x0)*100).toFixed(1);
   const pts=sc?[[S.w,'Today','you take office'],[sc.mid,`January ${yr(sc.mid)}`,'halfway check'],[sc.dl,`January ${yr(sc.dl)}`,'final verdict']]:[[S.w,'Today','you take office'],[END_W,'January 2035','the game ends']];
   const tl=`<div class="sbtl"><i class="sbtl-line"></i>${pts.map(([w,a,b],i)=>`<div class="sbtl-pt${i?'':' now'}" style="left:${X(w)}%"><i></i><b>${a}</b><span>${b}</span></div>`).join('')}</div>`;
-  const res=`<div class="sbres"><span><b>${money(S.budget)}</b> to build with, more each December</span><span><b>${Math.floor(S.pc)}</b> Political Capital</span>${sc?`<span>Against <b>${RIVALS[sc.rival].f||''} ${RIVALS[sc.rival].n}</b></span>`:''}</div>`;
+  const res=`<div class="sbres"><span><b>${money(S.budget)}</b> to build with, more each December</span><span><b>${Math.floor(S.pc)}</b> Political Capital</span>${sc?.open&&S.w===PLAY0?`<span class="sbriv">Measured against ${Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join(' ')} <em class="mini">until the first turn</em></span>`:sc?.open?`<span>Against <b>${RV().f||''} ${RV().n}</b></span>`:sc?`<span>Against <b>${RIVALS[sc.rival].f||''} ${RIVALS[sc.rival].n}</b></span>`:''}</div>`;
   // the situation: the lede before the deadlines, and the deadlines after
   const th=sc?sc.threat:'No targets are handed to you. Rebuild what you judge matters most, and measure yourself against China or Russia, line by line.',k=th.indexOf(' You have until'),lede=k>0?th.slice(0,k):th,rest=k>0?th.slice(k+1):'';
   const hero=`<div class="sbhero${sc?.art?' art':''}">${sc?.art?`<figure class="sbart"><img src="${sc.art}" alt="${sc.artAlt||''}"${sc.artPos?` style="object-position:${sc.artPos}"`:''}></figure>`:''}
-    <div class="sbtext"><div class="sbeye">${sc?'Your mandate':'The open race'} · ${fmtDate(S.w)}</div><h1 class="sbtitle">${sc?sc.n:'The open race'}</h1><div class="sbrule"></div>
+    <div class="sbtext"><div class="sbeye">${sc&&!sc.open?'Your mandate':'Your own race'} · ${fmtDate(S.w)}</div><h1 class="sbtitle">${sc?sc.n:'The open race'}</h1><div class="sbrule"></div>
      <p class="sblede">${lede}</p>${rest?`<p class="sbbody">${rest}</p>`:''}${tl}${res}</div></div>`;
   if(!sc)return `<div class="paper sbrief"><div class="sbin">${hero}<div class="trgrid">${levers}
      <div class="trcol"><div class="trh"><b>How it is measured</b><span>and when it ends</span></div><p class="sbp">Sufficiency: what you and your allies make against what the plan requires, line by line. You start at <b>${pct(raceIdx((S._R||production(false)).out))}</b>. The game ends in January 2035 with a debrief of what you did and what it cost.</p></div></div></div>
      <div class="ft trft"><button class="pbtn primary" data-a="close">Start the first turn →</button></div></div>`;
   const rows=sc.mand.map(m=>{const x=mandVal(m),show=x.show||fmtN,low=m.kind==='expo',now=x.v,flv=low?(r0.expo??S.exposure)*x.fl:x.fl,tg=x.t??m.tgt;
-    const top=m.pct&&!low?Math.max(1,now,tg):Math.max(now,tg,flv)*(low?1.15:1),P=v=>Math.max(0,Math.min(100,v/Math.max(top,1e-12)*100)),at=p=>p<7?'l':p>93?'r':'c';
+    const top=m.top?Math.max(m.top,now,tg):m.pct&&!low?Math.max(1,now,tg):Math.max(now,tg,flv)*(low?1.15:1),P=v=>Math.max(0,Math.min(100,v/Math.max(top,1e-12)*100)),at=p=>p<7?'l':p>93?'r':'c';
     const met=low?now<=tg*1.0001:now>=tg*.999,unit=m.c?` ${LINES[m.c].u} a year`:'';
-    const need=met?'<b class="okt">Met today</b><span>hold it to 2035</span>':low?`<b>−${pct(1-tg/Math.max(now,1e-9))}</b><span>to cut by 2035</span>`:m.pct?`<b>+${fmt((tg-now)*100,0)} pts</b><span>needed by 2035</span>`:`<b>×${fmt(tg/Math.max(now,1e-9),tg/now<10?1:0)}</b><span>needed by 2035</span>`;
+    const need=met?'<b class="okt">Met today</b><span>hold it to 2035</span>':low?`<b>−${pct(1-tg/Math.max(now,1e-9))}</b><span>to cut by 2035</span>`:m.kind==='lines'?`<b>+${Math.max(0,Math.round(tg-now))} line${Math.round(tg-now)===1?'':'s'}</b><span>needed by 2035</span>`:m.pct?`<b>+${fmt((tg-now)*100,0)} pts</b><span>needed by 2035</span>`:`<b>×${fmt(tg/Math.max(now,1e-9),tg/now<10?1:0)}</b><span>needed by 2035</span>`;
     const pn=P(now),pf=P(flv),pt=P(tg),flL=`<span class="f">${yr(sc.mid)} floor ${low?'≤ ':''}${show(flv)}</span>`,tgL=`<span class="t">${yr(sc.dl)} target ${low?'≤ ':''}<b>${show(tg)}</b></span>`;
     // labels under the track: each on its outer side of its mark, or as one label when the marks are close
     const side=(p,left)=>left?(p<18?'la':'ra'):(p>72?'ra':'la'),lo2=Math.min(pf,pt),hi2=Math.max(pf,pt);
@@ -6782,13 +6796,13 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
   const test=cut?`<b>If China cut you off:</b> what every line would still build with no Chinese or Russian inputs, against January 2027. You pass at ${pct(pass)}.`
     :`<b>If the fight came today:</b> how far your stocks and forces would last in ${SCEN[sc.test.t].short}. Your intelligence gives you an estimate on Command; the checkpoints judge the true figure. You pass at ${pct(pass)}.`;
   return `<div class="paper sbrief"><div class="sbin">${hero}
-   <div class="trcol sbmust"><div class="trh"><b>What you must reach</b><span class="sbm-key"><i class="k-now"></i>Today <i class="k-fl"></i>${yr(sc.mid)} halfway floor <i class="k-tg"></i>${yr(sc.dl)} target</span></div>
+   <div class="trcol sbmust"><div class="trh"><b>${sc.open?'What you are measured on':'What you must reach'}</b><span class="sbm-key"><i class="k-now"></i>Today <i class="k-fl"></i>${yr(sc.mid)} halfway floor <i class="k-tg"></i>${yr(sc.dl)} target</span></div>
      <div class="sbms">${rows}</div>
      <div class="tra sbtest"><span class="trlab">And a test, judged at both dates</span>${test}</div></div>
    <div class="trgrid">${levers}
     <div class="trcol"><div class="trh"><b>How it is judged</b><span>and what to expect</span></div>
      <p class="sbp">In January ${yr(sc.mid)} you see how many halfway floors you meet and whether you pass the test: a progress check, not a grade. In January ${yr(sc.dl)} the verdict counts the real targets you reach.</p>
-     <p class="sbp">These are real public goals on real timelines, and the United States is not on track for most of them. Plants take years, inputs come from the rival you are racing, and the rules slow everything down. Meeting some of them, and seeing what it would take to meet the rest, is the game.</p>
+     <p class="sbp">${sc.open?'No official goal sets these: they measure a broad rebuilding of the base, the decisions you made, and how much still depends on the rivals. Under today’s rules the United States is losing ground on all four.':'These are real public goals on real timelines, and the United States is not on track for most of them. Plants take years, inputs come from the rival you are racing, and the rules slow everything down. Meeting some of them, and seeing what it would take to meet the rest, is the game.'}</p>
      <div class="tra"><span class="trlab">What to watch</span>${sc.lesson}</div></div></div></div>
    <div class="ft trft"><button class="pbtn primary" data-a="close">Start the first turn →</button></div></div>`}
 function scenCard(){
@@ -6796,18 +6810,18 @@ function scenCard(){
   if(false){
     return `<div class="sc-pick"><div class="sc-ph"><b>Choose a mandate</b><span class="mini">Real targets on real timelines: the US is not on track for most of them. The floors show how close you can get. Or close this and play the open race to 2035.</span><button class="btn sm" data-a="scenskip">Open race ✕</button></div><div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Deadline ${MON[dateOf(sc.dl).getMonth()]} ${dateOf(sc.dl).getFullYear()}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>`}
   const sc=SCD[S.scen],mid=S.scenMid,nextW=mid||S.w>=sc.mid?sc.dl:sc.mid,left=nextW-S.w,res=S.scenRes;
-  return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="linkn sc-brief" data-a="sbrief" data-tip="The scenario, your targets, and how you are judged">Mandate brief</span>${res?`<span class="sc-v">${res.verdict}</span>`:`${mid?`<span class="sc-midv" data-tip="${tipQ(`January 2030: ${mid.floors} of ${mid.of} halfway floors met; the test ${mid.test.ok?'passed':'failed'}.`)}">2030: ${mid.verdict}</span>`:''}<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${nextW===sc.mid?'the halfway check':'the final targets'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}</span>`}</div>
+  return `<div class="sc-card ${res?'done':''}"><div class="sc-ch"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="linkn sc-brief" data-a="sbrief" data-tip="The scenario, your targets, and how you are judged">${sc.open?'Race brief':'Mandate brief'}</span>${res?`<span class="sc-v">${res.verdict}</span>`:`${mid?`<span class="sc-midv" data-tip="${tipQ(`January 2030: ${mid.floors} of ${mid.of} halfway floors met; the test ${mid.test.ok?'passed':'failed'}.`)}">2030: ${mid.verdict}</span>`:''}<span class="sc-clock ${left<26?'hot':''}">⏱ ${left>52?fmt(left/52,1)+' yr':left+' wk'} to ${nextW===sc.mid?'the halfway check':'the final targets'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}</span>`}</div>
     ${sc.mand.map((m,mi,ms)=>{const x=mandVal(m),tm=res?null:trkMand(m,x),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));const flF=m.low?Math.min(1,(x.fl*(S.rec0?.expo||S.exposure))===0?0:t/((S.rec0?.expo||S.exposure)*x.fl)):Math.min(1,x.fl/Math.max(t,1e-9));
       return `${m.kind==='keep'?`<div class="sc-sep" data-tip="${tipQ('<b>If China cuts you off</b><br>The same five lines with no Chinese or Russian inputs: the share of output you keep.<br>Weakest: '+(()=>{const {by}=keepOf(m.lines);return m.lines.slice().sort((a,b)=>by[a]-by[b]).slice(0,2).map(c=>LINES[c].n+' '+pct(by[c])).join(', ')})())}">Cutoff test</div><div class="sc-sub">If China stopped selling today: how much of these five lines’ output you would still build once its parts run out. Floor ${pct(x.fl)} in 2030, target ${pct(t)} in 2035.</div>`:''}<div class="sc-m${m.kind==='keep'?' sc-keep':''}${m.c?' trc':''}"${m.c?` data-n="L:${m.c}"`:''}><span class="sc-n" data-tip="${tipQ((m.src||'').split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join(''))}"><span class="sc-st ${x.ok?'met':tm?.s==='track'?'on':x.half?'half':'no'}" data-tip="${tipQ(x.ok?'<b>Target met</b>':tm?.s==='track'?`<b>On track</b><br>What is under way reaches the target by about ${dateOf(tm.w).getFullYear()}, if Congress orders what new capacity adds.`:x.half?'<b>Halfway floor met</b>':'<b>Below the halfway floor</b>')}">${x.ok?'✓':tm?.s==='track'?'↗':x.half?'◐':'○'}</span> ${m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.kind==='keep'?`<span data-tip="${tipQ(mandWhy(m))}">${m.n}</span>`:m.n}</span><div class="nb" data-tip="Tick: the halfway floor, judged January 2030. End: the real target, judged January 2035."><i style="width:${f*100}%;background:${x.ok?'#76b357':tm?.s==='track'?'#4f8fd0':x.half?'#d9a441':'#d0503f'}"></i>${m.c&&!res?idleSegs(m.c,f,t,m):''}${tm&&tm.v!=null&&tm.v/t>f+.005?`<i class="sc-out" style="width:${Math.min(1,tm.v/t)*100}%" data-tip="${tipQ(`<b>January 2035 outlook: ${mFmt(m,tm.v)}/yr</b><br>With everything under way, if Congress orders what new capacity adds.`)}"></i>`:''}<span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div><span class="sc-val"><b>${mFmt(m,x.v)}</b> / ${m.low?'≤ ':''}${mFmt(m,t)}${m.c?'/yr':''}</span></div>${!res&&m.c&&!ms.slice(mi+1).some(z=>z.c)?scLeg():''}`}).join('')}
     ${rdyRow(sc)}<div class="sc-test">${res?`Test: ${res.test.txt}`:`✓ target met · ↗ on track for the target · ◐ halfway floor met · ○ neither yet. January 2030 judges the halfway floors and ${sc.test.cut?'what survives a full Chinese cutoff':'the '+sc.test.n+' test (Stocks & needs)'}; January 2035 judges the real targets.`}</div></div>`}
 function scenPickHTML(){return `<div class="paper wide sc-modal"><div class="hd"><span class="ic">🎯</span>January 2027: choose your mandate</div><div class="bd">
   <p>Each scenario hands you targets drawn from real public goals. In January 2030 you are judged on whether you are halfway there and whether what you hold would be enough that day. In January 2035 you are judged on the real targets. Under today’s rules the United States is not on track for most of them.</p>
-  <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Halfway by ${dateOf(sc.mid).getFullYear()} · targets by ${dateOf(sc.dl).getFullYear()} · vs. ${RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
+  <div class="sc-opts">${SCENS.map(sc=>`<button class="sc-opt" data-a="scen" data-s="${sc.id}"><span class="sc-ic">${sc.ic}</span><b>${sc.n}</b><span class="sc-dl">Halfway by ${dateOf(sc.mid).getFullYear()} · ${sc.open?'verdict':'targets'} by ${dateOf(sc.dl).getFullYear()} · ${sc.open?'against the rival you choose':'vs. '+RIVALS[sc.rival].n}</span><span class="sc-th">${sc.threat.replace(/You have until.*$/,'')}</span><span class="sc-m">${sc.mand.map(m=>'• '+m.n+(m.c?`: ${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}/yr`:'')).join('<br>')}</span></button>`).join('')}</div></div>
   <div class="ft"><button class="pbtn" data-a="scenskip">No mandate: play the open race to 2035</button></div></div>`}
 const DEBC=[['cfopen','🔁','What it would have taken','Your plan replayed from 2027 with reforms passed early.'],['timeopen','⏱','Where the time went','The weeks your programs lost, step by step.'],['briefopen','🖨','One-page brief','Your result on a single printable page.']];
 function debCards(){return `<div class="debc">${DEBC.map(([a,ic,t,d])=>`<button class="pbtn debcard" data-a="${a}"><span class="debic">${ic}</span><span class="debtx"><b>${t}</b><span>${d}</span></span></button>`).join('')}</div>`}
 function scenEndHTML(){const sc=SCD[S.scen],r=S.scenRes;
-  return `<div class="paper wide ckp trp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, the real targets</div><div class="bd">
+  return `<div class="paper wide ckp trp"><div class="hd"><span class="ic">${sc.ic}</span>${sc.n}: January 2035, ${sc.open?'the verdict':'the real targets'}</div><div class="bd">
     ${ckTiles(sc,r,false)}<p class="ckintro">${sc.threat.replace(/You have until.*$/,'')}</p>
     ${ckGrid(sc,r,false)}
     <div class="tra cklesson"><span class="trlab">What it comes down to</span>${sc.lesson}</div>
@@ -7201,7 +7215,7 @@ function renderGame(){
   pr+=capH;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog','🏗 Pipeline'],['fac','🏭 Factories'],['home','🏛 Home']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
-  const nd=`<h2>Arming against <span class="rc-pick">${S.scen?`<span class="btn sm on rc-fixed" data-tip="${tipQ(`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
+  const nd=`<h2>Arming against <span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').slice(0,140)}</span>`:''}${S.w===PLAY0&&!S.replay&&!S.projects.some(p=>!p.inh)?` <button class="btn sm" data-a="watch" style="float:right;margin-top:-2px">▶ Watch 2025–26</button>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
@@ -7288,7 +7302,7 @@ function cfApply(a){try{switch(a.t){
   case 'nds':ndsAdd(a.id);return true;
   case 'cntalk':cnTalk();return true;case 'ruguard':ruGuard();return true;case 'aid':setAid(a.v);return true}}catch(e){console.error(e)}return true}
 function cfRun(pass,useActs,toW,seed){const save=S,u=uidN,R0=RNG,pts=[];let res=null;CF_RUN=true;
-  try{RNG=mulb(seed);RNG_K=null;NEXT_SEED=seed;newGame('US');NEXT_SEED=null;S.modal=null;if(save.scen)chooseScen(save.scen);else S.scenSkip=true;S.modal=null;S.queue=[];S.sim=1;S.sandbox=save.sandbox;
+  try{RNG=mulb(seed);RNG_K=null;NEXT_SEED=seed;newGame('US');NEXT_SEED=null;S.modal=null;if(save.scen)chooseScen(save.scen);else S.scenSkip=true;if(save.scen==='open'&&save.rival&&save.rival!==S.rival){S.rival=save.rival;setTheater(S.rival)}S.modal=null;S.queue=[];S.sim=1;S.sandbox=save.sandbox;
     for(const id of pass)cfPass(id);
     const acts=useActs?(save.acts||[]).map(a=>({...a,tries:0})).sort((a,b)=>a.w-b.w):[];let i=0;const pend=[];pts.push([S.w,raceIdx(production(false).out)]);
     while(S.w<toW&&!S.over){if(useActs){S.pc=Math.max(S.pc,5000);S.budget=Math.max(S.budget,5000)}
@@ -7404,12 +7418,12 @@ function briefHTML(){const R=S._R||production(false),sc=S.scen&&SCD[S.scen],d=ti
 // ---- the do-nothing twin: your game started again from January 2027 with the same luck and no decisions, run to 2035 a few months
 // at a time in the background (so the page stays live), kept with the save
 const BASEQ={k:null,sim:null,u:0,rec:[]};
-function baseKey(){return S?(S.seed+'|'+(S.scen||'open')+'|'+S.fac):null}
+function baseKey(){return S?(S.seed+'|'+(S.scen||'open')+'|'+S.fac+(S.scen==='open'?'|'+(S.rival||'pac'):'')):null}
 function baseTick(){if(!S||S.sim||S.histMode||S.replay||CFQ||S.w<PLAY0||(!S.scen&&!S.scenSkip)||S.modal==='scenPick')return;
   const k=baseKey();if(S.base&&S.base.k===k&&S.base.done)return;
   if(BASEQ.k!==k){BASEQ.k=k;BASEQ.sim=null;BASEQ.rec=[]}
   const save=S,u0=uidN,R0=RNG;CF_RUN=true;
-  try{if(!BASEQ.sim){NEXT_SEED=save.seed;newGame('US');NEXT_SEED=null;S.modal=null;if(save.scen)chooseScen(save.scen);else S.scenSkip=true;S.modal=null;S.queue=[];S.sim=1;S.sandbox=save.sandbox;BASEQ.sim=S;BASEQ.u=uidN}
+  try{if(!BASEQ.sim){NEXT_SEED=save.seed;newGame('US');NEXT_SEED=null;S.modal=null;if(save.scen)chooseScen(save.scen);else S.scenSkip=true;if(save.scen==='open'&&save.rival&&save.rival!==S.rival){S.rival=save.rival;setTheater(S.rival)}S.modal=null;S.queue=[];S.sim=1;S.sandbox=save.sandbox;BASEQ.sim=S;BASEQ.u=uidN}
     else{S=BASEQ.sim;uidN=BASEQ.u}
     const cs=Object.keys(LINES),rec=()=>{const R=production(false);BASEQ.rec.push([S.w,raceIdx(R.out),Object.fromEntries(cs.map(c=>[c,R.out[c].yr+allyOut(c)]))])};
     if(!BASEQ.rec.length)rec();
@@ -7846,7 +7860,7 @@ document.addEventListener('pointerdown',e=>{
   if(a==='tpace'&&!S){TPACE=b.dataset.m;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
   if(a==='ttut'){clearSave();newGame('US');S.sandbox=false;S.modal=null;S.queue=[];chooseScen('taiwan');S.modal=null;S.view='cmd';S.tut={i:0,sc:-1};S.tourAuto=1;S.toured={};render();saveGame();return}
-  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];if(TSEL==='open')S.scenSkip=true;else chooseScen(TSEL);sbxFill();S.modal='sbrief';render();saveGame();return}
+  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();S.modal='sbrief';render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
@@ -7931,7 +7945,7 @@ document.addEventListener('pointerdown',e=>{
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rbgo':S.view='policy';(S.domOpen=S.domOpen||{permit:1})[b.dataset.r&&RD2[b.dataset.r]?RD2[b.dataset.r].dom:b.dataset.d]=1;S._vdirty=true;S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rtab':if(b.dataset.t==='agenda'){S.view='ndaa';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break}S.rtab=b.dataset.t;S._rtTop=true;break;
-    case 'rival':if(!S.scen&&S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
+    case 'rival':if((!S.scen||(SCD[S.scen]?.open&&S.w===PLAY0))&&S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
     case 'remedy':if(S.modal==='prog')S.modal=null;{const R=RD[b.dataset.r];S.view=CD[b.dataset.r]||(R&&vehOf(R)!=='ndaa')?'policy':'ndaa';if(S.view==='policy'){const dm=domOf(b.dataset.r);if(dm)(S.domOpen=S.domOpen||{permit:1})[dm]=1}S.modal=null;S.navBack=[]}S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
