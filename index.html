@@ -2358,7 +2358,7 @@ function ruleRow(r){const on=r.kind==='foreign'?!S.truce:ruleOn(r.id),k=KIND[r.k
   return `<tr class="${on?'rlon':''}${proc?' rlpr':''}" id="rl-${r.id}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${sub}${codL}</div></td><td>${r.dyn?(()=>{const d=r.dyn();return S.truce?fxChips([d[1]],[d[2],d[0]]):fxChips([],d)})():fxChips(r.up,r.dn)}</td></tr>${proc?ruleProcHTML(r):pick?rulePickHTML(r):''}`}
 // pending bills and emergency powers that belong to each domain
 const RLINKS={
- permit:[['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
+ permit:[['baaja','The Senate’s permitting package: Clean Water Act and NEPA together. [c:baajaCwa,baajaNepa]'],['needAct','Exempt defense work from NEPA, the ESA and the Clean Water Act. [c:s2226]'],['nepaReform','House passed the SPEED Act 221–196 (Dec 2025); Senate deal Sep 2026, vote after the midterms. [c:speed]'],['judRev','Shorter window to sue; remand without vacatur.'],['ceDefense','Categorical exclusion for expansions inside existing plants.'],['dpaMin','Emergency track for critical-mineral mines.'],['cvPermit','Emergency NEPA/CAA/CWA arrangements.']],
  qual:[['seekCommon','Common seekers and guidance: fewer variants, faster qualification.'],['qualReform','Accept test data from similar items: qualify a new line by comparison with one already qualified.'],['cvQual','Emergency qualification authority: accept allied qualifications now.']],
  acq:[['acq','Fixed-price and new-entrant pathway.'],['antitrust','Dual-source key subsystems.'],['multiyear','Extend multiyear orders to the whole munitions base.'],['acqWorkforce','More contracting officers.'],['r2rReform','Military right to repair and technical data. [c:r2rstrip]'],['cvQual','Accept allied qualification data now.']],
  source:[['energSrc','Second sources for sole-source energetics, ammonium perchlorate first.'],['cotsAlloc','Commercial parts and allocation orders for defense electronics.'],['jonesReform','Allied-built hulls and allied-operated yards.'],['byrnes','Ensuring Naval Readiness Act: allied yards build Navy ships when cheaper. [c:s406] The Senate’s FY27 NDAA markup would instead strip the presidential exception and cap foreign construction at two ships per class. [c:sasc27]'],['tariffExempt','Exempt allied metals from Section 232.'],['cvBuyAm','Buy American and specialty-metals waivers.'],['cvDfars','Suspend the 2027 DFARS magnet, tungsten and tantalum rules.'],['cvJones','Jones Act emergency waiver.']],
@@ -2438,10 +2438,10 @@ const OBSTACLES=[
   o:[{l:'Accept and redesign',wait:16},{l:'Freeze requirements',pc:10},{l:'Let the prime price them in',$:.3,lev:3}]},
  
  
- {id:'eis',layer:'PERMIT',stage:'permit',fac:['US'],chance:{greenfield:.75,refine:.25,brownfield:.12,_:0},not:['mine'],mods:{nepaReform:.5,cvPermit:.3},wm:{nepaReform:.6},n:'NEPA: Environmental Impact Statement',
+ {id:'eis',layer:'PERMIT',stage:'permit',fac:['US'],chance:{greenfield:.75,refine:.25,brownfield:.12,_:0},not:['mine'],mods:{nepaReform:.5,cvPermit:.3,needAct:0},wm:{nepaReform:.6},n:'NEPA: Environmental Impact Statement',
   t:"Statute caps an EIS at two years and 150 pages (300 if “extraordinarily complex”), and Seven County told courts to defer more. Every EIS is extraordinarily complex. Appendices don’t count toward the limit.",
   o:[{l:'Prepare the full EIS',wait:52,pages:1200},{l:'Argue for an EA + FONSI instead',pc:10,p:.5,wait:14,pages:150,fail:{wait:52,pages:1200}},{l:'Emergency alternative arrangements',pc:30,wait:8,waiver:1}]},
- {id:'ea',layer:'PERMIT',stage:'permit',fac:['US'],tags:['brownfield','metal'],chance:.5,mods:{ceDefense:.4,cvPermit:.3},n:'NEPA: Environmental Assessment',
+ {id:'ea',layer:'PERMIT',stage:'permit',fac:['US'],tags:['brownfield','metal'],chance:.5,mods:{ceDefense:.4,cvPermit:.3,needAct:0},n:'NEPA: Environmental Assessment',
   t:"Inside an existing fence, on land that has made this stuff since the 1940s. Still needs an assessment.",
   o:[{l:'Prepare the EA',wait:14,pages:150},{l:'Apply the defense categorical exclusion',req:'ceDefense',pages:3},{l:'Claim a categorical exclusion anyway',pc:6,p:.45,fail:{spawn:'lawsuit'},waiver:1,tip:'If it fails, expect to be sued.'}]},
  
@@ -2457,10 +2457,10 @@ const OBSTACLES=[
  {id:'obod',layer:'PERMIT',stage:'permit',tags:['energetic'],chance:.55,mods:{cvPermit:.5},n:'Open Burn / Open Detonation Permit',
   t:"Off-spec explosives have to be destroyed. Historically: a pile in a field and a match. The regulator now wants a contained burn chamber, which almost nobody makes.",
   o:[{l:'Build a contained burn chamber',$:.25,wait:16},{l:'Truck waste to a licensed facility',wait:18},{l:'Interim permit extension',pc:8,p:.7,wait:4,fail:{wait:20},waiver:1}]},
- {id:'esa',layer:'PERMIT',stage:'permit',fac:['US'],tags:['greenfield','mine'],chance:.4,mods:{cvPermit:.4},n:'ESA Section 7 Consultation',
+ {id:'esa',layer:'PERMIT',stage:'permit',fac:['US'],tags:['greenfield','mine'],chance:.4,mods:{cvPermit:.4,needAct:0},n:'ESA Section 7 Consultation',
   t:"A federally listed bat may roost within two miles. Formal consultation runs 135 days, extendable, and trees can only be cleared in winter.",
   o:[{l:'Formal consultation',wait:20},{l:'Redesign around the habitat',$:.15,wait:8},{l:'Fund a conservation offset',$:.08,wait:14}]},
- {id:'cwa',layer:'PERMIT',stage:'permit',fac:['US'],tags:['greenfield','mine'],chance:.5,mods:{cvPermit:.3},n:'CWA §404 Wetlands Permit',
+ {id:'cwa',layer:'PERMIT',stage:'permit',fac:['US'],tags:['greenfield','mine'],chance:.5,mods:{cvPermit:.3,baaja:.45,needAct:0},wm:{baaja:.75},n:'CWA §404 Wetlands Permit',
   t:"The Army Corps of Engineers must permit filling three acres of wetland. The Army needs the Army’s permission to build the Army a factory.",
   o:[{l:'Individual permit',wait:30,pages:300},{l:'Buy mitigation-bank credits',$:.05,wait:12}]},
  {id:'nhpa',layer:'PERMIT',stage:'permit',fac:['US'],chance:.12,mods:{cvPermit:.3},n:'NHPA Section 106 Review',
@@ -2473,7 +2473,7 @@ const OBSTACLES=[
   t:"Federal land-agency review of the mine plan, its EIS, and state permits. Stibnite took ~15 years from start to final approval. You are about average.",
   o:[{l:'Standard review',wait:120,pages:3000},{l:'FAST-41 covered project',pc:15,wait:70,pages:2000,tip:'Coordinates agencies on a public timetable. Does not skip steps.'},{l:'DPA critical-minerals emergency',req:'dpaMin',pc:10,wait:36,pages:800,waiver:1}]},
  
- {id:'lawsuit',layer:'LEGAL',stage:'permit',tags:['greenfield','mine'],chance:.4,mods:{judRev:.5,cvPermit:1.5},n:{US:'Lawsuit: NEPA Challenge'},
+ {id:'lawsuit',layer:'LEGAL',stage:'permit',tags:['greenfield','mine'],chance:.4,mods:{judRev:.5,cvPermit:1.5,needAct:0},n:{US:'Lawsuit: NEPA Challenge'},
   t:{US:"A coalition sues, alleging the review failed to consider cumulative effects. The judge enjoins construction pending review."},
   o:[{l:'Litigate',wait:36,p:.75,fail:{wait:60}},{l:'Settle (fund a conservation trust)',$:.15,wait:8},{l:{US:'Statutory exemption rider'},pc:40,waiver:1,tip:'Congress did this for a gas pipeline once.'}]},
  {id:'queue',layer:'GRID',stage:'permit',tags:['power'],chance:.65,n:'Interconnection Queue',
@@ -2592,7 +2592,11 @@ const OPSD=Object.fromEntries(OPS.map(x=>[x.id,x]));
 /* ---------- REFORMS (slow, permanent, can fail) ---------- */
 const REFORMS=[
  {id:'ceDefense',fac:['US'],n:'Defense Brownfield Categorical Exclusion',d:'Expansions inside existing defense-industrial fences skip the environmental assessment: permits there take 65% less time.',pc:20,wk:10,p:.8},
- {id:'nepaReform',fac:['US'],n:'SPEED Act (Permitting Overhaul)',d:'Passed the House 221–196 in Dec 2025; a Senate deal followed in Sep 2026. Deadlines with real remedies. Permitting takes 40% less time; impact-statement fights are half as likely.',pc:55,wk:26,p:.4},
+ {id:'nepaReform',fac:['US'],n:'SPEED Act (Permitting Overhaul)',d:'Passed the House 221–196 in Dec 2025. The Senate’s version, BAAJA (Sep 2026), adds Clean Water Act changes and is listed separately. Deadlines with real remedies. Permitting takes 40% less time; impact-statement fights are half as likely.',pc:55,wk:26,p:.4},
+ {id:'baaja',fac:['US'],n:'Senate Permitting Package: Clean Water Act and NEPA (BAAJA, S. 5653)',d:'The Bipartisan American Affordability and Jobs Act, introduced 30 Sep 2026. Wetlands: Army Corps general permits cover projects filling up to 2 acres, up from half an acre, so most plants need no individual §404 permit; state water-quality certification capped at one year, and denials need clear and convincing evidence. Discharge permits last 10 years, not 5. Lawsuits: 150 days to sue over a §404 permit or a NEPA review, and courts remand instead of vacating. It carries the NEPA reforms too: passing it enacts the SPEED Act’s and NEPA Litigation Reform’s effects. States and environmental groups oppose the limits on state certification.',pc:60,wk:30,p:.35,
+  on:()=>{for(const r of ['nepaReform','judRev'])if(!passed(r)){S.reforms[r]='passed';refRescale(r);lawRec('Law',rname(RD[r])+' (in BAAJA)')}}},
+ {id:'needAct',fac:['US'],n:'Necessary Environmental Exemptions for Defense Act (S. 2226)',d:'Introduced by Sen. Cotton, 9 Jul 2025; in committee. The Defense Department and any contractor or designee are exempt from NEPA, the Endangered Species Act, the Marine Mammal Protection Act and the Clean Water Act for work the President or the Secretary certifies counters the threat from the Chinese Communist Party, including production under a defense contract. No court may review a certification; it applies to projects already under way and ends pending lawsuits under those laws. No sunset and no report to Congress. The Clean Air Act, waste rules, grid hookups and state and local permits still apply. A long shot: Congress has refused broad defense exemptions from these laws for decades.',pc:70,wk:30,p:.12,
+  on:()=>needEnact()},
  {id:'judRev',fac:['US'],n:'NEPA Litigation Reform',d:'A short statute of limitations, and remand without vacatur: lawsuits −50%.',pc:40,wk:20,p:.5},
  {id:'dpaMin',fac:['US'],n:'DPA Critical-Minerals Emergency',d:'Unlocks the emergency mine-permitting track: mine permits take 40% less time.',pc:25,wk:8,p:.9},
  {id:'ibfPerm',fac:['US'],n:'Make the Industrial Base Fund Permanent',d:'Reconciliation pays about $3.8B a year for munitions production expansion and supply chains, and it ends after FY2029. This writes the same amount into base appropriations every year after that, so your budget stays at $9B instead of falling to $5.2B.',pc:35,wk:20,p:.6},
@@ -4187,16 +4191,20 @@ const REF_STAGE=[
  {r:'qualReform',st:'qual',m:.55,tags:['energetic','assembly','line'],t:'qualification 45% faster'},
  {r:'multiyear',st:'approp',m:.6,dom:1,tags:['energetic','assembly','line'],t:'funding 40% faster for munitions work'},
  {r:'multiyear',st:'ramp',m:.6,t:'ramp-up to full orders 40% faster'},
+ {r:'needAct',st:'permit',mf:def=>needM(def),dom:1,t:'NEPA, ESA and Clean Water Act permits waived: the permit stage runs as long as the permits that remain'},
  {r:'seekCommon',st:'qual',m:.7,tags:['rf_seeker','ir_seeker','imu'],t:'seeker and guidance plants qualify 30% faster'}];
+const needM=def=>{const all=permitsFor(def,'b',1),left=all.filter(x=>!NEED_P.includes(x.id));if(!all.length)return 1;return Math.max(.25,Math.max(1,...left.map(x=>x.w))/Math.max(1,...all.map(x=>x.w)))};
 const refFits=(x,def)=>(!x.dom||!def.ally)&&(!x.ally||def.ally)&&(!x.tags||x.tags.some(t=>def.tags.includes(t)));
-const stageM=(def,st)=>{let m=1;for(const x of REF_STAGE)if(x.st===st&&passed(x.r)&&refFits(x,def))m*=x.m;return Math.max(.25,m)};
+const stageM=(def,st)=>{let m=1;for(const x of REF_STAGE)if(x.st===st&&passed(x.r)&&refFits(x,def))m*=x.mf?x.mf(def):x.m;return Math.max(.25,m)};
 // qualification policies: joint qualification shortens the stage; pilot-lot qualification overlaps it with the end of construction
 const qualTag=def=>!def.ally&&['energetic','srm','assembly','line'].some(t=>def.tags.includes(t));
 const qualJointM=def=>ruleOn('rJETO')&&!def.ally&&['energetic','srm'].some(t=>def.tags.includes(t))?.75:1;
 const qualOverlap=(def,dur)=>ruleOn('rConcQual')&&qualTag(def)&&dur[4]?Math.min(Math.round(dur[4]*.5),Math.round(dur[3]*.25)):0;
 const planDur=def=>{const d=def.dur.map((d,i)=>d?Math.max(1,Math.round(d*stageM(def,STAGES[i])*(i===4?qualJointM(def):1))):0);if(d[4])d[4]=Math.max(1,d[4]-qualOverlap(def,d));return d};
+function needEnact(){let n=0;for(const p of S.projects){if(PD[p.def]?.ally)continue;const k=p.obs.length;p.obs=p.obs.filter(o=>!['ea','eis','esa','cwa','lawsuit'].includes(o.id));n+=k-p.obs.length}
+  if(n)log(`⚖ The defense exemption ends ${n} pending review${n>1?'s':''} and lawsuit${n>1?'s':''} under NEPA, the ESA and the Clean Water Act.`,'good')}
 function refRescale(id){for(const p of S.projects){const def=PD[p.def];for(const x of REF_STAGE){if(x.r!==id||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(!p.dur[i])continue;const d0=p.dur[i];
-  if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*x.m));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*x.m))}if(!S.histMode)(S.refW=S.refW||{})[id]=(S.refW[id]||0)+Math.max(0,d0-p.dur[i])}}PJC.clear()}
+  const xm=x.mf?x.mf(def):x.m;if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*xm));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*xm))}if(!S.histMode)(S.refW=S.refW||{})[id]=(S.refW[id]||0)+Math.max(0,d0-p.dur[i])}}PJC.clear()}
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
@@ -4528,7 +4536,7 @@ function sitesInit(){S.sites={};const keys=[...ORDER.filter(id=>S.nodes[id].base
     S.sites[k]={ops:ops.map(x=>({id:x.id,next:S.w+1+Math.floor(rand('r42')*x.yrs*52),last:null})),contest:null}}}
 function sitesTick(){if(S.histMode)return;if(!S.sites)sitesInit();const busy=S.queue.some(q=>q.ev==='siteRenew')||(S.inbox||[]).some(x=>x.ev==='siteRenew')||S.w-(S.renW??-999)<17;
   for(const k in S.sites){const st=S.sites[k],kn=S.know[k.startsWith('L:')?k.slice(2):k]??40;if(st.contest&&st.contest.until<=S.w)st.contest=null;
-    for(const o of st.ops)if(S.w>=o.next){const x=PMD[o.id];o.next=S.w+x.yrs*52;o.last=S.w;
+    for(const o of st.ops)if(S.w>=o.next){const x=PMD[o.id];if(active('needAct')&&NEED_P.includes(x.id)){o.next=S.w+520;continue}o.next=S.w+pYrs(x)*52;o.last=S.w;
       if(!busy&&!st.contest&&rand('r43')<renewRisk(x,kn)*SITE_F){st.contest={permit:x.id,until:S.w+DECIDE_WK+1};S._site={k,permit:x.id};S.renW=S.w;S.ledger.PERMIT.n++;queueEvent('siteRenew');return}}}}
 function siteHit(m,wk){const {k,permit}=S._site||{};if(!k)return;const st=S.sites?.[k];if(st)st.contest={permit,until:S.w+wk};
   if(k.startsWith('L:'))tmod('line',k.slice(2),m,wk,'Permit renewal contested');else tmod('cap',k,m,wk,'Permit renewal contested');S.ledger.PERMIT.wk+=wk}
@@ -4540,7 +4548,7 @@ function siteItems(){const out=[];for(const k in S.sites||{}){const st=S.sites[k
 function plantsTick(){sitesTick();
   for(const pl of S.plants){
     const k=pl.target,kn=S.know[k];
-    for(const o of pl.ops||[])if(S.w>=o.next){const x=PMD[o.id];o.next=S.w+x.yrs*52;o.last=S.w;
+    for(const o of pl.ops||[])if(S.w>=o.next){const x=PMD[o.id];if(active('needAct')&&NEED_P.includes(x.id)){o.next=S.w+520;continue}o.next=S.w+pYrs(x)*52;o.last=S.w;
       if(!pl.issue&&!S.histMode&&rand('r44')<renewRisk(x,kn)){pl.issue={id:'permitRenew',wait:0,permit:x.id};S.ledger.PERMIT.n++;log(`⚠ ${pl.nm}: ${x.n} renewal contested`,'bad');notify(`⚠ <b>${x.n} renewal contested</b><br><span class="dim">${pl.nm}</span>`,'',{a:'prog',u:pl.uid})}}
     if(pl.issue){S.ledger[OPSD[pl.issue.id].layer].wk++;if(pl.issue.wait>0&&--pl.issue.wait<=0){log(`✔ Resolved: ${OPSD[pl.issue.id].n} (${pl.nm})`);pl.issue=null}continue}
     pl.yield=Math.min(1,pl.yield+Math.max(.02,pl.yield)*(1-pl.yield)*RAMP(kn)*(pl.rampM||1));
@@ -5424,11 +5432,13 @@ const PERMITS=[
 const PMD=Object.fromEntries(PERMITS.map(x=>[x.id,x]));
 // every physical project needs permits: plants, upgrades inside existing plants, test cells, dry docks and depot lines.
 // Training programs, power contracts, planning offices and allied plants (permitted by the host country) need none.
-function permitsFor(def,ph){if(def.ally||['know','power'].includes(def.kind)||def.tags.includes('program')&&def.kind!=='test'||(def.kind==='test'&&['shipyard','sub_yard'].includes(def.t.node)))return [];
+const NEED_P=['nepa','cgp','s404','npdes','esa','npdesR','msgp'];
+function permitsFor(def,ph,raw){if(def.ally||['know','power'].includes(def.kind)||def.tags.includes('program')&&def.kind!=='test'||(def.kind==='test'&&['shipyard','sub_yard'].includes(def.t.node)))return [];
   const brown=def.tags.includes('brownfield')||def.kind==='mod',fac=S?.fac||'US';
-  return PERMITS.filter(x=>(x.f||'US')===fac&&x.ph===ph&&(x.all||x.tags.some(t=>def.tags.includes(t)))&&!(ph==='b'&&brown&&['s404','esa','nhpa','mine','naturaP','mineEU'].includes(x.id)))}
+  return PERMITS.filter(x=>(x.f||'US')===fac&&x.ph===ph&&(x.all||x.tags.some(t=>def.tags.includes(t)))&&!(ph==='b'&&brown&&['s404','esa','nhpa','mine','naturaP','mineEU'].includes(x.id))&&(raw||!(fac==='US'&&S&&active('needAct')&&NEED_P.includes(x.id)))).map(x=>x.id==='s404'&&S&&active('baaja')?{...x,w:12,n:'Clean Water Act §404 permit (nationwide permit, under 2 acres)'}:x)}
 const permitOdds=(x,def,lm)=>Math.max(0,...x.ob.map(o=>OD[o]&&facOk(OD[o])?obsChance(OD[o],def)*(lm?.[OD[o].layer]??1):0));
 const renewRisk=(x,kn)=>x.risk*(1.3-(kn??40)/100);
+const pYrs=x=>x.yrs*(active('baaja')&&/CWA §402/.test(x.law)?2:1);
 // every permit a program needs, with its live status; shared by the program page and the Permits view
 function permitItems(p,live,pl){
   const def=PD[p.def],B=permitsFor(def,'b'),O=permitsFor(def,'o'),out=[];
@@ -6039,6 +6049,9 @@ const CITES=[
  {id:'eo14372',g:'US rulebook',t:'Executive Order 14372, Prioritizing the Warfighter in Defense Contracting',pub:'Federal Register',d:'Jan 2026',url:'https://www.govinfo.gov/content/pkg/FR-2026-01-13/html/2026-00554.htm',use:'Bars buybacks and dividends at underperforming defense contractors in new and renewed contracts, and ties incentive pay to delivery.'},
 {id:'dibcomp22',g:'US rulebook',t:'State of Competition within the Defense Industrial Base',pub:'Department of Defense',d:'Feb 2022',url:'https://media.defense.gov/2022/Feb/15/2002939087/-1/-1/1/STATE-OF-COM-PETITION-WITHIN-THE-DEFENSE-INDUSTRIAL-BASE.PDF',use:'Aerospace and defense primes fell from 51 to 5; about 90% of missiles come from three sources. Sets the starting leverage.'},
 {id:'r2rstrip',g:'US rulebook',t:'Right-to-repair reforms mostly stripped from final FY26 NDAA',pub:'Defense Daily',d:'Dec 2025',url:'https://www.defensedaily.com/right-to-repair-reforms-mostly-stripped-from-final-fy-26-ndaa/congress/',use:'Both chambers passed military right-to-repair provisions; conference removed them after industry lobbying.'},
+{id:'baajaCwa',g:'US rulebook',t:'Bipartisan American Affordability and Jobs Act (BAAJA) of 2026: Analysis of Clean Water Act Provisions (R49492)',pub:'Congressional Research Service',d:'Oct 2026',url:'https://www.everycrsreport.com/reports/R49492.html',use:'BAAJA’s Clean Water Act title: §401 certification capped at one year with a clear-and-convincing standard; general §404 permits for up to 2 acres; NPDES and general permit terms from 5 to 10 years; 150 days to sue over §404 permits, with remand instead of vacatur.'},
+{id:'baajaNepa',g:'US rulebook',t:'BAAJA of 2026: Analysis of Division A, Title I, Including NEPA Provisions (R49510)',pub:'Congressional Research Service',d:'Nov 2026',url:'https://www.everycrsreport.com/files/2026-11-06_R49510_b559f79c9bbc7bc0070642c04bd7a99b70d3e75d.html',use:'BAAJA’s NEPA title: more exclusions from “major federal action”, a 150-day limit to sue, and a general bar on vacatur and injunctions.'},
+{id:'s2226',g:'US rulebook',t:'S. 2226, Necessary Environmental Exemptions for Defense Act (119th Congress)',pub:'Congress.gov',d:'Jul 2025',url:'https://www.congress.gov/119/bills/s2226/BILLS-119s2226is.htm',use:'Exempts DoD and its contractors from NEPA, the ESA, the MMPA and the CWA for activities certified as countering the Chinese Communist Party; bars judicial review; applies to ongoing activities.'},
 {id:'r2r',g:'US rulebook',t:'HASC advances right to repair proposal, industry pushes back',pub:'Federal News Network',d:'Jun 2026',url:'https://federalnewsnetwork.com/congress/2026/06/hasc-advances-right-to-repair-proposal-industry-pushes-back/',use:'Industry lobbying against right-to-repair and data-rights provisions.'},
  {id:'jonesamp',g:'US rulebook',t:'The US Jones Act gets a new fight and a new argument',pub:'S&P Global',d:'Mar 2016',url:'https://www.spglobal.com/energy/en/news-research/blog/crude-oil/033116-the-us-jones-act-gets-a-new-fight-and-a-new-argument',use:'American Maritime Partnership opposition to repeal.'},
  {id:'pda24',g:'Wars of 2025–26',t:'US announces $300 million package for Ukraine (55th drawdown)',pub:'DoD News via GlobalSecurity',d:'Mar 2024',url:'https://www.globalsecurity.org/wmd/library/news/ukraine/2024/03/ukraine-240312-dodnews01.htm',use:'Presidential drawdowns from US stocks; more than 70 by Dec 2024.'},
