@@ -1229,6 +1229,7 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .rkind.k-law{background:#2f4a26;color:#e3edd6}.rkind.k-proc{background:#f6e7b8;color:#6b4a10}tr.rlpr>td{background:#fbf3dc}
 .rbt tr.rlpick>td,.rbt tr.rlproc>td{text-align:left}.rtc,.rtc p,.rtintro,.rtstrip,.rtst{text-align:left}
 .rbt tr.rlproc .mini,.rbt tr.rlpick .mini{text-align:left}
+.rtwhat{background:#fbf6e8;border:1px solid #e0d4b4;border-radius:4px;padding:7px 10px;margin-bottom:6px;text-align:left}.rtwh{margin-bottom:4px;font:12.5px "Segoe UI",system-ui,sans-serif}.rtwh .mini{display:block}.rtwt{margin:4px 0}.rtwt td,.rtwt th{text-align:left}.rtwt .num{text-align:right}
 </style>
 </head>
 <body>
@@ -2017,13 +2018,36 @@ function codEnact(got,lost,fy){const its=codReqs().filter(x=>x.pkg<S.w);if(!its.
 // the row's extra lines: the route chooser, and the stages of an action under way
 function rulePickHTML(r){const ks=routesOf(r);
   return `<tr class="rlpick"><td></td><td colspan="2"><div class="rtintro">How to do it. A faster route takes effect sooner; a slower one holds if a new administration takes over in ${nextPresElec()}, which it does about ${pct(1-elecOdds())} of the time.</div><div class="rtcards">${ks.map(k=>{const R=RROUTE[k],c=routeCost(r,k),wk=routeWk(k);
-    return `<div class="rtc"><div class="rth"><span>${R.ic}</span><b>${R.n}</b></div><p>${R.d}</p><dl><dt>In force in ${wk} wk</dt><dd>~${fmtDate(S.w+wk)}</dd><dt>Effect</dt><dd>${R.str<1?'<span class="amb">about half</span>':'full'}</dd><dt>Undone by a new administration</dt><dd class="${R.rev>=.5?'redt':'okt'}">${pct(R.rev)} odds</dd></dl>
+    return `<div class="rtc"><div class="rth"><span>${R.ic}</span><b>${R.n}</b></div><p>${R.d}</p><dl><dt>In force in ${wk} wk</dt><dd>~${fmtDate(S.w+wk)}</dd><dt>Effect</dt><dd>${R.str<1?'<span class="amb">about half</span>':'full'}</dd><dt>Your programs it reaches</dt><dd>${(()=>{const v=rulePV(r,k);return v.rows.length?`${v.rows.length} · −${fmt(v.saved,0)} wk`:'none'})()}</dd><dt>Undone by a new administration</dt><dd class="${R.rev>=.5?'redt':'okt'}">${pct(R.rev)} odds</dd></dl>
       <button class="pbtn sm primary" data-a="rroute" data-r="${r.id}" data-k="${k}" ${S.pc>=c?'':'disabled'}>Begin · ${c} PC</button></div>`}).join('')}</div>${ruleWhatHTML(r)}</td></tr>`}
 function ruleProcHTML(r){const x=S.rproc[r.id],R=RROUTE[x.k];let w=x.w0;
   const st=R.st.map(([n,wk])=>{const a=w,b=w+wk;w=b;const cls=S.w>=b?'done':S.w>=a?'cur':'';return `<div class="rtst ${cls}"><b>${n}</b><span>${fmtDate(a)} – ${fmtDate(b)}</span></div>`}).join('');
   return `<tr class="rlproc"><td></td><td colspan="2"><div class="rtstrip">${st}<div class="rtst end"><b>In force</b><span>~${fmtDate(x.due)}</span></div></div><div class="mini">${R.ic} ${R.n} · ${x.pc} PC spent · <span class="linkn" data-a="rwd" data-r="${r.id}">Withdraw it</span></div></td></tr>`}
 const nextPresElec=()=>{const y=dateOf(S.w).getFullYear();let n=y%4===0&&dateOf(S.w).getMonth()<=10?y:y+(4-y%4);return 'November '+n};
-function ruleWhatHTML(r){return ''}
+// ---- what an executive action would buy, by route: the programs it reaches once in force, the weeks it saves them, and the 2035 outlook
+// the stage a program will be in a number of weeks from now, at its planned pace
+function stageAt(p,wk){let t=p.pkg?Math.max(0,pkgWhen()-S.w-p.dur[0]):0;for(const o of p.obs)t+=o.wait||0;for(let i=p.stage;i<STAGES.length;i++){t+=i===p.stage?Math.max(0,p.dur[i]-p.prog):p.dur[i];if(t>wk)return i}return STAGES.length}
+const ALL_LAYERS=()=>[...new Set(OBSTACLES.map(o=>o.layer))];
+const expAll=(p,from)=>ALL_LAYERS().reduce((a,l)=>a+expDelay(p,l,from),0);
+const RPV={};
+function rulePV(r,k,full){const key=[S.w,uidN,S.projects.length,r.id,k,!!full,JSON.stringify(S.rules)].join('|'),ck=r.id+k+(full?'f':'');if(RPV[ck]?.key===key)return RPV[ck].v;
+  const was=S.rules[r.id],wr=S.rroute?.[r.id],on=()=>{S.rules[r.id]=true;(S.rroute=S.rroute||{})[r.id]=k},off=()=>{S.rules[r.id]=was;if(wr)S.rroute[r.id]=wr;else if(S.rroute)delete S.rroute[r.id]};
+  const lag=routeWk(k),rows=[],shift={};
+  try{for(const p of S.projects){if(!PD[p.def])continue;const from=stageAt(p,lag);if(from>=STAGES.length)continue;const e0=expAll(p,from);on();const e1=expAll(p,from);off();
+      if(e0-e1>=.5){rows.push({p,e0,e1,st:STAGES[from]});shift[p.uid]=-(e0-e1)}}
+    // a typical new program in the domain this action mostly reaches
+    const D=DOMAINS.find(x=>x.id===r.dom),d=D?domRef(D):null;let nw=null;
+    if(d){const fp={def:d.id,dur:planDur(d),stage:0,prog:0,obs:[]};const e0=expAll(fp,0);on();const e1=expAll(fp,0);off();nw={n:d.n,e0,e1}}
+    let dOut=null;if(full)try{const base=outlookOfPJ(ceilProj({ordFull:1}));on();const alt=outlookOfPJ(ceilProj({ordFull:1,shift,tag:r.id+k}));off();dOut=(alt-base)*100}catch(e){off()}
+    const v={rows:rows.sort((a,b)=>(b.e0-b.e1)-(a.e0-a.e1)),saved:rows.reduce((a,x)=>a+x.e0-x.e1,0),dOut,nw};RPV[ck]={key,v};return v}
+  catch(e){off();console.error(e);return {rows:[],saved:0,dOut:null,nw:null}}}
+function ruleWhatHTML(r){const ks=routesOf(r),k=ks.find(x=>x==='ifr'||x==='dir'||x==='fin')||ks.at(-1),ck=r.id+k+'f',fk=RPV[ck]?.key===[S.w,uidN,S.projects.length,r.id,k,true,JSON.stringify(S.rules)].join('|'),v=fk?RPV[ck].v:rulePV(r,k);
+  if(!fk&&!RPV._busy){RPV._busy=1;setTimeout(()=>{try{rulePV(r,k,1)}finally{RPV._busy=0}if(S&&S.rpick===r.id){S._vdirty=true;render()}},60)}
+  const rows=v.rows.slice(0,6).map(x=>`<tr><td><span class="linkn" data-a="prog" data-u="${x.p.uid}">${projName(x.p)}</span><div class="mini">${STEP_N[x.st]||x.st} still ahead</div></td><td class="num okt">−${fmt(x.e0-x.e1,0)} wk</td></tr>`).join('');
+  return `<div class="rtwhat"><div class="rtwh"><b>What it would buy</b> <span class="mini">By ${RROUTE[k].n.toLowerCase()}, in force about ${fmtDate(S.w+routeWk(k))}. Expected weeks of delay it saves each program from then on, from the odds of every obstacle still ahead, if each is waited out; paying to get past one faster leaves less to save.</span></div>
+    ${rows?`<table class="ctable rtwt"><tr><th>Your program</th><th class="num">Expected weeks saved</th></tr>${rows}</table>${v.rows.length>6?`<div class="mini">+ ${v.rows.length-6} more</div>`:''}`:`<p class="mini">None of your programs under way will still face what it speeds up by the time it is in force.</p>`}
+    ${v.nw&&v.nw.e0-v.nw.e1>=.5?`<p class="mini">A new program like <b>${v.nw.n}</b> would save about ${fmt(v.nw.e0-v.nw.e1,0)} weeks.</p>`:''}
+    ${!fk?'<p class="mini">Working out the January 2035 outlook…</p>':''}${v.dOut!=null?`<p class="mini">January 2035 outlook, if your programs land that much sooner: <b class="${v.dOut>=.05?'okt':''}">${Math.abs(v.dOut)<.05?'no change':(v.dOut>0?'+':'−')+fmt(Math.abs(v.dOut),1)+' pt'}</b>${Math.abs(v.dOut)<.05&&v.saved>=1?': the programs it speeds are held back by something else, or land before 2035 either way':''}.</p>`:''}</div>`}
 function ruleRow(r){const on=r.kind==='foreign'?!S.truce:ruleOn(r.id),k=KIND[r.kind],sw=isExec(r),law=sw&&codified(r.id),proc=sw&&!on&&S.rproc?.[r.id],pick=sw&&!on&&!proc&&S.rpick===r.id,cost=sw?(on?r.pc[1]:routeCost(r,defRoute(r))):0,cq=codReqs().find(x=>x.id===r.id);
   const ctl=law?`<span class="rkind k-law" data-tip="Written into law by the FY${S.codified[r.id]%100} NDAA: only Congress can change it now.">Law</span>`:proc?`<span class="rkind k-proc" data-tip="Under way: in force about ${fmtDate(proc.due)}.">⏳</span>`:sw?(on?`<button class="tog on" data-a="rule" data-r="${r.id}" ${S.pc>=cost?'':'disabled'} data-tip="Reverse it: ${cost} Political Capital."><i></i></button>`:`<button class="pbtn sm ${pick?'primary':''}" data-a="rule" data-r="${r.id}" data-tip="${r.kind==='proposed'?'Finalize':'Adopt'} it: choose how, from ${Math.min(...routesOf(r).map(x=>routeCost(r,x)))} PC.">${pick?'✕':'Act'}</button>`):`<span class="rkind k-${r.kind}" data-tip="${k[1]}">${k[0]}</span>`;
   const rt=sw&&on&&!law?routeOf(r.id):null;
@@ -2844,7 +2868,7 @@ function pjFinish(p,t,added){const def=PD[p.def];if(!def||def.kind==='maint')ret
   labCrew(kind==='line'?'L:'+target:target,g);S.plants.push(pl);added.push({pl,y0:.2,w:t,rw:Math.max(8,rampWeeks(S.know[target]??40,.2,1))})}
 // Project every item to 2035. alt (optional): {def, w} adds a program you might start, delivering at week w;
 // {drop: uid} leaves out a program under way. Without alt this is the status quo, cached for the week.
-function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def?alt.def.id+'@'+alt.w:'')+(alt.shift?'s'+JSON.stringify(alt.shift):'')+(alt.ordFull?'o':''):'';
+function ceilProj(alt){const key=alt?(alt.drop!=null?'d'+alt.drop:alt.def?alt.def.id+'@'+alt.w:'')+(alt.shift?'s'+JSON.stringify(alt.shift):'')+(alt.ordFull?'o':'')+(alt.tag||''):'';
   const ok=c=>c&&(c.w===S.w||(S.speed>0&&S.w-c.w>0&&S.w-c.w<6))&&c.n===S.projects.length&&c.u===uidN;
   if(!alt&&ok(S._cpj))return S._cpj;if(alt){if(!ok(S._cpjX))S._cpjX={w:S.w,n:S.projects.length,u:uidN,m:{}};if(S._cpjX.m[key])return S._cpjX.m[key]}
   const save=S,u=uidN,snap=JSON.stringify(S,(k,v)=>SAVE_SKIP.has(k)||k==='ceil'?undefined:v),out={};
