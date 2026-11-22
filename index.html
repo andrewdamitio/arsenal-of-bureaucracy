@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Arsenal of Bureaucracy</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Saira+Stencil+One&display=swap" rel="stylesheet">
+
 <style>
 :root{--panel:#1d201b;--panel2:#262a23;--line:#4a4532;--brass:#a8925a;--brass2:#dcc78e;--ink:#e6e1d3;--dim:#9a968a;--red:#d0503f;--green:#76b357;--blue:#5f8fc4;--amber:#d9a441;--paper:#e9dfc4;--paperInk:#2b241a}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
@@ -1292,6 +1291,43 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 @media (max-width:900px){.t3-cards{grid-template-columns:1fr 1fr}.t3-detail{grid-template-columns:1fr}.t3-dart{min-height:140px}.t3-optg{grid-template-columns:1fr}.t3menu .t3-art{inset:0;opacity:.6}#title.ti3 .t3-brand h1{font-size:38px}}
 @media (max-height:800px){.t3-thumb{height:88px}.t3-dart{min-height:150px}.t3-threat{margin:6px 0 8px}.t3-h2{margin:8px 0 10px}}
 #title.ti3 .t3-brand.sm h1{font-size:26px}#title.ti3 .t3-brand.sm h1 small{font-size:15px}
+/* ===================== design system: one palette, two typefaces, one button family =====================
+   Georgia for headings, Segoe UI for text; brass and gold on a dark frame; cream paper for pages. Matches the opening screens. */
+:root{--f-head:Georgia,"Times New Roman",serif;--f-body:"Segoe UI",system-ui,-apple-system,sans-serif;--sten:var(--f-head);--disp:var(--f-body);
+ --haz:linear-gradient(90deg,#4a4532,#4a4532);--gold:#c9952a;--gold2:#a8781c;--goldEdge:#e0b24a;--frame:#191b15;--frame2:#22251d;--edge:#3f3b2d;--edge2:#5a5040;
+ --cream:#efe4c4;--muted:#a89f86;--paperCard:#fbf6e8;--paperRule:#e0d4b4;--paperEdge:#d6c79f;--paperMuted:#6b5a35;--linkP:#8a4b0f;--linkD:#e3c27a}
+/* headings: Georgia, sentence case, no stencil */
+.logo{font:700 17px var(--f-head);letter-spacing:.12em;color:var(--brass2);text-shadow:none}
+.panel h2{font:700 15px var(--f-head);letter-spacing:.01em;text-transform:none;color:var(--cream);background:var(--frame2);border-bottom:1px solid var(--edge);box-shadow:none}
+.panel h2::before{display:none}
+.paper .hd{font-family:var(--f-head);font-weight:700;letter-spacing:.01em}
+.vhead>b,.dhead h3{font-family:var(--f-head);font-weight:700;letter-spacing:0}
+.sbtitle{font:700 44px/1.05 var(--f-head);letter-spacing:.005em}
+.sc-ph b,.sc-ch b{font:700 16px var(--f-head);letter-spacing:0}
+.paper .sc-opt b,.flfocus b{font:700 18px var(--f-head);letter-spacing:0}
+.dbgh,.cseg-h b{font:700 15px var(--f-head);letter-spacing:0}
+.bl-ah{font:700 20px var(--f-head);letter-spacing:0}
+.bltt{font:700 23px var(--f-head);letter-spacing:0}
+.ndaaref h2{font:700 16px var(--f-head);letter-spacing:0}
+#log h2{font:700 13px var(--f-head);letter-spacing:.02em;text-transform:none}
+.rcpt-lab{font:700 11px var(--f-body);letter-spacing:.1em}
+/* buttons: dark frame */
+.btn{font:600 12.5px var(--f-body);letter-spacing:0;border-radius:4px;background:var(--frame2);border:1px solid var(--edge2);color:var(--cream);padding:4px 10px;transition:border-color .15s,background .15s}
+.btn:hover:not(:disabled){border-color:var(--brass2);background:#2b2e24}
+.btn.on{background:var(--gold);border-color:var(--goldEdge);color:#231a0c}
+/* buttons: paper */
+.pbtn{font:600 13px var(--f-body);border-radius:4px;background:var(--paperCard);border:1px solid #c9b88a;color:#2b241a;transition:border-color .15s,background .15s}
+.pbtn.sm{font-size:12px;padding:4px 9px}
+.pbtn:hover:not(:disabled){border-color:#8a6a1f;background:#fffaee}
+.pbtn.primary{background:linear-gradient(#c9952a,#a8781c);border-color:#a8781c;color:#231a0c;font-weight:700}
+.pbtn.primary:hover:not(:disabled){background:linear-gradient(#d8a536,#b8862a)}
+.btn:disabled,.pbtn:disabled,.btn.off,.pbtn.off{opacity:.55;cursor:not-allowed}
+/* links: colour carries them; the underline comes on hover */
+.linkn{text-decoration-line:none!important;color:var(--linkP)}
+.linkn:hover{text-decoration-line:underline!important;text-decoration-color:currentColor!important}
+#app .panel .linkn,#top .linkn,.rc-rrow .linkn{color:var(--linkD)}
+#app #view .linkn,#app #view .panel .linkn,#ov .linkn{color:var(--linkP)}
+#top .res span{font:600 9px var(--f-body);letter-spacing:.04em}#top .res b{font:700 17px var(--f-body);letter-spacing:0}
 </style>
 </head>
 <body>
