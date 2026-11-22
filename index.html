@@ -4478,7 +4478,7 @@ function sankeySVG(R,focus,mode,attr){
     if(isL){const o=R.out[id.slice(2)];tip+=` · output ${pct(o.n/Math.max(o.cap,1e-9))} of capacity${o.cap>o.n*1.001?`<br><span style="color:#e8a090">Hatched: ${pct(1-o.n/Math.max(o.cap,1e-9))} of capacity idle${o.bott?`, short of ${lc(ND[o.bott].n)}`:''}</span>`:''}`}else if(!id.startsWith('S:'))tip+=` · cover ${pct(Math.min(P[id].cover,9.99))} · PRC exposure ${pct(P[id].expo)}`;
     const uw=S.projects.filter(q=>{const d=PD[q.def];return d&&(isL?d.t.line===id.slice(2):d.t.node===id)}),fresh=(S.moves||[]).some(m=>m.acts.some(a=>a.t==='prj'&&PD[a.id]&&(isL?PD[a.id].t.line===id.slice(2):PD[a.id].t.node===id)));
     if(uw.length)tip+=`<br><span style='color:#9fd08a'>▲ ${uw.length} program${uw.length>1?'s':''} under way${fresh?', one started this turn':''}: ${uw.slice(0,3).map(q=>projName(q)).join(', ')}${uw.length>3?'…':''}</span>`;
-    svg+=`<g class="nd" data-id="${id}" ${act} data-tip="${tip.replace(' — ','<br>')}"><rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${p.h}" fill="${nodeCol(id)}" stroke="#2b241a" stroke-width=".5"/>`;
+    svg+=`<g class="nd" data-id="${id}" ${act} data-tip="${tipQ(tip.replace(' — ','<br>'))}"><rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${p.h}" fill="${nodeCol(id)}" stroke="#2b241a" stroke-width=".5"/>`;
     if(uw.length)svg+=`<path class="skuw${fresh?' fresh':''}" d="M${p.x-7},${p.y+Math.min(9,p.h/2+4)}l4,-7l4,7z"/>`;
     if(p.g>0.5){const o=R.out[id.slice(2)],cut=ghostFull[id]>ghost[id]*1.001,yb=p.y+p.h+p.g;
       svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"></rect>`;
@@ -5895,7 +5895,7 @@ function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   return h+`</table><div class="sleg" style="margin-top:6px"><span><i style="background:${SRC_C.dom}"></i>US-made</span><span><i style="background:${SRC_C.ally}"></i>Allied</span><span><i style="background:${SRC_C.spot}"></i>Spot / diverted</span><span><i style="background:${SRC_C.prc}"></i>PRC / Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span><span class="mini">US-made, allied, PRC and cut-off shares add up to 100% of supply. Allied includes spot purchases. The bar’s black tick is this week’s demand.</span></div>`}
 function flowBody(){
   const f=S.flowFocus||'all',m=S.flowMode||'det',at=S.flowAttr||'mat',fv=S.flowV||'diag';
-  const B=(on,at2,lab,tip,ic)=>`<button class="${on?'on':''}" ${at2}${tip?` data-tip="${tip}"`:''}>${ic||''}<span>${lab}</span></button>`;
+  const B=(on,at2,lab,tip,ic)=>`<button class="${on?'on':''}" ${at2}${tip?` data-tip="${tipQ(tip)}"`:''}>${ic||''}<span>${lab}</span></button>`;
   const vt=`<div class="skctl"><span class="lab">Display</span><div class="seg">${B(fv==='diag','data-a="flowv" data-v="diag"','Flow diagram','Material flowing from raw sources through each tier of the supply chain into end items')}${B(fv==='table','data-a="flowv" data-v="table"','Sourcing table','Every item: what share is made at home, by allies, by neutral countries and by China or Russia')}</div>`;
   if(fv==='table')return vt+'</div>'+madeBody();
   return vt+`<span class="lab">End item</span><div class="chips">${B(f==='all','data-a="flow" data-f="all"','All end items')}${S.order.map(l=>B(f==='L:'+l,`data-a="flow" data-f="L:${l}"`,LINES[l].n,'',lineIcon(l,16,'lic sm'))).join('')}${f!=='all'&&!f.startsWith('L:')?B(1,'',ND[f].n):''}</div>
@@ -6009,7 +6009,7 @@ function toast(html,cls='',act,ms=4200){if(S&&S.sim)return;const box=document.ge
   box.prepend(d);while(box.children.length>4)box.lastElementChild.remove();
   const end=()=>{if(d.classList.contains('open')||d.matches(':hover'))setTimeout(end,1500);else{d.classList.add('out');setTimeout(()=>d.remove(),300)}};setTimeout(end,ms)}
 const chip=l=>`<span class="tag" style="background:${LAYERS[l].c}">${LAYERS[l].n}</span>`;
-const res=(v,l,tip,a='',d='',cls='')=>`<button class="res ${cls}" data-tip="${tip||''}" ${a?`data-a="${a}"`:''} ${d}><b>${v}</b><span>${l}</span></button>`;
+const res=(v,l,tip,a='',d='',cls='')=>`<button class="res ${cls}" data-tip="${tipQ(tip||'')}" ${a?`data-a="${a}"`:''} ${d}><b>${v}</b><span>${l}</span></button>`;
 // change over the last four weeks, shown as a small arrow next to the value
 function resDelta(k,v,good=1,f=x=>fmt(x,0)){const h=S.resH||[],o=h[0]?.[k];if(o==null)return '';const d=v-o;if(Math.abs(d)<1e-6||Math.abs(d)<Math.abs(o)*.005)return '';return `<i class="${(d>0)===(good>0)?'green':'red'}">${d>0?'▲':'▼'}${f(Math.abs(d))}</i>`}
 /* ---------- linking: what changed flashes; hovering anything lights its chain everywhere ---------- */
