@@ -6405,13 +6405,13 @@ const uiSave=()=>{try{localStorage.setItem('aob_ui',JSON.stringify(UIP))}catch(e
 const xpOn=()=>!!UIP.xp||!!(S&&S.tut);
 // Standing explanations: paragraphs that say what a section is for. With explanations hidden they fold into an ⓘ by their heading
 // (hover to read, click to open in place). Status lines and anything short stay.
-const XP_SEL=['.pintro','.alintro','.rbintro','.xintro','.wmfoot','.bnsort>.mini:last-child','.ordsec>p.mini','.ctsec','.rc-leg',
+const XP_SEL=['.pintro','.alintro','.rbintro','.xintro','.wmfoot','.bnsort>.mini:last-child','.ordsec>p.mini','.ctsec',
   '.dsec>h4+p.mini','h4.bh+p.mini','h3+p.mini','h2+.sub','h2+p.mini','.dsec>p.mini:first-of-type','.acard>p.mini'];
 const XP_OPEN=new Set();
 function xpPass(root){if(!root)return;const on=xpOn();document.body.classList.toggle('xpoff',!on);if(on)return;
   for(const el of root.querySelectorAll(XP_SEL.join(','))){if(el.dataset.xp)continue;const t=el.textContent.trim();if(t.length<80||el.closest('.tut-box,.evp,#log,.toast'))continue;
     // an explanation comes before the content it explains: a paragraph that is all a section has is its content, so it stays
-    if(!el.nextElementSibling&&!el.matches('.pintro,.alintro,.rbintro,.xintro,.wmfoot,.skguide,.sc-test,.rc-leg,.bnsort>.mini:last-child'))continue;
+    if(!el.nextElementSibling&&!el.matches('.pintro,.alintro,.rbintro,.xintro,.wmfoot,.skguide,.sc-test,.bnsort>.mini:last-child'))continue;
     el.dataset.xp=1;el.classList.add('xp');const key=t.slice(0,60);if(XP_OPEN.has(key))el.classList.add('xpshow');
     const isH=x=>x&&(/^H[1-6]$/.test(x.tagName)||x.classList.contains('bh')||x.classList.contains('sect'));let hd=null;for(let x=el.previousElementSibling;x;x=x.previousElementSibling)if(isH(x)){hd=x;break}
     if(!hd){const par=el.parentElement;hd=par&&[...par.children].find(isH)||par?.parentElement&&[...par.parentElement.children].find(isH)||null}
