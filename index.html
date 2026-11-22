@@ -1502,6 +1502,8 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 .mvlead{border-left:3px solid var(--gold)!important}.mvlead .trh b{font-size:17px}.mvnone .trh{border-bottom:0;margin-bottom:0}
 @media (max-width:760px){body.tiptouch #tip{max-width:calc(100vw - 24px)!important}[data-tip]:not([data-a]){-webkit-tap-highlight-color:rgba(201,149,42,.25)}}
 @media (hover:none){.xpi{min-width:28px;min-height:28px}}
+body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g-no-expo #top [data-k="expo"],body.g-no-req #top [data-k="req"]{display:none}
+.t3-optg{grid-template-columns:repeat(3,1fr)}
 </style>
 </head>
 <body>
@@ -4324,20 +4326,86 @@ const TUT=[
  {p:'turn',dyn:1,wait:()=>S.modal==='turn'},
  {p:'turn',sel:'#ov .yrp',t:'The turn report',x:'What changed in the last two months, and what is coming in the next.',next:1},
  {p:'turn',t:'You have the controls',x:'That is the whole loop: find what holds output back, start programs, push reforms, play turns. For the rest of your first year, a tip explains each new thing the first time it appears. Any tab you skipped gets its tour the first time you open it, and every tab has a <b>Tour this tab</b> button on its title line.',next:'Finish'}];
+// ===== the guide: any scenario. A short first turn, then each part of the game introduced when it first matters =====
+const gLine=()=>{const sc=S.scen&&SCD[S.scen];const m=sc?.mand?.find(m=>m.c);return m?m.c:'drones'};
+const gAct=()=>(S.acts||[]).length>(S.gActs0||0);
+const GUIDE={
+ open:{n:'Your first turn',steps:[
+  {t:()=>`Welcome to ${S.scen?SCD[S.scen].n:'the game'}`,x:()=>`You run the effort to rearm the United States from January 2027. This guide plays your first turn with you. After that it steps in only when something new starts to matter: your first stuck program, your first contract, the NDAA in the autumn, Beijing’s next step. Everything else is open to explore whenever you like.`,next:1},
+  {sel:'#top',t:'The top bar',x:'What matters now. <b>Sufficiency</b>: you and your allies against what the plan requires, your score. <b>Capital</b>: Political Capital, spent on votes and fights. <b>Budget</b>: money to build now. <b>Decisions</b>: anything waiting on you. <b>Lines short</b>: weapon lines held back by a missing part. More join as they start to matter; click any number for its page.',next:1},
+  {sel:'.sc-card',t:()=>S.scen&&SCD[S.scen].open?'Your race':'Your mandate',x:()=>`The targets you are judged on: a halfway check in January 2030 and the verdict in January 2035. Each bar is where you stand today against the floor and the target. <b>How to win</b> opens the full brief at any time.`,next:1},
+  {sel:()=>document.getElementById('rc-'+gLine()),t:()=>`One weapon line: ${LINES[gLine()].n.toLowerCase()}`,x:'Blue is what you make, hatched is capacity on order, green is what allies add, red is the rival. <b>Limits, lowest first</b> names what holds the line back; the first one is the one to fix.',next:1},
+  {sel:'.brf',t:'This turn’s brief',x:'Up to three moves worth making now, ranked by what they add. The first is a quick win that pays off within months; plants take years.',next:1},
+  {sel:'.brf .brc',t:'Make your first move',x:'<b>Press the button on a card.</b> Extra shifts start at once. A plant opens a short award screen first.',wait:()=>gAct()||['contract','pv','node','cat'].includes(S.modal)},
+  {sel:'#ov .ctp .ctsec',skip:()=>S.modal!=='contract',t:'Who builds it, on what terms',x:'An incumbent prime knows the work but gains leverage over you; a new entrant is cheaper and faster to build but must qualify from scratch. The terms trade price against speed and risk. Then pay at the bottom: <b>Build now</b> from your budget, or <b>Request it</b> in the NDAA for Political Capital.',wait:()=>!S.modal},
+  {skip:()=>!S.modal,t:'Close the window to go on',x:'Finish what you started in the window, or close it with ✕ or Esc.',wait:()=>!S.modal},
+  {sel:'.mvp',skip:()=>!document.querySelector('.mvp'),t:'Set in motion',x:'Every move you make while the clock is stopped is listed here, with what it does. Changed your mind? <b>↶ Undo</b>, by the date, takes it back until time moves on.',next:1},
+  {sel:'.turnbtn',t:'Play your first turn',x:'<b>Press Next turn.</b> It plays two months and stops for anything that needs you.',wait:()=>S.turnEnd!=null||S.trnRep},
+  {dyn:1,wait:()=>S.modal==='turn'},
+  {sel:'#ov .mvlead',t:'What your moves did',x:'The turn report opens with your moves: what each did this turn, and what it does by 2035.',next:1},
+  {sel:'#ov .yrp',t:'The turn report',x:'Below: what changed, what is coming, the brief for the next turn, problems your programs hit, and the news. Then play on.',next:1},
+  {t:'You have the controls',x:'That is the loop: find what holds output back, start programs, play turns. The guide comes back when something new matters. Every tab also has a <b>Tour this tab</b> button.',next:1}]},
+ stuck:{n:'A stuck program',when:()=>(decisionsPending()&&document.getElementById('decbar')&&S.projects.some(p=>p.obs.length&&!p.obs[0].wait))||S.w>=PLAY0+18,
+  start:()=>{const p=S.projects.find(p=>p.obs.length&&!p.obs[0].wait),L=p&&OD[p.obs[0].id]?.layer,D=L&&DOMAINS.find(d=>d.layers.includes(L));S.domOpen={[D?D.id:'permit']:1}},
+  steps:[
+  {sel:'#decbar',skip:()=>!document.getElementById('decbar'),t:'A program is stuck',x:'A permit, a protest, a test or a contract problem has stopped one of your programs. The turn waits; nothing is decided for you. <b>Open it.</b>',wait:()=>S.modal==='prog'},
+  {sel:'#ov .obs',skip:()=>S.modal!=='prog',t:'Getting past it',x:'Each way trades time against Political Capital, money and risk, and says how often it works. <b>Choose one.</b>',wait:()=>S.modal!=='prog'||!document.querySelector('#ov .obs .opt, #ov .obs button')},
+  {skip:()=>!S.modal,t:'Close the window to go on',x:'Close it with ✕ or Esc.',wait:()=>!S.modal},
+  {t:'Where problems come from',x:'Programs get stuck on permits, lawsuits, qualification and contracting, and those come from the rules. <b>Rules & policy</b> shows each process, what governs it, and what you can change so it happens less often. Reforms are what make plants arrive in time.',next:1},
+  {...NAV('policy','Rules & policy')},
+  {sel:'#view .rbdom.pdom1',t:'One area of the rulebook',x:'How the process works today, with the odds each step stops a new program; what is in force; and what you can change.',next:1},
+  {sel:'#view .rbdom.pdom1 .rbcan',t:'What you can change',x:'Executive actions act fastest but a new administration can undo them; emergency powers act in weeks and lapse; bills and NDAA reforms are slow and permanent.',next:1}]},
+ contract:{n:'Your first contract',modal:1,when:()=>S.modal==='contract'&&document.querySelector('#ov .ctp'),steps:[
+  {sel:'#ov .ctp .ctsec',t:'Who builds it',x:'An <b>incumbent prime</b> knows the qualification process, but each award adds to its leverage over you: pricier work and more pushback. A <b>new entrant</b> is cheaper and quicker to build but must qualify from scratch. Prime leverage joins the top bar.',next:1},
+  {sel:()=>document.querySelectorAll('#ov .ctp .ctsec')[1]||null,t:'On what terms',x:'Cost-plus is quick to sign but every delay lands on your bill; fixed-price is cheaper but slower to negotiate; a multiyear order costs more up front but ramps faster.',next:1},
+  {sel:'#ov .ctft',t:'How to pay',x:'<b>Build now</b> from your budget, or <b>Request it</b> in this year’s NDAA: Political Capital now, and Congress pays in December if it funds it.',next:1}]},
+ event:{n:'News that needs you',modal:1,when:()=>S.queue.length&&S.queue[0].ev&&document.querySelector('#ov .evp .pjbox'),steps:[
+  {sel:'#ov .evp .pjbox',t:'News that needs you',x:'Events stop the clock. The chart plays each choice a year ahead on a copy of your game with the same luck; the table shows each one’s average, what it costs most, and the Political Capital and strain it leaves. Then choose below.',next:1}]},
+ ndaa:{n:'The NDAA',when:()=>S.billAlert||S.w>=PLAY0+36,steps:[
+  {t:'Congress decides in December',x:'Every December Congress passes the NDAA: the plants you requested, the weapons it orders, and the reforms riding the bill. The committees have just signalled what they back.',next:1},
+  ...TUT.filter(x=>x.p==='ndaa').map(x=>({...x}))]},
+ beijing:{n:'Beijing’s next step',when:()=>cnS().warned||(S.scen==='cutoff'&&S.gOpenDone&&!S.tut),steps:[
+  {t:'Beijing is close to its next step',x:'China climbs a ladder of export controls. Each step cuts a mineral or part you depend on, and your own plants that replace Chinese supply add to the pressure.',next:1},
+  ...TUT.filter(x=>x.p==='abroad').slice(0,4).map(x=>({...x}))]},
+ strain:{n:'Civilian strain',when:()=>S.strain>=3,steps:[
+  {sel:'#top [data-k="strain"]',t:'Civilian strain',x:'Defense orders are taking supply from civilian buyers. Strain costs Political Capital every week and hurts your odds at elections; above 30 it makes the news. Waivers and emergency powers add to it. Click it for its page.',next:1}]},
+ allies:{n:'Allies',when:()=>S.w>=PLAY0+16,steps:[
+  {t:'Allies build too',x:'What Japan, South Korea and Taiwan build counts toward your requirement, and deals with them add more, often faster than a plant at home.',next:1},
+  {...NAV('imports','Allies & imports')},...TUT.filter(x=>x.p==='abroad').slice(5).map(x=>({...x}))]},
+ year:{n:'Your first year',when:()=>S.w>=PLAY0+52,steps:[
+  {t:'A year in',x:'Two more things are worth knowing now: whether what you hold would last a fight, and the slower, stronger levers in the rulebook.',next:1},
+  ...TUT.filter(x=>x.p==='stocks').slice(0,3).map(x=>({...x})),
+  {...NAV('policy','Rules & policy')},
+  {sel:'#view .pdbars',t:'The stronger levers',x:'A declared national emergency unlocks the emergency powers marked 🔒. Stand-alone bills go to the floor one at a time. And any executive action in force can be <b>written into law</b> through the NDAA, so a new administration cannot undo it.',next:1}]}};
+const GUIDE_N=Object.fromEntries(Object.entries(GUIDE).map(([k,g])=>['g_'+k,g.n]));
+for(const k in GUIDE)for(const st of GUIDE[k].steps)TUT.push({...st,p:'g_'+k});
+// what this browser has already been shown, across games
+const GMEM_K='aob.guide.v1';
+const gMem=()=>{try{return JSON.parse(localStorage.getItem(GMEM_K))||{}}catch(e){return {}}};
+function gMark(id){try{const m=gMem();m[id]=1;localStorage.setItem(GMEM_K,JSON.stringify(m))}catch(e){}}
+function gStart(id){const k='g_'+id,i0=TUT.findIndex(x=>x.p===k);if(i0<0)return;let i1=i0;while(TUT[i1+1]&&TUT[i1+1].p===k)i1++;S.tut={i:i0,end:i1,solo:1,sc:-1,g:id}}
+function guideTick(){if(!S||!S.guide||S.over||S.histMode||S.sim||S.replay||S.tut||S.w<PLAY0)return;S.gSeen=S.gSeen||{};
+  if(!S.gOpenDone){if(S.modal||S.queue.length)return;S.gOpenDone=1;S.gSeen.open=1;gMark('open');S.gActs0=(S.acts||[]).length;gStart('open');render();return}
+  if(S.speed>0)return;
+  for(const id in GUIDE){const g=GUIDE[id];if(id==='open'||S.gSeen[id])continue;
+    if(g.modal?!g.when():(S.modal||S.queue.length||S.w-(S.gLastW??-99)<4||!g.when()))continue;
+    S.gSeen[id]=1;gMark(id);if(!g.modal)S.gLastW=S.w;g.start?.();gStart(id);render();return}}
+// top-bar measures join once they have been introduced (all of them after the first year)
+function guideBody(){const on=S&&S.guide&&S.w<PLAY0+52,sn=S?.gSeen||{};for(const [k,id] of [['strain','strain'],['lev','contract'],['expo','beijing'],['req','ndaa']])document.body.classList.toggle('g-no-'+k,!!(on&&!sn[id]))}
 const TUT_PN={cmd:'Command',bn:'Supply chain',abroad:'Allies & imports',ndaa:'NDAA',policy:'Rules & policy',stocks:'Stocks & needs',src:'Sources',turn:'Your first turn'};
 const TUT_PARTS=Object.keys(TUT_PN).map(k=>({k,n:TUT_PN[k],i:TUT.findIndex(x=>x.p===k)}));
 const VIEW_PART={cmd:'cmd',bn:'bn',flow:'bn',ndaa:'ndaa',policy:'policy',rules:'policy',imports:'abroad',allies:'abroad',arsenal:'stocks',rec:'stocks',src:'src',stats:'src'};
 const PART_VIEW={bn:'flow',ndaa:'ndaa',policy:'policy',abroad:'imports',stocks:'arsenal',src:'src'};
-function tutPart(i){const p=TUT[i]?.p,k=TUT_PARTS.findIndex(x=>x.k===p);const nx=S.tut?.solo?null:TUT_PARTS[k+1]||null;return {n:TUT_PN[p]||'',next:nx?{i:nx.i,to:nx.k==='turn'?'your first turn':nx.n}:null}}
+function tutPart(i){const p=TUT[i]?.p,k=TUT_PARTS.findIndex(x=>x.k===p);const nx=S.tut?.solo?null:TUT_PARTS[k+1]||null;return {n:TUT_PN[p]||GUIDE_N[p]||'',next:nx?{i:nx.i,to:nx.k==='turn'?'your first turn':nx.n}:null}}
 // a tab’s own tour: its part alone, from the first view of the tab, without the steps that need the full tutorial
 function tourStart(v){const k=VIEW_PART[v];if(!k||k==='cmd')return;(S.toured=S.toured||{})[k]=1;const i0=TUT.findIndex(x=>x.p===k&&!x.nav);let i1=i0;while(TUT[i1+1]&&TUT[i1+1].p===k)i1++;
   S.view=PART_VIEW[k];S.modal=null;S.tut={i:i0,end:i1,solo:1,sc:-1}}
 const tutOn=()=>S&&S.tut&&!S.over;
 function tutStep(){if(!tutOn())return null;let i=S.tut.i;
   while(TUT[i]&&((TUT[i].skip&&TUT[i].skip())||(S.tut.solo&&(TUT[i].solo===0||(TUT[i].p==='bn'&&/Open an item|What holds|Ways to raise|Look before|What it would|Start it|The award/.test(TUT[i].t))))))i=++S.tut.i;
-  if(S.tut.end!=null&&i>S.tut.end)return null;const st=TUT[i];if(!st)return null;if(st.dyn)return {...st,...tutDyn()};
+  if(S.tut.end!=null&&i>S.tut.end)return null;const st0=TUT[i];if(!st0)return null;const st={...st0,t:V(st0.t),x:V(st0.x)};if(st.dyn)return {...st,...tutDyn()};
   // news or a stuck program can land on top of the turn report: explain that first
-  if(st.p==='turn'&&i>TUT.findIndex(x=>x.dyn)&&(S.queue.length&&document.querySelector('#ov .evp')||S.modal==='prog'))return {...tutDyn(),p:'turn'};return st}
+  if((st.p==='turn'||st.p==='g_open')&&i>TUT.findIndex(x=>x.dyn&&x.p===st.p)&&(S.queue.length&&document.querySelector('#ov .evp')||S.modal==='prog'))return {...tutDyn(),p:st.p};return st}
 function tutDyn(){if(S.modal==='prog')return {sel:'#ov .obs',t:'Getting past a problem',x:'Each way trades time against Political Capital, money and risk, and says what it does. <b>Choose one.</b>'};if(S.queue.length&&document.querySelector('#ov .evp'))return {sel:'#ov .evp',t:'News that needs you',x:'Events stop the clock. The chart plays each choice a year ahead on a copy of your game; the table shows each choice’s average, what it costs most, and the Political Capital and strain it leaves. <b>Choose one</b>, then Continue.'};
   if(decisionsPending()&&document.getElementById('decbar'))return {sel:'#decbar',t:'A decision is waiting',x:'A program is stuck. The turn waits until you decide; nothing is decided for you. <b>Open it and choose</b> how to get past it.'};
   return {sel:'.turnbtn',t:'The turn is playing',x:'Wait for the turn report, or press the button to continue if the turn has paused.'}}
@@ -4353,7 +4421,7 @@ const TIPS=[
  {id:'mid',when:()=>S.modal==='scenMid',sel:'#ov .paper',t:'The 2030 checkpoint',x:'Your halfway floors and the campaign test are judged today. The real targets come in January 2035.'}];
 function tipNow(){if(!S||S.histMode||!S.tips||S.tut||S.w>PLAY0+60)return null;const seen=S.tipSeen=S.tipSeen||{};return TIPS.find(t=>!seen[t.id]&&t.when())||null}
 function tourAuto(){if(!S||S.tut||!S.tourAuto||S.tips===0||S.modal||S.queue.length||S.over||S.histMode)return;const k=VIEW_PART[S.view];if(k&&k!=='cmd'&&!(S.toured||{})[k]){tourStart(S.view);render()}}
-function tutTick(){tourAuto();const tip=tutOn()?null:tipNow();
+function tutTick(){try{guideTick()}catch(e){console.error(e)}tourAuto();const tip=tutOn()?null:tipNow();
   if(!tutOn()&&!tip){const el=document.getElementById('tut');if(el)el.remove();return}
   let st;if(tip)st={...tip,tip:1};else{st=tutStep();if(!st){S.tut=null;render();tutTick();return}if(!S.tut.solo){const cp=TUT[S.tut.i]?.p;if(S.tut.cp&&S.tut.cp!==cp&&S.tut.skipP!==S.tut.cp)(S.toured=S.toured||{})[S.tut.cp]=1;S.tut.cp=cp}if(st.wait&&st.wait()){S.tut.i++;S.tut.sc=-1;if(S.tut.end!=null&&S.tut.i>S.tut.end)S.tut=null;render();return}}
   let el=document.getElementById('tut');if(!el){el=document.createElement('div');el.id='tut';el.innerHTML='<div class="tut-hole"></div><div class="tut-box"></div>';document.body.appendChild(el)}
@@ -4365,7 +4433,7 @@ function tutTick(){tourAuto();const tip=tutOn()?null:tipNow();
   if(box.dataset.k!==key){box.dataset.k=key;
     if(tip)box.innerHTML=`<div class="tut-n">First-year tip</div><b>${st.t}</b><p>${st.x}</p><div class="tut-b"><button class="tut-skip" data-a="tipsoff">Turn tips off</button><button class="tut-next" data-a="tipgot" data-t="${tip.id}">Got it</button></div>`;
     else{const pt=tutPart(S.tut.i),solo=S.tut.solo,k0=solo?TUT.findIndex(x=>x.p===st.p&&!x.nav):0,kN=solo?S.tut.end:n-1,ix=S.tut.i-k0+1,of=kN-k0+1;
-      box.innerHTML=`<div class="tut-n">${solo?'Tour':'Tutorial'} · ${pt.n} · ${Math.max(1,ix)} of ${of}</div><b>${st.t}</b><p>${st.x}</p><div class="tut-b"><button class="tut-skip" data-a="tutskip" data-tip="Leave the tutorial and play on by yourself.">End ${solo?'tour':'tutorial'}</button>${pt.next?`<button class="tut-part" data-a="tutpart" data-tip="Skip the rest of this part.">Skip to ${pt.next.to} ›</button>`:''}${st.next?`<button class="tut-next" data-a="tutnext">${st.next===1?(solo&&S.tut.i>=S.tut.end?'Done':'Next ›'):st.next}</button>`:''}</div>`}}
+      box.innerHTML=`<div class="tut-n">${S.tut.g?'Guide':solo?'Tour':'Tutorial'} · ${pt.n} · ${Math.max(1,ix)} of ${of}</div><b>${st.t}</b><p>${st.x}</p><div class="tut-b">${S.tut.g?`<button class="tut-skip" data-a="guideoff" data-tip="No more guide stops in this game. Every tab keeps its Tour button.">Guide off</button><button class="tut-skip" data-a="tutskip" data-tip="Skip this part; the guide comes back for the next one.">Skip</button>`:`<button class="tut-skip" data-a="tutskip" data-tip="Leave the tutorial and play on by yourself.">End ${solo?'tour':'tutorial'}</button>`}${pt.next?`<button class="tut-part" data-a="tutpart" data-tip="Skip the rest of this part.">Skip to ${pt.next.to} ›</button>`:''}${st.next?`<button class="tut-next" data-a="tutnext">${st.next===1?(solo&&S.tut.i>=S.tut.end?'Done':'Next ›'):st.next}</button>`:''}</div>`}}
   const vw=innerWidth,vh=innerHeight,bw=box.offsetWidth||390,bh=box.offsetHeight||170;
   if(tg){const r=tg.getBoundingClientRect(),p=6,x0=Math.max(4,r.left-p),y0=Math.max(4,r.top-p),x1=Math.min(vw-4,r.right+p),y1=Math.min(vh-4,r.bottom+p);
     el.classList.remove('tut-center');hole.style.cssText=`left:${x0}px;top:${y0}px;width:${Math.max(0,x1-x0)}px;height:${Math.max(0,y1-y0)}px`;
@@ -6475,7 +6543,7 @@ function linkify(m){const pn=S.projects.length+S.done.length+S.gone.length;if(LK
 const stTag=s=>({ok:'<span class="tag ok">ok</span>',tight:'<span class="tag tight">tight</span>',short:'<span class="tag short">short</span>',cut:'<span class="tag cut">cut</span>',idle:'<span class="tag t">idle</span>'}[s]);
 
 const PLAYABLE=['US']; // the game is the US defense industrial base; Europe appears as allies
-let TMODE='std',TSEL='taiwan',TPACE='turn',TSCR='menu',TOPT=false;
+let TMODE='std',TSEL='taiwan',TPACE='turn',TSCR='menu',TOPT=false,TGUIDE=null;
 function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k='';document.getElementById('receipt')?.remove();const tb=document.getElementById('toasts');if(tb)tb.innerHTML='';document.body.classList.remove('hasdec');const sv=savedInfo(),ago=sv?Math.max(0,Math.round((Date.now()-sv.at)/60000)):0,agoT=ago<1?'just now':ago<60?ago+' min ago':ago<1440?Math.round(ago/60)+' h ago':Math.round(ago/1440)+' days ago';
   // two screens, the way games open: a main menu, then a new-game screen that picks a scenario
   const SC=[...SCENS.filter(sc=>!sc.open).map(sc=>({id:sc.id,ic:sc.ic,n:sc.n,sub:`Against ${RIVALS[sc.rival].n}`,sc})),{id:'open',ic:'🏁',n:'The Open Race',sub:'Your own race, against either rival',sc:SCD.open}],cur=SC.find(x=>x.id===TSEL)||SC[0];
@@ -6488,7 +6556,7 @@ function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k=
       <p class="t3-pitch">China and Russia out-produce the United States in munitions, ships and missiles. You take charge of an industrial base that has withered, suppliers that move slowly, and minerals that come from the rivals you are racing. You have until 2035.</p>
       <div class="t3-menu">
        ${sv?`<button class="t3-btn prime" data-a="tcont"><b>Continue</b><span>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'} · ${fmtDate(sv.w)} · saved ${agoT}</span></button>`:''}
-${sv?`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`:''}       <button class="t3-btn ${first?'':'plain'}" data-a="ttut"><b>Play the tutorial${first?' <i class="t3-new">New here? Start with this</i>':''}</b><span>A ten-minute guided first game: every screen, your first program, your first turn.</span></button>
+${sv?`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`:''}       <button class="t3-btn ${first?'':'plain'}" data-a="ttut"><b>Play with the guide${first?' <i class="t3-new">New here? Start with this</i>':''}</b><span>Any scenario. The guide plays your first turn with you, then introduces each part of the game when it first matters.</span></button>
 ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`}
        <button class="t3-link" data-a="saveul">Load a save file</button>
       </div>
@@ -6499,14 +6567,16 @@ ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-
       <div class="t3-dk">${cur.sc.open?'What you are measured on':'What you must reach, a year'}</div><ul class="t3-tg">${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:m.kind==='suff'?` <b>65%</b> against China, <b>85%</b> against Russia`:m.kind==='lines'?` <b>${m.tgt} of 9</b>`:m.kind==='margin'?` <b>+${fmt(m.tgt*100,0)} pt</b>`:''}</li>`).join('')}</ul>
       <div class="t3-dates"><span><b>January ${dateOf(cur.sc.mid).getFullYear()}</b> halfway check</span><span><b>January ${dateOf(cur.sc.dl).getFullYear()}</b> ${cur.sc.open?'the verdict':'the real targets'}</span></div>`:'';
   const rad=(a,attr,on,n,d)=>`<button class="t3-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
-  const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'} · ${TPACE==='cont'?'continuous time':'two-month turns'}`;
+  const gOn=TGUIDE??!gMem().open;
+  const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'} · ${TPACE==='cont'?'continuous time':'two-month turns'}${gOn?' · with the guide':''}`;
   app.innerHTML=cz(`<div id="title" class="ti3 t3new"><div class="t3-top"><button class="t3-back" data-a="tscr" data-s="menu">‹ Back</button><div class="t3-brand sm"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1></div><span></span></div>
     <h2 class="t3-h2">Choose your scenario</h2>
     <div class="t3-cards">${SC.map(x=>`<button class="t3-card ${x.id===cur.id?'on':''}" data-a="tsel" data-s="${x.id}">${art(x.sc,'t3-thumb')}<span class="t3-cn"><b>${x.n}</b><em>${x.sub}</em></span></button>`).join('')}</div>
     <div class="t3-detail">${art(cur.sc,'t3-dart')}<div class="t3-dtext"><div class="t3-dh"><b>${cur.n}</b><em>${cur.sub}</em></div>${det}</div></div>
     <div class="t3-opts ${TOPT?'open':''}"><button class="t3-optl" data-a="topt"><span>Options</span> <b>${optsTxt}</b> <i>${TOPT?'Done ▴':'Change ▾'}</i></button>
      ${TOPT?`<div class="t3-optg"><div><div class="t3-ol">Rules</div>${rad('tmode','data-m="std"',TMODE==='std','Standard','A real budget and Political Capital. Every plant, order and reform competes for them.')}${rad('tmode','data-m="sbx"',TMODE==='sbx','Sandbox','No budget or Political Capital limits. See what time, permits and suppliers still hold back.')}</div>
-       <div><div class="t3-ol">Pace <span>you can change it later in the Menu</span></div>${rad('tpace','data-m="turn"',TPACE==='turn','Two-month turns','Press Next turn; time stops for every decision and nothing is decided for you.')}${rad('tpace','data-m="cont"',TPACE==='cont','Continuous','Time runs week by week at the speed you set; decisions you leave take their default.')}</div></div>`:''}</div>
+       <div><div class="t3-ol">Pace <span>you can change it later in the Menu</span></div>${rad('tpace','data-m="turn"',TPACE==='turn','Two-month turns','Press Next turn; time stops for every decision and nothing is decided for you.')}${rad('tpace','data-m="cont"',TPACE==='cont','Continuous','Time runs week by week at the speed you set; decisions you leave take their default.')}</div>
+       <div><div class="t3-ol">Guide</div>${rad('tguide','data-m="on"',gOn,'Guide me','Plays your first turn with you, then introduces each part of the game when it first matters. Parts you have seen before are skipped.')}${rad('tguide','data-m="off"',!gOn,'No guide','Everything is open from the start. Every tab still has a Tour button.')}</div></div>`:''}</div>
     <div class="t3-bar"><div><b>${cur.n}</b><span>${optsTxt}${sv?' · replaces your saved game in this browser':''}</span></div><button class="t3-begin" data-a="tnew">Begin ›</button></div></div>`)}
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
@@ -7000,7 +7070,7 @@ function mvRows(moves,big,r){return moves.map(m=>{const T=mvTitle(m),ls=Object.e
   const quick=qa?(qup.length?qup.map(c=>`<span class="mvc up" data-a="node" data-n="L:${c}">▲ ${LINES[c].n} ${fmtN(r.a.out[c])} → ${fmtN(r.b.out[c])} a year this turn</span>`).join(''):`<span class="mvc none">Acts now, not in 2035: it phases in over about three months${qc.length?`, for ${qc.slice(0,3).map(c=>lc(LINES[c].n)).join(', ')}`:''}. Watch the next turn report.</span>`):'';
   return `<div class="mvr"><div class="mvt"><b>${T.n?`<span class="linkn" data-a="node" data-n="${T.n}">${T.t}</span>`:T.t}</b>${T.sub?`<span>${T.sub}</span>`:''}</div>
     <div class="mvd">${quick}${quick&&!ls.length?'':ls.length?ls.map(([c,x])=>`<span class="mvc ${x>0?'up':'dn'}" data-a="node" data-n="L:${c}">${x>0?'▲':'▼'} ${LINES[c].n} ${x>0?'+':'−'}${fmt(Math.abs(x),1)} pt</span>`).join(''):`<span class="mvc none">${m.acts.some(a=>a.t==='oreq')?'Counts once Congress funds it and the line has capacity to fill it':'No weapon line makes more by 2035 from this alone'}${T.n&&!T.n.startsWith('L:')?`: <span class="linkn" data-a="node" data-n="${T.n}">see why on its page</span>`:''}</span>`}</div></div>`}).join('')}
-function mvPanel(){const M=S.moves||[];if(!M.length||S.tut||S.w<PLAY0)return '';
+function mvPanel(){const M=S.moves||[];if(!M.length||(S.tut&&!S.tut.g)||S.w<PLAY0)return '';
   const tot=Object.values(M.reduce((a,m)=>{for(const c in m.d)a[c]=(a[c]||0)+m.d[c];return a},{})).reduce((a,x)=>a+x,0)/Object.keys(LINES).length;
   return `<div class="mvp"><div class="brh"><b>Set in motion this turn</b><span>${M.length} move${M.length>1?'s':''}${Math.abs(tot)>=.05?` · the 2035 outlook ${tot>0?'+':'−'}${fmt(Math.abs(tot),1)} pt`:''}</span><span class="linkn brhide" data-a="why" data-k="outlook">The 2035 outlook →</span></div>${mvRows(M)}</div>`}
 // a weapon line’s gain from this turn’s moves, as a badge by its name
@@ -7069,7 +7139,7 @@ function tbMoves(){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')
       mv.push({k:'ref:'+x.r,lab:'Reform',t:rname(Rf),why:`Your programs have lost ${fmt(v,0)} program-weeks to ${LAYERS[L].n.replace(/\b([A-Z])([a-z])/g,(m,a,b)=>a.toLowerCase()+b)}. This reform makes those delays rarer and shorter${st?`; also ${st.t}`:''}.`,act:`<button class="pbtn sm" data-a="brgo" data-v="${nd?'ndaa':'policy'}" data-j="${x.r}">${nd?'On the NDAA tab':'On Rules & policy'} →</button>`})}}
   const early=S.w<PLAY0+52,qk=early?mv.filter(x=>x.quick):[],pts=mv.filter(x=>x.pt!=null&&!x.urgent&&!qk.includes(x)).sort((a,b)=>b.pt-a.pt);
   return [...mv.filter(x=>x.urgent),...qk,...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>!hid(x.k)).slice(0,3)}
-function tbHTML(paper){if(!S||UIP.nobrief||S.tut||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves();
+function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves();
   const cards=mv.map(x=>`<div class="brc"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button></div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}</div></div>`).join('');
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><span>${mv.length?`${mv.length===1?'One move':mv.length===2?'Two moves':'Three moves'} worth making now, ranked by points of sufficiency where known`:'Nothing pressing'}</span><span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide the brief</span></div>${mv.length?`<div class="brcs">${cards}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
@@ -8128,7 +8198,7 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
 // does a supply move on this item touch a line’s current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.budget=9999}}
-function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
+function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav();guideBody()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
 const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
@@ -8195,8 +8265,9 @@ if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
   if(a==='tsel'&&!S){TSEL=b.dataset.s;renderTitle();return}
   if(a==='tpace'&&!S){TPACE=b.dataset.m;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
-  if(a==='ttut'){clearSave();newGame('US');S.sandbox=false;S.modal=null;S.queue=[];chooseScen('taiwan');S.modal=null;S.view='cmd';S.tut={i:0,sc:-1};S.tourAuto=1;S.toured={};render();saveGame();return}
-  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();S.modal='sbrief';render();saveGame();return}
+  if(a==='ttut'){try{localStorage.removeItem(GMEM_K)}catch(e){}TGUIDE=true;TSCR='new';renderTitle();window.scrollTo(0,0);return}
+if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
+  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();{const g=TGUIDE??!gMem().open,m=gMem();if(g){S.guide=1;S.gSeen={...m};S.gOpenDone=!!m.open;S.tips=1;S.tipSeen={decision:1,stuck:1,marks:1,beijing:1}}}S.modal='sbrief';render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
@@ -8215,6 +8286,7 @@ if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
     case 'tour':tourStart(S.view);break;
     case 'tipgot':(S.tipSeen=S.tipSeen||{})[b.dataset.t]=1;break;
     case 'tipsoff':S.tips=0;break;
+    case 'guideoff':S.guide=0;S.tut=null;guideBody();break;
     case 'tutskip':if(S.tut){const k=VIEW_PART[S.view];if(k)(S.toured=S.toured||{})[k]=1;if(!S.tut.solo)S.tips=1}S.tut=null;break;
     case 'tutpart':if(S.tut){S.tut.skipP=TUT[S.tut.i]?.p;const nx=tutPart(S.tut.i).next;if(nx){S.tut.i=nx.i;S.tut.sc=-1;if(!S.queue.length&&S.modal!=='turn'){S.modal=null;S.pvBack=null;S.ct=null;S.navBack=[]}}}break;
     case 'turnmode':S.turnMode=S.turnMode===false;S.speed=0;S.turnEnd=null;break;
