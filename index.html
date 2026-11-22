@@ -1438,6 +1438,17 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 .tll.tlo{color:#6b5a35!important}.tll.tlf{color:#2f6a24!important}.tll.tlct{color:#a3261c!important}
 #app .sc-test{display:flex;flex-wrap:wrap;gap:4px 14px;font:12px var(--f-body);color:var(--muted);border-top:1px solid var(--edge);margin-top:10px;padding-top:8px}#app .sc-test .sck b{color:var(--cream);margin-right:3px}#app .sc-test .linkn{margin-left:auto}
 .sbhero.sbwin:not(.art){grid-template-columns:1fr;min-height:0}.sbhero.sbwin:not(.art) .sbtext{max-width:none;padding:26px 0 18px}.sbhero.sbwin .sbtitle{font-size:38px}
+/* ---- buttons on paper: gold for the main action, cream outline for the rest, dark ink for a selected toggle ---- */
+#view .btn,#ov .paper .btn{background:var(--paperCard);border:1px solid #c9b88a;color:#2b241a;border-radius:4px;font:600 12.5px var(--f-body);letter-spacing:0;text-transform:none;box-shadow:none}
+#view .btn:hover:not(:disabled),#ov .paper .btn:hover:not(:disabled){border-color:#8a6a1f;background:#fffaee}
+#view .btn.on,#ov .paper .btn.on,#view .pbtn.on,#ov .paper .pbtn.on,#view .bnopt.on{background:#3a3020;border-color:#3a3020;color:#f3e6c4}
+#view .pbtn.primary,#ov .paper .pbtn.primary{background:linear-gradient(#c9952a,#a8781c);border:1px solid #a8781c;color:#231a0c;box-shadow:none}
+#view .pbtn.primary:hover:not(:disabled),#ov .paper .pbtn.primary:hover:not(:disabled){background:linear-gradient(#d8a536,#b8862a)}
+#view .pbtn.primary *,#ov .paper .pbtn.primary *{color:#231a0c}
+#ov .paper .pbtn.lgo,#view .pbtn.lgo{background:var(--paperCard);border:1px solid #a8781c;color:#6b4a10}
+#ov .paper .pbtn.lgo:hover:not(:disabled),#view .pbtn.lgo:hover:not(:disabled){background:linear-gradient(#c9952a,#a8781c);color:#231a0c}
+#view .btn:disabled,#ov .paper .btn:disabled,#view .pbtn:disabled,#ov .paper .pbtn:disabled{opacity:.5}
+#view td .btn,#ov td .btn,#view td .pbtn,#ov td .pbtn{white-space:nowrap}
 </style>
 </head>
 <body>
