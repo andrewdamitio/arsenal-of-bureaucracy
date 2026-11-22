@@ -1399,6 +1399,32 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 #toasts .toast.good{border-left-color:var(--gold);background:var(--frame2)}
 #toasts .toast.news{background:var(--paperCard);color:#2b241a;border-color:var(--paperEdge);border-left-color:var(--gold)}#toasts .toast.news b{color:#231d14}#toasts .toast.news .dim{color:#6b5a35}
 .t3-more{margin:8px 0 0;font:12.5px var(--f-body);color:#6b5a35}
+/* ---- stage chips, tags, the starving list, the centre column ---- */
+.pipe{gap:3px;padding:8px 11px 4px}
+#app .pipe>div{font:600 11px var(--f-body);letter-spacing:0;text-transform:none;border-radius:4px;padding:3px 0;background:transparent;color:#7d7560;border:1px solid var(--edge)}
+#app .pipe>div.done{background:#24361f;color:#a9cf92;border-color:#3f5e33}
+#app .pipe>div.cur{background:rgba(201,149,42,.16);color:#f3d98a;border-color:var(--gold);font-weight:700}
+#app .pipe>div.skip{opacity:1;color:#4f4a3c;border-style:dashed;border-color:#34312a}
+#app .tag{font:600 10.5px var(--f-body);letter-spacing:0;text-transform:none;border-radius:3px;padding:1px 6px;vertical-align:1px}
+#app .tag.ss{background:#3d2a48;color:#e3cdf2}#app .tag.kh{background:transparent;color:var(--muted);border:1px solid var(--edge2)}
+#app .tag.tight{background:#6b4f17;color:#f6dc9c}#app .tag.short{background:#7a2a20;color:#ffd9cf}#app .tag.ok{background:#2f4a26;color:#cfe8bd}
+#app .chain{border-bottom:1px solid #4a4532;padding:8px 10px}
+#app .chain:last-of-type{border-bottom-color:#4a4532}
+/* the brief on Command: three cards abreast, reasons clamped */
+#app .panel .brf{margin:8px;padding:10px 12px 12px;background:var(--frame2);border:1px solid var(--edge);border-left:3px solid var(--gold);border-radius:6px;box-shadow:none}
+#app .panel .brh{flex-wrap:nowrap;align-items:baseline}#app .panel .brh>span:not(.brhide){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+#app .panel .brhide{white-space:nowrap;flex:none}
+#app .panel .brcs{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+#app .panel .brc{background:#ffffff08;border:1px solid var(--edge);border-radius:5px;padding:8px 9px 9px}
+#app .panel .brk{font:600 10.5px var(--f-body);letter-spacing:.06em}
+#app .panel .brt{font:700 14px var(--f-head);color:var(--cream)}
+#app .panel .brw{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;cursor:help}
+/* the mandate card: quieter section breaks */
+#app .sc-sep{font:600 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--edge);margin-top:10px;padding-top:8px}
+#app .sc-sub{font-size:12px;color:#a89f86}
+#app .panel .brk{flex-wrap:nowrap;min-width:0}#app .panel .brk>span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#app .panel .brk>b{flex:none;white-space:nowrap;font-size:11px;letter-spacing:0}#app .panel .brk .brx{margin-left:2px}
+#app .panel .brt{font-size:13.5px;line-height:1.25}
+#app .tag.tight,#app .tag.short,#app .tag.ok,#app .tag.t{text-transform:capitalize}
 </style>
 </head>
 <body>
@@ -1887,7 +1913,7 @@ for(const c in LINES)LINES[c].n=sentCase(LINES[c].n);
 const VAL={a2a:{pac:.4,eu:.3},fires:{pac:.04,eu:.08},shells:{pac:.0003,eu:.002},interceptors:{pac:1.2,eu:1},strike:{pac:1.5,eu:1},aircraft:{pac:10,eu:10},surface:{pac:80,eu:20},subs:{pac:250,eu:80},drones:{pac:.002,eu:.012}};
 const THEATERS={pac:'Indo-Pacific',eu:'European Theater'};
 const STAGES=['approp','contract','permit','build','qual','ramp'];
-const STAGE_N={approp:'FUND',contract:'CONTRACT',permit:'PERMIT',build:'BUILD',qual:'QUALIFY',ramp:'MARKET'};
+const STAGE_N={approp:'Fund',contract:'Contract',permit:'Permit',build:'Build',qual:'Qualify',ramp:'Market'};
 const STAGE_L={approp:'Appropriation',contract:'Contracting',permit:'Siting & Permitting',build:'Construction',qual:'Qualification',ramp:'Offtake & Market'};
 
 /* ---------- FACTIONS ---------- */
@@ -6955,7 +6981,7 @@ function tbMoves(){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')
   const pts=mv.filter(x=>x.pt!=null&&!x.urgent).sort((a,b)=>b.pt-a.pt);
   return [...mv.filter(x=>x.urgent),...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>!hid(x.k)).slice(0,3)}
 function tbHTML(paper){if(!S||UIP.nobrief||S.tut||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves();
-  const cards=mv.map(x=>`<div class="brc"><div class="brk"><span>${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button></div><div class="brt">${x.t}</div><div class="brw">${x.why}</div><div class="bra">${x.act}</div></div>`).join('');
+  const cards=mv.map(x=>`<div class="brc"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button></div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}</div></div>`).join('');
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><span>${mv.length?`${mv.length===1?'One move':mv.length===2?'Two moves':'Three moves'} worth making now, ranked by points of sufficiency where known`:'Nothing pressing'}</span><span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide the brief</span></div>${mv.length?`<div class="brcs">${cards}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
 // ---- the mandate brief: the opening page of a game. The scenario as a lede beside its map, the three dates on a timeline,
