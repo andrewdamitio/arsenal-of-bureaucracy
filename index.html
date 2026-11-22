@@ -1328,6 +1328,42 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 #app .panel .linkn,#top .linkn,.rc-rrow .linkn{color:var(--linkD)}
 #app #view .linkn,#app #view .panel .linkn,#ov .linkn{color:var(--linkP)}
 #top .res span{font:600 9px var(--f-body);letter-spacing:.04em}#top .res b{font:700 17px var(--f-body);letter-spacing:0}
+/* ---- design system, step 2: the frame ---- */
+#top{height:58px;gap:0;padding:6px 14px;background:var(--frame);border-bottom:1px solid var(--edge);box-shadow:0 2px 10px #0008;overflow:hidden}
+#top::after{display:none}
+#top .logo{flex:none;margin-right:14px;padding:0;background:none;border:0;font:700 16px var(--f-head);letter-spacing:.1em;color:var(--brass2);white-space:nowrap;cursor:pointer}
+#top .logo small{font-size:11px;font-style:italic;letter-spacing:0;color:var(--muted)}
+#top .res{flex:0 1 auto;min-width:0;height:44px;padding:3px 10px;align-items:flex-start;justify-content:center;background:none;border:0;border-radius:4px;box-shadow:none;overflow:hidden}
+#top .res:hover{background:#ffffff0c}
+#top .res b{font:700 16px var(--f-body);color:var(--cream);letter-spacing:0;line-height:1.15;white-space:nowrap}
+#top .res b i{font-style:normal;font-size:11px;font-weight:600}
+#top .res span{font:600 9.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#top .res.rwarn b{color:#e8b54e}#top .res.ralert{background:rgba(163,38,28,.28);box-shadow:inset 0 -2px 0 #d0503f}#top .res.ralert b{color:#ffd9cf}
+#top .tsep{flex:none;width:1px;height:30px;background:var(--edge);margin:0 6px}
+#top .res.rmenu{align-items:center;border:1px solid var(--edge2);margin-left:8px}
+#top .date{font:700 15px var(--f-head);color:var(--cream);background:none;border:0;padding:0 10px;white-space:nowrap}
+#top .aptog{margin-left:6px}
+/* the tab bar: sentence case, the open tab joins the paper page below */
+#views{background:var(--frame);padding:6px 10px 0;gap:4px;border-bottom:1px solid var(--edge)}
+.vbtn{font:600 13.5px var(--f-body);letter-spacing:0;text-transform:none;color:var(--muted);background:transparent;border:1px solid transparent;border-bottom:0;border-radius:5px 5px 0 0;padding:6px 14px 7px;display:inline-flex;align-items:center;gap:7px}
+.vbtn:hover:not(:disabled){color:var(--cream);background:#ffffff08}
+.vbtn.on{background:var(--paper);color:#231d14;border-color:var(--paperEdge);box-shadow:none}
+.vbtn.on .vic{color:#6b5a35}
+.vbtn.vback{padding:6px 10px}
+/* the decision banner: firm but calm */
+#decbar.dbturn{margin:8px 10px 0;padding:10px 14px;gap:14px;background:linear-gradient(#2c2218,#221a12);border:1px solid #6b4a20;border-left:4px solid var(--gold);border-radius:6px;box-shadow:0 2px 10px #0006}
+#decbar.dbturn .dbhead b{font:700 17px var(--f-head);color:var(--cream)}
+#decbar.dbturn .dbhead span{font:12.5px var(--f-body);color:var(--muted)}
+#decbar.dbturn .dbc{background:var(--paperCard);border:1px solid var(--paperEdge);border-radius:5px;box-shadow:none}
+#decbar.dbturn .dbc:hover{border-color:var(--gold)}
+#decbar.dbturn .dbt b{font:700 14.5px var(--f-head);color:#231d14}
+#decbar.dbturn .dbgo{background:linear-gradient(#c9952a,#a8781c);color:#231a0c;border-radius:4px;font:700 12.5px var(--f-body)}
+/* the timeline strip at the bottom */
+#log h2,#log .lgl,#log{font-family:var(--f-body)}
+#app #views .vbtn{font:600 13.5px var(--f-body);letter-spacing:0;text-transform:none;white-space:nowrap;flex:none}
+#app #views{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+@media (max-width:1500px){#top .logo{font-size:14px;letter-spacing:.06em;margin-right:8px}#top .res{padding:3px 8px}#app #views .vbtn{padding:6px 11px 7px;font-size:13px}}
+@media (max-width:1380px){#top .logo small{font-size:10px}#top .logo{font-size:13px;letter-spacing:.04em}#top .res b{font-size:15px}#app #views .vbtn{padding:6px 9px 7px}}
 </style>
 </head>
 <body>
@@ -7198,19 +7234,19 @@ function renderGame(){
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
-    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Click for the calculation.`,'why','data-k="suff"')}
-    ${res(S.sandbox?'∞':`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Political capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Click for its page.`,'why','data-k="pc"')}
-    ${res(S.sandbox?'∞':`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,S.sandbox?'Budget · sandbox':`Budget · +${money(nf.amt)} ${MON[dateOf(nf.w).getMonth()]} ${dateOf(nf.w).getFullYear()}`,`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.<br>Click for its page.`,'why','data-k="budget"')}
-    ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,`FY${pkgFY()%100} request`,`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br>Click for its page.<br><br>${OFF_TIP}`,'why','data-k="req"',over.length?'rwarn':'')})()}
-    ${res(dpn,dpn?`${dpn===1?'Decision':'Decisions'} · next ⏱ ${nextDue()??DECIDE_WK} wk`:'Decisions waiting',dpn?`<b>Waiting on you</b><br>${TURN()?'The turn waits for each one; nothing is decided for you.':`Each takes its default after ${DECIDE_WK} weeks.`} Click for the list.`:'Nothing is waiting on you.','why','data-k="dec"',dpn?'ralert':'rquiet')}
-    ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short',`<b>Weapon lines short of parts: ${shortL} of ${S.order.length}</b><br>The game tracks ${S.order.length} weapon lines. One counts here when a part or material it needs is short, so it makes less than its own factories could.${shortL?'<br>'+S.order.filter(c=>R.out[c].bott).map(c=>`• ${LINES[c].n}: short of ${lc(ND[R.out[c].chain.at(-1)||R.out[c].bott]?.n||'parts')}`).join('<br>'):''}<br>Click for its page.`,'why','data-k="short"',shortL?'rwarn':'')}
-    ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'PRC exposure','<b>PRC and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Click for its page.','why','data-k="expo"')}
-    ${S.sandbox?'':res(`${Math.round(S.strain)}`,'Civilian strain',`<b>Civilian strain: ${Math.round(S.strain)} of 100</b><br>How hard the defense push squeezes civilian buyers. Above 30 it costs elections and starts events.<br>Click for its page.`,'why','data-k="strain"',S.strain>=50?'ralert':S.strain>=30?'rwarn':'')}
-    ${S.sandbox?'':res(`${Math.round(S.lev)}`,'Prime leverage',`<b>Prime contractors’ leverage: ${Math.round(S.lev)} of 100</b><br>How much bargaining power the big contractors hold. Above 50 their work costs more and they fight reforms that cut it; above 60 they push back more often.<br>Heading toward ${Math.round(levTarget().v)}, set by who holds the base.<br>Click for its page.`,'why','data-k="lev"',S.lev>=60?'rwarn':'')}
+    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Click for the calculation.`,'why','data-k="suff"')}<i class="tsep"></i>
+    ${res(S.sandbox?'∞':`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Click for its page.`,'why','data-k="pc"')}
+    ${res(S.sandbox?'∞':`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,'Budget',`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.<br>Click for its page.`,'why','data-k="budget"')}
+    ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,'Request',`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br>Click for its page.<br><br>${OFF_TIP}`,'why','data-k="req"',over.length?'rwarn':'')})()}<i class="tsep"></i>
+    ${res(dpn,TURN()||!dpn?'Decisions':`Decisions · ⏱ ${nextDue()??DECIDE_WK} wk`,dpn?`<b>Waiting on you</b><br>${TURN()?'The turn waits for each one; nothing is decided for you.':`Each takes its default after ${DECIDE_WK} weeks.`} Click for the list.`:'Nothing is waiting on you.','why','data-k="dec"',dpn?'ralert':'rquiet')}
+    ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short',`<b>Weapon lines short of parts: ${shortL} of ${S.order.length}</b><br>The game tracks ${S.order.length} weapon lines. One counts here when a part or material it needs is short, so it makes less than its own factories could.${shortL?'<br>'+S.order.filter(c=>R.out[c].bott).map(c=>`• ${LINES[c].n}: short of ${lc(ND[R.out[c].chain.at(-1)||R.out[c].bott]?.n||'parts')}`).join('<br>'):''}<br>Click for its page.`,'why','data-k="short"',shortL?'rwarn':'')}<i class="tsep"></i>
+    ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'Exposure','<b>PRC exposure: Chinese and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Click for its page.','why','data-k="expo"')}
+    ${S.sandbox?'':res(`${Math.round(S.strain)}`,'Strain',`<b>Civilian strain: ${Math.round(S.strain)} of 100</b><br>How hard the defense push squeezes civilian buyers. Above 30 it costs elections and starts events.<br>Click for its page.`,'why','data-k="strain"',S.strain>=50?'ralert':S.strain>=30?'rwarn':'')}
+    ${S.sandbox?'':res(`${Math.round(S.lev)}`,'Leverage',`<b>Prime contractors’ leverage: ${Math.round(S.lev)} of 100</b><br>How much bargaining power the big contractors hold. Above 50 their work costs more and they fight reforms that cut it; above 60 they push back more often.<br>Heading toward ${Math.round(levTarget().v)}, set by who holds the base.<br>Click for its page.`,'why','data-k="lev"',S.lev>=60?'rwarn':'')}
     <div class="spacer"></div>
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
-    <button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>Event decisions always stop the clock. This covers program problems (permits, protests, audits).<br>On: the clock stops when one appears.<br>Off: they wait ${DECIDE_WK} weeks in the decisions bar, then the default is taken.`)}"><i></i>Pause on problems</button>
+    ${TURN()?'':`<button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>Event decisions always stop the clock. This covers program problems (permits, protests, audits).<br>On: the clock stops when one appears.<br>Off: they wait ${DECIDE_WK} weeks in the decisions bar, then the default is taken.`)}"><i></i>Pause on problems</button>`}
     ${res('☰ Menu',S._svAt?'Saved':'Not saved',`<b>Menu</b><br>Save, load, main menu or a new game.<br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}`,'savem','',S._svErr?'rwarn':'rquiet rmenu')}
     <div class="date">${fmtDate(S.w)}</div>${TURN()?turnCtl():[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
