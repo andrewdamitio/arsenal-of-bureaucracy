@@ -6604,7 +6604,7 @@ function scenTest(sc){const T=sc.test;
     return {d:JSON.parse(JSON.stringify(cutDet())),v:kept,ok:kept>=.8,txt:`If China switched everything off, you would build ${pct(kept)} of your January 2027 output (pass: 80%).`,worst:cs.filter(c=>now[c].yr>1e-9).sort((a,b)=>cut[a].yr/now[a].yr-cut[b].yr/now[b].yr).slice(0,2).map(c=>`${LINES[c].n} ${pct(cut[c].yr/now[c].yr)}`).join(', ')}}
   scenUpdate();const tr=trueScore(T.t),es=ratio(T.t);
   return {d:{...testDet(T.t,S._sc[T.t].true),est:es},v:tr,ok:tr>=CRISIS_WIN,txt:`Your forces would cover ${pct(tr)} of what a ${T.n} needs (pass: ${pct(CRISIS_WIN)}). Your own estimate was ${pct(es)}: intelligence is never exact.`}}
-function setTheater(t){if(S.fac!=='US')return;S.theaters=[t];scenUpdate();PJC.clear()}
+function setTheater(t){if(S.fac!=='US')return;S.theaters=[t];scenUpdate();PJC.clear();S.trk=null;S.trk0=null;S._trkT=null} // a new yardstick is not progress: the outlooks start fresh
 function chooseScen(id){const sc=SCD[id];if(!sc||S.scen||S.w!==PLAY0)return;S.scen=id;if(S.modal==='scenPick')S.modal=null;S.rival=sc.rival;setTheater(sc.rival);S.resH=[];sc.setup?.();log(`🎯 Scenario: ${sc.n}. Halfway floors judged ${fmtDate(sc.mid)}; real targets ${fmtDate(sc.dl)}.`,'ev')}
 function mandWhy(m){const R=S._R||production(false);
   if(m.c){const o=R.out[m.c],lim=limOf(o,m.c);return lim.startsWith('L:')?'Line capacity: more lines needed':'Short of '+o.chain.map(i=>ND[i].n).join(' ← ')}
@@ -8009,7 +8009,7 @@ if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
     case 'bngo':S.view='bn';S._scrollTo='#bn-'+b.dataset.n;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rbgo':S.view='policy';(S.domOpen=S.domOpen||{permit:1})[b.dataset.r&&RD2[b.dataset.r]?RD2[b.dataset.r].dom:b.dataset.d]=1;S._vdirty=true;S._scrollTo=b.dataset.r?'#rl-'+b.dataset.r:'#rb-'+b.dataset.d;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rtab':if(b.dataset.t==='agenda'){S.view='ndaa';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break}S.rtab=b.dataset.t;S._rtTop=true;break;
-    case 'rival':if((!S.scen||(SCD[S.scen]?.open&&S.w===PLAY0))&&S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];log(`You now measure yourself against ${RV().n}.`)}break;
+    case 'rival':if((!S.scen||(SCD[S.scen]?.open&&S.w===PLAY0))&&S.rival!==b.dataset.t){S.rival=b.dataset.t;setTheater(S.rival);S.resH=[];document.getElementById('toasts')?.replaceChildren();log(`You now measure yourself against ${RV().n}.`)}break;
     case 'remedy':if(S.modal==='prog')S.modal=null;{const R=RD[b.dataset.r];S.view=CD[b.dataset.r]||(R&&vehOf(R)!=='ndaa')?'policy':'ndaa';if(S.view==='policy'){const dm=domOf(b.dataset.r);if(dm)(S.domOpen=S.domOpen||{permit:1})[dm]=1}S.modal=null;S.navBack=[]}S._jump=b.dataset.r;flash('ag:'+b.dataset.r,'good');break;
     case 'node':openDossier(b.dataset.n);break;
     case 'navback':S.sel=S.navBack.pop()||S.sel;break;
