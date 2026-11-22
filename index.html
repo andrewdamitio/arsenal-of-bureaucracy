@@ -1498,6 +1498,10 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
  .t3-bar{flex-direction:row;justify-content:space-between;gap:10px}.t3-bar>div span{display:none}
 }
 @media (max-width:760px){#toasts{position:fixed!important;transform:none!important;align-items:stretch}#toasts .toast{max-width:none!important;width:auto!important}#top .res[data-k="expo"]{display:none}}
+#top .undob{margin-right:4px;white-space:nowrap}
+.mvlead{border-left:3px solid var(--gold)!important}.mvlead .trh b{font-size:17px}.mvnone .trh{border-bottom:0;margin-bottom:0}
+@media (max-width:760px){body.tiptouch #tip{max-width:calc(100vw - 24px)!important}[data-tip]:not([data-a]){-webkit-tap-highlight-color:rgba(201,149,42,.25)}}
+@media (hover:none){.xpi{min-width:28px;min-height:28px}}
 </style>
 </head>
 <body>
@@ -4425,10 +4429,10 @@ const siteName=k=>k.startsWith('L:')?`Existing ${lc(LINES[k.slice(2)].n)} lines`
 function sitesInit(){S.sites={};const keys=[...ORDER.filter(id=>S.nodes[id].base>.02*S.nodes[id].scale),...Object.keys(LINES).filter(l=>S.lines[l].base>0).map(l=>'L:'+l)];
   for(const k of keys){const tg=siteTags(k),ops=PERMITS.filter(x=>(x.f||'US')===S.fac&&x.ph==='o'&&(x.all||x.tags.some(t=>tg.includes(t))));
     S.sites[k]={ops:ops.map(x=>({id:x.id,next:S.w+1+Math.floor(rand('r42')*x.yrs*52),last:null})),contest:null}}}
-function sitesTick(){if(S.histMode)return;if(!S.sites)sitesInit();const busy=S.queue.some(q=>q.ev==='siteRenew')||(S.inbox||[]).some(x=>x.ev==='siteRenew');
+function sitesTick(){if(S.histMode)return;if(!S.sites)sitesInit();const busy=S.queue.some(q=>q.ev==='siteRenew')||(S.inbox||[]).some(x=>x.ev==='siteRenew')||S.w-(S.renW??-999)<17;
   for(const k in S.sites){const st=S.sites[k],kn=S.know[k.startsWith('L:')?k.slice(2):k]??40;if(st.contest&&st.contest.until<=S.w)st.contest=null;
     for(const o of st.ops)if(S.w>=o.next){const x=PMD[o.id];o.next=S.w+x.yrs*52;o.last=S.w;
-      if(!busy&&!st.contest&&rand('r43')<renewRisk(x,kn)*SITE_F){st.contest={permit:x.id,until:S.w+DECIDE_WK+1};S._site={k,permit:x.id};S.ledger.PERMIT.n++;queueEvent('siteRenew');return}}}}
+      if(!busy&&!st.contest&&rand('r43')<renewRisk(x,kn)*SITE_F){st.contest={permit:x.id,until:S.w+DECIDE_WK+1};S._site={k,permit:x.id};S.renW=S.w;S.ledger.PERMIT.n++;queueEvent('siteRenew');return}}}}
 function siteHit(m,wk){const {k,permit}=S._site||{};if(!k)return;const st=S.sites?.[k];if(st)st.contest={permit,until:S.w+wk};
   if(k.startsWith('L:'))tmod('line',k.slice(2),m,wk,'Permit renewal contested');else tmod('cap',k,m,wk,'Permit renewal contested');S.ledger.PERMIT.wk+=wk}
 function siteItems(){const out=[];for(const k in S.sites||{}){const st=S.sites[k],kn=S.know[k.startsWith('L:')?k.slice(2):k]??40;
@@ -4601,7 +4605,7 @@ function homeTick(lastOut){
   const nPrio=S.divIds||[]; // items where defense orders are taking civilian supply
   {const a=S.strain;S.strain=clamp(S.strain+MOB[S.mob].strain+(S.divLoad||0)*DIV_STRAIN-.35,0,100);S._sflow=S.strain-a}
   {const a=S.pc;S.pc=Math.min(250,Math.max(0,S.pc+pcRate()));S._pcInc=S.pc-a}
-  if(nPrio.length&&rand('r51')<.006*nPrio.length*(.5+S.strain/50)&&!S.queue.some(q=>q.ev==='diversion')){S._div=nPrio[Math.floor(rand('r52')*nPrio.length)];queueEvent('diversion')}
+  {const fresh=nPrio.filter(id=>S.w-(S.divLast?.[id]??-999)>=78);if(fresh.length&&S.w-(S.divW??-999)>=26&&rand('r51')<.006*nPrio.length*(.5+S.strain/50)&&!S.queue.some(q=>q.ev==='diversion')){S._div=fresh[Math.floor(rand('r52')*fresh.length)];(S.divLast=S.divLast||{})[S._div]=S.w;S.divW=S.w;queueEvent('diversion')}}
   S.strainUp=S.strainUp||{};for(const [e,hi,lo] of STRAIN_EV){if(S.strain>=hi&&!S.strainUp[e]){S.strainUp[e]=1;if(e==='strainNews'||e==='strainHearing')S._sdiv=topDiv();queueEvent(e)}else if(S.strain<lo)S.strainUp[e]=0}
   icTick();
   if(S.ne&&(S.w-S.ne.since)%52===0&&S.w>S.ne.since){if(S.pc>=NE_RENEW){S.pc-=NE_RENEW;log(`🚨 National emergency continued for another year (${NE_RENEW} PC).`)}else endNE('lapses: no political capital to continue it')}
@@ -4689,11 +4693,11 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
   const aheadH=ahead.length?ahead.slice(0,8).map(x=>`<div class="tra">${x}</div>`).join(''):'<p class="trnone">Nothing scheduled. A good time to start programs or push a reform.</p>';
   return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('turn',22)}</span>${turnLabel(w0)}: turn report</div><div class="bd">
    <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,1)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines short',`${b.short}/${S.order.length}`,dl(a.short,b.short,v=>String(Math.round(v)),-1))}${tile('Budget',money(S.budget),dl(a.budget,b.budget,v=>money(v)))}${tile('Political Capital',Math.floor(S.pc),dl(a.pc,b.pc,v=>fmt(v,0)))}</div>
+   ${r.moves?.length?`<div class="trcol mvrep mvlead"><div class="trh"><b>What your moves set in motion</b><span>what each did this turn, and what it does by 2035</span></div>${mvRows(r.moves,0,r)}</div>`:`<div class="trcol mvrep mvlead mvnone"><div class="trh"><b>You made no moves last turn</b><span>the brief below has three worth making</span></div></div>`}
    <div class="trgrid">
     <div class="trcol"><div class="trh"><b>What changed</b><span>${turnLabel(w0)}</span></div><div class="trsub">Output per year</div>${outH}${progH}</div>
     <div class="trcol"><div class="trh"><b>Coming next</b><span>${turnLabel(n0)}</span></div>${aheadH}</div>
    </div>
-   ${r.moves?.length?`<div class="trcol mvrep"><div class="trh"><b>What you set in motion last turn</b><span>and what it does by 2035</span></div>${mvRows(r.moves)}</div>`:''}
    ${tbHTML(1)}
    ${rollsHTML(r.rolls||[],'🎲 Your odds this turn')}
    <div class="trgrid">
@@ -6227,7 +6231,7 @@ function srcBody(){
 const tipEl=document.createElement('div');tipEl.id='tip';document.body.appendChild(tipEl);
 let lastPt=null,hovSvg=null;
 function clearHov(){if(hovSvg){const g=hovSvg.querySelector('.hov');if(g)g.innerHTML=''}hovSvg=null;tipEl.style.display='none'}
-function showTip(html,x,y){tipEl.innerHTML=html;tipEl.style.display='block';const r=tipEl.getBoundingClientRect();let L=x+16,T=y+14;if(L+r.width>innerWidth-6)L=x-r.width-16;if(T+r.height>innerHeight-6)T=Math.max(4,y-r.height-12);tipEl.style.left=L+'px';tipEl.style.top=T+'px'}
+function showTip(html,x,y){tipEl.innerHTML=html;tipEl.style.display='block';const r=tipEl.getBoundingClientRect();let L=x+16,T=y+14;if(L+r.width>innerWidth-6)L=x-r.width-16;if(T+r.height>innerHeight-6)T=Math.max(4,y-r.height-12);L=Math.max(6,Math.min(L,innerWidth-r.width-6));tipEl.style.left=L+'px';tipEl.style.top=T+'px'}
 function hoverAt(x,y){
   const el=document.elementFromPoint(x,y);if(!el||!el.closest){clearHov();return}
   {const cs=el.closest('svg.cch'),cd=cs&&CC[cs.dataset.c];if(cd){ccHover(cs,cd,x,y);return}}
@@ -6247,8 +6251,12 @@ function hoverAt(x,y){
   const t=el.closest('[data-tip]');if(t){showTip(t.dataset.tip,x,y);return}
   tipEl.style.display='none';
 }
-document.addEventListener('pointermove',e=>{lastPt=[e.clientX,e.clientY];hoverAt(e.clientX,e.clientY)});
-document.addEventListener('pointerleave',()=>{lastPt=null;clearHov()});
+document.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;lastPt=[e.clientX,e.clientY];hoverAt(e.clientX,e.clientY)});
+document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const el=e.target;if(el.closest?.('#tip'))return;
+  const chart=el.closest?.('svg.lc,svg.cch'),act=el.closest?.('[data-a]'),tip=el.closest?.('[data-tip]');
+  if(chart||(tip&&(!act||act.contains(tip)&&tip!==act))){lastPt=[e.clientX,e.clientY];hoverAt(e.clientX,e.clientY);document.body.classList.add('tiptouch')}else{lastPt=null;tipEl.style.display='none';clearHov();document.body.classList.remove('tiptouch')}},true);
+addEventListener('scroll',()=>{if(document.body.classList.contains('tiptouch')){lastPt=null;tipEl.style.display='none';clearHov()}},true);
+document.addEventListener('pointerleave',e=>{if(e.pointerType==='touch')return;lastPt=null;clearHov()});
 function rehover(){if(lastPt)hoverAt(lastPt[0],lastPt[1]);else clearHov()}
 
 /* =====================================================================
@@ -6986,9 +6994,12 @@ function mvTitle(m){const a=m.acts.find(x=>x.t==='prj')||m.acts[0];if(!a)return 
   if(a.t==='nshift'&&ND[a.id])return {t:`Supplier shifts: ${ND[a.id].n}`,sub:'+15% of US capacity within ~3 months',n:a.id};
   if(a.t==='rule'&&RD2?.[a.id])return {t:RD2[a.id].n,sub:a.on?'executive action taken':'executive action ended'};
   return {t:m.why}}
-function mvRows(moves,big){return moves.map(m=>{const T=mvTitle(m),ls=Object.entries(m.d).filter(([,x])=>Math.abs(x)>=.05).sort((a,b)=>b[1]-a[1]);
+function mvRows(moves,big,r){return moves.map(m=>{const T=mvTitle(m),ls=Object.entries(m.d).filter(([,x])=>Math.abs(x)>=.05).sort((a,b)=>b[1]-a[1]);
+  // quick moves act now, not in 2035: name the lines they feed, and in a turn report what those lines gained
+  const qa=m.acts.find(a=>(a.t==='nshift'||a.t==='spot')&&ND[a.id]),qc=qa?endItemsOf(qa.id):[],qup=r&&qa?qc.filter(c=>r.b.out?.[c]>(r.a.out?.[c]||0)*1.005):[];
+  const quick=qa?(qup.length?qup.map(c=>`<span class="mvc up" data-a="node" data-n="L:${c}">▲ ${LINES[c].n} ${fmtN(r.a.out[c])} → ${fmtN(r.b.out[c])} a year this turn</span>`).join(''):`<span class="mvc none">Acts now, not in 2035: it phases in over about three months${qc.length?`, for ${qc.slice(0,3).map(c=>lc(LINES[c].n)).join(', ')}`:''}. Watch the next turn report.</span>`):'';
   return `<div class="mvr"><div class="mvt"><b>${T.n?`<span class="linkn" data-a="node" data-n="${T.n}">${T.t}</span>`:T.t}</b>${T.sub?`<span>${T.sub}</span>`:''}</div>
-    <div class="mvd">${ls.length?ls.map(([c,x])=>`<span class="mvc ${x>0?'up':'dn'}" data-a="node" data-n="L:${c}">${x>0?'▲':'▼'} ${LINES[c].n} ${x>0?'+':'−'}${fmt(Math.abs(x),1)} pt</span>`).join(''):`<span class="mvc none">${m.acts.some(a=>a.t==='oreq')?'Counts once Congress funds it and the line has capacity to fill it':'No weapon line makes more by 2035 from this alone'}${T.n&&!T.n.startsWith('L:')?`: <span class="linkn" data-a="node" data-n="${T.n}">see why on its page</span>`:''}</span>`}</div></div>`}).join('')}
+    <div class="mvd">${quick}${quick&&!ls.length?'':ls.length?ls.map(([c,x])=>`<span class="mvc ${x>0?'up':'dn'}" data-a="node" data-n="L:${c}">${x>0?'▲':'▼'} ${LINES[c].n} ${x>0?'+':'−'}${fmt(Math.abs(x),1)} pt</span>`).join(''):`<span class="mvc none">${m.acts.some(a=>a.t==='oreq')?'Counts once Congress funds it and the line has capacity to fill it':'No weapon line makes more by 2035 from this alone'}${T.n&&!T.n.startsWith('L:')?`: <span class="linkn" data-a="node" data-n="${T.n}">see why on its page</span>`:''}</span>`}</div></div>`}).join('')}
 function mvPanel(){const M=S.moves||[];if(!M.length||S.tut||S.w<PLAY0)return '';
   const tot=Object.values(M.reduce((a,m)=>{for(const c in m.d)a[c]=(a[c]||0)+m.d[c];return a},{})).reduce((a,x)=>a+x,0)/Object.keys(LINES).length;
   return `<div class="mvp"><div class="brh"><b>Set in motion this turn</b><span>${M.length} move${M.length>1?'s':''}${Math.abs(tot)>=.05?` · the 2035 outlook ${tot>0?'+':'−'}${fmt(Math.abs(tot),1)} pt`:''}</span><span class="linkn brhide" data-a="why" data-k="outlook">The 2035 outlook →</span></div>${mvRows(M)}</div>`}
@@ -7035,6 +7046,9 @@ function tbMoves(){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')
   for(const g of starveGroups(R)){const id=g.id;if(!ND[id]||!R.P[id]||g.pt<.1)continue;const cov=bnCover({id,short:R.P[id].need-R.P[id].avail0},R.P);if(cov.n&&cov.share<=.05)continue;
     const d=tbPick(leversFor(id));if(!d)continue;
     mv.push({k:'fix:'+id,pt:g.pt,ptl:'up to',lab:'Fix a bottleneck',t:ND[id].n,why:`Built ${g.ls.length>1?'lines':'line'} for ${g.ls.map(x=>lc(LINES[x.c].n)).join(', ')} ${g.ls.length>1?'stand':'stands'} idle for want of it.${cov.n?` What is under way closes ${pct(1-cov.share)} of the gap${cov.lastW?` by about ${dateOf(cov.lastW).getFullYear()}`:''}.`:''} Best value: <b>${d.n}</b> ${vfmChip(d)}`,act:launchBtn(d)});break}
+  // a quick win: extra shifts at the suppliers of the part costing most output, felt within about three months
+  {const g=starveGroups(R).find(g=>ND[g.id]&&S.nodes[g.id]?.base>0&&!nshiftOn(g.id)&&g.pt>=.1);if(g){const P=R.P[g.id],add=nshiftAdd(g.id,P),gap=Math.max(1e-9,1-Math.min(1,P.cover)),pt=g.pt*Math.min(1,add/gap);
+    if(add>.005)mv.push({k:'quick:'+g.id,quick:1,pt,ptl:'up to',lab:'Quick win',t:`Extra shifts: ${ND[g.id].n}`,why:`Overtime and another shift at the US plants that already make it: +${pct(add)} of demand within about three months, ${add>=gap?'enough to close the gap':'about '+pct(Math.min(1,add/gap))+' of the gap'}, for ${money(NSHIFT_C)} a year. A new plant takes years; this shows in the next turn reports. Crews wear: breakdowns grow likelier.`,act:`<button class="pbtn sm primary" data-a="nshift" data-n="${g.id}" ${S.budget>=NSHIFT_C?'':'disabled'}>Start shifts · ${money(NSHIFT_C)}/yr</button>`})}}
   // the weapon line held back by its own capacity that a new plant would lift most, with the best-value plant you can start
   {let best=null;
     for(const c of cs){const o=R.out[c];if(o.bott||o.ordLim||suffLine(c,o.yr)>=.999)continue;
@@ -7053,8 +7067,8 @@ function tbMoves(){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')
     const top=Object.entries(td.byCause).sort((a,b)=>b[1]-a[1]).find(([L,v])=>v>=26&&REF_LAYER.some(x=>x.L.includes(L)&&open(x)));
     if(top){const [L,v]=top,x=REF_LAYER.find(x=>x.L.includes(L)&&open(x)),Rf=RD[x.r],nd=vehOf(Rf)==='ndaa',st=REF_STAGE.find(q=>q.r===x.r);
       mv.push({k:'ref:'+x.r,lab:'Reform',t:rname(Rf),why:`Your programs have lost ${fmt(v,0)} program-weeks to ${LAYERS[L].n.replace(/\b([A-Z])([a-z])/g,(m,a,b)=>a.toLowerCase()+b)}. This reform makes those delays rarer and shorter${st?`; also ${st.t}`:''}.`,act:`<button class="pbtn sm" data-a="brgo" data-v="${nd?'ndaa':'policy'}" data-j="${x.r}">${nd?'On the NDAA tab':'On Rules & policy'} →</button>`})}}
-  const pts=mv.filter(x=>x.pt!=null&&!x.urgent).sort((a,b)=>b.pt-a.pt);
-  return [...mv.filter(x=>x.urgent),...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>!hid(x.k)).slice(0,3)}
+  const early=S.w<PLAY0+52,qk=early?mv.filter(x=>x.quick):[],pts=mv.filter(x=>x.pt!=null&&!x.urgent&&!qk.includes(x)).sort((a,b)=>b.pt-a.pt);
+  return [...mv.filter(x=>x.urgent),...qk,...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>!hid(x.k)).slice(0,3)}
 function tbHTML(paper){if(!S||UIP.nobrief||S.tut||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves();
   const cards=mv.map(x=>`<div class="brc"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button></div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}</div></div>`).join('');
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><span>${mv.length?`${mv.length===1?'One move':mv.length===2?'Two moves':'Three moves'} worth making now, ranked by points of sufficiency where known`:'Nothing pressing'}</span><span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide the brief</span></div>${mv.length?`<div class="brcs">${cards}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
@@ -7419,7 +7433,7 @@ function renderGame(){
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
     ${TURN()||S.replay?'':`<button class="btn sm aptog ${S.autoPause?'on':''}" data-a="ap" data-tip="${tipQ(`<b>Pause on problems: ${S.autoPause?'on':'off'}</b><br>Event decisions always stop the clock. This covers program problems (permits, protests, audits).<br>On: the clock stops when one appears.<br>Off: they wait ${DECIDE_WK} weeks in the decisions bar, then the default is taken.`)}"><i></i>Pause on problems</button>`}
     ${res('☰ Menu',S._svAt?'Saved':'Not saved',`<b>Menu</b><br>Save, load, main menu or a new game.<br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}`,'savem','',S._svErr?'rwarn':'rquiet rmenu')}
-    <div class="date">${fmtDate(S.w)}</div>${S.replay?'':TURN()?turnCtl():[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
+    ${undoOK()?`<button class="btn sm undob" data-a="undo" data-tip="${tipQ('<b>Undo</b><br>'+UNDO.at(-1).lab.slice(0,160)+'<br>Works until the clock moves on. Ctrl+Z too.')}">↶ Undo</button>`:''}<div class="date">${fmtDate(S.w)}</div>${S.replay?'':TURN()?turnCtl():[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
   let sup=`<h2>Supply chain</h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
@@ -8154,15 +8168,25 @@ window.addEventListener('pagehide',()=>saveGame());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame()});
 let saveT=null;const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{saveGame()},1500)};
 const closable=()=>S&&S.modal&&S.modal!=='end'&&!S.queue.length;
+// undo: every move made while the clock is stopped can be taken back, until time moves on
+const UNDO=[],UNDO_SKIP=new Set(['view','rtab','tab','node','prog','why','close','goback','home','domtog','domall','pmf','rbtab','xpi','savem','sbrief','undo','cite','tip','bnmore','aotog','brtog','ovjump','pmgo','rbgo','remedy','tscr','tsel','tmode','tpace','topt','menu','rcptx','pstage','rlnext','find','qj','cat','ct','pv','turn','tpause','speed','rlplay','skip','ap']);
+const undoFp=()=>JSON.stringify([Math.round(S.pc*100),Math.round(S.budget*1e4),(S.acts||[]).length,S.projects.length,S.projects.map(p=>p.obs.length+(p.obs[0]?.id||'')),S.queue.length,(S.inbox||[]).length,S.refReq?.length,S.codReq?.length,S.rules,Object.keys(S.carve||{}),S.order,S.ord,S.nshift,S.rproc,S.bill?.id,S.rival,(S.log||[]).length]);
+function undoTake(a){if(!S||S.replay||S.over||S.sim||S.w<PLAY0||S.speed>0||UNDO_SKIP.has(a))return null;return {txt:saveData(),fp:undoFp(),w:S.w,n:(S.log||[]).length}}
+function undoAfter(pre){if(!pre||!S||S.w!==pre.w||undoFp()===pre.fp)return;while(UNDO.length&&UNDO[0].w!==S.w)UNDO.shift();const k=(S.log||[]).length-pre.n,lab=k>0?mclean(S.log[0].m):'your last move';UNDO.push({txt:pre.txt,w:S.w,lab});if(UNDO.length>30)UNDO.shift();try{renderGame()}catch(e){}}
+const undoOK=()=>S&&!S.replay&&UNDO.length&&UNDO.at(-1).w===S.w&&S.speed===0;
+function undoDo(){if(!undoOK())return;const u=UNDO.pop(),d=JSON.parse(u.txt);S=d.S;uidN=Math.max(uidN,d.uidN||1);S.speed=0;S.queue=S.queue||[];S.modal=null;PJC.clear();viewKey='';S._vdirty=true;scenUpdate();S._R=production(false);
+  S._rcpt=null;render();toast(`<b>Undone</b><br><span class="dim">${u.lab.slice(0,140)}</span>`,'good');saveGame()}
 // phones: a bottom bar that always leads back, to the page before or to Command
 function mnav(){let el=document.getElementById('mnav');if(!S||S.over&&S.modal==='end'){if(el)el.remove();return}if(!el){el=document.createElement('div');el.id='mnav';document.body.appendChild(el)}
   const m=closable(),must=S.modal&&!m,home=S.view==='cmd'&&!S.modal;
-  const h=`<button data-a="${m?'close':'goback'}" ${m||S.navH?.length?'':'disabled'}>${m?'✕ Close':'‹ Back'}</button><button data-a="home" ${home||must?'disabled':''}>⌂ Command</button>`;if(el.innerHTML!==h)el.innerHTML=h}
+  const h=`<button data-a="${m?'close':'goback'}" ${m||S.navH?.length?'':'disabled'}>${m?'✕ Close':'‹ Back'}</button><button data-a="home" ${home||must?'disabled':''}>⌂ Command</button>${undoOK()?'<button data-a="undo">↶ Undo</button>':''}`;if(el.innerHTML!==h)el.innerHTML=h}
 document.addEventListener('pointerdown',e=>{
   if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
+  if(a==='undo'){undoDo();return}
+  {const pre=undoTake(a);if(pre)setTimeout(()=>undoAfter(pre),0)}
   if(S&&!b._now&&(a==='view'||a==='rtab')&&b.matches('#views .vbtn,.vsubbar>button,.rtabs .vbtn')&&!b.classList.contains('on')){for(const x of b.parentElement.children)x.classList.remove('on');b.classList.add('on');document.body.style.cursor='progress';requestAnimationFrame(()=>setTimeout(()=>{b._now=1;b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}));b._now=0;document.body.style.cursor=''},0));return}
   if(a==='start'){newGame(b.dataset.f);render();return}
   if(a==='tmode'&&!S){TMODE=b.dataset.m;renderTitle();return}
@@ -8339,6 +8363,7 @@ document.addEventListener('keydown',e=>{
   if(!S||S.over||QJ||e.target.tagName==='INPUT')return;
   if((e.key==='k'&&(e.ctrlKey||e.metaKey))||e.key==='/'){e.preventDefault();qjOpen();return}
   if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();navBackG();render();return}
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'&&undoOK()){e.preventDefault();undoDo();return}
   if(e.code==='Space'&&TURN()){e.preventDefault();if(S.speed)S.speed=0;else turnGo();render();return}
   if(e.code==='Space'){e.preventDefault();S.speed=S.speed?0:(S.lastSpeed||1);if(S.speed&&!LIVE_M.has(S.modal))S.modal=S.modal==='end'?S.modal:null;render()}
   else if(e.key==='Tab'&&!S.modal){e.preventDefault();const i=VGROUPS.findIndex(g=>g.includes(S.view||'cmd'));{const g0=VGROUPS[(i+(e.shiftKey?VGROUPS.length-1:1))%VGROUPS.length][0];S.view=VDEF[g0]||g0}render()}
