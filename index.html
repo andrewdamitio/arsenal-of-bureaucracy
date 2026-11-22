@@ -1237,6 +1237,61 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .pdsec>h5>span{text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px;color:#8a7a58}.pdstall{margin:4px 0 0}.rbcan .ndaaref{margin-top:6px}
 .sbriv{display:inline-flex;align-items:center;gap:6px}.sbriv .btn{background:#fbf6e8;color:#3a2e1c;border:1px solid #c9b88a}.sbriv .btn.on{background:#3a2e1c;color:#f3e6c4;border-color:#3a2e1c}
 .ndadom{margin-top:10px}.ndadom .linkn{font:600 11.5px "Segoe UI",system-ui,sans-serif;text-transform:none;letter-spacing:0}
+/* ---- title: a main menu, then a new-game screen ---- */
+#title.ti3{max-width:none;margin:0;padding:0;min-height:100vh;color:#e6dcc2;font:14px/1.5 "Segoe UI",system-ui,sans-serif;position:relative}
+#title.ti3 .t3-brand h1{font:700 52px Georgia,serif;letter-spacing:.12em;color:var(--brass2);margin:0;line-height:1.05}
+#title.ti3 .t3-brand h1 small{font-size:24px;font-style:italic;color:var(--dim);letter-spacing:0}
+.ti3 .t3-tag{font:italic 17px Georgia,serif;color:#a89f86;margin-top:8px}
+/* the main menu */
+.t3menu{display:flex;align-items:center;overflow:hidden}
+.t3menu .t3-art{position:absolute;inset:0 0 0 38%;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 30%,#000 82%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 30%,#000 82%,transparent 100%)}
+.t3menu .t3-art img{width:100%;height:100%;object-fit:cover;object-position:50% 55%;filter:invert(1) sepia(.35) brightness(.78);opacity:.42}
+.t3menu .t3-col{position:relative;z-index:1;width:min(560px,92vw);margin:0 0 0 max(5vw,24px);padding:40px 0}
+.t3-pitch{font:italic 17px/1.6 Georgia,serif;color:#d8cfb4;margin:22px 0 26px;max-width:520px}
+.t3-menu{display:flex;flex-direction:column;gap:10px;max-width:470px}
+.t3-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:13px 18px;border-radius:5px;cursor:pointer;background:rgba(32,28,20,.82);border:1px solid #5a5040;color:#e6dcc2;transition:background .15s,border-color .15s,transform .15s}
+.t3-btn b{font:700 18px Georgia,serif;color:#efe4c4;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.t3-btn span{font:13px/1.4 "Segoe UI",system-ui,sans-serif;color:#b9ae90}
+.t3-btn:hover{background:rgba(52,44,30,.92);border-color:var(--brass2);transform:translateX(3px)}
+.t3-btn.prime{background:linear-gradient(#c9952a,#a8781c);border-color:#e0b24a}.t3-btn.prime b{color:#231a0c}.t3-btn.prime span{color:#3b2c12}.t3-btn.prime:hover{background:linear-gradient(#d8a536,#b8862a)}
+.t3-btn.plain{background:rgba(32,28,20,.6)}
+.t3-new{font:600 11px "Segoe UI",system-ui,sans-serif;font-style:normal;letter-spacing:.04em;background:#2f4a26;color:#cfe8b8;border:1px solid #4f7a40;border-radius:3px;padding:1px 7px}
+.t3-btn.prime .t3-new{background:#231a0c;color:#f3d98a;border-color:#231a0c}
+.t3-link{align-self:flex-start;background:none;border:0;color:#c9b88a;text-decoration:underline;font:13px "Segoe UI",system-ui,sans-serif;cursor:pointer;padding:4px 2px}.t3-link:hover{color:var(--brass2)}
+.t3-how{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;margin:30px 0 0;max-width:470px;font:13px "Segoe UI",system-ui,sans-serif;color:#a89f86}
+.t3-how b{font:700 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--brass2);margin-right:6px}
+.t3-note{margin:14px 0 0;font:12px "Segoe UI",system-ui,sans-serif;color:#7d7560}
+/* the new-game screen */
+.t3new{max-width:1120px!important;margin:0 auto!important;padding:18px 24px 96px!important}
+.t3-top{display:grid;grid-template-columns:120px 1fr 120px;align-items:center}.t3-brand.sm{text-align:center}.t3-brand.sm h1{font-size:24px}.t3-brand.sm h1 small{font-size:14px}
+.t3-back{justify-self:start;background:none;border:1px solid #5a5040;color:#d8cfb4;border-radius:4px;padding:5px 12px;cursor:pointer;font:600 13px "Segoe UI",system-ui,sans-serif}.t3-back:hover{border-color:var(--brass2);color:var(--brass2)}
+.t3-h2{font:700 24px Georgia,serif;color:#efe4c4;text-align:center;margin:14px 0 14px}
+.t3-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.t3-card{display:flex;flex-direction:column;text-align:left;padding:0;border-radius:6px;overflow:hidden;cursor:pointer;background:#221e16;border:1px solid #4a4234;color:#e6dcc2;transition:border-color .15s,transform .15s}
+.t3-card:hover{border-color:#8a7a50;transform:translateY(-2px)}.t3-card.on{border:2px solid var(--brass2);box-shadow:0 0 0 3px rgba(201,149,42,.18)}
+.t3-thumb{display:block;height:110px;background:#efe6cf;overflow:hidden}.t3-thumb img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.2)}
+.t3-thumb.noart{display:flex;align-items:center;justify-content:center;font-size:44px}
+.t3-cn{padding:9px 12px 11px}.t3-cn b{display:block;font:700 15.5px Georgia,serif;color:#efe4c4}.t3-cn em{font:12.5px "Segoe UI",system-ui,sans-serif;font-style:normal;color:#a89f86}
+.t3-card.on .t3-cn b{color:var(--brass2)}
+.t3-detail{display:grid;grid-template-columns:220px 1fr;gap:18px;margin:14px 0 0;background:#f3ecd9;color:#2b241a;border-radius:6px;padding:14px;border:1px solid #d6c79f}
+.t3-dart{display:block;height:100%;min-height:190px;border-radius:4px;overflow:hidden;background:#efe6cf}.t3-dart img{width:100%;height:100%;object-fit:cover;display:block}.t3-dart.noart{display:flex;align-items:center;justify-content:center;font-size:60px}
+.t3-dh b{display:block;font:700 22px Georgia,serif;color:#231d14}.t3-dh em{font:13px "Segoe UI",system-ui,sans-serif;font-style:normal;color:#6b5a35}
+.t3-threat{font:14.5px/1.55 Georgia,serif;color:#3b3122;margin:8px 0 10px}
+.t3-dk{font:700 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#6b5a35;margin:0 0 4px}
+.t3-tg{margin:0 0 10px;padding-left:18px;columns:2;column-gap:28px;font:13px/1.55 "Segoe UI",system-ui,sans-serif}.t3-tg li{break-inside:avoid}
+.t3-dates{display:flex;gap:18px;flex-wrap:wrap;font:12.5px "Segoe UI",system-ui,sans-serif;color:#6b5a35}.t3-dates b{color:#231d14;margin-right:4px}
+.t3-opts{margin:12px 0 0;border:1px solid #4a4234;border-radius:6px;background:#221e16}
+.t3-optl{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;color:#d8cfb4;padding:10px 14px;cursor:pointer;font:13px "Segoe UI",system-ui,sans-serif;text-align:left}
+.t3-optl span{font:700 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#a89f86}.t3-optl b{color:#efe4c4}.t3-optl i{margin-left:auto;font-style:normal;color:var(--brass2)}
+.t3-optg{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:0 14px 14px}.t3-ol{font:700 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#a89f86;margin:4px 0 6px}.t3-ol span{text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}
+.t3-rad{display:flex;gap:10px;width:100%;text-align:left;background:none;border:1px solid #4a4234;border-radius:4px;padding:8px 10px;margin:0 0 6px;cursor:pointer;color:#e6dcc2}
+.t3-rad i{flex:0 0 14px;height:14px;border-radius:50%;border:2px solid #8a7a50;margin-top:3px}.t3-rad.on{border-color:var(--brass2);background:rgba(201,149,42,.08)}.t3-rad.on i{background:var(--brass2);box-shadow:inset 0 0 0 2px #221e16}
+.t3-rad b{display:block;font:700 14px Georgia,serif}.t3-rad em{font:12.5px/1.4 "Segoe UI",system-ui,sans-serif;font-style:normal;color:#a89f86}
+.t3-bar{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;justify-content:center;gap:24px;padding:12px 24px;background:rgba(18,16,12,.96);border-top:1px solid #5a5040;box-shadow:0 -6px 18px rgba(0,0,0,.35)}
+.t3-bar>div{display:flex;flex-direction:column;min-width:0}.t3-bar>div b{font:700 16px Georgia,serif;color:#efe4c4}.t3-bar>div span{font:12.5px "Segoe UI",system-ui,sans-serif;color:#a89f86}
+.t3-begin{background:linear-gradient(#c9952a,#a8781c);border:1px solid #e0b24a;color:#231a0c;font:700 18px Georgia,serif;padding:10px 34px;border-radius:5px;cursor:pointer}.t3-begin:hover{background:linear-gradient(#d8a536,#b8862a)}
+@media (max-width:900px){.t3-cards{grid-template-columns:1fr 1fr}.t3-detail{grid-template-columns:1fr}.t3-dart{min-height:140px}.t3-optg{grid-template-columns:1fr}.t3menu .t3-art{inset:0;opacity:.6}#title.ti3 .t3-brand h1{font-size:38px}}
+@media (max-height:800px){.t3-thumb{height:88px}.t3-dart{min-height:150px}.t3-threat{margin:6px 0 8px}.t3-h2{margin:8px 0 10px}}
+#title.ti3 .t3-brand.sm h1{font-size:26px}#title.ti3 .t3-brand.sm h1 small{font-size:15px}
 </style>
 </head>
 <body>
@@ -6170,35 +6225,39 @@ function linkify(m){const pn=S.projects.length+S.done.length+S.gone.length;if(LK
 const stTag=s=>({ok:'<span class="tag ok">ok</span>',tight:'<span class="tag tight">tight</span>',short:'<span class="tag short">short</span>',cut:'<span class="tag cut">cut</span>',idle:'<span class="tag t">idle</span>'}[s]);
 
 const PLAYABLE=['US']; // the game is the US defense industrial base; Europe appears as allies
-let TMODE='std',TSEL='taiwan',TPACE='turn';
+let TMODE='std',TSEL='taiwan',TPACE='turn',TSCR='menu',TOPT=false;
 function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k='';document.getElementById('receipt')?.remove();const tb=document.getElementById('toasts');if(tb)tb.innerHTML='';document.body.classList.remove('hasdec');const sv=savedInfo(),ago=sv?Math.max(0,Math.round((Date.now()-sv.at)/60000)):0,agoT=ago<1?'just now':ago<60?ago+' min ago':ago<1440?Math.round(ago/60)+' h ago':Math.round(ago/1440)+' days ago';
-  // the welcome screen: what the game is, the quick ways in, then a new game set up in three choices
-  const SC=[...SCENS.filter(sc=>!sc.open).map(sc=>({id:sc.id,ic:sc.ic,n:sc.n,sub:`Against ${RIVALS[sc.rival].n}`,sc})),{id:'open',ic:'🏁',n:'Open race',sub:'Your own race',sc:SCD.open}],cur=SC.find(x=>x.id===TSEL)||SC[0];
-  const det=cur.sc?`<p>${cur.sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,'')}</p>
-      <div class="ti-dk">${cur.sc.open?'What you are measured on':'What you must reach, a year'}</div><ul>${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:m.kind==='suff'?` <b>65%</b> against China, <b>85%</b> against Russia`:m.kind==='lines'?` <b>${m.tgt} of 9</b>`:m.kind==='margin'?` <b>+${fmt(m.tgt*100,0)} pt</b>`:''}</li>`).join('')}</ul>
-      <div class="ti-chk"><div><b>January ${dateOf(cur.sc.mid).getFullYear()}</b><span>halfway floors, and a test of what you hold that day</span></div><div><b>January ${dateOf(cur.sc.dl).getFullYear()}</b><span>${cur.sc.open?'the verdict':'the real targets'}</span></div></div>`
-    :`<p>No targets are handed to you. Set your own priorities, choose which rival to measure yourself against, and switch between them as you play.</p>
-      <div class="ti-chk"><div><b>Every year</b><span>your output against China’s or Russia’s, line by line</span></div><div><b>January 2035</b><span>the real targets are judged, and the game ends</span></div></div>`;
-  const rad=(a,attr,on,n,d)=>`<button class="ti-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
-  const step=(k,n,d)=>`<div class="ti-step"><span class="ti-num">${k}</span><div><b>${n}</b><em>${d}</em></div></div>`;
-  app.innerHTML=cz(`<div id="title" class="ti2"><div class="ti-head"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="ti-tag">Rebuilding the US defense industrial base, January 2027 to January 2035</div></div>
-   <div class="ti-welcome"><p>January 2027. China and Russia out-produce the United States in munitions, ships and missiles. You inherit an industrial base that has withered, suppliers that move slowly, and critical minerals that come from the rivals you are racing.</p>
-     <div class="ti-how"><span><b>Find</b> what holds output back</span><i></i><span><b>Build</b> plants, deals and stockpiles</span><i></i><span><b>Reform</b> the rules that slow them</span><i></i><span><b>Play</b> two months at a time, to 2035</span></div></div>
-   <div class="ti-quick ${sv?'':'one'}">
-     ${sv?`<button class="ti-qs" data-a="tcont"><span class="ti-qi">▶</span><span class="ti-qt"><b>Continue your game</b><em>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'} · ${fmtDate(sv.w)} · ${sv.sandbox?'Sandbox':'Standard'} · saved ${agoT}</em></span><span class="ti-c2go">Continue ›</span></button>`:''}
-     <button class="ti-qs" data-a="ttut"><span class="ti-qi">🎓</span><span class="ti-qt"><b>Play the tutorial</b><em>A guided tour of every screen, your first program and your first turn. It uses one scenario only: the Taiwan Window, against China. About ten minutes.</em></span><span class="ti-c2go">Start ›</span></button>
-   </div>
-   <div class="ti-loadl"><button class="ti-link" data-a="saveul">Load a save file</button></div>
-   <section class="ti-setup"><h2>Set up a new game</h2>
-     ${step(1,'Choose your mandate','What you are judged on, and against whom.')}
-     <div class="ti-mand"><div class="ti-mlist">${SC.map(x=>`<button class="ti-mopt ${x.id===cur.id?'on':''}" data-a="tsel" data-s="${x.id}"><span class="ti-c2ic">${x.ic}</span><span><b>${x.n}</b><em>${x.sub}</em></span></button>`).join('')}</div>
-       <div class="ti-mdet"><div class="ti-mdh"><span class="ti-c2ic">${cur.ic}</span><div><b>${cur.n}</b><em>${cur.sub}</em></div></div>${det}</div></div>
-     <div class="ti-two"><div>${step(2,'Choose your rules','How tight your money and politics are.')}
-         <div class="ti-rads">${rad('tmode','data-m="std"',TMODE==='std','Standard','A real budget and Political Capital. Every plant, order and reform competes for them.')}${rad('tmode','data-m="sbx"',TMODE==='sbx','Sandbox','No budget or Political Capital limits. See what time, permits and suppliers still hold back.')}</div></div>
-       <div>${step(3,'Choose your pace','You can change this later in the Menu.')}
-         <div class="ti-rads">${rad('tpace','data-m="turn"',TPACE==='turn','Two-month turns','Press Next turn; time stops for every decision and nothing is decided for you.')}${rad('tpace','data-m="cont"',TPACE==='cont','Continuous','Time runs week by week at the speed you set; decisions you leave take their default.')}</div></div></div>
-     <button class="ti-begin" data-a="tnew"><b>Begin ›</b><span>${cur.n} · ${TMODE==='sbx'?'Sandbox':'Standard'} · ${TPACE==='cont'?'continuous':'two-month turns'}</span></button>
-     <p class="ti-note">${sv?'Starting a new game replaces the saved game in this browser; download a file from the Menu first to keep it. ':''}The game saves itself in this browser as you play.</p></section></div>`)}
+  // two screens, the way games open: a main menu, then a new-game screen that picks a scenario
+  const SC=[...SCENS.filter(sc=>!sc.open).map(sc=>({id:sc.id,ic:sc.ic,n:sc.n,sub:`Against ${RIVALS[sc.rival].n}`,sc})),{id:'open',ic:'🏁',n:'The Open Race',sub:'Your own race, against either rival',sc:SCD.open}],cur=SC.find(x=>x.id===TSEL)||SC[0];
+  const art=(sc,cls)=>sc?.art?`<span class="${cls}"><img src="${sc.art}" alt="${sc.artAlt||''}"${sc.artPos?` style="object-position:${sc.artPos}"`:''}></span>`:`<span class="${cls} noart">${sc?.ic||''}</span>`;
+  const head=`<div class="t3-brand"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1><div class="t3-tag">Rebuilding the US defense industrial base, 2027 to 2035</div></div>`;
+  if(TSCR!=='new'){
+    const first=!sv;
+    app.innerHTML=cz(`<div id="title" class="ti3 t3menu"><div class="t3-art" aria-hidden="true"><img src="art/pentagon-ink.webp" alt=""></div>
+     <div class="t3-col">${head}
+      <p class="t3-pitch">China and Russia out-produce the United States in munitions, ships and missiles. You take charge of an industrial base that has withered, suppliers that move slowly, and minerals that come from the rivals you are racing. You have until 2035.</p>
+      <div class="t3-menu">
+       ${sv?`<button class="t3-btn prime" data-a="tcont"><b>Continue</b><span>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'} · ${fmtDate(sv.w)} · saved ${agoT}</span></button>`:''}
+${sv?`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`:''}       <button class="t3-btn ${first?'':'plain'}" data-a="ttut"><b>Play the tutorial${first?' <i class="t3-new">New here? Start with this</i>':''}</b><span>A ten-minute guided first game: every screen, your first program, your first turn.</span></button>
+${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`}
+       <button class="t3-link" data-a="saveul">Load a save file</button>
+      </div>
+      <div class="t3-how"><span><b>Find</b> what holds output back</span><span><b>Build</b> plants, deals and stockpiles</span><span><b>Reform</b> the rules that slow them</span><span><b>Play</b> two months at a time</span></div>
+      <p class="t3-note">The game saves itself in this browser as you play.</p></div></div>`);return}
+  // the new-game screen
+  const det=cur.sc?`<p class="t3-threat">${cur.sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,'')}</p>
+      <div class="t3-dk">${cur.sc.open?'What you are measured on':'What you must reach, a year'}</div><ul class="t3-tg">${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:m.kind==='suff'?` <b>65%</b> against China, <b>85%</b> against Russia`:m.kind==='lines'?` <b>${m.tgt} of 9</b>`:m.kind==='margin'?` <b>+${fmt(m.tgt*100,0)} pt</b>`:''}</li>`).join('')}</ul>
+      <div class="t3-dates"><span><b>January ${dateOf(cur.sc.mid).getFullYear()}</b> halfway check</span><span><b>January ${dateOf(cur.sc.dl).getFullYear()}</b> ${cur.sc.open?'the verdict':'the real targets'}</span></div>`:'';
+  const rad=(a,attr,on,n,d)=>`<button class="t3-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
+  const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'} · ${TPACE==='cont'?'continuous time':'two-month turns'}`;
+  app.innerHTML=cz(`<div id="title" class="ti3 t3new"><div class="t3-top"><button class="t3-back" data-a="tscr" data-s="menu">‹ Back</button><div class="t3-brand sm"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1></div><span></span></div>
+    <h2 class="t3-h2">Choose your scenario</h2>
+    <div class="t3-cards">${SC.map(x=>`<button class="t3-card ${x.id===cur.id?'on':''}" data-a="tsel" data-s="${x.id}">${art(x.sc,'t3-thumb')}<span class="t3-cn"><b>${x.n}</b><em>${x.sub}</em></span></button>`).join('')}</div>
+    <div class="t3-detail">${art(cur.sc,'t3-dart')}<div class="t3-dtext"><div class="t3-dh"><b>${cur.n}</b><em>${cur.sub}</em></div>${det}</div></div>
+    <div class="t3-opts ${TOPT?'open':''}"><button class="t3-optl" data-a="topt"><span>Options</span> <b>${optsTxt}</b> <i>${TOPT?'Done ▴':'Change ▾'}</i></button>
+     ${TOPT?`<div class="t3-optg"><div><div class="t3-ol">Rules</div>${rad('tmode','data-m="std"',TMODE==='std','Standard','A real budget and Political Capital. Every plant, order and reform competes for them.')}${rad('tmode','data-m="sbx"',TMODE==='sbx','Sandbox','No budget or Political Capital limits. See what time, permits and suppliers still hold back.')}</div>
+       <div><div class="t3-ol">Pace <span>you can change it later in the Menu</span></div>${rad('tpace','data-m="turn"',TPACE==='turn','Two-month turns','Press Next turn; time stops for every decision and nothing is decided for you.')}${rad('tpace','data-m="cont"',TPACE==='cont','Continuous','Time runs week by week at the speed you set; decisions you leave take their default.')}</div></div>`:''}</div>
+    <div class="t3-bar"><div><b>${cur.n}</b><span>${optsTxt}${sv?' · replaces your saved game in this browser':''}</span></div><button class="t3-begin" data-a="tnew">Begin ›</button></div></div>`)}
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
    <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2035 (2025–26 replayed)</div>
@@ -6512,7 +6571,7 @@ const SCENS=[
         {n:'Drone and aircraft output held',kind:'hold',lines:['drones','aircraft'],tgt:1,pct:1,src:'Both at least at their January 2027 level.'}],
   test:{cut:1,n:'full Chinese cutoff'},
   lesson:'Independence costs output before it pays: every magnet, cell and wafer not bought from China has to be mined, refined and qualified somewhere else first.'},
- {id:'open',open:1,n:'The Open Race',rival:'pac',ic:'🏁',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
+ {id:'open',open:1,n:'The Open Race',rival:'pac',ic:'🏁',art:'art/pentagon-ink.webp',artAlt:'Pen-and-ink aerial drawing of the Pentagon and the highways around it',artPos:'50% 55%',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
   threat:'No crisis is assigned to you. China and Russia both out-produce the United States, and the gap widens every year. Decide what matters most, and measure yourself against either rival, line by line: choose before the first turn. You have until January 2030 for a halfway check, and until January 2035 for the verdict.',
   mand:[{n:'Sufficiency: you and your allies against the requirement',kind:'suff',get tgt(){return S?.rival==='eu'?.85:.65},pct:1,src:'Across all nine weapon lines: what you and Japan, South Korea and Taiwan build a year, against what the plan requires against your rival. Each line counts up to 100%. The target is 65% against China and 85% against Russia, whose requirement grows more slowly and whose theater allies cover more of.'},
         {n:'Weapon lines that fully meet their requirement',kind:'lines',tgt:3,src:'Lines where you and your allies build at least what the plan requires, out of nine.'},
@@ -7859,6 +7918,8 @@ document.addEventListener('pointerdown',e=>{
   const a=b.dataset.a;
   if(a==='start'){newGame(b.dataset.f);render();return}
   if(a==='tmode'&&!S){TMODE=b.dataset.m;renderTitle();return}
+if(a==='tscr'&&!S){TSCR=b.dataset.s;renderTitle();window.scrollTo(0,0);return}
+if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
   if(a==='tsel'&&!S){TSEL=b.dataset.s;renderTitle();return}
   if(a==='tpace'&&!S){TPACE=b.dataset.m;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}

@@ -6,7 +6,7 @@ const {chromium}=require('playwright-core');
 const b=await chromium.launch({executablePath:CHROME});const p=await b.newPage({viewport:{width:1500,height:950}});const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!/net::|Failed to load resource/.test(m.text()))errs.push('console: '+m.text().slice(0,200))});
 await p.goto('file:///'+file);await p.waitForTimeout(700);
 const res=await p.evaluate(async()=>{const out=[];const sleep=ms=>new Promise(r=>setTimeout(r,ms));
- for(const sc of ['taiwan','flank','cutoff',null]){localStorage.clear();newGame('US');S.modal=null;if(sc)chooseScen(sc);else S.modal=null;S.queue=[];render();
+ for(const sc of ['taiwan','flank','cutoff','open']){localStorage.clear();newGame('US');S.modal=null;if(sc)chooseScen(sc);else S.modal=null;S.queue=[];render();
   for(const [v] of VIEWS){S.view=v;S._vdirty=true;render();await sleep(30)}
   if(S.view!=='cmd'){S.view='cmd';render()}
   // every item page, a program page, an award, the bill, save

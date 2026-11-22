@@ -16,7 +16,7 @@ await p.addInitScript(seed=>{let a=seed>>>0;Math.random=function(){a|=0;a=a+0x6D
 await p.goto('file:///'+file);await p.waitForTimeout(700);
 const t0=Date.now();
 const res=await p.evaluate(({bot,scen,years,DUMP,START})=>{
- newGame('US');S.modal=null;if(scen!=='open')chooseScen(scen);S.modal=null;S.queue=[];S.sim=1;
+ newGame('US');S.modal=null;chooseScen(scen);S.modal=null;S.queue=[];S.sim=1;
  const act=bot!=='none',reform=bot==='reformer';
  // ---- decisions
  // a problem option's cost in weeks: its wait, the chance it fails, and what it costs in money, capital and lost output
