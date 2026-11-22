@@ -1437,7 +1437,7 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 .tlwrap{position:relative}.tll{position:absolute;white-space:nowrap;font:600 10.5px var(--f-body);line-height:12px;color:#6b5a35;pointer-events:none}.tll.tlax{font-weight:400;color:#7a6a48}
 .tll.tlo{color:#6b5a35!important}.tll.tlf{color:#2f6a24!important}.tll.tlct{color:#a3261c!important}
 #app .sc-test{display:flex;flex-wrap:wrap;gap:4px 14px;font:12px var(--f-body);color:var(--muted);border-top:1px solid var(--edge);margin-top:10px;padding-top:8px}#app .sc-test .sck b{color:var(--cream);margin-right:3px}#app .sc-test .linkn{margin-left:auto}
-.sbhero.sbwin{grid-template-columns:1fr;min-height:0}.sbhero.sbwin .sbtext{max-width:none;padding:26px 0 18px}.sbhero.sbwin .sbtitle{font-size:38px}
+.sbhero.sbwin:not(.art){grid-template-columns:1fr;min-height:0}.sbhero.sbwin:not(.art) .sbtext{max-width:none;padding:26px 0 18px}.sbhero.sbwin .sbtitle{font-size:38px}
 </style>
 </head>
 <body>
@@ -7016,7 +7016,7 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
   // the situation: the lede before the deadlines, and the deadlines after
   const th=sc?sc.threat:'No targets are handed to you. Rebuild what you judge matters most, and measure yourself against China or Russia, line by line.',k=th.indexOf(' You have until'),lede=k>0?th.slice(0,k):th,rest=k>0?th.slice(k+1):'';
   const fresh=S.w===PLAY0&&sc;
-  const hero=fresh?`<div class="sbhero sbwin"><div class="sbtext"><div class="sbeye">How to win · ${sc.open?'your own race':'your mandate'}</div><h1 class="sbtitle">${sc.n}</h1><div class="sbrule"></div><p class="sbbody">${rest||lede}</p>${tl}${res}</div></div>`:`<div class="sbhero${sc?.art?' art':''}">${sc?.art?`<figure class="sbart"><img src="${sc.art}" alt="${sc.artAlt||''}"${sc.artPos?` style="object-position:${sc.artPos}"`:''}></figure>`:''}
+  const hero=fresh?`<div class="sbhero sbwin${sc.art?' art':''}">${sc.art?`<figure class="sbart"><img src="${sc.art}" alt="${sc.artAlt||''}"${sc.artPos?` style="object-position:${sc.artPos}"`:''}></figure>`:''}<div class="sbtext"><div class="sbeye">How to win · ${sc.open?'your own race':'your mandate'}</div><h1 class="sbtitle">${sc.n}</h1><div class="sbrule"></div><p class="sbbody">${rest||lede}</p>${tl}${res}</div></div>`:`<div class="sbhero${sc?.art?' art':''}">${sc?.art?`<figure class="sbart"><img src="${sc.art}" alt="${sc.artAlt||''}"${sc.artPos?` style="object-position:${sc.artPos}"`:''}></figure>`:''}
     <div class="sbtext"><div class="sbeye">How to win · ${sc&&!sc.open?'your mandate':'your own race'} · ${fmtDate(S.w)}</div><h1 class="sbtitle">${sc?sc.n:'The open race'}</h1><div class="sbrule"></div>
      <p class="sblede">${lede}</p>${rest?`<p class="sbbody">${rest}</p>`:''}${tl}${res}</div></div>`;
   if(!sc)return `<div class="paper sbrief"><div class="sbin">${hero}<div class="trgrid">${levers}
