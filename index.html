@@ -7859,7 +7859,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'scenstop':S.over=true;S.speed=0;S.verdict=S.scenRes.verdict;S.overWhy='';S.modal=null;S.view='rec';S._vdirty=true;break;
     case 'rcptx':if(S._rcpt)S._rcpt.gone=true;renderReceipt();return;
     case 'evread':S.queue.push({ev:b.dataset.e,fxDone:1,read:1});S.speed=0;break;
-    case 'evopt':{const q=S.queue[0];let out=null;if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);S._mcause=`${mclean(V(ED[q.ev].t))}: ${mclean(optSplit(V(o.l))[0])}`;const a=outSnap();if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.();S.pc=Math.max(0,S.pc);const rows=outDiff(a);const pj=q._pj&&q._pj.w===S.w?q._pj:null;if(rows.length||pj)out={sys:'outcome',ev:q.ev,ch:optSplit(V(o.l))[0],rows,pj,k:+b.dataset.k}}}S.queue.shift();if(out)S.queue.unshift(out);S.pc=Math.max(0,S.pc);break}
+    case 'evopt':{const q=S.queue[0];let out=null;if(q&&q.ev&&!q.read){const o=(V(ED[q.ev].o)||[])[+b.dataset.k];if(o){decRec(0);S._mcause=`${mclean(V(ED[q.ev].t))}: ${mclean(optSplit(V(o.l))[0])}`;const a=outSnap();if(o.pc)S.pc-=o.pc;if(o.$)spendB(o.$,'Events');o.fx?.();S.pc=Math.max(0,S.pc);const rows=outDiff(a),E=ED[q.ev];if(rows.length)receipt({ic:E.ic||'📰',lab:'Decided',title:`${mclean(V(E.t))}: ${optSplit(V(o.l))[0]}`,ok:!rows.some(r=>r.good===false),lines:rows.slice(0,5).map(r=>`<span class="${r.good===true?'okt':r.good===false?'redt':''}">${r.good===true?'▲':r.good===false?'▼':'●'} ${r.n} <b>${r.v}</b></span>`)})}}S.queue.shift();S.pc=Math.max(0,S.pc);break}
     case 'restart':S=null;clearSave();break;
     case 'cntalk':cnTalk();break;
     case 'bnsort':S.bnSort=b.dataset.v;S._vdirty=true;break;
