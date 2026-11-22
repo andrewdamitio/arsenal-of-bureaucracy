@@ -1425,6 +1425,17 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 #app .panel .brk{flex-wrap:nowrap;min-width:0}#app .panel .brk>span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#app .panel .brk>b{flex:none;white-space:nowrap;font-size:11px;letter-spacing:0}#app .panel .brk .brx{margin-left:2px}
 #app .panel .brt{font-size:13.5px;line-height:1.25}
 #app .tag.tight,#app .tag.short,#app .tag.ok,#app .tag.t{text-transform:capitalize}
+/* ---- charts: one text scale and one ink across every chart ---- */
+#ov svg text,#view svg text,#app svg text{font-family:var(--f-body)}
+.lc text,.ceilsvg text,.pjsvg text,.mpch text,.pvisvg text,.gantt text,.rtl text{font-size:11px;fill:#7a6a48}
+.ceilsvg text.ax,.pjsvg text.ax,.rtl .rtl-ax,.lc .lcu{font-size:11px;font-weight:600;letter-spacing:0;fill:#6b5a35}
+.ceilsvg text.cend{font-size:12.5px;font-weight:600}
+.pjsvg text.pjend{font-size:11.5px;font-weight:700}
+.pvisvg text,.gantt text{font-size:10.5px}
+#app svg .tlax,#ov svg .tlax,#ov svg .tlo,#ov svg .tlf{font-size:10px}
+.sk text{font-size:12.5px;fill:#231d14}.sk text.ch{font:700 11.5px var(--f-body);letter-spacing:.06em;fill:#6b5a35}
+.tlwrap{position:relative}.tll{position:absolute;white-space:nowrap;font:600 10.5px var(--f-body);line-height:12px;color:#6b5a35;pointer-events:none}.tll.tlax{font-weight:400;color:#7a6a48}
+.tll.tlo{color:#6b5a35!important}.tll.tlf{color:#2f6a24!important}.tll.tlct{color:#a3261c!important}
 </style>
 </head>
 <body>
@@ -3210,7 +3221,7 @@ function ceilSec(k){if(S.fac!=='US')return '';if(!S.lab)return '<div class="dsec
   const isL=k.startsWith('L:'),c=isL?k.slice(2):null,im=isL?null:itemMix(k),u=isL?LINES[c].u+' a year':im.unit,nrm=isL?1:1/im.ke;
   const H0=(S.ceil?.[k]||[]),P0=ceilProj().out[k]||[],ix=CEIL_K.reduce((a,x,i)=>(a[x]=i+1,a),{});
   const val=(r,x)=>{const v=r[ix[x]];return v==null?null:v/nrm};
-  const W=760,H=250,Lm=58,Rm=150,T=26,B=30,x0=PLAY0,x1=END_W,X=w=>Lm+(W-Lm-Rm)*(w-x0)/(x1-x0);
+  const W=1000,H=290,Lm=62,Rm=150,T=24,B=30,x0=PLAY0,x1=END_W,X=w=>Lm+(W-Lm-Rm)*(w-x0)/(x1-x0);
   const all=[...H0,...P0];const ref=Math.max(1e-9,...all.flatMap(r=>['F','O','N','T','D'].map(x=>val(r,x)??0)));const top=ref*1.25,Y=v=>T+(H-T-B)*(1-Math.min(v,top)/top);
   let g='';for(let q=0;q<=4;q++){const v=top*q/4;g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" stroke="${CHC.grid}" stroke-width=".6"/><text x="${Lm-5}" y="${Y(v)+3}" text-anchor="end">${fmtN(v)}</text>`}
   for(let y=2027;y<=END_Y;y+=2){const w=weekOf(y,0,1);g+=`<line x1="${X(w)}" x2="${X(w)}" y1="${H-B}" y2="${H-B+4}" stroke="#9c8a5c"/><text x="${X(w)}" y="${H-B+15}" text-anchor="middle">${y}</text>`}
@@ -3226,7 +3237,7 @@ function ceilSec(k){if(S.fac!=='US')return '';if(!S.lab)return '<div class="dsec
   for(const [x,,col] of ser){g+=`<path d="${path(H0,x)}" fill="none" stroke="${col}" stroke-width="2.2"/><path d="${path(P0,x)}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="5 3" opacity=".9"/>`}
   // end labels at 2035, nudged apart
   {const last=P0.at(-1)||H0.at(-1);if(last){const labs=[...ser.map(([x,n,col])=>({n,col,v:val(last,x)})),{n:isL?'Requirement':'Lines’ demand',col:CHC.req,v:val(last,'N')},{n:isL?'Output':'US output',col:CHC.us,v:val(last,'O')}].filter(l=>l.v!=null).map(l=>({...l,y:Y(l.v)})).sort((a,b)=>a.y-b.y);
-    let pr=-99;for(const l of labs){if(l.y<pr+12)l.y=pr+12;pr=l.y}for(const l of labs)g+=`<line x1="${W-Rm+4}" x2="${W-Rm+13}" y1="${l.y}" y2="${l.y}" stroke="${l.col}" stroke-width="3"/><text class="cend" x="${W-Rm+17}" y="${l.y+3.5}" fill="${l.col}">${l.n}${l.v>=top?' ↑':''}</text>`}}
+    let pr=-99;for(const l of labs){if(l.y<pr+15)l.y=pr+15;pr=l.y}{let lim=H-B+4;for(let i=labs.length-1;i>=0;i--){if(labs[i].y>lim)labs[i].y=lim;lim=labs[i].y-15}}for(const l of labs)g+=`<line x1="${W-Rm+4}" x2="${W-Rm+13}" y1="${l.y}" y2="${l.y}" stroke="${l.col}" stroke-width="3"/><text class="cend" x="${W-Rm+17}" y="${l.y+3.5}" fill="${l.col}">${l.n}${l.v>=top?' ↑':''}</text>`}}
   // programs for this item: expected delivery, with the original plan when it has slipped
   const mine=S.projects.filter(p=>{const d=PD[p.def];return d&&d.kind!=='maint'&&(isL?d.t.line===c:d.t.node===k)}).map(p=>({p,w:S.w+remW(p)})).sort((a,b)=>a.w-b.w);
   const fin=S.done.filter(x=>{const d=PD[x.def];return d&&x.w>=PLAY0&&(isL?d.t.line===c:d.t.node===k)});
@@ -4857,8 +4868,8 @@ function previewOf(def,ct,wOn0){
   const v={wOn,wFull,wPlan,isPlant,rows,ins,R0};S._pvc={k:key,v};return v}
 function timelineSVG(v){const W=560,H=40,x0=S.w,X=w=>Math.min(W,Math.max(0,(w-x0)/(END_W-x0)*W)),yr=w=>dateOf(w).getFullYear();
   const cr=(CRISES[S.fac]||[]).filter(c=>c[1]>S.w),plan=v.wPlan<END_W&&v.wPlan<v.wOn-8;
-  let ax='';for(let y=dateOf(S.w).getFullYear()+1;y<=END_Y;y++){const x=X(weekOf(y,0,1));ax+=`<line x1="${x}" x2="${x}" y1="18" y2="21" stroke="#8a7850"/>`+((END_Y-y)%2===0?`<text class="tlax" x="${x}" y="30" font-size="8.5" text-anchor="${y===END_Y?'end':'middle'}">${y}</text>`:'')}
-  const svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:4px 0 2px;max-width:100%;height:auto"><defs><linearGradient id="rmp"><stop offset="0" stop-color="#8a7440"/><stop offset="1" stop-color="#5f9e4a"/></linearGradient></defs>
+  let ax='';for(let y=dateOf(S.w).getFullYear()+1;y<=END_Y;y++){const x=X(weekOf(y,0,1));ax+=`<line x1="${x}" x2="${x}" y1="18" y2="21" stroke="#8a7850"/>`+((END_Y-y)%2===0?`<text class="tlax" x="${x}" y="30" text-anchor="${y===END_Y?'end':'middle'}">${y}</text>`:'')}
+  const svg=`<svg class="tlsvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;margin:4px 0 2px;width:100%;height:${H}px"><defs><linearGradient id="rmp"><stop offset="0" stop-color="#8a7440"/><stop offset="1" stop-color="#5f9e4a"/></linearGradient></defs>
    <rect class="tlt" x="0" y="9" width="${W}" height="9" fill="#2c2b22"/><rect class="tlb" x="0" y="9" width="${X(v.wOn)}" height="9" fill="#6b6455"/>
    ${v.wOn<END_W?`<rect x="${X(v.wOn)}" y="9" width="${Math.max(0,X(v.wFull)-X(v.wOn))}" height="9" fill="url(#rmp)"/><rect x="${X(v.wFull)}" y="9" width="${Math.max(0,W-X(v.wFull))}" height="9" fill="#5f9e4a"/>`:''}
    ${plan?`<line x1="${X(v.wPlan)}" x2="${X(v.wPlan)}" y1="9" y2="18" class="tlp" stroke="#ece4cc" stroke-width="2" stroke-dasharray="2 1"><title>Due on plan: ${yr(v.wPlan)}</title></line>`:''}
@@ -4866,7 +4877,9 @@ function timelineSVG(v){const W=560,H=40,x0=S.w,X=w=>Math.min(W,Math.max(0,(w-x0
    ${cr.map(c=>`<line x1="${X(c[1])}" x2="${X(c[1])}" y1="5" y2="22" stroke="#e05a48" stroke-width="2"/><text class="tlct" x="${X(c[1])}" y="39" fill="#e8a090" font-size="9" text-anchor="middle">⚔ ${yr(c[1])}</text>`).join('')}
    ${v.wOn<END_W?`<text class="tlo" x="${Math.min(W-70,X(v.wOn))}" y="7" fill="#dcc78e" font-size="9">${v.isPlant?'Output':'Online'} ${yr(v.wOn)}</text>`:`<text class="tlct" x="${W}" y="7" fill="#e8a090" font-size="9" text-anchor="end">Not before 2035</text>`}
    ${v.isPlant&&v.wFull<END_W&&X(v.wFull)-X(v.wOn)>60?`<text class="tlf" x="${W}" y="7" fill="#a8d48e" font-size="9" text-anchor="end">Full rate ${yr(v.wFull)}</text>`:''}</svg>`;
-  return svg+`<div class="tlleg"><span><i class="g"></i>${v.isPlant?'Funding, contract, permits, construction, qualification':'Under way'}</span>${v.wOn<END_W?`${v.isPlant?'<span><i class="r"></i>Ramping up</span>':''}<span><i class="f"></i>${v.isPlant?'Full rate':'Working'}</span>`:''}${plan?`<span><i class="p"></i>Due on plan (${yr(v.wPlan)}): the bar adds the usual slips</span>`:''}</div>`}
+  const lab=[];const svg2=svg.replace(/<text([^>]*)>([^<]*)<\/text>/g,(m,at,tx)=>{const g=k=>(at.match(new RegExp(k+'="([^"]*)"'))||[])[1];lab.push({x:+g('x'),y:+g('y'),a:g('text-anchor')||'start',c:g('class')||'',f:g('fill'),t:tx});return ''});
+  const spans=lab.map(l=>`<span class="tll ${l.c}" style="left:${(l.x/W*100).toFixed(2)}%;top:${l.y-9}px;${l.f?'color:'+l.f+';':''}transform:translateX(${l.a==='middle'?'-50%':l.a==='end'?'-100%':'0'})">${l.t}</span>`).join('');
+  return `<div class="tlwrap">${svg2}${spans}</div>`+`<div class="tlleg"><span><i class="g"></i>${v.isPlant?'Funding, contract, permits, construction, qualification':'Under way'}</span>${v.wOn<END_W?`${v.isPlant?'<span><i class="r"></i>Ramping up</span>':''}<span><i class="f"></i>${v.isPlant?'Full rate':'Working'}</span>`:''}${plan?`<span><i class="p"></i>Due on plan (${yr(v.wPlan)}): the bar adds the usual slips</span>`:''}</div>`}
 function previewHTML(def,ct,wOn0,liveUid){
   const v=previewOf(def,ct,wOn0),yr=w=>dateOf(w).getFullYear(),gap=(h,by)=>!h?'<span class="red">not by 2035</span>':h.w<=S.w?'<span class="green">now</span>':`<span class="${h.w<=by[1]?'gold':'red'}">${yr(h.w)}</span>`;
   const rows=v.rows.slice().sort((a,b)=>b.d/LINES[b.c].k-a.d/LINES[a.c].k).slice(0,4);
@@ -5585,7 +5598,7 @@ function lineChart({W=440,H=150,series,yMax,yFmt=fmtN,hl=[],marks=[],vf,unit}){
   CH[id]={ctx:CHctx,W,H,pl,pr,pt,pb,x0,x1,yMax,f:vf||yFmt,series:vis,hl:hv,marks:mk};
   let g=`<svg class="lc" data-c="${id}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
   const step=(x1-x0)>400?2:1;
-  if(x0<PLAY0){const xa=X(Math.max(x0,0)),xb=X(Math.min(PLAY0,x1));g+=`<rect x="${xa}" y="${pt}" width="${Math.max(0,xb-xa)}" height="${H-pt-pb}" fill="#d6c9a4" opacity=".28"/><text x="${xa+3}" y="${H-pb-3}" style="fill:#8a7a55;font-size:8px">replayed 2025–26</text>`}
+  if(x0<PLAY0){const xa=X(Math.max(x0,0)),xb=X(Math.min(PLAY0,x1));g+=`<rect x="${xa}" y="${pt}" width="${Math.max(0,xb-xa)}" height="${H-pt-pb}" fill="#d6c9a4" opacity=".28"/><text x="${xa+3}" y="${H-pb-3}" style="fill:#8a7a55;font-size:10px">replayed 2025–26</text>`}
   for(let y=2025;y<=2038;y+=step){const w=weekOf(y,0,4);if(w<x0||w>x1)continue;const x=X(w);g+=`<line x1="${x}" x2="${x}" y1="${pt}" y2="${H-pb}" stroke="#d6c9a4" stroke-width=".6"/><text x="${x}" y="${H-5}" text-anchor="middle">${y}</text>`}
   for(const f of [0,.5,1]){const v=yMax*f;g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#d6c9a4" stroke-width=".6"/><text x="${pl-4}" y="${Y(v)+3.5}" text-anchor="end">${yFmt(v)}</text>`}
   for(const m of mk)g+=`<line x1="${X(m.w)}" x2="${X(m.w)}" y1="${pt}" y2="${H-pb}" stroke="#a03a30" stroke-width="1" opacity=".55"/>`;
