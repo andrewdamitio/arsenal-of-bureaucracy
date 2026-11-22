@@ -1364,6 +1364,19 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 #app #views{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 @media (max-width:1500px){#top .logo{font-size:14px;letter-spacing:.06em;margin-right:8px}#top .res{padding:3px 8px}#app #views .vbtn{padding:6px 11px 7px;font-size:13px}}
 @media (max-width:1380px){#top .logo small{font-size:10px}#top .logo{font-size:13px;letter-spacing:.04em}#top .res b{font-size:15px}#app #views .vbtn{padding:6px 9px 7px}}
+/* ---- design system, step 3: Command ---- */
+.panel{background:var(--frame);border-color:var(--edge)}
+.rtabs{background:var(--frame);border-bottom:1px solid var(--edge);height:auto;padding:6px 8px 0;gap:4px}
+#app .rtabs .vbtn{font:600 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--muted);background:transparent;border:1px solid transparent;border-bottom:0;padding:5px 11px 6px;border-radius:5px 5px 0 0}
+#app .rtabs .vbtn.on{background:var(--frame2);color:var(--cream);border-color:var(--edge)}
+.brh{flex-wrap:wrap;row-gap:2px}.brh b{white-space:nowrap;flex:none;font-size:15px}.brh>span{flex:1 1 220px}
+.sc-ch{flex-wrap:wrap;row-gap:4px}.sc-ch b{white-space:nowrap}.sc-ch .sc-brief{white-space:nowrap}
+.sc-clock{font:600 12.5px var(--f-body);letter-spacing:.02em;text-transform:none;white-space:nowrap}
+.pcard{background:var(--frame2);border:1px solid var(--edge);border-radius:6px;box-shadow:none;margin:8px 10px}
+.pcard .ph{background:transparent;border-bottom:1px solid var(--edge);padding:8px 11px}
+.pcard .ph>b{font:700 15px var(--f-head);color:var(--cream);letter-spacing:0}
+.sc-card{border-radius:6px}
+#log{background:var(--frame);font:12.5px var(--f-body)}.loglast{font:12.5px var(--f-body);color:#cfc6ad}
 </style>
 </head>
 <body>
@@ -7250,7 +7263,7 @@ function renderGame(){
     ${res('☰ Menu',S._svAt?'Saved':'Not saved',`<b>Menu</b><br>Save, load, main menu or a new game.<br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}`,'savem','',S._svErr?'rwarn':'rquiet rmenu')}
     <div class="date">${fmtDate(S.w)}</div>${TURN()?turnCtl():[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
-  let sup=`<h2>Supply Chain</h2>
+  let sup=`<h2>Supply chain</h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
    <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#c2a04e"></i>Neutral</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Demand from your lines</span></div>`;
   if(S.tab==='bott'){
@@ -7275,7 +7288,7 @@ function renderGame(){
     const t=+S.tab;sup+=`<div class="sect"><span>${TIERS[t]}</span><span>${NODES.filter(n=>n.t===t).length} nodes</span></div>`+NODES.filter(n=>n.t===t).map(n=>nodeRow(n.id,P)).join('');
   }
   // ---- projects + plants
-  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Development Pipeline</span></h2><div class="pintro">Plants, allied deals and upgrades you have started. Each passes through up to six stages: fund, contract, permit, build, qualify, market. Hover a stage for what it means.</div><div class="pkgrow" data-tip="${tipQ(`Two ways to pay for a new plant: build it now from your budget, or request it in the annual ${billN()} with Political Capital, and Congress pays if it funds it. The bill passes every 18 December and brings next year’s budget.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress votes ~${fmtDate(pkgWhen())}<span class="r">${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
+  let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Development pipeline</span></h2><div class="pintro">Plants, allied deals and upgrades you have started. Each passes through up to six stages: fund, contract, permit, build, qualify, market. Hover a stage for what it means.</div><div class="pkgrow" data-tip="${tipQ(`Two ways to pay for a new plant: build it now from your budget, or request it in the annual ${billN()} with Political Capital, and Congress pays if it funds it. The bill passes every 18 December and brings next year’s budget.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress votes ~${fmtDate(pkgWhen())}<span class="r">${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
   const PSu=poolState(),OLd=officeLoad(),POOL_UP={tools:'Nothing yet; machine-tool makers have their own backlogs.',trades:`Industrial Workforce Act +2${passed('workforce')?' ✓':''} · emergency hiring authority +1${carveOn('cvHire')?' ✓':''}`,ranges:`each test-range project +0.5 · emergency qualification authority +1${carveOn('cvQual')?' ✓':''}`};
   const bar=(n,cap)=>{const m=Math.max(cap,n,1);return `<div class="nb"><i style="width:${n/m*100}%;background:${n>cap+1e-9?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,cap/m*100)}%"></span></div>`};
   const xfw=S.projects.filter(p=>p.xf&&STAGES[p.stage]==='build').length,X=xfS();
