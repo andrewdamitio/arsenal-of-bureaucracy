@@ -94,7 +94,7 @@ const res=await p.evaluate(({bot,scen,years,DUMP,START})=>{
  const nextRef=()=>AGENDA.map(id=>RD[id]).find(R=>R&&reformAvail(R)&&!inReq(R.id)&&S.bill?.id!==R.id&&(vehOf(R)==='ndaa'||!S.bill));
  const reserve=()=>{if(!reform)return 0;const R=nextRef();return R?costOf(R):0};
  const reforms=()=>{const R=nextRef();if(R){if(S.pc>=costOf(R)&&(R.$||0)<=S.budget){if(vehOf(R)==='ndaa')refAdd(R.id);else introduce(R.id)}return}
-   for(const id of EXEC){const r=RD2[id];if(r&&!ruleOn(id)&&S.pc>=r.pc[0]+10){toggleRule(id);break}}};
+   for(const id of EXEC){const r=RD2[id];if(r&&!ruleOn(id)&&!S.rproc?.[id]&&S.pc>=r.pc[0]+10){toggleRule(id);break}}};
  // ---- reporting
  const start=Object.fromEntries(Object.keys(LINES).map(c=>[c,production(false).out[c].yr]));
  const snap=()=>{const R=production(false),dn=S.done.filter(d=>d.plan&&!d.inh&&d.w>=PLAY0&&!PD[d.def].ally);

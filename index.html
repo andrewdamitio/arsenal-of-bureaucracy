@@ -1220,6 +1220,15 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .pgback{margin-left:12px;font:600 11.5px "Segoe UI",system-ui,sans-serif;letter-spacing:0;text-transform:none}
 .mpgl>div.on.good,.mpgl>div.on.good i{color:#2f5a24}.mpgt>span.on.good{background:#4f8a3e}
 .nrow .top{flex-wrap:wrap;row-gap:2px}.nrow .nm{white-space:normal;overflow:visible;min-width:0;flex:1 1 150px}
+.rbt tr.rlpick>td,.rbt tr.rlproc>td{border-top:0;padding-top:0}.rtintro{font:12px/1.45 "Segoe UI",system-ui,sans-serif;color:#6b5a35;margin:2px 0 6px}
+.rtcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:6px}.rtc{background:#fbf6e8;border:1px solid #d6c79f;border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.rth{display:flex;gap:6px;align-items:center;font:700 13px "Segoe UI",system-ui,sans-serif;color:#231d14}.rtc p{margin:0;font:12px/1.4 "Segoe UI",system-ui,sans-serif;color:#4a3d24;flex:1}
+.rtc dl{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin:0;font:12px "Segoe UI",system-ui,sans-serif}.rtc dt{color:#7a6a48}.rtc dd{margin:0;font-weight:600;text-align:right}.rtc .pbtn{align-self:flex-start}
+.rtstrip{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 4px}.rtst{flex:1 1 120px;background:#efe6cf;border:1px solid #d6c79f;border-radius:3px;padding:4px 7px;font:11.5px "Segoe UI",system-ui,sans-serif;color:#6b5a35}.rtst b{display:block;font-weight:700;color:#4a3d24}
+.rtst.done{background:#e3edd6;border-color:#b9cf9e}.rtst.cur{background:#f6e7b8;border-color:#c9a227;box-shadow:inset 3px 0 0 #b8860b}.rtst.end{flex:0 0 110px;background:#fbf6e8;border-style:dashed}
+.rkind.k-law{background:#2f4a26;color:#e3edd6}.rkind.k-proc{background:#f6e7b8;color:#6b4a10}tr.rlpr>td{background:#fbf3dc}
+.rbt tr.rlpick>td,.rbt tr.rlproc>td{text-align:left}.rtc,.rtc p,.rtintro,.rtstrip,.rtst{text-align:left}
+.rbt tr.rlproc .mini,.rbt tr.rlpick .mini{text-align:left}
 </style>
 </head>
 <body>
@@ -1948,12 +1957,12 @@ const ALLY_BARS=[{r:'rShipyard',nodes:['shipyard','sub_yard'],waive:()=>passed('
 const allyBar=id=>S.fac==='US'?ALLY_BARS.find(b=>b.nodes.includes(id)&&ruleOn(b.r)&&!b.waive())||null:null;
 const ruleOn=id=>S.fac==='US'&&!!S.rules?.[id];
 const ruleFits=(r,def)=>!r.eff.tags||!def||r.eff.tags.some(t=>def.tags.includes(t));
-function ruleChance(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)){const e=r.eff;for(const t of [e.chance,e.chance2])if(t)m*=t[o.id]??t[o.layer]??1}return m}
-function ruleWait(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)&&r.eff.wait)m*=r.eff.wait[o.id]??r.eff.wait[o.layer]??1;return m}
-function ruleLine(lid){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.line?.[lid])m*=r.eff.line[lid];return m}
-function ruleCost(def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.cost&&ruleFits(r,def))m*=r.eff.cost;return m}
+function ruleChance(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)){const e=r.eff,sr=ruleStr(r.id);for(const t of [e.chance,e.chance2])if(t)m*=1+((t[o.id]??t[o.layer]??1)-1)*sr}return m}
+function ruleWait(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)&&r.eff.wait)m*=1+((r.eff.wait[o.id]??r.eff.wait[o.layer]??1)-1)*ruleStr(r.id);return m}
+function ruleLine(lid){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.line?.[lid])m*=1+(r.eff.line[lid]-1)*ruleStr(r.id);return m}
+function ruleCost(def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&r.eff.cost&&ruleFits(r,def))m*=1+(r.eff.cost-1)*ruleStr(r.id);return m}
 function setRule(id,on){const r=RD2[id];if(!!S.rules[id]===on)return;S.rules[id]=on;if(r.slots)S.slots+=on?r.slots:-r.slots}
-function toggleRule(id){const r=RD2[id],on=ruleOn(id),cost=r.pc[on?1:0];if(!['exec','proposed'].includes(r.kind)||S.pc<cost)return;
+function toggleRule(id,k){const r=RD2[id],on=ruleOn(id);if(!on){ruleStart(id,k);return}if(codified(id))return;const cost=r.pc[1];if(!['exec','proposed'].includes(r.kind)||S.pc<cost)return;if(S.rroute)delete S.rroute[id];
   S.pc-=cost;actRec('rule',{id,on:!on});if(!on&&r.onOn)r.onOn();else if(on&&r.onOff)r.onOff();else setRule(id,!on);S.pages+=on?80:200;if(!on)S.rulesSince[id]=fmtDate(S.w);
   log(`⚖ ${KIND[r.kind][0]}: ${on?'reversed':r.kind==='proposed'?'finalized':'adopted'} — ${r.n} (${cost} PC).`,'ev');lawRec(on?'Reversed':r.kind==='proposed'?'Rule finalized':'Executive action',r.n);flash('rl:'+id,on?'bad':'good')}
 // a reference project for each domain, so the odds on the process strip are concrete and move when a rule changes
@@ -1961,9 +1970,66 @@ function domRef(D){return PROJECTS.find(d=>facOk(d)&&D.ref(d))||PROJECTS.find(d=
 function oddsMax(o){const k=bnKey()+JSON.stringify([S.reforms,Object.keys(S.carve).filter(carveOn),Math.round(S.lev),S.nflags]);if(S._rbo?.k!==k)S._rbo={k,m:{}};
   return S._rbo.m[o.id]??=(()=>{let c=0,who=null;for(const d of PROJECTS)if(facOk(d)){const x=obsChance(o,d);if(x>c){c=x;who=d}}return {o,c,who}})()}
 const isExec=r=>['exec','proposed'].includes(r.kind);
-function ruleRow(r){const on=r.kind==='foreign'?!S.truce:ruleOn(r.id),k=KIND[r.kind],sw=isExec(r),cost=sw?r.pc[on?1:0]:0;
-  const ctl=sw?`<button class="tog ${on?'on':''}" data-a="rule" data-r="${r.id}" ${S.pc>=cost?'':'disabled'} data-tip="${on?'Reverse':r.kind==='proposed'?'Finalize':'Adopt'}: ${cost} Political Capital. ${k[1]}"><i></i></button>`:`<span class="rkind k-${r.kind}" data-tip="${k[1]}">${k[0]}</span>`;
-  return `<tr class="${on?'rlon':''}" id="rl-${r.id}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${sw?k[0]+' · ':''}${on?(S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since):r.kind==='proposed'?r.since+' · not final':r.since}${sw?` · ${on?'reverse':'adopt'} for ${cost} PC`:''}</div></td><td>${r.dyn?(()=>{const d=r.dyn();return S.truce?fxChips([d[1]],[d[2],d[0]]):fxChips([],d)})():fxChips(r.up,r.dn)}</td></tr>`}
+// ---- executive actions take a route, take time, and last only as long as the route holds
+// Rules (agency regulations) can go by guidance, interim final rule or notice and comment; orders by guidance, directive or a rule behind them.
+const RFORM={rCEQ:'rule',rESA:'rule',rAffil:'rule',rRFO:'rule',rWOTUS:'rule',rNSR:'rule',rITAR:'rule'};
+const rForm=r=>RFORM[r.id]||'order';
+const hasMult=r=>{const e=r.eff||{};return !!(e.chance||e.chance2||e.wait||e.line||e.cost)};
+const RROUTE={
+ memo:{n:'Enforcement guidance',ic:'📝',d:'Agencies are told to apply it now, with no rule behind it. Courts give guidance little weight, so it does about half as much, and the next administration can drop it with a memo.',pcM:.5,str:.5,rev:.85,st:[['Drafting the guidance',2]]},
+ dir:{n:'Directive',ic:'🖋',d:'The President or the Secretary orders it. Full effect within weeks, but the next administration can rescind it as quickly.',pcM:.8,str:1,rev:.7,st:[['Drafting and sign-off',3]]},
+ ifr:{n:'Interim final rule',ic:'⚡',d:'In force on publication, with comments taken afterward under the “good cause” exception. Full effect within a season, but the shortcut leaves it exposed: the next administration can unwind it the same way.',pcM:1,str:1,rev:.6,st:[['Drafting',4],['OIRA review',6]]},
+ nc:{n:'Notice-and-comment rule',ic:'📜',d:'The full Administrative Procedure Act process: propose, take 60 days of comments, answer them, finalize. Most of a year, but it holds: undoing it takes another rulemaking.',pcM:1.25,str:1,rev:.2,st:[['Drafting',6],['OIRA review',6],['Proposed rule and comments',9],['Answering comments and final review',19]]},
+ fin:{n:'Finalize the proposed rule',ic:'📜',d:'The comment period has closed: answer the comments, clear OIRA review and publish. A few months, and it holds: undoing it takes another rulemaking.',pcM:1,str:1,rev:.2,st:[['Answering comments',8],['OIRA review',6]]}};
+// what was actually used for the actions already in force in January 2027
+const DEF_ROUTE={rCEQ:'nc',rESA:'nc',rAffil:'ifr',rRFO:'ifr'};
+function routesOf(r){const m=hasMult(r)?['memo']:[];if(r.kind==='proposed')return [...m,'fin'];return rForm(r)==='rule'?[...m,'ifr','nc']:[...m,'dir','nc']}
+const routeWk=k=>RROUTE[k].st.reduce((a,x)=>a+x[1],0);
+const routeCost=(r,k)=>Math.max(2,Math.round(r.pc[0]*RROUTE[k].pcM));
+const routeOf=id=>S.rroute?.[id]||DEF_ROUTE[id]||(rForm(RD2[id])==='rule'?'ifr':'dir');
+const ruleStr=id=>RROUTE[S.rroute?.[id]]?.str??1;
+const codified=id=>!!S.codified?.[id];
+const defRoute=r=>routesOf(r).filter(k=>k!=='memo')[0];
+function ruleStart(id,k){const r=RD2[id];if(!r||!isExec(r)||ruleOn(id)||S.rproc?.[id])return;k=k&&routesOf(r).includes(k)?k:defRoute(r);const c=routeCost(r,k);if(S.pc<c)return;
+  S.pc-=c;spent('pc',c);(S.rproc=S.rproc||{})[id]={k,w0:S.w,due:S.w+routeWk(k),pc:c};actRec('rule',{id,on:true,k});S.pages+=k==='memo'?40:k==='nc'?300:150;S.rpick=null;
+  log(`⚖ ${RROUTE[k].n} begun: ${r.n} (${c} PC). In force about ${fmtDate(S.w+routeWk(k))}.`,'ev');flash('rl:'+id,'good')}
+function ruleProcTick(){if(!S.rproc)return;for(const id in S.rproc){const x=S.rproc[id];if(S.w<x.due)continue;delete S.rproc[id];const r=RD2[id];
+  (S.rroute=S.rroute||{})[id]=x.k;if(r.onOn)r.onOn();else setRule(id,true);S.rulesSince[id]=fmtDate(S.w);
+  lawRec(x.k==='memo'||x.k==='dir'?'Executive action':'Rule finalized',r.n);log(`⚖ In force: ${r.n} (${RROUTE[x.k].n.toLowerCase()}).`,'good')}}
+function ruleWithdraw(id){if(!S.rproc?.[id])return;delete S.rproc[id];log(`⚖ Withdrawn before it took effect: ${RD2[id].n}.`,'ev')}
+// a hostile presidential election: the new administration freezes pending rules and reviews what it inherited
+function ruleReview(){const out=[];for(const r of RULES){if(!isExec(r)||codified(r.id))continue;
+  if(S.rproc?.[r.id]){delete S.rproc[r.id];out.push(`${r.n} (withdrawn before it took effect)`);continue}
+  if(!ruleOn(r.id))continue;const p=RROUTE[routeOf(r.id)].rev,ok=rand('rrev'+r.id+S.w)>=p;rollRec(r.n,'survived the new administration’s review',1-p,ok,'reversed');
+  if(!ok){if(r.onOff)r.onOff();else setRule(r.id,false);if(S.rroute)delete S.rroute[r.id];out.push(r.n)}}
+  S._rev=out;if(out.length)log(`⚖ The new administration reverses or withdraws: ${out.join('; ')}.`,'bad');return out}
+// writing an executive action into the NDAA makes it law
+const codCost=r=>Math.round(r.pc[0]*1.2)+4;
+const codReqs=()=>(S.codReq=S.codReq||[]);
+const codPass=x=>clamp(.8/Math.sqrt(moodOf(FYOF(x.pkg)).f),.35,.92);
+function codAdd(id){const r=RD2[id];if(!r||!isExec(r)||!ruleOn(id)||codified(id)||codReqs().some(x=>x.id===id))return;const c=codCost(r);if(S.pc<c)return;
+  S.pc-=c;spent('pc',c);codReqs().push({id,pc:c,pkg:pkgW()});actRec('cod',{id});log(`🏛 Added to the FY${pkgFY()} NDAA: write “${r.n}” into law (${c} PC).`,'ev')}
+function codDrop(id){const x=codReqs().find(y=>y.id===id);if(!x)return;S.pc+=x.pc;spent('pc',-x.pc);S.codReq=codReqs().filter(y=>y!==x)}
+function codEnact(got,lost,fy){const its=codReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.codReq=codReqs().filter(x=>!its.includes(x));
+  for(const x of its){const r=RD2[x.id];if(rand('rcod'+x.id+S.w)<codPass(x)){(S.codified=S.codified||{})[x.id]=fy;if(!ruleOn(x.id)){if(r.onOn)r.onOn();else setRule(x.id,true)}
+    lawRec('Law',`Codified: ${r.n}`);got.push(`Law: ${r.n} (codified)`);log(`✅ Codified in the FY${fy%100} ${billN()}: ${r.n}.`,'good')}
+   else{lost.push(`Codify ${r.n} (dropped in conference)`);log(`✂ FY${fy%100} ${billN()}: codifying ${r.n} dropped in conference.`,'bad')}}}
+// the row's extra lines: the route chooser, and the stages of an action under way
+function rulePickHTML(r){const ks=routesOf(r);
+  return `<tr class="rlpick"><td></td><td colspan="2"><div class="rtintro">How to do it. A faster route takes effect sooner; a slower one holds if a new administration takes over in ${nextPresElec()}, which it does about ${pct(1-elecOdds())} of the time.</div><div class="rtcards">${ks.map(k=>{const R=RROUTE[k],c=routeCost(r,k),wk=routeWk(k);
+    return `<div class="rtc"><div class="rth"><span>${R.ic}</span><b>${R.n}</b></div><p>${R.d}</p><dl><dt>In force in ${wk} wk</dt><dd>~${fmtDate(S.w+wk)}</dd><dt>Effect</dt><dd>${R.str<1?'<span class="amb">about half</span>':'full'}</dd><dt>Undone by a new administration</dt><dd class="${R.rev>=.5?'redt':'okt'}">${pct(R.rev)} odds</dd></dl>
+      <button class="pbtn sm primary" data-a="rroute" data-r="${r.id}" data-k="${k}" ${S.pc>=c?'':'disabled'}>Begin · ${c} PC</button></div>`}).join('')}</div>${ruleWhatHTML(r)}</td></tr>`}
+function ruleProcHTML(r){const x=S.rproc[r.id],R=RROUTE[x.k];let w=x.w0;
+  const st=R.st.map(([n,wk])=>{const a=w,b=w+wk;w=b;const cls=S.w>=b?'done':S.w>=a?'cur':'';return `<div class="rtst ${cls}"><b>${n}</b><span>${fmtDate(a)} – ${fmtDate(b)}</span></div>`}).join('');
+  return `<tr class="rlproc"><td></td><td colspan="2"><div class="rtstrip">${st}<div class="rtst end"><b>In force</b><span>~${fmtDate(x.due)}</span></div></div><div class="mini">${R.ic} ${R.n} · ${x.pc} PC spent · <span class="linkn" data-a="rwd" data-r="${r.id}">Withdraw it</span></div></td></tr>`}
+const nextPresElec=()=>{const y=dateOf(S.w).getFullYear();let n=y%4===0&&dateOf(S.w).getMonth()<=10?y:y+(4-y%4);return 'November '+n};
+function ruleWhatHTML(r){return ''}
+function ruleRow(r){const on=r.kind==='foreign'?!S.truce:ruleOn(r.id),k=KIND[r.kind],sw=isExec(r),law=sw&&codified(r.id),proc=sw&&!on&&S.rproc?.[r.id],pick=sw&&!on&&!proc&&S.rpick===r.id,cost=sw?(on?r.pc[1]:routeCost(r,defRoute(r))):0,cq=codReqs().find(x=>x.id===r.id);
+  const ctl=law?`<span class="rkind k-law" data-tip="Written into law by the FY${S.codified[r.id]%100} NDAA: only Congress can change it now.">Law</span>`:proc?`<span class="rkind k-proc" data-tip="Under way: in force about ${fmtDate(proc.due)}.">⏳</span>`:sw?(on?`<button class="tog on" data-a="rule" data-r="${r.id}" ${S.pc>=cost?'':'disabled'} data-tip="Reverse it: ${cost} Political Capital."><i></i></button>`:`<button class="pbtn sm ${pick?'primary':''}" data-a="rule" data-r="${r.id}" data-tip="${r.kind==='proposed'?'Finalize':'Adopt'} it: choose how, from ${Math.min(...routesOf(r).map(x=>routeCost(r,x)))} PC.">${pick?'✕':'Act'}</button>`):`<span class="rkind k-${r.kind}" data-tip="${k[1]}">${k[0]}</span>`;
+  const rt=sw&&on&&!law?routeOf(r.id):null;
+  const sub=!sw?(on?r.since:r.since):law?`Law since the FY${S.codified[r.id]%100} NDAA · ${S.rulesSince[r.id]?'in force since '+S.rulesSince[r.id]:r.since}`:on?`${RROUTE[rt].n} · ${S.rulesSince[r.id]?'since '+S.rulesSince[r.id]:r.since} · <span class="${RROUTE[rt].rev>=.5?'amb':''}">${pct(RROUTE[rt].rev)} odds a new administration undoes it</span>${RROUTE[rt].str<1?' · <span class="amb">about half effect</span>':''} · reverse for ${cost} PC`:proc?`${RROUTE[proc.k].n} under way · in force about ${fmtDate(proc.due)}`:`${k[0]} · ${r.kind==='proposed'?r.since+' · not final':r.since}`;
+  const codL=sw&&on&&!law?(cq?` · <span class="gold">in the FY${FYOF(cq.pkg)} NDAA request, ~${Math.round(codPass(cq)*100)}% to survive</span> <span class="linkn" data-a="coddrop" data-r="${r.id}">✕</span>`:` · <span class="linkn" data-a="codadd" data-r="${r.id}" data-tip="Write it into the FY${pkgFY()} NDAA: if it survives conference, it becomes law and no administration can undo it. ${codCost(r)} PC.">Write it into law (${codCost(r)} PC)</span>`):'';
+  return `<tr class="${on?'rlon':''}${proc?' rlpr':''}" id="rl-${r.id}" data-fk="rl:${r.id}"><td>${ctl}</td><td><b>${r.n}</b> [c:${r.c}]<div class="mini">${sub}${codL}</div></td><td>${r.dyn?(()=>{const d=r.dyn();return S.truce?fxChips([d[1]],[d[2],d[0]]):fxChips([],d)})():fxChips(r.up,r.dn)}</td></tr>${proc?ruleProcHTML(r):pick?rulePickHTML(r):''}`}
 function rulesBody(){const all=allPermits(),open=all.filter(i=>i.st==='review').length,stuck=all.filter(i=>i.st==='stalled'||i.st==='contested').length,dk=S.rbTab==='docket';
   const tabs=`<div class="rbtabs"><div class="seg"><button class="${dk?'':'on'}" data-a="rbtab" data-t="rules"><span>Laws in force</span></button><button class="${dk?'on':''}" data-a="rbtab" data-t="docket"><span>Permit docket${open?` · ${open} in review`:''}${stuck?` · <b class="redt">${stuck} stuck</b>`:''}</span></button></div><span class="mini">Every plant needs permits to build and to operate for as long as it runs. The rules set how long they take; the docket tracks each one.</span></div>`;
   return tabs+(dk?permitsBody():rulesBody0())}
@@ -2402,8 +2468,8 @@ const EVENTS=[
   body:()=>S.cr>0?`Congress passes a continuing resolution through ${fmtDate(S.w+S.cr)}. Agencies are funded at last year’s levels and may not begin “new starts.” Every project still in the Appropriation stage is frozen.`:"Full-year defense appropriations pass before October 1. Staffers are confused. Nobody can find the confetti.",
   o:[{l:'Understood.'}]},
  {id:'elecUS',fac:['US'],once:false,when:()=>{const d=dateOf(S.w);return d.getMonth()===10&&d.getDate()<=7&&d.getFullYear()%2===0},ic:'🗳',t:()=>`Election Day ${dateOf(S.w).getFullYear()}`,
-  fx:()=>{const pres=dateOf(S.w).getFullYear()%4===0;const pen=S.strain>50?-10:0;S._e=(rand('r11')<elecOdds()?(pres?25:15):(pres?-20:-15))+pen;S.pc+=S._e;if(S._e<0&&pres&&S.bill)S.bill.left+=8},
-  body:()=>(S._e>0?`Rearmament polled well. The new Congress arrives eager to be seen building things. (${S._e>0?'+':''}${S._e} PC)`:`Divided government, or a new administration reviewing everything it inherited. (${S._e} PC)`)+(S.strain>50?' Voters punished civilian shortages.':''),o:[{l:'Onward.'}]},
+  fx:()=>{const pres=dateOf(S.w).getFullYear()%4===0;const pen=S.strain>50?-10:0;S._e=(rand('r11')<elecOdds()?(pres?25:15):(pres?-20:-15))+pen;S.pc+=S._e;if(S._e<0&&pres&&S.bill)S.bill.left+=8;S._rev=S._e<0&&pres&&!S.histMode?ruleReview():[]},
+  body:()=>(S._e>0?`Rearmament polled well. The new Congress arrives eager to be seen building things. (${S._e>0?'+':''}${S._e} PC)`:`Divided government, or a new administration reviewing everything it inherited. (${S._e} PC)`)+(S.strain>50?' Voters punished civilian shortages.':'')+(S._rev?.length?`<br><br><b>The new administration undoes what was not written into law:</b> ${S._rev.join('; ')}.`:dateOf(S.w).getFullYear()%4===0&&S._e<0?'<br><br>The new administration reviewed every executive action you took; what was written into law or built on a full rulemaking held.':''),o:[{l:'Onward.'}]},
  
  
  {id:'rayonBack',fac:['US'],once:true,ic:'🧵',when:()=>rayonReady()&&rand('r54')<(passed('multiyear')?.05:.025),t:'A US Firm Restarts Aerospace Rayon',
@@ -3648,7 +3714,7 @@ function billAct(a,uid,d){const p=S.projects.find(x=>x.uid===+uid);if(!p||!p.pkg
 
 function refSec(){const its=refReqs();
   return `<div class="dsec"><h4>Policy provisions</h4><p class="mini" style="margin:0 0 6px">Reforms riding this year’s bill. Defense provisions usually survive conference; riders from other committees usually do not. Their PC is spent; a dropped provision can be tried again next year. Add them from the reform list.</p>
-    ${its.length?`<table class="ctable bl-t"><tr><th>Provision</th><th>Kind</th><th>Money</th><th>Outlook</th><th></th></tr>${its.map(x=>`<tr><td><b>${rname(RD[x.id])}</b><div class="mini">${x.pc} PC spent</div></td><td>${x.rider?'<span class="amb">Rider</span>':'Defense provision'}</td><td class="num">${x.req?money(x.req):'—'}</td><td><span class="${refPass(x)<.5?'amb':'okt'}">~${Math.round(refPass(x)*100)}% chance it survives conference</span></td><td><button class="btn sm" data-a="refdrop" data-r="${x.id}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No reforms in the request yet.</p>'}</div>`}
+    ${its.length||codReqs().length?`<table class="ctable bl-t"><tr><th>Provision</th><th>Kind</th><th>Money</th><th>Outlook</th><th></th></tr>${codReqs().map(x=>`<tr><td><b>Write into law: ${RD2[x.id].n}</b><div class="mini">${x.pc} PC spent · makes an executive action permanent</div></td><td>Defense provision</td><td class="num">—</td><td><span class="${codPass(x)<.5?'amb':'okt'}">~${Math.round(codPass(x)*100)}% chance it survives conference</span></td><td><button class="btn sm" data-a="coddrop" data-r="${x.id}">✕</button></td></tr>`).join('')}${its.map(x=>`<tr><td><b>${rname(RD[x.id])}</b><div class="mini">${x.pc} PC spent</div></td><td>${x.rider?'<span class="amb">Rider</span>':'Defense provision'}</td><td class="num">${x.req?money(x.req):'—'}</td><td><span class="${refPass(x)<.5?'amb':'okt'}">~${Math.round(refPass(x)*100)}% chance it survives conference</span></td><td><button class="btn sm" data-a="refdrop" data-r="${x.id}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No reforms in the request yet.</p>'}</div>`}
 function ordIdleSec(){const m=ordIdle(),cs=Object.keys(m).sort((a,b)=>m[b].gain*UC[b]-m[a].gain*UC[a]);const no=ordNo(),noT=Object.keys(no).length?`<p class="mini">Not worth ordering now: ${Object.keys(no).map(c=>`<b>${LINES[c].n}</b> could make ${fmtN(no[c].gain)} more a year, but it would take shared inputs from ${hurtTxt(no[c].hurt)||'other lines'}, and your share of the requirement would ${no[c].d<-.0005?'fall':'not rise'}`).join('; ')}. Fix the shared input first.</p>`:'';
   if(!cs.length)return '<p class="mini okt">✓ No idle capacity worth ordering.</p>'+noT;
   const tot=cs.reduce((a,c)=>a+ordPC(c,m[c].add),0);
@@ -3690,7 +3756,7 @@ function emergHTML(){let h=`   <h2>Emergency powers <span class="r dim">fast, te
 function policyBody(){if(S.fac!=='US')return agendaHTML();
   const ex=DOMAINS.map(D=>{const rs=RULES.filter(r=>r.dom===D.id&&isExec(r));return rs.length?`<tr class="pdom"><td colspan="3">${D.n}</td></tr>`+rs.map(ruleRow).join(''):''}).join('');
   const on=RULES.filter(r=>isExec(r)&&ruleOn(r.id)).length;
-  return `<div class="polv"><div class="billv"><h3 class="bltt">Executive actions</h3><p class="mini" style="margin:2px 0 8px">Rules the administration can adopt, finalize or reverse for Political Capital. They take effect at once, but the next administration can undo them, and proposed rules invite lawsuits. ${on} in force now.</p>
+  return `<div class="polv"><div class="billv"><h3 class="bltt">Executive actions</h3><p class="mini" style="margin:2px 0 8px">Rules and orders the administration can adopt or finalize for Political Capital. Choose the route: guidance and directives act within weeks but are easy to undo; a notice-and-comment rule takes most of a year and holds. If a new administration takes over in a presidential election, it reviews what it inherited and freezes rules still under way. Only Congress makes one permanent: write it into the NDAA. ${on} in force now${Object.keys(S.rproc||{}).length?`, ${Object.keys(S.rproc).length} under way`:''}.</p>
     <table class="ctable lev rbt"><colgroup><col style="width:56px"><col style="width:44%"><col></colgroup>${ex}</table>${xfPanel()}</div>
     <div class="billv"><h3 class="bltt">Stand-alone bills</h3><p class="mini" style="margin:2px 0 8px">Laws written by committees other than Armed Services: permitting, courts, shipping, immigration and trade. One goes to the floor at a time on its own vote, or rides the NDAA as a long-shot rider. Permanent once enacted.</p><div class="ndaaref polref">${agendaHTML('bills')}</div>
       <h3 class="bltt" style="margin-top:16px">Emergency powers</h3><p class="mini" style="margin:2px 0 8px">Issued by the executive in weeks. Each lasts a set time, many need a declared national emergency, and some can be struck down in court.</p><div class="ndaaref polref">${emergHTML()}</div></div></div>`}
@@ -4094,7 +4160,7 @@ function refReqCost(R,rider){return Math.round(reformCost(R)*(rider?RIDER_F:.8))
 function refAdd(id,rider){const R=RD[id];if(!R||!reformAvail(R)||inReq(id)||S.bill?.id===id)return;const k=refReqCost(R,rider);if(S.pc<k)return;S.pc-=k;spent('pc',k);
   refReqs().push({id,pc:k,rider:!!rider,req:R.$||0,pkg:pkgW()});actRec('rreq',{id});blitzMaybe(id);(S.refPC=S.refPC||{})[id]=(S.refPC[id]||0)+k;log(`🏛 ${rider?'Attached as a rider to':'Added to'} the FY${pkgFY()} NDAA: ${rname(R)} (${k} PC).`,'ev')}
 function refDrop(id){const x=refReqs().find(y=>y.id===id);if(!x)return;S.pc+=x.pc;spent('pc',-x.pc);S.refReq=refReqs().filter(y=>y!==x)}
-function refEnact(got,lost,fy,room){const its=refReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.refReq=refReqs().filter(x=>!its.includes(x));
+function refEnact(got,lost,fy,room){codEnact(got,lost,fy);const its=refReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.refReq=refReqs().filter(x=>!its.includes(x));
   for(const x of its){const R=RD[x.id],n=rname(R);if(passed(x.id))continue;
     const why=room.r<x.req-1e-9?'below the money line':rand('r47')<refPass(x)?null:x.rider?'stripped in conference':'dropped in conference';
     if(why){lost.push(`${n} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${n} ${why}.`,'bad');continue}
@@ -4257,7 +4323,7 @@ function tick0(){
   for(const c in S.ready)S.ready[c]+=(readyTarget(c,R).t-S.ready[c])/26;
   for(const t of ['pac','eu']){enemyStep(S.enemy[t],S.w);S.allied[t]*=Math.pow(1+F().alliedG[t],1/52)}
   S.lev=clamp(S.lev,0,100);levDrift();
-  projectsTick();plantsTick();if(!S.histMode)autoDecide();reformsTick();carvesTick();scenUpdate();homeTick(R.out);
+  projectsTick();plantsTick();if(!S.histMode)autoDecide();reformsTick();ruleProcTick();carvesTick();scenUpdate();homeTick(R.out);
   if(!S.histMode){eventsTick();drainInfo()}
   if(S.w%2===0)S.hist.push(snapshot());
   {const R0=S._R||production(false);(S.resH=S.resH||[]).push({race:raceIdx(R0.out)*100,budget:S.budget,short:S.order.filter(c=>R0.out[c].bott).length,expo:(S.exposure||0)*100,lev:S.lev,strain:S.strain});if(S.resH.length>4)S.resH.shift()}
@@ -7173,7 +7239,8 @@ function cfApply(a){try{switch(a.t){
   case 'nshift':toggleNShift(a.id);return true;
   case 'prio':if(a.o&&a.o.length===S.order.length)S.order=a.o.slice();return true;
   case 'ref':cfPass(a.id);return true;
-  case 'rule':if(ruleOn(a.id)!==a.on)toggleRule(a.id);return true;
+  case 'rule':if(a.on){if(!ruleOn(a.id)&&!S.rproc?.[a.id])ruleStart(a.id,a.k)}else if(ruleOn(a.id))toggleRule(a.id);return true;
+  case 'cod':codAdd(a.id);return true;
   case 'carve':startCarve(a.id,true);return true;
   case 'nds':ndsAdd(a.id);return true;
   case 'cntalk':cnTalk();return true;case 'ruguard':ruGuard();return true;case 'aid':setAid(a.v);return true}}catch(e){console.error(e)}return true}
@@ -7659,7 +7726,8 @@ function whyOff(b){
     case 'whip':return S.bill?.whips>=3?'Every vote that can be whipped has been.':needPC(10);
     case 'spot':return needM(spotCost(d.n));
 
-    case 'rule':{const r=RD2[d.r];return needPC(r.pc[ruleOn(r.id)?1:0])}
+    case 'rule':{const r=RD2[d.r];return ruleOn(r.id)?(codified(r.id)?'Written into law: only Congress can change it.':needPC(r.pc[1])):''}
+    case 'rroute':{const r=RD2[d.r];return needPC(routeCost(r,d.k))}
     case 'ic':{const c=ICD[d.c],on=icOn(c.id);if(!on&&c.req&&!icOn(c.req))return `Needs “${ICD[c.req].n}” in force first.`;return needPC(c.pc[on?1:0])}
     case 'repro':return needPC(reproCost());
     case 'supp':return S.supp?'Already before Congress.':!suppWhy().length?'Congress passes supplementals after a shock: Chinese export bans, or a disaster at a plant. There is nothing to point to right now.':S.suppFY===FYOF(S.w)?'One supplemental a fiscal year.':needPC(SUPP_PC);
@@ -7848,7 +7916,11 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'spot':spotBuy(b.dataset.n);break;
     case 'repro':reprogram();break;
     case 'ic':toggleIC(b.dataset.c);break;
-    case 'rule':toggleRule(b.dataset.r);break;
+    case 'rule':if(ruleOn(b.dataset.r))toggleRule(b.dataset.r);else S.rpick=S.rpick===b.dataset.r?null:b.dataset.r;break;
+    case 'rroute':ruleStart(b.dataset.r,b.dataset.k);break;
+    case 'rwd':ruleWithdraw(b.dataset.r);break;
+    case 'codadd':codAdd(b.dataset.r);break;
+    case 'coddrop':codDrop(b.dataset.r);break;
     case 'fw':framework(b.dataset.l);break;
     case 'evdo':{const it=(S.inbox||[]).find(x=>x.ev===b.dataset.e);S.inbox=(S.inbox||[]).filter(x=>x.ev!==b.dataset.e);S.queue.unshift({ev:b.dataset.e,fxDone:1,due:it?.due});S.speed=0;break}
     case 'recgo':S.view='rec';S.modal=null;S._vdirty=true;break;
