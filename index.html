@@ -1394,6 +1394,11 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 #ov .paper .ft{border-top:1px solid var(--paperRule);padding-top:12px}
 .mpg{margin-top:24px}
 svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;display:inline-block;opacity:1}
+#toasts .toast{background:var(--frame2);color:var(--cream);border:1px solid var(--edge2);border-left:4px solid #d0503f;border-radius:6px;padding:9px 14px;box-shadow:0 8px 24px #000a;font:13px var(--f-body)}
+#toasts .toast b{font:700 14.5px var(--f-head);color:var(--cream)}#toasts .toast .dim{color:var(--muted)}
+#toasts .toast.good{border-left-color:var(--gold);background:var(--frame2)}
+#toasts .toast.news{background:var(--paperCard);color:#2b241a;border-color:var(--paperEdge);border-left-color:var(--gold)}#toasts .toast.news b{color:#231d14}#toasts .toast.news .dim{color:#6b5a35}
+.t3-more{margin:8px 0 0;font:12.5px var(--f-body);color:#6b5a35}
 </style>
 </head>
 <body>
@@ -6383,7 +6388,7 @@ ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-
   // the new-game screen
   const det=cur.sc?`<p class="t3-threat">${cur.sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,'')}</p>
       <div class="t3-dk">${cur.sc.open?'What you are measured on':'What you must reach, a year'}</div><ul class="t3-tg">${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:m.kind==='suff'?` <b>65%</b> against China, <b>85%</b> against Russia`:m.kind==='lines'?` <b>${m.tgt} of 9</b>`:m.kind==='margin'?` <b>+${fmt(m.tgt*100,0)} pt</b>`:''}</li>`).join('')}</ul>
-      <div class="t3-dates"><span><b>January ${dateOf(cur.sc.mid).getFullYear()}</b> halfway check</span><span><b>January ${dateOf(cur.sc.dl).getFullYear()}</b> ${cur.sc.open?'the verdict':'the real targets'}</span></div>`:'';
+      <div class="t3-dates"><span><b>January ${dateOf(cur.sc.mid).getFullYear()}</b> halfway check</span><span><b>January ${dateOf(cur.sc.dl).getFullYear()}</b> ${cur.sc.open?'the verdict':'the real targets'}</span></div><p class="t3-more">Today’s figures, the test and how you are judged are in the ${cur.sc.open?'race':'mandate'} brief, one click away on Command.</p>`:'';
   const rad=(a,attr,on,n,d)=>`<button class="t3-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
   const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'} · ${TPACE==='cont'?'continuous time':'two-month turns'}`;
   app.innerHTML=cz(`<div id="title" class="ti3 t3new"><div class="t3-top"><button class="t3-back" data-a="tscr" data-s="menu">‹ Back</button><div class="t3-brand sm"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1></div><span></span></div>
@@ -8052,6 +8057,7 @@ document.addEventListener('pointerdown',e=>{
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
+  if(S&&!b._now&&(a==='view'||a==='rtab')&&b.matches('#views .vbtn,.vsubbar>button,.rtabs .vbtn')&&!b.classList.contains('on')){for(const x of b.parentElement.children)x.classList.remove('on');b.classList.add('on');document.body.style.cursor='progress';requestAnimationFrame(()=>setTimeout(()=>{b._now=1;b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}));b._now=0;document.body.style.cursor=''},0));return}
   if(a==='start'){newGame(b.dataset.f);render();return}
   if(a==='tmode'&&!S){TMODE=b.dataset.m;renderTitle();return}
 if(a==='tscr'&&!S){TSCR=b.dataset.s;renderTitle();window.scrollTo(0,0);return}
@@ -8060,7 +8066,7 @@ if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
   if(a==='tpace'&&!S){TPACE=b.dataset.m;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
   if(a==='ttut'){clearSave();newGame('US');S.sandbox=false;S.modal=null;S.queue=[];chooseScen('taiwan');S.modal=null;S.view='cmd';S.tut={i:0,sc:-1};S.tourAuto=1;S.toured={};render();saveGame();return}
-  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();S.modal='sbrief';render();saveGame();return}
+  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();S.modal=null;render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
