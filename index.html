@@ -1546,6 +1546,10 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 #ov .pvwin .hd .cttag{margin-left:12px;font:600 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:#f0dfae;border:1px solid #a8925a;background:#4a3d27;padding:2px 8px;border-radius:3px;align-self:center}
 .mvshare{flex-basis:100%;font-size:12px}
 #ov .evp .ft .evcont{align-self:flex-end;width:auto;padding:8px 24px}
+.fcbld{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin:8px 10px 0;padding:7px 10px;border:1px solid var(--edge);border-radius:5px;background:var(--frame2);font:12.5px var(--f-body);color:var(--cream)}
+.brow{grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:5px 10px}.brow .sub{color:var(--muted);font-size:11px;line-height:1.3;margin-top:1px}.brow .bst{text-align:right}.brow .bst b{font-weight:600;font-size:11.5px}
+.basetab td{vertical-align:top}.basetab td:nth-child(2){max-width:340px}
+.brow .bst b.amber{color:#e0b44a}.basetab td.amber{color:#9a6a12}
 </style>
 </head>
 <body>
@@ -5920,6 +5924,26 @@ function plantsTable(pls){return pls.length?`<table class="ctable"><tr><th>Plant
 const FST=[['pre','Before groundbreaking'],['build','Under construction'],['comm','Commissioning'],['ramp','Ramping up'],['full','At full rate']];
 const FSTEP=['Fund','Contract','Permit','Build','Qualify','Market','Ramp','Full rate'];
 function facKind(def){return def.kind==='mod'?'Modernization':def.kind==='power'?'Power upgrade':def.kind==='test'?'Test facility':def.kind==='maint'?'Yard / depot':def.kind==='cap'?'Added capacity':def.t.line?'Line expansion':'New plant'}
+// the base you inherited: the US plants and lines running when you took office, one row per item they make
+const whoShort=w=>{if(!w)return '';let t=String(w).replace(/\[c:[^\]]*\]/g,'').trim();t=t.split(/;|\. /)[0].replace(/\.$/,'');return t.length>90?t.slice(0,88).replace(/[ ,]+\S*$/,'')+'…':t};
+function baseRows(P,R){const rows=[],tm=(k,f)=>S.tmods.find(m=>f(m)&&m.mult<1);
+  for(const l of Object.keys(LINES)){const b=S.lines[l].base;if(!(b>0))continue;const k='L:'+l,o=R.out[l],idle=tm(k,m=>m.kind==='line'&&m.id===l),ct=S.sites?.[k]?.contest;
+    let st,cls,sev;if(idle){st=`🚧 ${lc(idle.label)} · ${idle.left} wk`;cls='redt';sev=3}else if(ct){st='📋 permit renewal contested';cls='amber';sev=2}else if(o?.bott){st=`short of ${lc(limName(o.bott))}`;cls='redt';sev=2}else{st='running';cls='okt';sev=0}
+    if(S.shifts?.[l])st+=' · ⏩ extra shifts';
+    rows.push({k,line:1,n:LINES[l].n,who:LINE_MAKERS[l]||'',out:`${fmtN(b*LINES[l].k)} ${LINES[l].u}/yr capacity`,st,cls,sev})}
+  for(const id of ORDER){const nd=S.nodes[id];if(!(nd.base>.02*nd.scale))continue;const p=P[id],s0=nodeStatus(p),idle=tm(id,m=>(m.kind==='node'||m.kind==='cap')&&m.id===id),ct=S.sites?.[id]?.contest,I=INFO[id]||{};
+    let st,cls,sev;if(idle){st=`🚧 ${lc(idle.label)} · ${idle.left} wk`;cls='redt';sev=3}else if(ct){st='📋 permit renewal contested';cls='amber';sev=2}
+    else if(s0==='cut'){st=`imports cut · ${Math.floor(p.cover*100)}% of need met`;cls='redt';sev=2}else if(s0==='short'){st=`short · ${Math.floor(p.cover*100)}% of need met`;cls='redt';sev=2}else if(s0==='tight'){st=`tight · ${Math.floor(p.cover*100)}% of need met`;cls='amber';sev=1}else{st='running';cls='okt';sev=0}
+    if(nshiftOn(id))st+=' · ⏩ extra shifts';
+    rows.push({k:id,n:ND[id].n,who:I.who?(I.who[S.fac]||I.who.US||(typeof I.who==='string'?I.who:'')):'',out:p.need>1e-6?`US plants: ${pct(Math.min(9.99,nd.base/p.need))} of need`:'',st,cls,sev})}
+  return rows}
+function baseHTML(P,R){const rows=baseRows(P,R),ls=rows.filter(r=>r.line),ns=rows.filter(r=>!r.line).sort((a,b)=>b.sev-a.sev),bad=rows.filter(r=>r.sev>0).length,all=!!S.baseAll,shown=all?ns:ns.filter(r=>r.sev>0);
+  const row=r=>`<div class="prow brow trc" data-tn="${r.k}"><span><span class="linkn" data-a="node" data-n="${r.k}">${r.n}</span>${r.who?`<div class="sub">${whoShort(r.who)}</div>`:''}</span><span class="bst"><b class="${r.cls}">${r.st}</b>${r.out?`<div class="sub">${r.out}</div>`:''}</span></div>`;
+  return `<div class="csec"><span>Plants you inherited</span><span>${rows.length} items · ${bad?`<b class="redt">${bad} in trouble</b>`:'none in trouble'}</span></div>
+    <div class="pintro">The US plants and lines already running when you took office, by what they make. Open one for its producers, permits and what holds it back.</div>
+    <div class="sect"><span>Weapon lines</span><span>${ls.length}</span></div>${ls.map(row).join('')}
+    <div class="sect"><span>Materials and parts</span><span>${all?ns.length:`${shown.length} of ${ns.length} shown`}</span></div>${shown.length?shown.map(row).join(''):'<div class="empty" style="padding:8px 10px">None in trouble.</div>'}
+    <div class="sbmore"><span class="linkn" data-a="baseall">${all?'Show only those in trouble':`Show all ${ns.length} →`}</span></div>`}
 function facList(){const out=[];
   for(const p of S.projects){const def=PD[p.def];if(def.ally||!(p.dur[3]>0))continue;const st=STAGES[p.stage];
     out.push({p,def,ph:p.stage<3?'pre':p.stage===3?'build':'comm',stalled:!!p.obs.length})}
@@ -5949,10 +5973,13 @@ function facCard(x){const sl=slipF().f,yr=w=>dateOf(w).getFullYear();
 function facBody(){const all=facList(),f=S.fcF||'all',n=k=>all.filter(x=>x.ph===k).length,ns=all.filter(x=>x.stalled).length;
   const tiles=[...FST.map(([k,l])=>[k,l,n(k)]),['stalled','Stalled or in trouble',ns]];
   let h=`${pipeSummary()}<div class="pmtiles fctiles">${tiles.map(([k,l,c])=>`<button class="pmtile ${f===k?'on':''}" data-a="fcf" data-v="${f===k?'all':k}"><b class="${k==='stalled'&&c?'redt':''}">${c}</b><span>${l}</span></button>`).join('')}</div>`;
-  if(!all.length)return h+'<p class="mini">No factories yet. Order a new plant to build one.</p>';
+  if(!all.length)h+='<p class="mini">No plants of your own yet. Order a new plant to build one.</p>';
   for(const [k,l] of FST){const xs=all.filter(x=>x.ph===k&&(f==='all'||f===k||(f==='stalled'&&x.stalled))).sort((a,b)=>b.stalled-a.stalled);if(!xs.length)continue;
     h+=`<div class="pdg">${l} · ${xs.length}</div><div class="fgrid">${xs.map(facCard).join('')}</div>`}
-  const al=S.projects.filter(p=>PD[p.def].ally).length;if(al)h+=`<p class="mini" style="margin-top:10px">🤝 ${al} allied deal${al>1?'s are':' is'} being built abroad; see Programs.</p>`;
+  const al=S.projects.filter(p=>PD[p.def].ally).length;if(al)h+=`<p class="mini" style="margin-top:10px">🤝 ${al} allied deal${al>1?'s are':' is'} being built abroad; see the Pipeline.</p>`;
+  if(f==='all'||f==='stalled'){const R=S._R,rs=baseRows(R.P,R).filter(r=>f==='all'||r.sev>=2).sort((a,b)=>(b.line||0)-(a.line||0)||b.sev-a.sev);
+    const nxt=k=>{const o=(S.sites?.[k]?.ops||[]).slice().sort((a,b)=>a.next-b.next)[0];return o?`${(S.sites[k].ops||[]).length} · next renewal ${fmtDate(o.next)}`:'—'};
+    h+=`<div class="pdg">Plants you inherited · ${rs.length}</div><p class="mini">The US plants and lines running when you took office, one row per item they make.</p><table class="ctable basetab"><tr><th>Makes</th><th>Producers</th><th>Capacity</th><th>Status</th><th>Operating permits</th></tr>${rs.map(r=>`<tr><td><span class="linkn" data-a="node" data-n="${r.k}">${r.n}</span></td><td class="mini">${whoShort(r.who)||'—'}</td><td>${r.out||'—'}</td><td class="${r.cls}">${r.st}</td><td class="mini">${nxt(r.k)}</td></tr>`).join('')}</table>`}
   return h}
 const shrF=v=>v>=3?fmt(v,v>=10?0:1)+'×':pct(v);
 function pipeSummary(){
@@ -6460,7 +6487,7 @@ function flowBody(){
 function viewHTML(){
   const T={allies:['🤝','Allies','who builds alongside you, what counts toward your requirement, the deals you can strike, and what hits them at home'],imports:['🌍','Raw materials','where US imports of 18 raw materials come from, from USGS data, and your supply in the game now'],ndaa:['🏛',S.fac==='US'?'NDAA':'Budget law & Council','the annual bill you request, the reforms you push, and what Congress funds, cuts and adds'],rec:['📊','The record','everything that changed since you took over in January 2027'],fac:['🏭','Factories','every plant you are building or running: construction, permits, ramp-up and trouble'],permits:['📋','Permits','every permit across your programs and plants: who holds it, where it stands'],bn:['⛓','Bottlenecks','where output is lost, why, what is being done, and what is in the way'],rules:['📋','Permit docket','every permit your plants need: agency, dates and status'],policy:['⚖','Rules, by area','how each process works, what governs it, and what you can change'],src:['📚','Sources & assumptions',CITES.length+' citations'],stats:['📊','How the numbers work','every statistic and what it changes'],flow:['⇶','Supply flows','this week’s flows, from raw sources to end items'],arsenal:['📈','Stocks & needs','projections hold today’s production constant; the enemy keeps growing'],pipe:['🏗','Production pipeline','what’s coming, what’s stuck, what’s billed'],ready:['🔧','Readiness','built but not available']}[S.view];
   const body=S.view==='rec'?recBody():S.view==='fac'?facBody():S.view==='permits'?(S.view='rules',permitsBody()):S.view==='bn'?bnBody():S.view==='rules'?permitsBody():S.view==='src'?srcBody():S.view==='stats'?statsBody():S.view==='flow'?flowBody():S.view==='arsenal'?stockBody():S.view==='allies'?alliesBody():S.view==='imports'?wmBody():S.view==='ndaa'?`<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML('ndaa')}</div></div>`:S.view==='policy'?polBody():S.view==='pipe'?facBody():readyBody();
-  const grp=vGroup(S.view),gN=grp.length>1?(VIEWS.find(x=>x[0]===grp[0])||[])[1]:null;
+  const grp=vGroup(S.view),gN=grp.length>1&&grp.includes(S.view)?(VIEWS.find(x=>x[0]===grp[0])||[])[1]:null;
   return `<div class="vhead${gN?' vhead2':''}"><span class="ic">${gN?vic(grp[0],22):VIC[S.view]?vic(S.view,22):T[0]}</span><b>${gN||T[1]}</b><span class="mini">${fmtDate(S.w)}${gN?'':' · '+T[2]}</span><span class="dsp"></span>${VIEW_PART[S.view]&&VIEW_PART[S.view]!=='cmd'&&!S.tut?`<button class="vtour" data-a="tour" data-tip="A guided tour of this tab\u2019s parts.">🎓 Tour this tab</button>`:''}${vSubStrip()}${!['flow','src','rules','bn','permits','fac','rec','ndaa','policy','imports','allies'].includes(S.view)?rangeBtns():''}</div><div class="vbody">${S.navH?.at(-1)?.modal?crumb():''}${body}</div>`;
 }
 function hoverLocked(){if(PDRAG)return true;if(!lastPt||!viewEl)return false;const el=document.elementFromPoint(lastPt[0],lastPt[1]);return !!(el&&el.closest&&el.closest('#view')&&el.closest('svg.sk,svg.lc,.sktool'))}
@@ -7635,16 +7662,14 @@ function renderGame(){
   }
   const ramping=S.plants.filter(p=>!p.full||p.issue),fullP=S.plants.filter(p=>p.full&&!p.issue);
   const fl=facList(),bld=fl.filter(x=>x.p),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
-  let fc=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Factories</span> <span class="r" style="margin-left:auto"><span class="dim">${bld.length} building · ${ramping.length} ramping · ${fullP.length} at rate</span> <button class="btn sm" data-a="view" data-v="fac">Full view →</button></span></h2>`;
-  if(bld.length)fc+=`<div class="sect"><span>Being built (${bld.length})</span><span>output starts</span></div>`+bld.sort((a,b)=>b.p.stage-a.p.stage||b.stalled-a.stalled).map(({p,def,stalled})=>{const tn=def.t.node||'L:'+def.t.line,D=p.dur[3],f=p.stage===3?Math.min(1,p.prog/D):p.stage>3?1:0;
-    return `<div class="prow fcrow trc" data-tn="${tn}" data-pu="${p.uid}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${p.uid}">${stalled?'⛔':'🏗'} ${projName(p)}</span><div class="sub ${stalled?'red':''}">${stalled?V(OD[p.obs[0].id].n):p.stage<3?STAGE_L[STAGES[p.stage]]+' · not yet built':p.stage===3?`Construction ${pct(f)}`:'Built · '+STAGE_L[STAGES[p.stage]].toLowerCase()}</div>${p.stage>=3?`<div class="fcbar"><i style="width:${f*100}%"></i></div>`:''}</span><span class="dim">~${yr(Math.round(S.w+remW(p)*sl))}</span></div>`}).join('');
-  if(ramping.length||fullP.length)fc+=`<div class="sect"><span>Running (${ramping.length+fullP.length})</span><span></span></div>`;
+  let fc=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Factories</span> <span class="r" style="margin-left:auto"><span class="dim">${S.plants.length} built · ${bld.length} building</span> <button class="btn sm" data-a="view" data-v="fac">Full view →</button></span></h2>`;
+  if(bld.length)fc+=`<div class="fcbld"><span>🏗 ${bld.length} plant${bld.length>1?'s':''} under construction${bld.some(x=>x.stalled)?` · <b class="redt">${bld.filter(x=>x.stalled).length} stalled</b>`:''}</span><span class="linkn" data-a="rtab" data-t="prog">On the Pipeline →</span></div>`;
+  fc+=`<div class="csec"><span>Plants you built</span><span>${S.plants.length?`${ramping.length} ramping · ${fullP.length} at full rate`:''}</span></div>`+(S.plants.length?'':`<div class="empty" style="padding:8px 10px">None running yet. A plant you start moves here once it is built; until then it is on the Pipeline.</div>`);
   const dis=S.tmods.map(m=>{const nm=m.kind==='line'?LINES[m.id].n:(m.kind==='ally'?'Allied ':m.kind==='neut'?'Neutral ':m.kind==='prc'?'PRC ':'')+ND[m.id].n;return {t:`${m.label}: ${nm}`,x:'×'+fmt(m.mult,2),w:m.left}});
   const seen={};const disU=dis.filter(d=>{const k=d.t.split(':')[0]+d.x;if(d.t.startsWith('Allies prioritize')){if(seen[k])return false;seen[k]=1;d.t='Allies prioritize own needs: all allied supply'}return true});
   for(const g of S.gmods)disU.unshift({t:`${g.label}: ${g.stages.map(s=>STAGE_L[s]).join(', ')}`,x:'×'+fmt(g.mult,2),w:g.left,g:1});
   for(const c of S.costMods)disU.unshift({t:`${c.label}: new-start costs`,x:'×'+fmt(c.mult,2),w:c.left,g:1});
-  if(disU.length)fc+=`<div class="sect"><span>Active disruptions (${disU.length})</span><span>weeks left</span></div>`+disU.map(d=>`<div class="prow"><span class="${d.g?'amber':'red'}">${d.t} <span class="dim">${d.x}</span></span><span class="dim">${d.w}</span></div>`).join('');
-  if(!S.plants.length&&!bld.length)fc+=`<div class="empty" style="padding:12px">No factories yet. Order a new plant to build one.</div>`;
+  const disH=!disU.length?'':`<div class="csec"><span>Active disruptions</span><span>${disU.length} · weeks left</span></div>`+disU.map(d=>`<div class="prow"><span class="${d.g?'amber':'red'}">${d.t} <span class="dim">${d.x}</span></span><span class="dim">${d.w}</span></div>`).join('');
   for(const pl of ramping){
     const isLine=pl.kind==='line',L=isLine?LINES[pl.target]:null,tgt=isLine?L.n:ND[pl.target].n;
     const outNow=pl.gain*pl.yield*plantMult(pl);
@@ -7656,7 +7681,8 @@ function renderGame(){
   }
   if(fullP.length)fc+=fullP.map(pl=>`<div class="prow trc" data-tn="${pl.kind==='line'?'L:':''}${pl.target}" data-pu="${pl.uid}"><span><span class="linkn" style="color:inherit" data-a="prog" data-u="${pl.uid}">✓ ${pl.nm}</span>${pl.adv>0?' <span class="red">⚠ PRC precursor</span>':''}</span><span class="dim">${pl.kind==='line'?fmtN(pl.gain*pl.yield*LINES[pl.target].k)+'/yr':ND[pl.target].n}</span></div>`).join('');
   const allyDone=S.done.filter(d=>PD[d.def].ally);
-  if(allyDone.length)fc+=`<div class="sect"><span>Allied capacity secured</span><span></span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
+  if(allyDone.length)fc+=`<div class="csec"><span>Allied capacity you secured</span><span>${allyDone.length}</span></div>`+allyDone.map(d=>`<div class="prow"><span>🤝 ${d.nm}</span><span class="dim">${ND[PD[d.def].t.node].n}</span></div>`).join('');
+  fc+=disH+baseHTML(P,R);
   // ---- right
   // home front
   const nPrio=S.divIds||[];
@@ -8418,6 +8444,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'bnow':billAct('now',b.dataset.u);break;
     case 'aotog':S.aoShut=!S.aoShut;break;
     case 'fcf':S.fcF=b.dataset.v;break;
+    case 'baseall':S.baseAll=!S.baseAll;break;
     case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;S._vdirty=true;break;
     case 'rbtab':S.rbTab=b.dataset.t;S._vdirty=true;break;
     case 'domtog':{if(!S.domOpen){S.domOpen={};for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1}const o=S.domOpen;o[b.dataset.d]=!o[b.dataset.d];S._vdirty=true;break}
