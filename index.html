@@ -1554,6 +1554,11 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 .hmnd{margin:8px 10px 4px;padding:9px 12px 10px;border:1px solid #6b5d38;border-left:3px solid var(--gold);border-radius:6px;background:var(--frame2)}
 .hmndh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.hmndh span{font:700 15px var(--f-head);color:var(--cream)}.hmndh b{font:700 15px var(--f-head);color:#f3d98a}
 .hmndt{font:12.5px/1.45 var(--f-body);color:var(--muted);margin:4px 0 6px}.hmndr{font:12.5px/1.45 var(--f-body);color:var(--cream)}.hmndl{display:flex;gap:16px;margin-top:6px;font:600 12.5px var(--f-body)}
+.dpbox{margin:6px 10px 8px;padding:8px 10px 6px;border:1px solid var(--edge);border-radius:6px;background:var(--frame2)}
+.dph{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.dph b{font:700 14px var(--f-head);color:var(--cream)}.dph span{font:600 11.5px var(--f-body);color:var(--muted)}
+.dpbox .hmnote{padding:4px 0 6px}.dprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--edge)}
+.dprow .sub{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:1px}.dprow .sub.red{color:#e0806e}.dprow .sub.green{color:#9fd08a}.dpb{text-align:right}.dpb .sub{text-align:right}
+.dprow.off .dpm>.linkn{opacity:.8}
 </style>
 </head>
 <body>
@@ -4728,7 +4733,27 @@ function spotBuy(id){const k=spotKind(id);if(!k)return;const c=spotCost(id);if(S
   {const v=nodeVerdict(id);receipt({ic:SPOT_L[k][0],lab:k==='ally'?'Allied order placed':'Purchase ordered',title:ND[id].n,ok:v?.ok,act:`data-a="node" data-n="${id}"`,actL:'Open the item →',
     lines:['+25% of normal supply, arriving now and lasting 26 weeks.',k==='ally'?(()=>{const h=allyDivHit0;return h.length?`<span class="amb">Taken from allied arms makers: ${h.map(x=>`${lc(LINES[x.c].n)} −${fmtN(x.d)}/yr`).join(', ')}.</span>`:''})():'',v?`<span class="${v.ok?'okt':'amb'}">${v.t.replace('Aims at','Eases')}.</span>`:'',`${money(c)} spent.`]})}}
 const prioOff=id=>S.noPrio?.[id]>S.w;
-function togglePrio(id){S.noPrio=S.noPrio||{};if(prioOff(id)){delete S.noPrio[id];log(`🏭 Defense priority restored: ${ND[id].n}.`,'ev')}else{S.noPrio[id]=S.w+52;log(`Defense priority waived for a year: ${ND[id].n}. Civilian buyers keep their supply.`)}}
+const CIV_WHO={auto:'automakers',ev:'EV and battery makers',aero:'airlines and aerospace suppliers',elec:'electronics makers',farm:'farmers',ammo:'hunters and sport shooters',telecom:'broadband builders',metal:'metal buyers',general:'civilian buyers'};
+// strain a year from one item's diversion, as homeTick counts it
+const divStrain=(id,P)=>{const p=P[id];return p&&p.div>1e-9?p.div/Math.max(p.civFull,1e-9)*(ND[id].civ||0)*DIV_STRAIN*52:0};
+// what waiving (or restoring) priority on one item would change: your lines' output and the share of the requirement; once a week
+function prioCost(id){const C=S._prC&&S._prC.w===S.w?S._prC:(S._prC={w:S.w,v:{}});if(C.v[id])return C.v[id];
+  const R=S._R||production(false),had=S.noPrio?.[id];S.noPrio=S.noPrio||{};if(prioOff(id))delete S.noPrio[id];else S.noPrio[id]=S.w+52;
+  let R2;try{R2=production(false)}finally{if(had!=null)S.noPrio[id]=had;else delete S.noPrio[id]}
+  const pt=(raceIdx(R2.out)-raceIdx(R.out))*100,ls=Object.keys(LINES).map(c=>[c,R2.out[c].yr-R.out[c].yr]).filter(([c,d])=>Math.abs(d)>R.out[c].yr*.002+1e-9).sort((a,b)=>Math.abs(b[1])/Math.max(R.out[b[0]].yr,1e-9)-Math.abs(a[1])/Math.max(R.out[a[0]].yr,1e-9));
+  return C.v[id]={pt,ls}}
+function prioHTML(P){if(S.fac!=='US')return '';const on=(S.divIds||[]).filter(id=>!prioOff(id)),off=Object.keys(S.noPrio||{}).filter(prioOff);
+  const who=id=>CIV_WHO[ND[id].cv||'general']||'civilian buyers',lnTxt=ls=>ls.slice(0,2).map(([c,d])=>`${lc(LINES[c].n)} ${d<0?'−':'+'}${fmtN(Math.abs(d))}/yr`).join(', ');
+  const rowOn=id=>{const p=P[id],c=prioCost(id),sh=p.div/Math.max(p.civFull,1e-9),st=divStrain(id,P);
+    return `<div class="dprow"><div class="dpm"><span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span><div class="sub">takes ${pct(Math.min(1,sh))} of what ${who(id)} buy · <span class="red">+${fmt(st,st<10?1:0)} strain a year</span></div></div>
+      <div class="dpb"><button class="btn sm" data-a="prio" data-n="${id}" data-tip="${tipQ(`<b>Waive defense priority on ${lc(ND[id].n)} for a year</b><br>${who(id).replace(/^./,x=>x.toUpperCase())} keep their supply until ${fmtDate(S.w+52)}, and strain stops rising from it (+${fmt(st,1)} a year now).${c.ls.length?` Your lines make less: ${lnTxt(c.ls)}.`:' Your lines lose nothing they can use now.'}<br>${CIV[ND[id].cv||'general']}`)}">Waive</button><div class="sub ${c.pt<-.05?'red':''}">${c.pt<-.05?`−${fmt(-c.pt,1)} pt`:'no loss'}</div></div></div>`};
+  const rowOff=id=>{const c=prioCost(id);
+    return `<div class="dprow off"><div class="dpm"><span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span><div class="sub">waived until ${fmtDate(S.noPrio[id])}: ${who(id)} keep their supply</div></div>
+      <div class="dpb"><button class="btn sm" data-a="prio" data-n="${id}" data-tip="${tipQ(`<b>Restore defense priority on ${lc(ND[id].n)}</b><br>Defense orders take civilian supply again when it is short.${c.ls.length?` Your lines gain: ${lnTxt(c.ls)}.`:''} Strain rises again.`)}">Restore</button><div class="sub ${c.pt>.05?'green':''}">${c.pt>.05?`+${fmt(c.pt,1)} pt`:''}</div></div></div>`};
+  return `<div class="dpbox"><div class="dph"><b>Defense priority over civilian buyers</b><span>${on.length?`${on.length} item${on.length>1?'s':''} now`:'none now'}</span></div>
+    <div class="mini hmnote">Under the Defense Production Act, rated defense orders go to the front of the line. When an item runs short, your plants take what civilian buyers would have bought: your output holds, but every diversion adds strain. Waiving one for a year hands the supply back: strain eases, and the lines that use it make less.</div>
+    ${on.map(rowOn).join('')}${off.map(rowOff).join('')}${!on.length&&!off.length?'<div class="mini hmnote">Nothing is short enough for defense orders to take civilian supply.</div>':''}</div>`}
+function togglePrio(id){S.noPrio=S.noPrio||{};S._prC=null;if(prioOff(id)){delete S.noPrio[id];log(`🏭 Defense priority restored: ${ND[id].n}.`,'ev')}else{S.noPrio[id]=S.w+52;log(`Defense priority waived for a year: ${ND[id].n}. Civilian buyers keep their supply.`)}}
 function setAid(v){if(v===S.aidLvl)return;actRec('aid',{v});if(v<S.aidLvl){const c=Math.round(10*(S.aidLvl-v)/.5);if(S.pc<c)return;S.pc-=c}S.aidLvl=v;log(`🇺🇦 Aid to Ukraine set to ${v===1?'full':v===.5?'half':'stopped'}.`,'ev')}
 function framework(lid){if(S.fw[lid])return;const tgt=lineName(lid)*2;S.fw[lid]={target:tgt,due:S.w+156,start:S.w};S.pc+=12;log(`📣 Framework agreement announced: ${LINES[lid].n} to ${fmtN(tgt*LINES[lid].k)}/yr within three years.`,'ev')}
 const STRAIN_EV=[['strainNews',30,20],['strainHearing',50,40],['strainCrisis',70,55]];
@@ -7688,7 +7713,7 @@ function renderGame(){
   // home front
   const nPrio=S.divIds||[];
   const pY=S.pcY||{inc:0,sp:0,ev:0},ew=nextElec(),eo=elecOdds(),nPr=S.divIds||[];
-  const sParts=[...nPr.length?[[`DPA diversions from civilian customers (${nPr.length})`,nPr.reduce((a,k)=>a+(ND[k].civ||0)*.35,0)]]:[],...(icOn('icRevoke')&&S.w-(S.icSince?.icRevokeW||0)<26?[['Grounded drone fleets',.6]]:[]),['Recovery as supply returns to normal',-.35]];
+  const sParts=[...nPr.length?[[`Defense orders taking civilian supply (${nPr.length} item${nPr.length>1?'s':''})`,nPr.reduce((a,k)=>a+divStrain(k,P),0)/52]]:[],...(icOn('icRevoke')&&S.w-(S.icSince?.icRevokeW||0)<26?[['Grounded drone fleets',.6]]:[]),['Recovery as supply returns to normal',-.35]];
   const soon=[...(S.ne?[[`National emergency renewal (${NE_RENEW} PC)`,S.ne.since+52*Math.ceil((S.w-S.ne.since+1)/52)]]:[]),...CARVES.filter(C=>carveOn(C.id)&&S.carve[C.id].left<=13).map(C=>[`Carve-out expires: ${cname(C)}`,S.w+S.carve[C.id].left])].sort((x,y)=>x[1]-y[1]);
   const hNd=S.fac!=='US'?'':(()=>{const w=billW(),wk=Math.max(0,Math.round(w-S.w)),np=pkgItems().length,nr=refReqs().length,ns=ndsReqs().length,nc=(typeof codReqs==='function'?codReqs().length:0),pcIn=pkgItems().reduce((a,p)=>a+(p.pc||0),0)+refReqs().reduce((a,x)=>a+(x.pc||0),0)+ndsReqs().reduce((a,x)=>a+(x.pc||0),0);
     const its=[np&&`${np} new plant${np>1?'s':''}`,nr&&`${nr} reform${nr>1?'s':''}`,nc&&`${nc} executive action${nc>1?'s':''} into law`,ns&&`${ns} stockpile buy${ns>1?'s':''}`].filter(Boolean);
@@ -7700,14 +7725,12 @@ function renderGame(){
    <div class="sect"><span class="linkn" data-a="why" data-k="strain" style="color:inherit">Civilian strain →</span><span>${Math.round(S.strain)} / 100</span></div>
    <div class="meter"><span>Strain</span><div class="bar"><i style="left:0;width:${S.strain}%;background:${S.strain>60?'var(--red)':'#a07a40'}"></i><i style="left:30%;width:1px;background:#dcc78e"></i><i style="left:50%;width:1px;background:#dcc78e"></i><i style="left:70%;width:1px;background:var(--red)"></i></div><b>${Math.round(S.strain)}</b></div>
    <div class="hmrows">${sParts.map(([n,v])=>`<div class="hmr"><span>${n}</span><b class="${v>0?'red':'green'}">${v>0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr</b></div>`).join('')}</div>
-   <div class="mini hmnote">Above 30, shortages make the news; above 50, Congress holds a hearing and voters punish shortages at the next election; above 70, a backlash. Strikes, injunctions and import controls add strain once. <span class="linkn" data-a="view" data-v="stats">What every number does →</span></div>
+   <div class="mini hmnote">Above 30, shortages make the news; above 50, Congress holds a hearing and voters punish shortages at the next election; above 70, a backlash. Strikes, injunctions and import controls add strain once. <span class="linkn" data-a="view" data-v="stats">What every number does →</span></div>${prioHTML(P)}
    ${soon.length?`<div class="sect"><span>Coming up</span><span></span></div><div class="hmrows">${soon.slice(0,5).map(([n,w])=>`<div class="hmr"><span>${n}</span><b>${fmtDate(w)}</b></div>`).join('')}</div>`:''}
    ${ew?`<div class="sect"><span>🗳 Next election</span><span>${fmtDate(ew)}</span></div><div class="hmrows"><div class="hmr"><span>${dateOf(ew).getFullYear()%4===0?'Presidential':'Midterm'} · odds the result helps you</span><b class="${eo>=.5?'green':'red'}">${pct(eo)}</b></div></div>
    <div class="mini hmnote">It does not touch the NDAA, which passes with both parties. ${dateOf(ew).getFullYear()%4===0?'A good result brings +25 PC. A bad one costs 20 PC, delays a stand-alone bill on the floor, and brings a new administration that can reverse executive actions you have not written into law.':'A good result brings +15 PC, a bad one −15.'} Plants at full rate raise the odds (now ${fullPlants()}); strain above 30 lowers them.</div>`:''}`;
   home+=`
    ${F().aid&&!S.ceasefire?`<div class="sect"><span>Aid to Ukraine</span><span>${fmtN((F().aid.shells||0)*S.aidLvl)} shells/yr leave your stocks</span></div><div class="mob">${[[1,'Full'],[.5,'Half'],[0,'Stop']].map(([v,l])=>`<button class="btn ${S.aidLvl===v?'on':''}" data-a="aid" data-v="${v}" ${v<S.aidLvl&&S.pc<Math.round(10*(S.aidLvl-v)/.5)?'disabled':''} data-tip="${l} aid: ${fmtN(F().aid.shells*v)} shells and ${fmtN(F().aid.interceptors*v)} interceptors a year to Ukraine.${v<S.aidLvl?` Cutting costs ${Math.round(10*(S.aidLvl-v)/.5)} PC.`:''}">${l}</button>`).join('')}</div>`:''}
-   <div class="sect"><span>Defense orders taking civilian supply (${nPrio.length})</span><span>${nPrio.length?'automatic when short':'none now'}</span></div>
-   ${nPrio.map(id=>`<div class="prow"><span class="linkn" style="color:#8db4e0" data-a="node" data-n="${id}">${ND[id].n}</span><button class="btn sm" data-a="prio" data-n="${id}" data-tip="Waive defense priority on this item for a year: civilian buyers keep their supply and defense goes short.">Waive</button></div>`).join('')}
    ${S.fac==='US'?`<div class="sect"><span>Emergency powers & executive actions</span><span class="linkn" data-a="view" data-v="policy" style="color:#dcc78e">Policy →</span></div><div class="sub" style="padding:4px 10px">${S.ne?'A national emergency is in force. ':''}${CARVES.filter(C=>carveOn(C.id)).length} emergency carve-out${CARVES.filter(C=>carveOn(C.id)).length===1?'':'s'} in force.</div>`:''}`;
   pr+=capH;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
