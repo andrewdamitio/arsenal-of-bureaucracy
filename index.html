@@ -3403,6 +3403,8 @@ const SAWS_K=['L:subs','L:surface','sub_yard','shipyard','sub_parts'];
 function labRate(k){let r=labP(k)[1];if(passed('saws')&&SAWS_K.includes(k))r*=1.6;if(passed('workforce'))r*=1.5;if(passed('expertVisa'))r*=1.2;if(carveOn('cvHire'))r*=1.4;return r*(S.labX?.[k]||1)}
 function labTick(){if(S.histMode||!S.lab)return;for(const k of labKeys()){const T=staffOf(k,true),L=S.lab[k]??T;
   if(L<T)S.lab[k]=L+(T-L)*Math.min(1,labRate(k)/52);else if(L>T*1.8)S.lab[k]=L-(L-T*1.8)*.01}}
+// strain recovers 0.35 a week, but not while defense orders are taking civilian supply (at least half a point of strain a year from it)
+const STRAIN_REC=.35,divOn=()=>(S.divLoad||0)*DIV_STRAIN*52>=.5,strainRec=()=>divOn()?0:STRAIN_REC;
 const ALLY_PRIO=.5,DRONE_CLAIM=.5,DIV_STRAIN=.12,COTS_N=['pcb','micro','li_cells','fiber','tantcap']; // strain per week for each item whose whole civilian supply defense takes, weighted by the civilian share of its market; strain recovers 0.35 a week
 function nodeSupply(id){
   const s=S.nodes[id],c=NO_PRC?0:cutOf(id),mob=MOB[S.mob];
@@ -3723,7 +3725,7 @@ const PC_FADE=120,PC_PLANT=.03,PC_PLANT_MAX=.6;
 const fullPlants=()=>S.plants.filter(p=>p.full&&p.nm).length;
 function pcParts(){const n=fullPlants(),r=[['Baseline support for rearmament',F().pcRate*.75,'Congress and the public back rearmament in general. This is the floor.']];
   if(n)r.push([`Plants at full rate in members’ districts (${n})`,Math.min(PC_PLANT_MAX,n*PC_PLANT),`Each plant running at full rate brings payrolls and ribbon cuttings to a member’s district: +${fmt(PC_PLANT*52,1)} a year each, up to +${fmt(PC_PLANT_MAX*52,0)}.`]);
-  if(S.strain>.5)r.push(['Civilian strain',-S.strain/60,'Shortages and diverted civilian supply cost support. Strain recovers on its own when the pressure eases.']);
+  if(S.strain>.5)r.push(['Civilian strain',-S.strain/60,'Shortages and diverted civilian supply cost support. Strain recovers on its own, but not while defense orders are taking civilian supply.']);
   if(S.pc>PC_FADE)r.push([`Unused capital fades (above ${PC_FADE})`,-(S.pc-PC_FADE)*.01,'Goodwill not spent is forgotten: 1% of anything above '+PC_FADE+' fades each week.']);
   return r}
 function pcRate(){return pcParts().reduce((a,x)=>a+x[1],0)}
@@ -4758,7 +4760,7 @@ function prioHTML(P){if(S.fac!=='US')return '';const on=(S.divIds||[]).filter(id
     return `<div class="dprow off"><div class="dpm"><span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span><div class="sub">waived until ${fmtDate(S.noPrio[id])}: ${who(id)} keep their supply</div></div>
       <div class="dpb"><button class="btn sm" data-a="prio" data-n="${id}" data-tip="${tipQ(`<b>Restore defense priority on ${lc(ND[id].n)}</b><br>Defense orders take civilian supply again when it is short.${c.ls.length?` Your lines gain: ${lnTxt(c.ls)}.`:''} Strain rises again.`)}">Restore</button><div class="sub ${c.pt>.05?'green':''}">${c.pt>.05?`+${fmt(c.pt,1)} pt`:''}</div></div></div>`};
   return `<div class="dpbox"><div class="dph"><b>Defense priority over civilian buyers</b><span>${on.length?`${on.length} item${on.length>1?'s':''} now`:'none now'}</span></div>
-    <div class="mini hmnote">Under the Defense Production Act, rated defense orders go to the front of the line. When an item runs short, your plants take what civilian buyers would have bought: your output holds, but every diversion adds strain. Waiving one for a year hands the supply back: strain eases, and the lines that use it make less.</div>
+    <div class="mini hmnote">Under the Defense Production Act, rated defense orders go to the front of the line. When an item runs short, your plants take what civilian buyers would have bought: your output holds, but every diversion adds strain, and strain does not recover while they go on. Waiving one for a year hands the supply back: strain eases, and the lines that use it make less.</div>
     ${on.map(rowOn).join('')}${off.map(rowOff).join('')}${!on.length&&!off.length?'<div class="mini hmnote">Nothing is short enough for defense orders to take civilian supply.</div>':''}</div>`}
 function togglePrio(id){S.noPrio=S.noPrio||{};S._prC=null;if(prioOff(id)){delete S.noPrio[id];log(`🏭 Defense priority restored: ${ND[id].n}.`,'ev')}else{S.noPrio[id]=S.w+52;log(`Defense priority waived for a year: ${ND[id].n}. Civilian buyers keep their supply.`)}}
 function setAid(v){if(v===S.aidLvl)return;actRec('aid',{v});if(v<S.aidLvl){const c=Math.round(10*(S.aidLvl-v)/.5);if(S.pc<c)return;S.pc-=c}S.aidLvl=v;log(`🇺🇦 Aid to Ukraine set to ${v===1?'full':v===.5?'half':'stopped'}.`,'ev')}
@@ -4768,7 +4770,7 @@ const STRAIN_EV=[['strainNews',30,20],['strainHearing',50,40],['strainCrisis',70
 function topDiv(){const P=(S._R||production(false)).P,ids=(S.divIds||[]).filter(id=>P[id]);return ids.sort((a,b)=>P[b].div/Math.max(P[b].civFull||1e-9,1e-9)*(ND[b].civ||0)-P[a].div/Math.max(P[a].civFull||1e-9,1e-9)*(ND[a].civ||0))[0]||null}
 function homeTick(lastOut){
   const nPrio=S.divIds||[]; // items where defense orders are taking civilian supply
-  {const a=S.strain;S.strain=clamp(S.strain+MOB[S.mob].strain+(S.divLoad||0)*DIV_STRAIN-.35,0,100);S._sflow=S.strain-a}
+  {const a=S.strain;S.strain=clamp(S.strain+MOB[S.mob].strain+(S.divLoad||0)*DIV_STRAIN-strainRec(),0,100);S._sflow=S.strain-a}
   {const a=S.pc;S.pc=Math.min(250,Math.max(0,S.pc+pcRate()));S._pcInc=S.pc-a}
   {const fresh=nPrio.filter(id=>S.w-(S.divLast?.[id]??-999)>=78);if(fresh.length&&S.w-(S.divW??-999)>=26&&rand('r51')<.006*nPrio.length*(.5+S.strain/50)&&!S.queue.some(q=>q.ev==='diversion')){S._div=fresh[Math.floor(rand('r52')*fresh.length)];(S.divLast=S.divLast||{})[S._div]=S.w;S.divW=S.w;queueEvent('diversion')}}
   S.strainUp=S.strainUp||{};for(const [e,hi,lo] of STRAIN_EV){if(S.strain>=hi&&!S.strainUp[e]){S.strainUp[e]=1;if(e==='strainNews'||e==='strainHearing')S._sdiv=topDiv();queueEvent(e)}else if(S.strain<lo)S.strainUp[e]=0}
@@ -7722,7 +7724,7 @@ function renderGame(){
   // home front
   const nPrio=S.divIds||[];
   const pY=S.pcY||{inc:0,sp:0,ev:0},ew=nextElec(),eo=elecOdds(),nPr=S.divIds||[];
-  const sParts=[...nPr.length?[[`Defense orders taking civilian supply (${nPr.length} item${nPr.length>1?'s':''})`,nPr.reduce((a,k)=>a+divStrain(k,P),0)/52]]:[],...(icOn('icRevoke')&&S.w-(S.icSince?.icRevokeW||0)<26?[['Grounded drone fleets',.6]]:[]),['Recovery as supply returns to normal',-.35]];
+  const sParts=[...nPr.length?[[`Defense orders taking civilian supply (${nPr.length} item${nPr.length>1?'s':''})`,nPr.reduce((a,k)=>a+divStrain(k,P),0)/52]]:[],...(icOn('icRevoke')&&S.w-(S.icSince?.icRevokeW||0)<26?[['Grounded drone fleets',.6]]:[]),divOn()?['Recovery: paused while defense orders take civilian supply',0]:['Recovery as supply returns to normal',-STRAIN_REC]];
   const soon=[...(S.ne?[[`National emergency renewal (${NE_RENEW} PC)`,S.ne.since+52*Math.ceil((S.w-S.ne.since+1)/52)]]:[]),...CARVES.filter(C=>carveOn(C.id)&&S.carve[C.id].left<=13).map(C=>[`Carve-out expires: ${cname(C)}`,S.w+S.carve[C.id].left])].sort((x,y)=>x[1]-y[1]);
   const hNd=S.fac!=='US'?'':(()=>{const w=billW(),wk=Math.max(0,Math.round(w-S.w)),np=pkgItems().length,nr=refReqs().length,ns=ndsReqs().length,nc=(typeof codReqs==='function'?codReqs().length:0),pcIn=pkgItems().reduce((a,p)=>a+(p.pc||0),0)+refReqs().reduce((a,x)=>a+(x.pc||0),0)+ndsReqs().reduce((a,x)=>a+(x.pc||0),0);
     const its=[np&&`${np} new plant${np>1?'s':''}`,nr&&`${nr} reform${nr>1?'s':''}`,nc&&`${nc} executive action${nc>1?'s':''} into law`,ns&&`${ns} stockpile buy${ns>1?'s':''}`].filter(Boolean);
@@ -7733,7 +7735,7 @@ function renderGame(){
     <div class="hmr tot"><span>This year so far</span><b>+${fmt(pY.inc,0)} earned · ${pY.sp>=.5?`−${fmt(pY.sp,0)} spent`:'none spent'}${Math.abs(pY.ev)>=.5?` · ${pY.ev>0?'+':'−'}${fmt(Math.abs(pY.ev),0)} from events`:''}</b></div></div>
    <div class="sect"><span class="linkn" data-a="why" data-k="strain" style="color:inherit">Civilian strain →</span><span>${Math.round(S.strain)} / 100</span></div>
    <div class="meter"><span>Strain</span><div class="bar"><i style="left:0;width:${S.strain}%;background:${S.strain>60?'var(--red)':'#a07a40'}"></i><i style="left:30%;width:1px;background:#dcc78e"></i><i style="left:50%;width:1px;background:#dcc78e"></i><i style="left:70%;width:1px;background:var(--red)"></i></div><b>${Math.round(S.strain)}</b></div>
-   <div class="hmrows">${sParts.map(([n,v])=>`<div class="hmr"><span>${n}</span><b class="${v>0?'red':'green'}">${v>0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr</b></div>`).join('')}</div>
+   <div class="hmrows">${sParts.map(([n,v])=>`<div class="hmr"><span>${n}</span>${v===0?'<b class="amber">paused</b>':`<b class="${v>0?'red':'green'}">${v>0?'+':'−'}${fmt(Math.abs(v*52),v*52<10&&v*52>-10?1:0)}/yr</b>`}</div>`).join('')}</div>
    <div class="mini hmnote">Above 30, shortages make the news; above 50, Congress holds a hearing and voters punish shortages at the next election; above 70, a backlash. Strikes, injunctions and import controls add strain once. <span class="linkn" data-a="view" data-v="stats">What every number does →</span></div>${prioHTML(P)}
    ${soon.length?`<div class="sect"><span>Coming up</span><span></span></div><div class="hmrows">${soon.slice(0,5).map(([n,w])=>`<div class="hmr"><span>${n}</span><b>${fmtDate(w)}</b></div>`).join('')}</div>`:''}
    ${ew?`<div class="sect"><span>🗳 Next election</span><span>${fmtDate(ew)}</span></div><div class="hmrows"><div class="hmr"><span>${dateOf(ew).getFullYear()%4===0?'Presidential':'Midterm'} · odds the result helps you</span><b class="${eo>=.5?'green':'red'}">${pct(eo)}</b></div></div>
@@ -8001,11 +8003,11 @@ function mpageWrap(parts){return `<div class="trts n${parts.tiles.length}">${par
 const MPAGE={
  strain:()=>{const v=S.strain,ya=MP.yearAgo('strain'),R=S._R||production(false),P=R.P,ids=S.divIds||[];
    const per=id=>(P[id]?.div||0)/Math.max(P[id]?.civFull||1e-9,1e-9)*(ND[id].civ||0)*DIV_STRAIN*52;
-   const rows=ids.map(id=>[id,per(id)]).filter(x=>x[1]>.05).sort((a,b)=>b[1]-a[1]),rec=v>0||rows.length?-.35*52:0,net=rows.reduce((a,x)=>a+x[1],0)+rec;
+   const rows=ids.map(id=>[id,per(id)]).filter(x=>x[1]>.05).sort((a,b)=>b[1]-a[1]),rec=divOn()?0:v>0||rows.length?-STRAIN_REC*52:0,net=rows.reduce((a,x)=>a+x[1],0)+rec;
    const nxt=[[30,'shortages make the news'],[50,'Congress holds a hearing'],[70,'a guns-versus-butter backlash']].find(m=>v<m[0]);
    const sc=Math.max(1,...rows.map(x=>x[1]),Math.abs(rec)),f1=x=>fmt(x,1);
    const feeds=(rows.length?rows.map(([id,x])=>MP.row(`Defense orders take civilian ${lc(ND[id].n)}`,x,sc,f1,false,`data-a="node" data-n="${id}"`)).join(''):'<p class="mini">No defense orders are taking civilian supply right now.</p>')
-     +(rec?MP.row('Recovery as supply returns to normal',rec,sc,f1,false):'')+`<div class="mpnet">${net<0&&v<.5?'Recovery outpaces what feeds it: <b class="okt">strain stays at zero</b>':`Net at today’s pace: <b class="${net>0?'redt':'okt'}">${net>=0?'+':'−'}${fmt(Math.abs(net),1)} a year</b>${net<0&&v>0?`, back to zero in about ${Math.ceil(v/Math.abs(net)*12)} months`:''}`}</div>
+     +(rec?MP.row('Recovery as supply returns to normal',rec,sc,f1,false):divOn()?'<p class="mini"><b>Recovery is paused</b> while defense orders take civilian supply. It resumes when they stop: waive priority, or add supply so defense no longer needs to divert.</p>':'')+`<div class="mpnet">${net<0&&v<.5?'Recovery outpaces what feeds it: <b class="okt">strain stays at zero</b>':`Net at today’s pace: <b class="${net>0?'redt':'okt'}">${net>=0?'+':'−'}${fmt(Math.abs(net),1)} a year</b>${net<0&&v>0?`, back to zero in about ${Math.ceil(v/Math.abs(net)*12)} months`:''}`}</div>
      <h5 class="mph5">One-off jumps</h5>${MP.ledger(S.mlog?.strain,f1,false)}<p class="mini">Executive actions add strain once: DPA priority ratings +4, a national emergency +5, a Taft-Hartley injunction +8, deferring civilian megaprojects +10, drone bans up to +20.</p>`;
    const odds=v>50?15:v>30?5:0,pcw=v/60;
    const does=MP.kv([['<span class="linkn" data-a="why" data-k="pc">Political Capital</span> lost to it',`${fmt(pcw*52,0)} PC a year`,'Strain ÷ 60 a week.'],['Odds the next election helps you',odds?`<span class="redt">${odds} points lower</span>`:'Not affected',`5 points lower above 30, 15 above 50${v>50?'; above 50 on election day also costs 10 PC':''}.`],
@@ -8122,7 +8124,7 @@ function statsBody(){const R=S._R||production(false),cs=Object.keys(LINES),sc=S.
   const parts=pcParts().slice().sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]))[0],short=S.order.filter(c=>R.out[c].bott);
   const ids=Object.keys(S.know),avgK=ids.reduce((a,id)=>a+S.know[id],0)/Math.max(1,ids.length),lowK=ids.slice().sort((a,b)=>S.know[a]-S.know[b])[0];
   const sh=cs.map(c=>[c,Math.min(1,(R.out[c].yr+allyOut(c))/Math.max(reqOut(c),1e-9))]).sort((a,b)=>a[1]-b[1]);
-  const divs=(S.divIds||[]).length,strNet=(S.divLoad||0)*DIV_STRAIN*52-(S.strain>0||divs?.35*52:0);
+  const divs=(S.divIds||[]).length,strNet=(S.divLoad||0)*DIV_STRAIN*52-(divOn()?0:S.strain>0||divs?STRAIN_REC*52:0);
   const top=[
    card('suff','','Sufficiency',pct(raceIdx(R.out)),'',null,`Weakest line: <b>${LINES[sh[0][0]].n}</b> at ${pct(sh[0][1])} of its requirement.`,'It is the score: the race chart, the year in review and the verdict read it.'),
    card('pc','','Political Capital',`${Math.floor(S.pc)}`,chg('pc',S.pc,true,x=>fmt(x,0)+MP.yl()),MP.series('pc',S.pc),`${parts[0]}: ${parts[1]>=0?'+':'−'}${fmt(Math.abs(parts[1]*52),0)} a year.`,`Pays for votes and fights. Election odds now ${pct(elecOdds())}.`),
@@ -8132,7 +8134,7 @@ function statsBody(){const R=S._R||production(false),cs=Object.keys(LINES),sc=S.
    card('short','','Lines short of parts',`${short.length}/${cs.length}`,'',null,short.length?`Worst: <b>${LINES[short[0]].n}</b>, short of ${lc(ND[R.out[short[0]].chain.at(-1)||R.out[short[0]].bott]?.n||'parts')}.`:'No line is short of parts.','Each short line loses output, and so sufficiency.'),
    card('expo','','PRC exposure',pct(S.exposure),'',(S.hist||[]).filter(h=>h.expo!=null&&h.w>=PLAY0).map(h=>[h.w,h.expo]),'US, allied and neutral supply replacing Chinese supply, against output growth.','What a cutoff or a war would take away.')];
   const back=[
-   card('strain','','Civilian strain',`${Math.round(S.strain)} / 100`,chg('strain',S.strain,false,x=>fmt(x,0)+MP.yl()),MP.series('strain',S.strain),divs?(strNet<0&&S.strain<.5?`Defense orders take civilian supply of ${divs} item${divs>1?'s':''}, but recovery outpaces it.`:`Defense orders taking civilian supply of ${divs} item${divs>1?'s':''}: net ${strNet>=0?'+':'−'}${fmt(Math.abs(strNet),0)} a year.`):'Nothing is building it; it recovers 18 a year.',`Costs ${fmt(S.strain/60*52,0)} PC a year${S.strain>30?`; election odds −${S.strain>50?15:5} points`:''}.`),
+   card('strain','','Civilian strain',`${Math.round(S.strain)} / 100`,chg('strain',S.strain,false,x=>fmt(x,0)+MP.yl()),MP.series('strain',S.strain),divs?(strNet<0&&S.strain<.5?`Defense orders take civilian supply of ${divs} item${divs>1?'s':''}, but recovery outpaces it.`:`Defense orders taking civilian supply of ${divs} item${divs>1?'s':''}: net ${strNet>=0?'+':'−'}${fmt(Math.abs(strNet),0)} a year.`):divOn()?'Recovery is paused while defense orders take civilian supply.':'Nothing is building it; it recovers 18 a year.',`Costs ${fmt(S.strain/60*52,0)} PC a year${S.strain>30?`; election odds −${S.strain>50?15:5} points`:''}.`),
    card('lev','','Prime contractors’ leverage',`${Math.round(S.lev)} / 100`,chg('lev',S.lev,false,x=>fmt(x,0)+MP.yl()),MP.series('lev',S.lev),`${(S.mlog?.lev||[])[0]?`Last moved by: ${S.mlog.lev[0].why}`:`Heading toward ${Math.round(levTarget().v)}: awards, second sources and laws set the level.`}`,`Prime problems ${fmt(Math.max(.2,S.lev/60),2)}× as often as at 60; prime-built work ${S.lev>50?`+${pct((S.lev-50)/200)}`:'no premium'}.`),
    card('cn','','Beijing’s pressure',`${Math.round(cn.heat)} / 100`,chg('cn',cn.heat,false,x=>fmt(x,0)+MP.yl()),MP.series('cn',cn.heat),dr?`${dr[0]}: ${dr[1]>=0?'+':'−'}${fmt(Math.abs(dr[1]),0)} a year.`:'—',nx?`Next step, ${nx.s.toLowerCase()}, possible above ${nx.th}.`:'Every step taken.'),
    card('cred','','Standing with the committees',`${Math.round(credOf())} / 100`,chg('cred',credOf(),true,x=>fmt(x,0)+MP.yl()),MP.series('cred',credOf()),(S.credLog||[])[0]?`Last moved by: ${S.credLog[0].why}`:'Delivering what Congress funded raises it.',`Cut risk on requests ${fmt(credF(),2)}×.`),

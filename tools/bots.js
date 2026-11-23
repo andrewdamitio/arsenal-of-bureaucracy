@@ -4,7 +4,8 @@
 //        builder   a competent player under today's rules. It plans against the scenario's targets: it looks at what will still hold
 //                  each target line back once everything under way has landed, and starts the plant, deal or upgrade that raises that
 //                  line most per dollar. It decides problems promptly, weighs event choices, buys stopgaps, and signs allied deals.
-//                  It passes no reforms.
+//                  It passes no reforms. Once civilian strain passes 20 it waives defense priority on items where the waiver costs
+//                  under a quarter point of the requirement.
 //        reformer  the builder, plus the reform agenda through the game's own mechanics (NDAA provisions, stand-alone bills,
 //                  executive permitting rules), paying their Political Capital and taking their odds. Reforms get first call on capital.
 const {DEFAULT_HTML,CHROME,OUT}=require('./_env');
@@ -108,7 +109,7 @@ const res=await p.evaluate(({bot,scen,years,DUMP,START})=>{
  if(START){try{(0,eval)(START)}catch(e){console.error(e)}}
  const marks=[snap()];const mid=scen!=='open'?SCD[scen].mid:weekOf(2030,0,7),dl=scen!=='open'?SCD[scen].dl:weekOf(2035,0,8);
  for(let i=0;i<52*years&&!S.over;i++){tick();events();
-   if(act){problems();if(reform&&i%2===0)reforms();if(i%4===0)build()}
+   if(act){problems();if(reform&&i%2===0)reforms();if(i%4===0)build();if(i%13===0&&typeof prioCost==='function'&&S.strain>20)for(const id of (S.divIds||[]).filter(x=>!prioOff(x))){S._R=production(false);if(prioCost(id).pt>-.25)togglePrio(id)}}
    if(S.w===mid||S.w===dl||i===52*years-1||S.over)marks.push(snap())}
  const dump=DUMP?(()=>{try{return (0,eval)(DUMP)}catch(e){return String(e)}})():null;
  return {dump,marks,mid:S.scenMid?{verdict:S.scenMid.verdict,floors:S.scenMid.floors,of:S.scenMid.of,test:S.scenMid.test.ok}:null,scen:S.scenRes?{verdict:S.scenRes.verdict,met:S.scenRes.met,of:S.scenRes.ms.length,floors:S.scenRes.ms.filter(x=>x.ok||x.half).length,test:S.scenRes.test.ok}:null,
