@@ -1579,6 +1579,8 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 #ov .dsec.stucksec>h4 .stuckdue{font-size:10.5px;padding:2px 8px}
 #ov .dsec.stucksec{padding:10px 14px 12px;border-radius:5px;background:#fbf1dc;box-shadow:inset 4px 0 0 #b0453a}
 #ov .dsec.stucksec.due{box-shadow:inset 4px 0 0 #c9a227}#stuck{scroll-margin-top:14px}
+#app .rtabs{display:flex;gap:2px}#app .rtabs .vbtn{flex:1 1 auto;min-width:0;justify-content:center;padding-left:7px;padding-right:7px;white-space:nowrap}
+#main.vmode.railmin{grid-template-columns:minmax(0,1fr) 76px}.railb .rl{font-size:10px;line-height:1.15;text-align:center}
 </style>
 </head>
 <body>
@@ -6031,7 +6033,7 @@ function facBody(){const all=facList(),f=S.fcF||'all',n=k=>all.filter(x=>x.ph===
   if(!all.length)h+='<p class="mini">No plants of your own yet. Order a new plant to build one.</p>';
   for(const [k,l] of FST){const xs=all.filter(x=>x.ph===k&&(f==='all'||f===k||(f==='stalled'&&x.stalled))).sort((a,b)=>b.stalled-a.stalled);if(!xs.length)continue;
     h+=`<div class="pdg">${l} · ${xs.length}</div><div class="fgrid">${xs.map(facCard).join('')}</div>`}
-  const al=S.projects.filter(p=>PD[p.def].ally).length;if(al)h+=`<p class="mini" style="margin-top:10px">🤝 ${al} allied deal${al>1?'s are':' is'} being built abroad; see the Pipeline.</p>`;
+  const al=S.projects.filter(p=>PD[p.def].ally).length;if(al)h+=`<p class="mini" style="margin-top:10px">🤝 ${al} allied deal${al>1?'s are':' is'} being built abroad; see the development pipeline.</p>`;
   if(f==='all'||f==='stalled'){const R=S._R,rs=baseRows(R.P,R).filter(r=>f==='all'||r.sev>=2).sort((a,b)=>(b.line||0)-(a.line||0)||b.sev-a.sev);
     const nxt=k=>{const o=(S.sites?.[k]?.ops||[]).slice().sort((a,b)=>a.next-b.next)[0];return o?`${(S.sites[k].ops||[]).length} · next renewal ${fmtDate(o.next)}`:'—'};
     h+=`<div class="pdg">Plants you inherited · ${rs.length}</div><p class="mini">The US plants and lines running when you took office, one row per item they make.</p><table class="ctable basetab"><tr><th>Makes</th><th>Producers</th><th>Capacity</th><th>Status</th><th>Operating permits</th></tr>${rs.map(r=>`<tr><td><span class="linkn" data-a="node" data-n="${r.k}">${r.n}</span></td><td class="mini">${whoShort(r.who)||'—'}</td><td>${r.out||'—'}</td><td class="${r.cls}">${r.st}</td><td class="mini">${nxt(r.k)}</td></tr>`).join('')}</table>`}
@@ -7738,8 +7740,8 @@ function renderGame(){
   const ramping=S.plants.filter(p=>!p.full||p.issue),fullP=S.plants.filter(p=>p.full&&!p.issue);
   const fl=facList(),bld=fl.filter(x=>x.p),yr=w=>dateOf(w).getFullYear(),sl=slipF().f;
   let fc=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Factories</span> <span class="r" style="margin-left:auto"><span class="dim">${S.plants.length} built · ${bld.length} building</span> <button class="btn sm" data-a="view" data-v="fac">Full view →</button></span></h2>`;
-  if(bld.length)fc+=`<div class="fcbld"><span>🏗 ${bld.length} plant${bld.length>1?'s':''} under construction${bld.some(x=>x.stalled)?` · <b class="redt">${bld.filter(x=>x.stalled).length} stalled</b>`:''}</span><span class="linkn" data-a="rtab" data-t="prog">On the Pipeline →</span></div>`;
-  fc+=`<div class="csec"><span>Plants you built</span><span>${S.plants.length?`${ramping.length} ramping · ${fullP.length} at full rate`:''}</span></div>`+(S.plants.length?'':`<div class="empty" style="padding:8px 10px">None running yet. A plant you start moves here once it is built; until then it is on the Pipeline.</div>`);
+  if(bld.length)fc+=`<div class="fcbld"><span>🏗 ${bld.length} plant${bld.length>1?'s':''} under construction${bld.some(x=>x.stalled)?` · <b class="redt">${bld.filter(x=>x.stalled).length} stalled</b>`:''}</span><span class="linkn" data-a="rtab" data-t="prog">On the development pipeline →</span></div>`;
+  fc+=`<div class="csec"><span>Plants you built</span><span>${S.plants.length?`${ramping.length} ramping · ${fullP.length} at full rate`:''}</span></div>`+(S.plants.length?'':`<div class="empty" style="padding:8px 10px">None running yet. A plant you start moves here once it is built; until then it is on the development pipeline.</div>`);
   const dis=S.tmods.map(m=>{const nm=m.kind==='line'?LINES[m.id].n:(m.kind==='ally'?'Allied ':m.kind==='neut'?'Neutral ':m.kind==='prc'?'PRC ':'')+ND[m.id].n;return {t:`${m.label}: ${nm}`,x:'×'+fmt(m.mult,2),w:m.left}});
   const seen={};const disU=dis.filter(d=>{const k=d.t.split(':')[0]+d.x;if(d.t.startsWith('Allies prioritize')){if(seen[k])return false;seen[k]=1;d.t='Allies prioritize own needs: all allied supply'}return true});
   for(const g of S.gmods)disU.unshift({t:`${g.label}: ${g.stages.map(s=>STAGE_L[s]).join(', ')}`,x:'×'+fmt(g.mult,2),w:g.left,g:1});
@@ -7783,7 +7785,7 @@ function renderGame(){
    ${S.fac==='US'?`<div class="sect"><span>Emergency powers & executive actions</span><span class="linkn" data-a="view" data-v="policy" style="color:#dcc78e">Policy →</span></div><div class="sub" style="padding:4px 10px">${S.ne?'A national emergency is in force. ':''}${CARVES.filter(C=>carveOn(C.id)).length} emergency carve-out${CARVES.filter(C=>carveOn(C.id)).length===1?'':'s'} in force.</div>`:''}`;
   pr+=capH;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
-  const rt=`<div class="rtabs">${[['prog','🏗 Pipeline'],['fac','🏭 Factories'],['home','🏛 Home front']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
+  const rt=`<div class="rtabs">${[['prog','🏗 Development pipeline'],['fac','🏭 Factories'],['home','🏛 Home front']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
   const nd=`<h2>Arming against <span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').slice(0,140)}</span>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
@@ -7803,7 +7805,7 @@ const waitingToStart=()=>(S.replay?S.w===0:S.w===PLAY0)&&!S.speed&&!S.modal&&!S.
 let logKey='';
 function railHTML(){const dp=decisionsPending(),n=S.projects.filter(p=>!p.inh||p.stage<STAGES.length).length,f=S.plants.length,tr=S.plants.filter(p=>p.issue).length;
   const b=(t,ic,l,c,warn)=>`<button class="railb" data-a="rail" data-t="${t}" data-tip="${tipQ('<b>'+l+'</b><br>Open the side panel.')}"><span class="ri">${ic}</span><span class="rl">${l}</span>${c!=null?`<span class="rc${warn?' warn':''}">${c}</span>`:''}</button>`;
-  return `<div class="rail">${b('prog','🏗','Pipeline',n)}${b('fac','🏭','Factories',f,tr)}${b('home','🏛','Home front',null)}${dp?`<button class="railb" data-a="view" data-v="cmd" data-tip="Decisions waiting on Command"><span class="ri">⚠</span><span class="rl">Decide</span><span class="rc warn">${dp}</span></button>`:''}</div>`}
+  return `<div class="rail">${b('prog','🏗','Development pipeline',n)}${b('fac','🏭','Factories',f,tr)}${b('home','🏛','Home front',null)}${dp?`<button class="railb" data-a="view" data-v="cmd" data-tip="Decisions waiting on Command"><span class="ri">⚠</span><span class="rl">Decide</span><span class="rc warn">${dp}</span></button>`:''}</div>`}
 function mountLog(html){const box=document.getElementById('logbox'),sel=window.getSelection();
   if(sel&&!sel.isCollapsed&&box.contains(sel.anchorNode))return;
   const k=(UIP.log?'o':'c')+S.log.length+'|'+(S.log[0]?.w)+(S.log[0]?.m)+'|'+(S.projects.length+S.done.length+S.gone.length)+'|'+html.includes('data-a="watch"');
