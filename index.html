@@ -1559,6 +1559,8 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 .dpbox .hmnote{padding:4px 0 6px}.dprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--edge)}
 .dprow .sub{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:1px}.dprow .sub.red{color:#e0806e}.dprow .sub.green{color:#9fd08a}.dpb{text-align:right}.dpb .sub{text-align:right}
 .dprow.off .dpm>.linkn{opacity:.8}
+#ov .crumb span[data-a="goback"]{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border:1px solid #c2ad7c;border-radius:4px;background:#fbf6e8;color:#5a4626;font:600 12.5px var(--f-body);cursor:pointer}
+#ov .crumb span[data-a="goback"]:hover{background:#fff;border-color:#9c8a5c}
 </style>
 </head>
 <body>
@@ -5368,10 +5370,12 @@ function bnBody(){
 const NAV_ACTS=new Set(['blgo','brgo','prjump','pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
 // where Back goes, in words
 function backLbl(){const t=S.navH?.at(-1);if(!t)return '';if(t.modal==='node'&&t.sel)return t.sel.startsWith('L:')?LINES[t.sel.slice(2)]?.n:ND[t.sel]?.n;
-  if(t.modal==='prog'){const r=progRec(t.selP);return r?(r.p.nm||PD[r.p.def].n):'the program'}if(t.modal)return 'the previous page';return SUBN[t.view]||(VIEWS.find(v=>v[0]===t.view)?.[1]||'the map')}
+  if(t.modal==='prog'){const r=progRec(t.selP);return r?(r.p.nm||PD[r.p.def].n):'the program'}if(t.modal)return ({turn:'the turn report',year:'the year in review',end:'the after-action report',brief:'the one-page brief',time:'Where the time went',cf:'What it would have taken',why:'the explanation',bill:'the request',cat:'New order',contract:'the award',pv:'the preview',suppc:'the supplemental'})[t.modal]||'the previous page';return SUBN[t.view]||(VIEWS.find(v=>v[0]===t.view)?.[1]||'the map')}
 const crumb=()=>S.navH?.length?`<div class="crumb"><span data-a="goback" data-tip="Alt+←">← ${backLbl()||'Back'}</span></div>`:'';
 const navSnap=()=>({view:S.view,modal:S.modal,sel:S.sel,selP:S.selP,rtab:S.rtab});
 function navPush(){const s=navSnap(),t=S.navH?.at(-1);if(t&&JSON.stringify(t)===JSON.stringify(s))return;(S.navH=S.navH||[]).push(s);if(S.navH.length>40)S.navH.shift()}
+// a page opened from a report (turn report, year in review, an explanation…): closing it goes back to that report
+function closeToReport(){if(!['node','prog','pv'].includes(S.modal))return false;const H=S.navH||[];for(let i=H.length-1;i>=0;i--){const m=H[i].modal;if(!m)return false;if(!['node','prog','pv'].includes(m)){if(S.queue.length)return false;const t=H[i];S.navH=H.slice(0,i);Object.assign(S,t);S.navBack=[];S._vdirty=true;return true}}return false}
 function navBackG(){const s=S.navH?.pop();if(!s)return;if(S.queue.length||S.modal==='end')return;Object.assign(S,s);S._vdirty=true}
 // fire any data-a action from code, through the same handler a click uses
 function act(a,d={}){const b=document.createElement('span');b.dataset.a=a;for(const k in d)b.dataset[k]=d[k];document.body.appendChild(b);b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}));b.remove()}
@@ -7735,7 +7739,7 @@ function renderGame(){
   pr+=capH;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog','🏗 Pipeline'],['fac','🏭 Factories'],['home','🏛 Home front']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
-  const nd=`<h2>Arming against <span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span> <span class="r"><button class="btn sm" data-a="view" data-v="bn">⛓ Bottlenecks</button> <button class="btn sm" data-a="view" data-v="arsenal">📈 Stocks & needs</button></span></h2>${raceHTML(R)}`;
+  const nd=`<h2>Arming against <span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span></h2>${raceHTML(R)}`;
   const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').slice(0,140)}</span>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
@@ -8382,7 +8386,7 @@ function mnav(){let el=document.getElementById('mnav');if(!S||S.over&&S.modal===
   const m=closable(),must=S.modal&&!m,home=S.view==='cmd'&&!S.modal;
   const h=`<button data-a="${m?'close':'goback'}" ${m||S.navH?.length?'':'disabled'}>${m?'✕ Close':'‹ Back'}</button><button data-a="home" ${home||must?'disabled':''}>⌂ Command</button>${undoOK()?'<button data-a="undo">↶ Undo</button>':''}`;if(el.innerHTML!==h)el.innerHTML=h}
 document.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
+  if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else if(!closeToReport()){S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('off')){popWhy(b);return}
   const a=b.dataset.a;
@@ -8497,7 +8501,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)prioMove(i,i-1);break}
     case 'close':if(S.billAlert){S.billAlert=null;S.speed=TURN()?0:(S.billSpd||1);S.billSpd=null}
-if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;if(S._trnDue&&S.trnRep){S._trnDue=0;S.modal='turn'}break;
+if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(closeToReport())break;if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;if(S._trnDue&&S.trnRep){S._trnDue=0;S.modal='turn'}break;
     case 'pvopen':S.pvBack={m:S.modal,sel:S.sel,selP:S.selP};S.pvId=b.dataset.p;S.modal='pv';S.speed=0;break;
     case 'pvback':{const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;if(k.selP)S.selP=k.selP;S.pvBack=null;break}
     case 'launch':{if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id)}break}
@@ -8576,7 +8580,7 @@ document.addEventListener('keydown',e=>{
   else if('1234'.includes(e.key)&&TURN()){S.tspd=+e.key;if(S.speed)S.speed=S.tspd;render()}
   else if('1234'.includes(e.key)){S.speed=+e.key;S.lastSpeed=S.speed;render()}
   else if(e.key==='Escape'&&S._rcpt&&!S._rcpt.gone&&performance.now()-S._rcpt.t0<RCPT_MS){S._rcpt.gone=true;renderReceipt()}
-  else if(e.key==='Escape'&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else{S.modal=null;S.navBack=[]}render()}
+  else if(e.key==='Escape'&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else if(!closeToReport()){S.modal=null;S.navBack=[]}render()}
 });
 // item and program pages are for reading: time can run while one is open
 const LIVE_M=new Set(['node','prog']);
