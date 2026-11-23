@@ -1550,6 +1550,7 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 .brow{grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:5px 10px}.brow .sub{color:var(--muted);font-size:11px;line-height:1.3;margin-top:1px}.brow .bst{text-align:right}.brow .bst b{font-weight:600;font-size:11.5px}
 .basetab td{vertical-align:top}.basetab td:nth-child(2){max-width:340px}
 .brow .bst b.amber{color:#e0b44a}.basetab td.amber{color:#9a6a12}
+.sweb .swh{font:600 10.5px var(--f-body);letter-spacing:.08em;text-transform:uppercase;fill:#8a7850}
 </style>
 </head>
 <body>
@@ -5542,38 +5543,35 @@ function feedWhy(c,id){const R=S._R;if(!R)return null;
   if(c.startsWith('L:')){const o=R.out[c.slice(2)];if(!o.bott)return null;const ch=o.chain;return ch.includes(id)?{me:1,t:'⛓ held back by this item'}:{t:`held back by ${lc(ND[ch.at(-1)].n)}`}}
   const p=R.P[c];if(!p.starvedBy||p.cover>=.999)return null;const ch=chainOf(R.P,c).slice(1);return ch.includes(id)?{me:1,t:'⛓ starved by this item'}:{t:`short of ${lc(ND[ch.at(-1)].n)}`}}
 function supplyWeb(id,P){
+  // every bar is supply against demand on its own scale (demand is the black mark); lines show only what feeds what
   const isL=id.startsWith('L:'),l=isL?id.slice(2):null,o=isL?S._R.out[l]:null,ins=isL?LINES[l].in:ND[id].in,cons=isL?[]:CONSUMERS[id];
-  const bind=isL?o.bott:P[id].starvedBy,RH=40,top=26,n=Math.max(ins.length,cons.length,isL?3:1,2),H=top+n*RH+8,W=1000;
-  const CX=470,CW=86,cy0=top,cy1=H-8,ch=cy1-cy0,cov=i=>P[i].need>1e-6?Math.min(1,P[i].cover):1,th=i=>3+15*cov(i);
-  const rowY=(k,m)=>top+(n-m)*RH/2+k*RH;
-  let g='';
-  // inputs and their bands into the item
-  const tin=ins.reduce((a,i)=>a+th(i)+4,0);let sy=cy0+ch/2-tin/2;
-  ins.forEach((i,k)=>{const y=rowY(k,ins.length),st=nodeStatus(P[i]),t=th(i),ty=sy+t/2;sy+=t+4;const b=i===bind;
-    g+=`<path d="M302,${y+20} C390,${y+20} 390,${ty.toFixed(1)} ${CX},${ty.toFixed(1)}" fill="none" stroke="${b?ST_C.short:ST_C[st]}" stroke-opacity="${b?.85:.45}" stroke-width="${t.toFixed(1)}"/>`;
+  const bind=isL?o.bott:P[id].starvedBy,RH=40,top=30,n=Math.max(ins.length,cons.length,isL?3:1,2),H=top+n*RH+12,W=1000;
+  const CX=392,CW=236,cyM=top+n*RH/2,rowY=(k,m)=>top+(n-m)*RH/2+k*RH,IX=302,OX=CX+CW,RX=OX+52;
+  let g=`<text x="0" y="${top-12}" class="swh">${ins.length?'Made from · supply against demand':''}</text>${cons.length?`<text x="${W-2}" y="${top-12}" text-anchor="end" class="swh">Feeds · share of its demand</text>`:''}`;
+  // inputs
+  ins.forEach((i,k)=>{const y=rowY(k,ins.length),st=nodeStatus(P[i]),b=i===bind;
+    g+=`<path d="M${IX},${y+20} C${IX+50},${y+20} ${CX-60},${cyM} ${CX-4},${cyM}" fill="none" stroke="${b?ST_C.short:ST_C[st]}" stroke-opacity="${b?.9:.55}" stroke-width="${b?2.6:1.5}"/>`;
     g+=`<g class="swr" data-a="node" data-n="${i}" data-tip="${srcTip(i,P)}"><rect x="0" y="${y}" width="300" height="${RH-4}" fill="transparent"/><text x="0" y="${y+11}" class="swn${b?' swb':''}">${ND[i].n}${b?' · ⛓ binds':''}</text><text x="296" y="${y+11}" text-anchor="end" class="swp" fill="${ST_C[st]}">${P[i].need>1e-6?pct(Math.min(P[i].cover,9.99)):'—'}</text>${srcBar(i,P,0,y+15,296,10)}</g>`});
-  if(!ins.length)g+=`<text x="0" y="${cy0+ch/2}" class="swm">Mined or made from raw stock: no tracked inputs.</text>`;
-  // the item itself
-  if(isL){const r=o.n/Math.max(o.cap,1e-9),iy=cy0+ch*(1-r);g+=`<rect x="${CX}" y="${cy0}" width="${CW}" height="${ch}" fill="#f3ecd8" stroke="#8a8672" stroke-dasharray="4 3"/><rect x="${CX}" y="${iy.toFixed(1)}" width="${CW}" height="${(ch*r).toFixed(1)}" fill="#5f8fc4"/>`;
-    if(r<.995)g+=`<g data-tip="${tipQ(`<b>Idle capacity: ${fmtN(o.capYr-o.yr)}/yr</b><br>The line could build this much more${o.bott?`, but ${lc(ND[o.bott].n)} is short`:''}.`)}"><rect x="${CX}" y="${cy0}" width="${CW}" height="${Math.max(2,ch*(1-r)).toFixed(1)}" fill="transparent"/></g><text x="${CX+CW+6}" y="${(cy0+Math.max(9,ch*(1-r)/2+4)).toFixed(1)}" class="swm">idle ${fmtN(o.capYr-o.yr)}/yr</text>`}
-  else{const s=srcSplit(id,P),tot=Math.max(s.need,s.dom+s.ally+s.neut+s.spot+s.prc+s.lost,1e-9),bh=Math.min(ch,Math.max(34,tin+12)),by0=cy0+ch/2-bh/2,by1=by0+bh,cv=s.need>1e-6?(s.dom+s.ally+s.neut+s.spot+s.prc)/s.need:1;let yy=by1;g+=`<rect x="${CX}" y="${by0.toFixed(1)}" width="${CW}" height="${bh.toFixed(1)}" fill="#e6dbbd" stroke="#cbbd95"/>`;
-    for(const [v,c] of [[s.dom,SRC_C.dom],[s.ally,SRC_C.ally],[s.neut,SRC_C.neut],[s.spot,SRC_C.spot],[s.prc,SRC_C.prc],[s.lost,'url(#swh)']])if(v>0){const hh=v/tot*bh;yy-=hh;g+=`<rect x="${CX}" y="${yy.toFixed(1)}" width="${CW}" height="${hh.toFixed(1)}" fill="${c}"/>`}
-    if(s.need>1e-6){const ny=by1-s.need/tot*bh;g+=`<line x1="${CX-4}" x2="${CX+CW+4}" y1="${ny.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#2b241a" stroke-width="2"/>`;g+=`<text x="${CX+CW/2}" y="${(by1+14).toFixed(1)}" text-anchor="middle" class="swm">supply ${pct(Math.min(cv,9.99))} of demand</text>`}}
-  g+=`<text x="${CX+CW/2}" y="${top-10}" text-anchor="middle" class="swt">${isL?LINES[l].n:ND[id].n}</text>`;
-  g+=`<g data-tip="${tipQ(isL?`<b>${LINES[l].n}</b><br>Output ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity`:srcTip(id,P))}"><rect x="${CX}" y="${cy0}" width="${CW}" height="${ch}" fill="transparent"/></g>`;
+  if(!ins.length)g+=`<text x="0" y="${cyM+4}" class="swm">Mined or made from raw stock: no tracked inputs.</text>`;
+  // the item itself, on the same kind of bar
+  g+=`<text x="${CX+CW/2}" y="${cyM-16}" text-anchor="middle" class="swt">${isL?LINES[l].n:ND[id].n}</text>`;
+  if(isL){const r=Math.min(1,o.n/Math.max(o.cap,1e-9));g+=`<rect x="${CX}" y="${cyM-7}" width="${CW}" height="14" fill="#f3ecd8" stroke="#8a8672" stroke-dasharray="4 3"/><rect x="${CX}" y="${cyM-7}" width="${(CW*r).toFixed(1)}" height="14" fill="#5f8fc4"/>
+      <text x="${CX+CW/2}" y="${cyM+24}" text-anchor="middle" class="swm">output ${pct(r)} of line capacity${r<.995?` · idle ${fmtN(o.capYr-o.yr)}/yr`:''}</text>`}
+  else{const sp=srcSplit(id,P),cv=sp.need>1e-6?(sp.dom+sp.ally+sp.neut+sp.spot+sp.prc)/sp.need:1;g+=srcBar(id,P,CX,cyM-7,CW,14);
+    g+=`<text x="${CX+CW/2}" y="${cyM+24}" text-anchor="middle" class="swm">${sp.need>1e-6?`supply ${pct(Math.min(cv,9.99))} of demand`:'no demand now'}</text>`}
+  g+=`<g data-tip="${tipQ(isL?`<b>${LINES[l].n}</b><br>Output ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr capacity`:srcTip(id,P))}"><rect x="${CX}" y="${cyM-30}" width="${CW}" height="60" fill="transparent"/></g>`;
   // what it feeds, or for an end item, the output against your rival
-  const RX=CX+CW;
-  if(isL){const rv=cnOut(l),ry=cy0+ch/2;
-    g+=`<text x="${RX+22}" y="${ry-22}" class="swbig">${fmtN(o.yr)}<tspan class="swm"> /yr built</tspan></text><text x="${RX+22}" y="${ry-4}" class="swm">of ${fmtN(o.capYr)}/yr line capacity${o.bott?` · held back by ${lc(ND[o.bott].n)}`:''}</text>
-      <text x="${RX+22}" y="${ry+18}" class="swm">${RV().f} ${RV().n} ~${fmtN(rv)}/yr · ${rv>o.yr*1.1?`${fmt(rv/Math.max(o.yr,1e-9),1)}× yours`:rv<o.yr*.9?'you out-build it':'at parity'}</text>`}
-  else{const dem=c=>c.startsWith('L:')?S._R.out[c.slice(2)].cap:(P[c]?.need||0),tot=Math.max(1e-9,cons.reduce((a,c)=>a+dem(c),0));let sy2=cy0+ch/2-cons.reduce((a,c)=>a+3+15*dem(c)/tot+4,0)/2;
-    cons.forEach((c,k)=>{const y=rowY(k,cons.length),t=3+15*dem(c)/tot,ty=sy2+t/2;sy2+=t+4;const isLn=c.startsWith('L:'),nm=isLn?LINES[c.slice(2)].n:ND[c].n,st=isLn?(S._R.out[c.slice(2)].n<S._R.out[c.slice(2)].cap-1e-6?'tight':'ok'):nodeStatus(P[c]);
-      g+=`<path d="M${RX},${ty.toFixed(1)} C${RX+90},${ty.toFixed(1)} ${RX+90},${y+16} ${RX+170},${y+16}" fill="none" stroke="#8a7440" stroke-opacity=".4" stroke-width="${t.toFixed(1)}"/>`;
-      g+=`<g class="swr" data-a="node" data-n="${c}" data-tip="${tipQ(`<b>${nm}</b><br>Takes ${pct(dem(c)/tot)} of demand for ${lc(ND[id].n)}`)}"><rect x="${RX+172}" y="${y+2}" width="${W-RX-172}" height="${RH-6}" fill="transparent"/><circle cx="${RX+180}" cy="${y+16}" r="4" fill="${ST_C[st]}"/><text x="${RX+190}" y="${y+(feedWhy(c,id)?15:20)}" class="swn">${nm}${isLn?' 🏭':''}</text>${(()=>{const fw=feedWhy(c,id);return fw?`<text x="${RX+190}" y="${y+29}" class="swm ${fw.me?'swme':'swsib'}">${fw.t}</text>`:''})()}<text x="${W-2}" y="${y+20}" text-anchor="end" class="swp">${pct(dem(c)/tot)}</text></g>`})}
+  if(isL){const rv=cnOut(l);
+    g+=`<text x="${OX+22}" y="${cyM-22}" class="swbig">${fmtN(o.yr)}<tspan class="swm"> /yr built</tspan></text><text x="${OX+22}" y="${cyM-4}" class="swm">of ${fmtN(o.capYr)}/yr line capacity${o.bott?` · held back by ${lc(ND[o.bott].n)}`:''}</text>
+      <text x="${OX+22}" y="${cyM+18}" class="swm">${RV().f} ${RV().n} ~${fmtN(rv)}/yr · ${rv>o.yr*1.1?`${fmt(rv/Math.max(o.yr,1e-9),1)}× yours`:rv<o.yr*.9?'you out-build it':'at parity'}</text>`}
+  else{const dem=c=>c.startsWith('L:')?S._R.out[c.slice(2)].cap:(P[c]?.need||0),tot=Math.max(1e-9,cons.reduce((a,c)=>a+dem(c),0));
+    cons.forEach((c,k)=>{const y=rowY(k,cons.length),isLn=c.startsWith('L:'),nm=isLn?LINES[c.slice(2)].n:ND[c].n,st=isLn?(S._R.out[c.slice(2)].n<S._R.out[c.slice(2)].cap-1e-6?'tight':'ok'):nodeStatus(P[c]),fw=feedWhy(c,id);
+      g+=`<path d="M${OX+4},${cyM} C${OX+40},${cyM} ${RX-40},${y+16} ${RX-6},${y+16}" fill="none" stroke="#8a7440" stroke-opacity=".6" stroke-width="1.5"/>`;
+      g+=`<g class="swr" data-a="node" data-n="${c}" data-tip="${tipQ(`<b>${nm}</b><br>Takes ${pct(dem(c)/tot)} of the demand for ${lc(ND[id].n)}`)}"><rect x="${RX-4}" y="${y+2}" width="${W-RX+4}" height="${RH-6}" fill="transparent"/><circle cx="${RX}" cy="${y+16}" r="4" fill="${ST_C[st]}"/><text x="${RX+10}" y="${y+(fw?15:20)}" class="swn">${nm}${isLn?' 🏭':''}</text>${fw?`<text x="${RX+10}" y="${y+29}" class="swm ${fw.me?'swme':'swsib'}">${fw.t}</text>`:''}<text x="${W-2}" y="${y+20}" text-anchor="end" class="swp">${pct(dem(c)/tot)}</text></g>`})}
   const leg=[['US-made',SRC_C.dom],['Allied',SRC_C.ally],['Neutral',SRC_C.neut],['Spot / diverted',SRC_C.spot],['PRC / Russia',SRC_C.prc]].map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join('')+`<span><i class="hatch"></i>Cut off</span><span><i style="background:#2b241a;width:2px"></i>Demand</span>`;
   return `<div class="swhd"><span class="linkn" data-a="flow" data-f="${id}">⇶ Open in Flows</span></div>
-    <svg class="sweb" viewBox="0 0 ${W} ${H}" width="100%"><defs><pattern id="swh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#e6dbbd"/><line x1="0" y1="0" x2="0" y2="5" stroke="#b0453a" stroke-width="2.5"/></pattern><pattern id="swi" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#d8ccaa"/><line x1="0" y1="0" x2="0" y2="6" stroke="#8a8672" stroke-width="2"/></pattern></defs>${g}</svg>
-    <div class="sleg swleg">${leg}${isL?'<span><i style="background:#5f8fc4"></i>Line output</span><span><i style="background:#f3ecd8;outline:1px dashed #8a8672;outline-offset:-1px"></i>Idle capacity</span>':''}<span class="mini">Band width: how well each input is covered. Hover for sources.</span></div>`}
+    <svg class="sweb" viewBox="0 0 ${W} ${H}" width="100%"><defs><pattern id="swh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#e6dbbd"/><line x1="0" y1="0" x2="0" y2="5" stroke="#b0453a" stroke-width="2.5"/></pattern></defs>${g}</svg>
+    <div class="sleg swleg">${leg}${isL?'<span><i style="background:#5f8fc4"></i>Line output</span><span><i style="background:#f3ecd8;outline:1px dashed #8a8672;outline-offset:-1px"></i>Idle capacity</span>':''}<span class="mini">Each bar is that item’s supply against its own demand (the black mark): past the mark is surplus, short of it is a shortfall. Lines show what feeds what; red is the input that binds. Hover for sources.</span></div>`}
 /* ---------- in service: your stock and output next to China’s and Russia’s, then and projected ---------- */
 const RIV_C={pac:'#b0453a',eu:'#7a5a8c'};
 function allyAdd(c){const r=retRate(c),m={};let a=0;for(let w=PLAY0;w<=END_W+60;w++){m[w]=a;a=a*(1-r/52)+allyOut(c,w)/52}return w=>w<PLAY0?null:m[Math.min(Math.round(w),END_W+60)]}
