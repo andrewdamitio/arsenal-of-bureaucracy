@@ -1570,6 +1570,10 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 .tball .brk{display:flex;gap:6px;align-items:baseline;font:600 10.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:#8a6a1f}.tball .brk b{margin-left:auto;color:#3f7a34;letter-spacing:0;text-transform:none;font-size:12px}
 .tball .brt{font:700 14.5px var(--f-head);color:#2b241a;margin:3px 0}.tball .brw{font:12.5px/1.45 var(--f-body);color:#4a3d24}.tball .bra{margin-top:8px}.tball .brx{border:0;background:none;color:#8a7850;cursor:pointer}
 .tball .brhid{opacity:.7}.mvmore{padding:6px 0 0;font:600 12.5px var(--f-body)}
+.mvd{display:flex;flex-direction:column;gap:4px}.mvl{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;align-items:baseline}
+.mvl>i{font:600 10.5px var(--f-body);font-style:normal;letter-spacing:.07em;text-transform:uppercase;color:#9fb98f}.mvl>span{display:flex;flex-wrap:wrap;gap:5px;align-items:baseline;font:12.5px/1.45 var(--f-body);color:#cfd8c3}
+.mvnone{color:#b9c2ad}.trp .mvl>i{color:#6b5a35}.trp .mvl>span{color:#3a3020}.trp .mvnone{color:#5a4e38}
+#app .mvp .mvr,#ov .mvr{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:16px;align-items:start}#app .mvp .mvd,#ov .mvd{align-items:stretch;justify-content:flex-start}
 </style>
 </head>
 <body>
@@ -7189,25 +7193,33 @@ function mvRec(prev,cur,ran){if(!mOn())return;S.moves=S.moves||[];const A=S.acts
   if(!acts.length&&S.moves.length){const m=S.moves.at(-1);for(const c in d)m.d[c]=(m.d[c]||0)+d[c];return}
   S.moves.push({w:S.w,acts,d,why:why||'Your decision'})}
 // a move’s title and what it builds
-function mvTitle(m){const a=m.acts.find(x=>x.t==='prj')||m.acts[0];if(!a)return {t:m.why};
+function mvTitle(m){const a=m.acts.find(x=>x.t==='prj')||m.acts[0];if(!a)return {t:m.why,kind:'ev',now:'Decided.',sub:'event'};
+  const vote=`Nothing until Congress votes, around ${fmtDate(billW())}.`;
   if(a.t==='prj'&&PD[a.id]){const d=PD[a.id],tgt=d.t.node?ND[d.t.node].n:LINES[d.t.line].n,pk=a.mode==='pkg';
     const add=d.t.node?projGain(d)/Math.max(S.nodes[d.t.node].scale,1e-9):projGain(d)*LINES[d.t.line].k/Math.max(reqOut(d.t.line),1e-9);
-    const rw=readyW(d,needsContract(d)?(a.ct||ctDefault(d)):null,!pk);
-    return {t:d.n,sub:`${pk?'requested in the NDAA':d.ally?'allied deal':'started'} · ${lc(tgt)} ${d.t.node?`+${pct(add)} of today’s supply`:`+${fmtN(projGain(d)*LINES[d.t.line].k)} a year`} from ~${dateOf(rw).getFullYear()}`,n:d.t.node||'L:'+d.t.line}}
-  if(a.t==='ref'&&RD[a.id])return {t:rname(RD[a.id]),sub:'reform'};
-  if(a.t==='deal'){const D=ALLY_DEALS.find(x=>x.id===a.id);if(D)return {t:D.n,sub:`allied deal · ${lc(LINES[D.c].n)} +${fmtN(D.add)} a year`,n:'L:'+D.c}}
-  if(a.t==='ord'||a.t==='oreq')return {t:`Orders: ${LINES[a.c].n}`,sub:`+${fmtN(a.add)} a year, requested in the NDAA`,n:'L:'+a.c};
-  if(a.t==='rreq'&&RD[a.id])return {t:rname(RD[a.id]),sub:'reform requested in the NDAA'};
-  if(a.t==='nds'&&ND[a.id])return {t:`Stockpile buy: ${ND[a.id].n}`,sub:'requested in the NDAA',n:a.id};
-  if(a.t==='nshift'&&ND[a.id])return {t:`Supplier shifts: ${ND[a.id].n}`,sub:'+15% of US capacity within ~3 months',n:a.id};
-  if(a.t==='rule'&&RD2?.[a.id])return {t:RD2[a.id].n,sub:a.on?'executive action taken':'executive action ended'};
-  return {t:m.why}}
+    const rw=readyW(d,needsContract(d)?(a.ct||ctDefault(d)):null,!pk),yr=dateOf(rw).getFullYear();
+    return {t:`${pk?'Requested in the NDAA':d.ally?'Allied deal':needsContract(d)?'Started a plant':'Started'}: ${d.n}`,sub:`${d.t.node?`+${pct(add)} of today’s ${lc(tgt)} supply`:`+${fmtN(projGain(d)*LINES[d.t.line].k)} ${lc(tgt)} a year`}`,now:pk?vote:`Nothing yet. Output starts in about ${yr}.`,n:d.t.node||'L:'+d.t.line,kind:'prj'}}
+  if(a.t==='ref'&&RD[a.id])return {t:`Reform: ${rname(RD[a.id])}`,sub:'stand-alone bill introduced',now:'Nothing until it passes.',kind:'ref'};
+  if(a.t==='deal'){const D=ALLY_DEALS.find(x=>x.id===a.id);if(D)return {t:`Allied deal: ${D.n}`,sub:`+${fmtN(D.add)} ${lc(LINES[D.c].n)} a year at full rate`,now:`Ramps up over about ${Math.max(1,Math.round((D.ramp||0)/52))} year${Math.round((D.ramp||0)/52)>1?'s':''}.`,n:'L:'+D.c,kind:'deal'}}
+  if(a.t==='ord'||a.t==='oreq')return {t:`Requested orders: ${LINES[a.c].n}`,sub:`+${fmtN(a.add)} a year in the NDAA`,now:vote,n:'L:'+a.c,kind:'ord'};
+  if(a.t==='rreq'&&RD[a.id])return {t:`Reform in the NDAA: ${rname(RD[a.id])}`,sub:'requested in this year’s bill',now:vote,kind:'ref'};
+  if(a.t==='nds'&&ND[a.id])return {t:`Stockpile buy: ${ND[a.id].n}`,sub:'requested in the NDAA',now:vote,n:a.id,kind:'nds'};
+  if(a.t==='nshift'&&ND[a.id])return {t:`Supplier shifts: ${ND[a.id].n}`,sub:`+15% of US capacity for ${lc(ND[a.id].n)}`,now:'Phases in over about three months',n:a.id,kind:'quick'};
+  if(a.t==='spot'&&ND[a.id])return {t:`Spot purchase: ${ND[a.id].n}`,sub:'extra supply for about six months',now:'Phases in over about three months',n:a.id,kind:'quick'};
+  if(a.t==='rule'&&RD2?.[a.id])return {t:`Executive action: ${RD2[a.id].n}`,sub:a.on?'taken':'ended',now:a.on?'In force once its route is complete.':'Ended.',kind:'rule'};
+  return {t:m.why,kind:'ev',now:'Decided.',sub:'event'}}
+// every move in the same shape: what you did and what it adds; then what it does now, and by 2035
 function mvRows(moves,big,r){return moves.map(m=>{const T=mvTitle(m),ls=Object.entries(m.d).filter(([,x])=>Math.abs(x)>=.05).sort((a,b)=>b[1]-a[1]);
-  // quick moves act now, not in 2035: name the lines they feed, and in a turn report what those lines gained
   const qa=m.acts.find(a=>(a.t==='nshift'||a.t==='spot')&&ND[a.id]),qc=qa?endItemsOf(qa.id):[],qup=r&&qa?qc.filter(c=>r.b.out?.[c]>(r.a.out?.[c]||0)*1.005):[];
-  const quick=qa?(qup.length?qup.map(c=>`<span class="mvc up" data-a="node" data-n="L:${c}">▲ ${LINES[c].n} ${fmtN(r.a.out[c])} → ${fmtN(r.b.out[c])} a year this turn</span>`).join(''):`<span class="mvc none">Acts now, not in 2035: it phases in over about three months${qc.length?`, for ${qc.slice(0,3).map(c=>lc(LINES[c].n)).join(', ')}`:''}. Watch the next turn report.</span>`):'';
+  const lst=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join('');
+  const now=qa?(qup.length?qup.map(c=>`<span class="mvc up" data-a="node" data-n="L:${c}">▲ ${LINES[c].n} ${fmtN(r.a.out[c])} → ${fmtN(r.b.out[c])} a year</span>`).join(''):`${T.now}${qc.length?`, for ${lst(qc.slice(0,3).map(c=>lc(LINES[c].n)))}`:''}. The next turn report shows the gain.`):T.now;
+  const it=T.n&&!T.n.startsWith('L:')?lc(ND[T.n].n):'',why=T.kind==='quick'?'It is a stopgap: it acts now, and the 2035 outlook does not count it'
+    :T.kind==='ord'||T.kind==='nds'||(T.kind==='ref'&&/NDAA/.test(T.t))?'It counts once Congress passes it'
+    :T.n&&!T.n.startsWith('L:')?`By 2035, other limits decide what the lines using ${it} make; <span class="linkn" data-a="node" data-n="${T.n}">see why on its page</span>`
+    :T.n?`The line’s own limits come first; <span class="linkn" data-a="node" data-n="${T.n}">see why</span>`:'No weapon line changes';
+  const by=ls.length?ls.map(([c,x])=>`<span class="mvc ${x>0?'up':'dn'}" data-a="node" data-n="L:${c}">${x>0?'▲':'▼'} ${LINES[c].n} ${x>0?'+':'−'}${fmt(Math.abs(x),1)} pt</span>`).join(''):`<span class="mvnone">No change. ${why}.</span>`;
   return `<div class="mvr"><div class="mvt"><b>${T.n?`<span class="linkn" data-a="node" data-n="${T.n}">${T.t}</span>`:T.t}</b>${T.sub?`<span>${T.sub}</span>`:''}</div>
-    <div class="mvd">${quick}${quick&&!ls.length?'':ls.length?ls.map(([c,x])=>`<span class="mvc ${x>0?'up':'dn'}" data-a="node" data-n="L:${c}">${x>0?'▲':'▼'} ${LINES[c].n} ${x>0?'+':'−'}${fmt(Math.abs(x),1)} pt</span>`).join('')+mvShare(ls):`<span class="mvc none">${m.acts.some(a=>a.t==='oreq')?'Counts once Congress funds it and the line has capacity to fill it':'No weapon line makes more by 2035 from this alone'}${T.n&&!T.n.startsWith('L:')?`: <span class="linkn" data-a="node" data-n="${T.n}">see why on its page</span>`:''}</span>`}</div></div>`}).join('')}
+    <div class="mvd"><div class="mvl"><i>Now</i><span>${now}</span></div><div class="mvl"><i>By 2035</i><span>${by}${ls.length?mvShare(ls):''}</span></div></div></div>`}).join('')}
 function mvShare(ls){const R=S._R;if(!R)return '';const up=ls.filter(([,x])=>x>0).map(([c])=>c),dn=ls.filter(([,x])=>x<0).map(([c])=>c);if(!up.length||!dn.length)return '';
   let best=null;for(const c of dn)for(const l of (R.out[c]?.lims||[])){if(!ND[l.id])continue;const e=endItemsOf(l.id),u=up.find(x=>e.includes(x));if(u&&(!best||l.f<best.f))best={id:l.id,f:l.f,u,d:c}}
   if(!best)for(const id of ORDER){const e=endItemsOf(id),u=up.find(x=>e.includes(x)),d=dn.find(x=>e.includes(x));if(u&&d&&['short','cut','tight'].includes(nodeStatus(R.P[id]))){best={id,u,d};break}}
