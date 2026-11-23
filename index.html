@@ -1561,6 +1561,15 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 .dprow.off .dpm>.linkn{opacity:.8}
 #ov .crumb span[data-a="goback"]{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border:1px solid #c2ad7c;border-radius:4px;background:#fbf6e8;color:#5a4626;font:600 12.5px var(--f-body);cursor:pointer}
 #ov .crumb span[data-a="goback"]:hover{background:#fff;border-color:#9c8a5c}
+/* the brief: a stronger title with the turn's dates; the full brief as a popup */
+#app .brf>.brh{align-items:center;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid rgba(201,149,42,.35)}#app .brf>.brh>b{font:700 19px var(--f-head)!important;color:#f3d98a}
+.brh .brdate{flex:none;font:600 11px var(--f-body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:#1c1608;background:#c9952a;border-radius:3px;padding:2px 7px}
+#app .panel .brh>.brall{flex:none;white-space:nowrap;font:600 12.5px var(--f-body)}
+.brp .brh .brdate{color:#fff8e6;background:#8a6a1f}
+.tball .brcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:4px 0 12px}.tball .brc{background:#fbf7ec;border:1px solid #d6c79f;border-radius:5px;padding:9px 11px}
+.tball .brk{display:flex;gap:6px;align-items:baseline;font:600 10.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:#8a6a1f}.tball .brk b{margin-left:auto;color:#3f7a34;letter-spacing:0;text-transform:none;font-size:12px}
+.tball .brt{font:700 14.5px var(--f-head);color:#2b241a;margin:3px 0}.tball .brw{font:12.5px/1.45 var(--f-body);color:#4a3d24}.tball .bra{margin-top:8px}.tball .brx{border:0;background:none;color:#8a7850;cursor:pointer}
+.tball .brhid{opacity:.7}.mvmore{padding:6px 0 0;font:600 12.5px var(--f-body)}
 </style>
 </head>
 <body>
@@ -4825,7 +4834,7 @@ function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)o
   return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
 function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play a turn soon, or end the tutorial.</span>');return}if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
   if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
-function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown),moves:S.moves||[]};S.moves=[];for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
+function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown),moves:S.moves||[]};S.moves=[];S.mvAll=false;for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
   if(S.over)return '';
   return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next turn ▸ ${turnLabel(S.w)}`}</button>`}
@@ -7206,7 +7215,8 @@ function mvShare(ls){const R=S._R;if(!R)return '';const up=ls.filter(([,x])=>x>0
   return `<span class="mvc none mvshare">${LINES[best.u].n} draw${/s$/.test(LINES[best.u].n)?'':'s'} on the same ${lc(ND[best.id].n)} as ${dl}: more for one leaves less for the other. <span class="linkn" data-a="prjump">Change which lines get scarce parts first →</span></span>`}
 function mvPanel(){const M=S.moves||[];if(!M.length||(S.tut&&!S.tut.g)||S.w<PLAY0)return '';
   const tot=Object.values(M.reduce((a,m)=>{for(const c in m.d)a[c]=(a[c]||0)+m.d[c];return a},{})).reduce((a,x)=>a+x,0)/Object.keys(LINES).length;
-  return `<div class="mvp"><div class="brh"><b>Set in motion this turn</b><span>${M.length} move${M.length>1?'s':''}${Math.abs(tot)>=.05?` · the 2035 outlook ${tot>0?'+':'−'}${fmt(Math.abs(tot),1)} pt`:''}</span><span class="linkn brhide" data-a="why" data-k="outlook">The 2035 outlook →</span></div>${mvRows(M)}</div>`}
+  const R=M.slice().reverse(),more=R.length-1,open=!!S.mvAll;
+  return `<div class="mvp"><div class="brh"><b>Set in motion this turn</b><span>${M.length} move${M.length>1?'s':''}${Math.abs(tot)>=.05?` · the 2035 outlook ${tot>0?'+':'−'}${fmt(Math.abs(tot),1)} pt`:''}</span><span class="linkn brhide" data-a="why" data-k="outlook">The 2035 outlook →</span></div>${mvRows(open?R:R.slice(0,1))}${more?`<div class="mvmore"><span class="linkn" data-a="mvall">${open?'Show only the latest ▴':`Show ${more} more ▾`}</span></div>`:''}</div>`}
 // a weapon line’s gain from this turn’s moves, as a badge by its name
 function mvBadge(c){const x=(S.moves||[]).reduce((a,m)=>a+(m.d[c]||0),0);return Math.abs(x)>=.1?`<span class="mvbadge ${x>0?'up':'dn'}" data-tip="${tipQ(`Your moves this turn change its January 2035 outlook by ${x>0?'+':'−'}${fmt(Math.abs(x),1)} points of its requirement.`)}">${x>0?'▲':'▼'} ${fmt(Math.abs(x),1)} pt this turn</span>`:''}
 function trkUpdate(){if(!S||S.sim||S.histMode||S.over||S.replay||S.w<PLAY0||S.speed>0||S.modal==='scenPick')return;
@@ -7241,7 +7251,9 @@ function starveGroups(R){const cs=Object.keys(LINES),g={};
 function tbPick(ds){const ok=ds.filter(d=>!S.projects.some(p=>p.def===d.id)&&canStart(d)&&(!d.req||passed(d.req))),v=ok.map(d=>[d,vfmOf(d)]);
   if(v.some(x=>x[1]==null))return null; // still being worked out: the move appears once it is known, rather than appearing and then vanishing
   return v.filter(x=>typeof x[1]==='number'&&x[1]>0).sort((a,b)=>b[1]-a[1])[0]?.[0]||null}
-function tbMoves(){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')return [];
+function tbMoves(all){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')return [];
+  // the card on Command: the best of each kind from the full list, hidden ones left out, top three
+  if(!all){const seen=new Set();return tbAll().filter(x=>{const kd=/^(quick|line|deal):/.test(x.k)?x.k.split(':')[0]:null;if(kd){if(seen.has(kd))return false;seen.add(kd)}return !x.hid}).slice(0,3)}
   const R=S._R||production(false),cs=Object.keys(LINES),no=S.briefNo||{},hid=k=>no[k]!=null&&S.w<no[k]+8,mv=[];
   // Beijing’s next step, when it is close
   {const n=cnNext();if(n&&n.yrsTo>=0&&n.yrsTo<=1){const ids=CN_MIN().filter(id=>ndsOk(id)&&!ndsReqs().some(x=>x.id===id));
@@ -7251,31 +7263,40 @@ function tbMoves(){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='US')
     const d=tbPick(leversFor(id));if(!d)continue;
     mv.push({k:'fix:'+id,pt:g.pt,ptl:'up to',lab:'Fix a bottleneck',t:ND[id].n,why:`Built ${g.ls.length>1?'lines':'line'} for ${g.ls.map(x=>lc(LINES[x.c].n)).join(', ')} ${g.ls.length>1?'stand':'stands'} idle for want of it.${cov.n?` What is under way closes ${pct(1-cov.share)} of the gap${cov.lastW?` by about ${dateOf(cov.lastW).getFullYear()}`:''}.`:''} Best value: <b>${d.n}</b> ${vfmChip(d)}`,act:launchBtn(d)});break}
   // a quick win: extra shifts at the suppliers of the part costing most output, felt within about three months
-  {const g=starveGroups(R).find(g=>ND[g.id]&&S.nodes[g.id]?.base>0&&!nshiftOn(g.id)&&g.pt>=.1);if(g){const P=R.P[g.id],add=nshiftAdd(g.id,P),gap=Math.max(1e-9,1-Math.min(1,P.cover)),pt=g.pt*Math.min(1,add/gap);
+  for(const g of starveGroups(R).filter(g=>ND[g.id]&&S.nodes[g.id]?.base>0&&!nshiftOn(g.id)&&g.pt>=.1).slice(0,all?99:1)){{const P=R.P[g.id],add=nshiftAdd(g.id,P),gap=Math.max(1e-9,1-Math.min(1,P.cover)),pt=g.pt*Math.min(1,add/gap);
     if(add>.005)mv.push({k:'quick:'+g.id,quick:1,pt,ptl:'up to',lab:'Quick win',t:`Extra shifts: ${ND[g.id].n}`,why:`Overtime and another shift at the US plants that already make it: +${pct(add)} of demand within about three months, ${add>=gap?'enough to close the gap':'about '+pct(Math.min(1,add/gap))+' of the gap'}, for ${money(NSHIFT_C)} a year. A new plant takes years; this shows in the next turn reports. Crews wear: breakdowns grow likelier.`,act:`<button class="pbtn sm primary" data-a="nshift" data-n="${g.id}" ${S.budget>=NSHIFT_C?'':'disabled'}>Start shifts · ${money(NSHIFT_C)}/yr</button>`})}}
   // the weapon line held back by its own capacity that a new plant would lift most, with the best-value plant you can start
-  {let best=null;
+  {let best=null;const lb=[];
     for(const c of cs){const o=R.out[c];if(o.bott||o.ordLim||suffLine(c,o.yr)>=.999)continue;
       const d=tbPick(PROJECTS.filter(d=>facOk(d)&&d.t.line===c));if(!d)continue;const add=projGain(d)*lineMultOf(c)*LINES[c].k,pt=(suffLine(c,o.yr+add)-suffLine(c,o.yr))/cs.length*100;
-      if(pt>=.1&&(!best||pt>best.pt))best={c,d,add,pt,n:S.projects.filter(p=>PD[p.def]?.t.line===c).length}}
-    if(best){const {c,d,add,pt,n}=best;mv.push({k:'line:'+c,pt,ptl:'up to',lab:'Build line capacity',t:LINES[c].n,why:`The line itself is the limit: it makes ${pct(suffLine(c,R.out[c].yr))} of the requirement with allies.${n?` ${n} program${n>1?'s':''} for it already under way.`:''} Best value: <b>${d.n}</b>, +${fmtN(add)} ${LINES[c].u} a year ${vfmChip(d)}`,act:launchBtn(d)})}}
+      if(pt>=.1){const z={c,d,add,pt,n:S.projects.filter(p=>PD[p.def]?.t.line===c).length};lb.push(z);if(!best||pt>best.pt)best=z}}
+    for(const z of (all?lb.sort((a,b)=>b.pt-a.pt):best?[best]:[])){const {c,d,add,pt,n}=z;mv.push({k:'line:'+c,pt,ptl:'up to',lab:'Build line capacity',t:LINES[c].n,why:`The line itself is the limit: it makes ${pct(suffLine(c,R.out[c].yr))} of the requirement with allies.${n?` ${n} program${n>1?'s':''} for it already under way.`:''} Best value: <b>${d.n}</b>, +${fmtN(add)} ${LINES[c].u} a year ${vfmChip(d)}`,act:launchBtn(d)})}}
   // capacity built but not ordered
   {const m=ordIdle(),ls=cs.filter(c=>m[c]);if(ls.length){const pt=ls.reduce((a,c)=>a+m[c].d*100,0),pcs=ls.map(c=>ordPC(c,m[c].add)),pc=pcs.reduce((a,b)=>a+b,0);
     mv.push({k:'ord',pt,lab:'Order idle capacity',t:ls.map(c=>LINES[c].n).join(', '),why:`Built but not ordered: lines make only what Congress orders. Requesting full orders in the next ${billN()} adds this once it passes.`,act:`<button class="pbtn sm primary" data-a="ordall" ${S.pc>=Math.min(...pcs)?'':'disabled'}>Request orders · ${Math.round(pc)} PC</button>`})}}
   // the open allied deal that adds most per PC
   {const rv=S.rival||'pac',n=cs.length,cur={};for(const c of cs)cur[c]={s:R.out[c].yr+allyOut(c),rq:Math.max(reqOut(c),1e-9)};
     const ds=ALLY_DEALS.filter(D=>D.t===rv&&!D.stock&&!alS(D.m).deals[D.id]&&cur[D.c]).map(D=>{const x=cur[D.c],g=(Math.min(1,(x.s+D.add)/x.rq)-Math.min(1,x.s/x.rq))/n*100;return {D,g,per:g/Math.max(1,D.pc)}}).filter(x=>x.g>=.05).sort((a,b)=>b.per-a.per||b.g-a.g);
-    const b=ds[0];if(b)mv.push({k:'deal:'+b.D.id,pt:b.g,lab:'Allied deal',t:`${AFLAG[b.D.m]} ${b.D.n}`,why:`${LINES[b.D.c].n}: +${fmtN(b.D.add)} a year at full rate, after ${yrs(b.D.ramp||0)}. The most added per PC of any open deal.`,act:`<button class="pbtn sm primary" data-a="aldeal" data-d="${b.D.id}" ${alDealOk(b.D)?'':'disabled'}>Sign · ${b.D.pc} PC${b.D.$?' · '+money(b.D.$):''}</button>`})}
+    for(const b of ds.slice(0,all?4:1))mv.push({k:'deal:'+b.D.id,pt:b.g,lab:'Allied deal',t:`${AFLAG[b.D.m]} ${b.D.n}`,why:`${LINES[b.D.c].n}: +${fmtN(b.D.add)} a year at full rate, after ${yrs(b.D.ramp||0)}. The most added per PC of any open deal.`,act:`<button class="pbtn sm primary" data-a="aldeal" data-d="${b.D.id}" ${alDealOk(b.D)?'':'disabled'}>Sign · ${b.D.pc} PC${b.D.$?' · '+money(b.D.$):''}</button>`})}
   // the reform aimed at what has delayed your programs most
   {const open=x=>RD[x.r]&&reformAvail(RD[x.r])&&!refReqs().some(q=>q.id===x.r)&&S.bill?.id!==x.r,td=timeData();
     const top=Object.entries(td.byCause).sort((a,b)=>b[1]-a[1]).find(([L,v])=>v>=26&&REF_LAYER.some(x=>x.L.includes(L)&&open(x)));
     if(top){const [L,v]=top,x=REF_LAYER.find(x=>x.L.includes(L)&&open(x)),Rf=RD[x.r],nd=vehOf(Rf)==='ndaa',st=REF_STAGE.find(q=>q.r===x.r);
       mv.push({k:'ref:'+x.r,lab:'Reform',t:rname(Rf),why:`Your programs have lost ${fmt(v,0)} program-weeks to ${LAYERS[L].n.replace(/\b([A-Z])([a-z])/g,(m,a,b)=>a.toLowerCase()+b)}. This reform makes those delays rarer and shorter${st?`; also ${st.t}`:''}.`,act:`<button class="pbtn sm" data-a="brgo" data-v="${nd?'ndaa':'policy'}" data-j="${x.r}">${nd?'On the NDAA tab':'On Rules & policy'} →</button>`})}}
   const early=S.w<PLAY0+52,qk=early?mv.filter(x=>x.quick):[],pts=mv.filter(x=>x.pt!=null&&!x.urgent&&!qk.includes(x)).sort((a,b)=>b.pt-a.pt);
-  return [...mv.filter(x=>x.urgent),...qk,...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>!hid(x.k)).slice(0,3)}
-function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves();
-  const cards=mv.map(x=>`<div class="brc"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button></div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}</div></div>`).join('');
-  return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><span>${mv.length?`${mv.length===1?'One move':mv.length===2?'Two moves':'Three moves'} worth making now, ranked by points of sufficiency where known`:'Nothing pressing'}</span><span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide the brief</span></div>${mv.length?`<div class="brcs">${cards}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
+  return [...mv.filter(x=>x.urgent),...qk,...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>all||!hid(x.k)).map(x=>({...x,hid:hid(x.k)})).slice(0,all?99:3)}
+// every move the brief can see this turn, kept until something changes
+function tbAll(){const k=[S.w,(S.acts||[]).length,S.projects.length,JSON.stringify(S.briefNo||{}),Math.floor(S.pc),Math.floor(S.budget*10)].join('|');if(S._tbA&&S._tbA.k===k&&S._tbA.r===S._R)return S._tbA.v;const v=tbMoves(true);S._tbA={k,v,r:S._R};return v}
+function tbCard(x){return `<div class="brc${x.hid?' brhid':''}"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}${x.hid?`<button class="brx" data-a="brun" data-k="${x.k}" data-tip="Show it on Command again">↺</button>`:`<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button>`}</div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}</div></div>`}
+function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves(),n=tbAll().filter(x=>!x.hid).length;
+  return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${mv.length?`The ${mv.length===1?'move':mv.length===2?'two moves':'three moves'} worth most now${n>mv.length?`, of ${n}`:''}`:'Nothing pressing'}</span>${n>mv.length?`<span class="linkn brall" data-a="tball">The full brief: all ${n} →</span>`:''}<span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide</span></div>${mv.length?`<div class="brcs">${mv.map(tbCard).join('')}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
+function tbAllHTML(){const all=tbAll(),on=all.filter(x=>!x.hid),off=all.filter(x=>x.hid),ORD=['Hedge','Quick win','Fix a bottleneck','Build line capacity','Order idle capacity','Allied deal','Reform'];
+  const grp=xs=>ORD.concat([...new Set(xs.map(x=>x.lab))].filter(l=>!ORD.includes(l))).map(l=>[l,xs.filter(x=>x.lab===l)]).filter(([,v])=>v.length);
+  return `<div class="paper wide trp tball"><div class="hd"><span class="ic">📋</span>This turn’s brief · ${turnLabel()}</div><div class="bd">
+    <p class="mini" style="margin:0 0 8px">Every move worth making now, by kind, with what each adds to your share of the requirement where it can be worked out. The card on Command shows the ${Math.min(3,on.length)} worth most. Nothing here is decided for you.</p>
+    ${on.length?grp(on).map(([l,v])=>`<h5 class="th5">${l} <span class="mini">· ${v.length}</span></h5><div class="brcs brp">${v.map(tbCard).join('')}</div>`).join(''):'<p>Nothing pressing this turn.</p>'}
+    ${off.length?`<h5 class="th5">Hidden for now <span class="mini">· ${off.length}</span></h5><div class="brcs brp">${off.map(tbCard).join('')}</div>`:''}</div>
+    <div class="ft trft"><button class="pbtn primary" data-a="close">Close</button></div></div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
 // ---- the mandate brief: the opening page of a game. The scenario as a lede beside its map, the three dates on a timeline,
 // then what you must reach, what you can do and how it is judged. Opens when a game starts; the mandate card on Command reopens it.
@@ -8239,6 +8260,7 @@ function renderModal(){
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
       const nq=S.queue.filter(x=>x.ev&&!x.read).length;
       html=`<div class="paper evp"><div class="hd"><span class="ic">${e.ic||'📰'}</span>${V(e.t)}${nq>1?`<span class="evq">${fmtDate(S.w)} · 1 of ${nq}</span>`:''}</div><div class="bd">${b.startsWith('<')?b:`<p>${b}</p>`}${e.pre?`<p class="evpre"><b>Real precedent</b> ${V(e.pre)}</p>`:''}${!q.read&&opts.some(o=>/know-how/i.test(String(V(o.l))))?`<p class="evkh"><b>Know-how</b> is how practised US industry is at making an item, from 0 to 100: its skilled workers, tooling and process knowledge. The higher it is, the more a new plant for that item makes on its first day, the faster it reaches full rate, and the less often its operating permits are contested at renewal. Each item’s page shows it next to the item’s name; <span class="linkn" data-a="view" data-v="stats">how the numbers work →</span></p>`:''}${q.read||opts.length<2?'':pjChart(evProject(q))}</div><div class="ft">${(()=>{const un=o=>(o.pc>0&&o.pc>S.pc)||(o.$>0&&o.$>S.budget)||(o.req&&!passed(o.req));const dk=opts.findIndex(o=>o.dflt),cheap=opts.map((o,k)=>[o,k]).sort((x,y)=>((x[0].pc||0)+(x[0].$||0)*40)-((y[0].pc||0)+(y[0].$||0)*40))[0][1];q._force=opts.length&&opts.every(un)?(dk>=0?dk:cheap):-1;return q._force>=0?`<p class="evnote">You cannot afford any of these. ‹${optSplit(V(opts[q._force].l))[0]}› is taken with the Political Capital and money you have.</p>`:''})()}${q.read?`<button class="pbtn primary evcont" data-a="evopt" data-k="0">Close</button>`:opts.map((o,k)=>{const [t0,d]=optSplit(V(o.l)),t=t0.charAt(0).toUpperCase()+t0.slice(1);return `<button class="pbtn evo" data-a="evopt" data-k="${k}" ${k!==q._force&&((o.pc>0&&o.pc>S.pc)||(o.$>0&&o.$>S.budget))?'disabled':''}><b>${opts.length>1&&!q.read?`<i class="evk" style="background:${PJ_COL[k%PJ_COL.length]}">${String.fromCharCode(65+k)}</i>`:''}${t}</b>${d?`<span>${d}</span>`:''}</button>`}).join('')}${q.read?'':`<p class="evnote">The clock is stopped until you decide.</p>`}</div></div>`}
+  } else if(S.modal==='tball'){html=tbAllHTML();
   } else if(S.modal==='pv'&&S.pvId){
     html=pvHTML(S.pvId);
   } else if(S.modal==='turn'&&S.trnRep){
@@ -8343,7 +8365,7 @@ function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.bu
 function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav();guideBody()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
-const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
+const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_tbA','_prC','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
 const saveable=()=>S&&!S.replay&&!S.histMode&&!S.over&&!(S.w===PLAY0&&S.modal==='scenPick');
 function saveData(){const o={};for(const k in S)if(!SAVE_SKIP.has(k))o[k]=S[k];return JSON.stringify({v:1,at:Date.now(),uidN,S:o})}
 function saveGame(){if(!saveable())return false;try{localStorage.setItem(SAVE_K,saveData());S._svW=S.w;S._svAt=Date.now();return true}catch(e){S._svErr=String(e.message||e);return false}}
@@ -8494,6 +8516,9 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'blgo':S._blHi=+b.dataset.u;S._rcpt=null;renderReceipt();S.view='ndaa';S._vdirty=true;S._scrollTo='#bl-'+b.dataset.u;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'brgo':S.view=b.dataset.v;S._vdirty=true;if(b.dataset.j)S._jump=b.dataset.j;if(b.dataset.s)S._scrollTo=b.dataset.s;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'brno':(S.briefNo=S.briefNo||{})[b.dataset.k]=S.w;S._vdirty=true;break;
+    case 'brun':if(S.briefNo)delete S.briefNo[b.dataset.k];S._vdirty=true;break;
+    case 'tball':S.modal='tball';break;
+    case 'mvall':S.mvAll=!S.mvAll;S._vdirty=true;break;
     case 'brtog':UIP.nobrief=!UIP.nobrief;uiSave();S._vdirty=true;break;
     case 'bnmore':(S.bnMore=S.bnMore||{})[b.dataset.n]=!(S.bnMore[b.dataset.n]);S._vdirty=true;break;
     case 'prjump':S.view='bn';S._vdirty=true;S._scrollTo='#prio';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
