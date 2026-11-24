@@ -7737,7 +7737,7 @@ function renderGame(){
         g.ls.map(l=>`<div class="sgl trc" data-n="L:${l.c}"><span class="linkn" data-a="node" data-n="L:${l.c}">${LINES[l.c].n}</span>${mL.has(l.c)?'<span class="sgm" data-tip="One of your mandate’s lines">🎯</span>':''}${l.chain.length>1?`<span class="dim sgd" data-tip="${tipQ(l.chain.map(i=>ND[i].n).join(' ← '))}">via ${lc(ND[l.chain[0]].n)}</span>`:''}<span class="sgv" data-tip="${tipQ(idleTip(l.c,'st',l.st))}">−${fmtN(l.st)}/yr</span></div>`).join('')+'</div>'}
     if(G.length)sup+=`<div class="sbprio"><span class="linkn" data-a="prjump">⇅ Change which lines get scarce parts first →</span></div>`;
     const bad=ORDER.filter(id=>['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover);
-    sup+=`<div class="csec"><span>Worst-covered inputs</span><span>${bad.length} below need</span></div>`+bad.slice(0,5).map(id=>nodeRow(id,P)).join('')+(bad.length?`<div class="sbmore"><span class="linkn" data-a="view" data-v="bn">${bad.length>5?`All ${bad.length}, ranked by the output they cost, on Bottlenecks →`:'Ranked by the output they cost, on Bottlenecks →'}</span></div>`:'');
+    sup+=`<div class="csec"><span>Worst-covered inputs</span>${bad.length?`<span class="linkn" data-a="view" data-v="bn" data-tip="All of them on Bottlenecks, ranked by the output they cost">${bad.length} below need →</span>`:'<span>none below need</span>'}</div>`+bad.slice(0,5).map(id=>nodeRow(id,P)).join('');
   } else if(S.tab==5){
     sup+=`<div class="sect"><span>End-item lines · priority order</span><span>per year</span></div>`;
     S.order.forEach((lid,i)=>{const o=R.out[lid],L=LINES[lid],nm=lineName(lid)*L.k,fw=S.fw[lid];
