@@ -1600,6 +1600,10 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 .pmnone{padding:10px 12px;border:1px dashed #c2ad7c;border-radius:5px;background:#fbf6e8;font:13px/1.5 var(--f-body);color:#4a3d24}.pmnone .pbtn{margin-left:6px}
 .cpc[data-a]{cursor:pointer}.cpc[data-a]:hover{border-color:#c9952a}.pool .linkn,.pup .linkn,#cap-xf .linkn,.sub .linkn{color:#dcc78e}
 @keyframes capflash{0%{background:rgba(201,149,42,.45)}100%{background:transparent}}.capflash,[data-fl]{animation:capflash 1.6s ease-out}
+svg.sk g.nd text{paint-order:stroke;stroke:#f3ecd8;stroke-width:3.5px;stroke-linejoin:round}
+.bra{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.brnot{margin-left:auto;border:0;background:none;padding:2px 4px;font:12px var(--f-body);color:#9c916f;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}.brnot:hover{color:#dcc78e}.tball .brnot{color:#8a7850}
+#top .turnbtn{white-space:nowrap!important;max-width:none!important;min-height:36px}
+@media (max-width:1560px){#top .tbw{display:none}#top .res{padding-left:7px;padding-right:7px}#top .res b{font-size:14px}#top .res span{font-size:9.5px;letter-spacing:.04em}.turnbtn{padding-left:10px;padding-right:10px}}
 </style>
 </head>
 <body>
@@ -1639,7 +1643,7 @@ let NEXT_SEED=null;const hstr=s=>{let x=2166136261;for(let i=0;i<s.length;i++){x
 function rk(k){const r=S._rk&&S._rk.w===S.w?S._rk:(S._rk={w:S.w,c:{}});const n=r.c[k]=(r.c[k]||0)+1;return mulb((S.seed^Math.imul(S.w+1,2654435761)^hstr(k)^Math.imul(n,40503))|0)()}
 const rand=k=>{if(RNG_K&&k)return RNG_K(k);if(k&&S){if(S.seed==null)S.seed=(Math.random()*2147483647)|0;return rk(k)}return RNG()},clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const fmt=(x,d=1)=>(Math.round(x*10**d)/10**d).toFixed(d);
-const fmtN=x=>{const a=Math.abs(x);if(a>=1e6)return fmt(x/1e6,a>=1e7?0:1)+'M';if(a>=1e4)return Math.round(x/1e3)+'k';if(a>=1e3)return fmt(x/1e3,1)+'k';return a>=10?Math.round(x)+'':a<5e-4?'0':fmt(x,a>=1?1:2)};
+const fmtN=x=>{const a=Math.abs(x);if(a>=1e6)return fmt(x/1e6,a>=1e7?0:1)+'M';if(a>=1e4)return Math.round(x/1e3)+'k';if(a>=1e3)return fmt(x/1e3,1)+'k';return a>=10?Math.round(x)+'':a<5e-4?'0':Math.abs(x-Math.round(x))<1e-6?Math.round(x)+'':fmt(x,a>=1?1:2)};
 const pct=x=>Math.round(x*100)+'%';
 
 const LAYERS={
@@ -4543,12 +4547,14 @@ const TIPS=[
  {id:'mid',when:()=>S.modal==='scenMid',sel:'#ov .paper',t:'The 2030 checkpoint',x:'Your halfway floors and the campaign test are judged today. The real targets come in January 2035.'}];
 function tipNow(){if(!S||S.histMode||!S.tips||S.tut||S.w>PLAY0+60)return null;const seen=S.tipSeen=S.tipSeen||{};return TIPS.find(t=>!seen[t.id]&&t.when())||null}
 function tourAuto(){if(!S||S.tut||!S.tourAuto||S.tips===0||S.modal||S.queue.length||S.over||S.histMode)return;const k=VIEW_PART[S.view];if(k&&k!=='cmd'&&!(S.toured||{})[k]){tourStart(S.view);render()}}
+function tutWaitsForMove(){if(!S||!S.tut)return false;let st;try{st=tutStep()}catch(e){return false}return !!(st&&st.wait&&!/turnbtn|data-a="turn"/.test(String(st.sel||'')))}
 function tutTick(){try{guideTick()}catch(e){console.error(e)}tourAuto();const tip=tutOn()?null:tipNow();
   if(!tutOn()&&!tip){const el=document.getElementById('tut');if(el)el.remove();return}
   let st;if(tip)st={...tip,tip:1};else{st=tutStep();if(!st){S.tut=null;render();tutTick();return}if(!S.tut.solo){const cp=TUT[S.tut.i]?.p;if(S.tut.cp&&S.tut.cp!==cp&&S.tut.skipP!==S.tut.cp)(S.toured=S.toured||{})[S.tut.cp]=1;S.tut.cp=cp}if(st.wait&&st.wait()){S.tut.i++;S.tut.sc=-1;if(S.tut.end!=null&&S.tut.i>S.tut.end)S.tut=null;render();return}}
   let el=document.getElementById('tut');if(!el){el=document.createElement('div');el.id='tut';el.innerHTML='<div class="tut-hole"></div><div class="tut-box"></div>';document.body.appendChild(el)}
   el.classList.toggle('tut-soft',!!st.tip);
   const hole=el.firstChild,box=el.lastChild,tg=typeof st.sel==='function'?st.sel():st.sel?document.querySelector(st.sel):null,n=TUT.length;
+  {const ov=document.querySelector('#ov.show');const cover=ov&&tg&&!ov.contains(tg);el.style.display=cover?'none':'';if(cover)return}
   const at=tip?'tip:'+tip.id:S.tut.i;
   if(tg&&el.dataset.sc!==String(at)){el.dataset.sc=at;try{tg.scrollIntoView({block:tg.getBoundingClientRect().height>innerHeight*.55?'start':'center',inline:'nearest'})}catch(e){}}
   const key=at+'|'+st.t;
@@ -4871,7 +4877,7 @@ function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.f
 function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown),moves:S.moves||[]};S.moves=[];S.mvAll=false;for(const x of S.rolls||[])x.shown=1;if((S.modal&&S.modal!=='turn')||S.queue.length||decisionsPending())S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
   if(S.over)return '';
-  return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next turn ▸ ${turnLabel(S.w)}`}</button>`}
+  return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next<span class="tbw"> turn</span> ▸ ${turnLabel(S.w)}`}</button>`}
 const ACK_RE=/^(understood|noted|onward|ok|okay|continue|close)[.!]?$/i;
 function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=>w>w0&&w<=b.w,yr=w=>dateOf(w).getFullYear();
   const dl=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<.05?'<i class="trd">no change</i>':`<i class="trd ${(v>0)===(good>0)?'up':'dn'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</i>`};
@@ -5021,7 +5027,7 @@ const SKN={linters:'Cotton linters',chem:'Nitric acid & ammonia',propchem:'Prope
 function sankeySVG(R,focus,mode,attr){
   const {links}=sankeyFlows(R,focus,mode,attr);
   if(!links.length)return '<div class="empty" style="color:#6b5a35">Nothing flows here this week.</div>';
-  const W=1200,top=34,pad=6,nodeW=14,left=8,right=250,LS=16;
+  const W=1200,top=34,pad=6,nodeW=14,left=8,right=250,LS=17.5;
   const vin={},vout={};for(const l of links){vout[l.s]=(vout[l.s]||0)+l.v;vin[l.t]=(vin[l.t]||0)+l.v}
   const ids=[...new Set(links.flatMap(l=>[l.s,l.t]))];
   const colOf=id=>id.startsWith('S:')?0:id.startsWith('L:')?5:ND[id].t;
@@ -7192,7 +7198,7 @@ function scenJudge(){const sc=SCD[S.scen],ms=sc.mand.map(m=>({n:m.n,...mandVal(m
   const half=ms.filter(x=>x.half).length,verdict=sc.open?(!t.ok?'SHORTFALL':met===ms.length?'ARSENAL RESTORED':met>=ms.length/2?'GAINED GROUND':'OUT-BUILT'):!t.ok?'SHORTFALL':met===ms.length?'MANDATE MET':half===ms.length?'ENOUGH, BARELY':'TARGETS MISSED';
   S.scenRes={w:S.w,verdict,met,half:ms.filter(x=>x.half).length,ms:ms.map(x=>({why:x.ok?'':mandWhy(x.m),n:x.n,v:x.v,ok:x.ok,half:x.half,fl:x.m.kind==='expo'?(S.rec0?.expo||0)*x.fl:x.fl,t:x.t??x.m.tgt,pct:!!x.m.pct,dec:!!x.m.dec,low:x.m.kind==='expo',kind:x.m.kind})),test:{v:t.v,ok:t.ok,txt:t.txt,worst:t.worst,d:t.d}};
   log(`🎯 ${sc.n}: ${verdict} (${met} of ${ms.length} mandates; test ${t.ok?'passed':'failed'}).`,t.ok?'good':'bad');S.modal='scenEnd';S.speed=0;S.over=true;S.verdict=verdict;S.overWhy=''}
-const mFmt=(x,v)=>x.kind==='margin'?`${v>=0?'+':'−'}${fmt(Math.abs(v)*100,1)} pt`:x.kind==='lines'?`${Math.round(v)} of ${Object.keys(LINES).length}`:x.pct?pct(v):x.dec?fmt(v,1):fmtN(v);
+const mFmt=(x,v)=>x.kind==='margin'?`${v>=0?'+':'−'}${fmt(Math.abs(v)*100,1)} pt`:x.kind==='lines'?`${Math.round(v)} of ${Object.keys(LINES).length}`:x.pct?pct(v):x.dec?(Math.abs(v-Math.round(v))<1e-6?Math.round(v)+'':fmt(v,1)):fmtN(v);
 // the picker before play starts, then the mandate card
 
 // ---- the 2035 outlook. The game is played forward to January 2035 with every program under way, assuming Congress orders what
@@ -7338,7 +7344,7 @@ function tbMoves(all){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='U
   return [...mv.filter(x=>x.urgent),...qk,...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>all||!hid(x.k)).map(x=>({...x,hid:hid(x.k)})).slice(0,all?99:3)}
 // every move the brief can see this turn, kept until something changes
 function tbAll(){const k=[S.w,(S.acts||[]).length,S.projects.length,JSON.stringify(S.briefNo||{}),Math.floor(S.pc),Math.floor(S.budget*10)].join('|');if(S._tbA&&S._tbA.k===k&&S._tbA.r===S._R)return S._tbA.v;const v=tbMoves(true);S._tbA={k,v,r:S._R};return v}
-function tbCard(x){return `<div class="brc${x.hid?' brhid':''}"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}${x.hid?`<button class="brx" data-a="brun" data-k="${x.k}" data-tip="Show it on Command again">↺</button>`:`<button class="brx" data-a="brno" data-k="${x.k}" data-tip="Not now: hide this for two months">✕</button>`}</div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}</div></div>`}
+function tbCard(x){return `<div class="brc${x.hid?' brhid':''}"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}</div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}${x.hid?`<button class="brnot" data-a="brun" data-k="${x.k}" data-tip="Show it on Command again">Show again</button>`:`<button class="brnot" data-a="brno" data-k="${x.k}" data-tip="Hide this for two months">Not now</button>`}</div></div>`}
 function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves(),n=tbAll().filter(x=>!x.hid).length;
   if(!paper&&S.w===PLAY0&&!S.tut&&n)return `<div class="brf brslim"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${n} move${n>1?'s':''} worth making before your first turn</span><span class="linkn brall" data-a="tball">Open the brief →</span></div></div>`;
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${mv.length?`The ${mv.length===1?'move':mv.length===2?'two moves':'three moves'} worth most now${n>mv.length?`, of ${n}`:''}`:'Nothing pressing'}</span>${n>mv.length?`<span class="linkn brall" data-a="tball">The full brief: all ${n} →</span>`:''}<span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide</span></div>${mv.length?`<div class="brcs">${mv.map(tbCard).join('')}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
@@ -8512,7 +8518,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'speed':S.speed=+b.dataset.s;if(S.speed)S.lastSpeed=S.speed;break;
     case 'rlplay':S.speed=S.speed?0:(S.lastSpeed||2);break;
     case 'rlnext':if(S._reel)S._reel.t0=-1e9;break;
-    case 'turn':turnGo();break;
+    case 'turn':if(tutWaitsForMove()){toast('🎓 <b>The guide is waiting for your move</b><br><span class="dim">Make it, or press Skip in the guide box to go on.</span>');return}turnGo();break;
     case 'tpause':S.speed=0;break;
     case 'tutnext':if(S.tut){const st=tutStep();if(st&&st.next){if(st.next!==1){S.tut=null;S.tips=1}else if(S.tut.solo&&S.tut.i>=S.tut.end){S.tut=null}else{S.tut.i++;S.tut.sc=-1}}}break;
     case 'tour':tourStart(S.view);break;
