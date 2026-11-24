@@ -1594,6 +1594,10 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 #view .tog:not(.on):not(:disabled):hover{border-color:#5a4a28}
 .pdnd{margin:6px 0 2px;padding:6px 10px;border:1px dashed #c2ad7c;border-radius:4px;background:#fbf6e8;font:12.5px/1.45 var(--f-body);color:#4a3d24}
 #app .brf.brslim{padding-bottom:4px}#app .brf.brslim>.brh{margin-bottom:0;border-bottom:0;padding-bottom:0}
+/* redraws restore each panel’s scroll exactly; the browser must not shift it again */
+#supply,#needs,#right,#view{overflow-anchor:none}
+.pmn{display:inline-block;min-width:16px;margin-left:3px;padding:0 5px;border-radius:8px;background:#0001;font-size:11px;font-weight:700}.pbtn.on .pmn{background:#fff3}
+.pmnone{padding:10px 12px;border:1px dashed #c2ad7c;border-radius:5px;background:#fbf6e8;font:13px/1.5 var(--f-body);color:#4a3d24}.pmnone .pbtn{margin-left:6px}
 </style>
 </head>
 <body>
@@ -4162,11 +4166,11 @@ function polDomHTML(D){const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id);
   if(!open)return `<div class="rbdom pdom0" id="rb-${D.id}">${head}</div>`;
   const steps=D.steps?D.steps.map(([nm,ids2,t])=>{const os=ids2.map(i=>OD[i]).filter(o=>o&&facOk(o));const odds=os.map(o=>oddsMax(o)),mx=Math.max(0,...odds.map(x=>x.c));
       const cr=nm==='Continuing resolution',bj=nm==='Beijing’s controls';
-      return `<div class="rstep ${mx>=.4?'hot':mx>=.2?'warm':''}" data-tip="${tipQ(os.length?odds.map(x=>`<b>${V(x.o.n)}</b>: up to ${pct(x.c)}${x.who?` (${x.who.n})`:''}`).join('<br>'):t)}"><b>${nm}</b><span class="mini">${t}</span>${os.length?`<span class="odds">${pct(mx)}</span>`:cr?`<span class="odds">${S.cr>0?S.cr+' wk left':'none now'}</span>`:bj?`<span class="odds">${S.truce?'suspended':'in force'}</span>`:nm==='Range time'?(()=>{const q=poolState().ranges;return q?`<span class="odds">${q.d}/${fmt(q.cap,0)} slots</span>`:''})():`<span class="odds mini">no delay</span>`}</div>`}).join('<span class="sarr">→</span>'):'';
+      return `<div class="rstep ${mx>=.4?'hot':mx>=.2?'warm':''}" data-tip="${tipQ(os.length?odds.map(x=>`<b>${V(x.o.n)}</b>: up to ${pct(x.c)}${x.who?` (${x.who.n})`:''}`).join('<br>'):t)}"><b>${nm}</b><span class="mini">${t}</span>${os.length?`<span class="odds">${pct(mx)} odds</span>`:cr?`<span class="odds">${S.cr>0?S.cr+' wk left':'none now'}</span>`:bj?`<span class="odds">${S.truce?'suspended':'in force'}</span>`:nm==='Range time'?(()=>{const q=poolState().ranges;return q?`<span class="odds">${q.d}/${fmt(q.cap,0)} slots</span>`:''})():`<span class="odds mini">no delay</span>`}</div>`}).join('<span class="sarr">→</span>'):'';
   const tbl=rows=>`<table class="ctable lev rbt"><colgroup><col style="width:100px"><col style="width:44%"><col></colgroup>${rows.join('')}</table>`;
   return `<div class="rbdom pdom1" id="rb-${D.id}">${head}
    ${stalled.length?`<div class="mini pdstall">Stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</div>`:''}
-   ${steps?`<div class="pdsec"><h5>How it works today <span>each step shows the highest odds it stops a program you could launch now</span></h5><div class="steps">${steps}</div></div>`:''}
+   ${steps?`<div class="pdsec"><h5>How it works today <span>each step’s odds of stopping a new program, for the most exposed program you could launch now. Separate chances, not shares: a program can hit several, so they do not add up to 100%.</span></h5><div class="steps">${steps}</div></div>`:''}
    <div class="pdsec"><h5>In force <span>laws, court rulings, executive actions and emergency powers</span></h5>${nIn?tbl(inF):'<p class="mini">Nothing beyond the process above.</p>'}</div>
    <div class="pdsec rbcan"><h5>What you can do <span>executive actions act fastest but can be undone; emergency powers lapse; laws hold</span></h5>
     ${exA.length?tbl(exA.map(ruleRow)):''}
@@ -5583,7 +5587,8 @@ function permitsBody(){
   // where the permits sit, agency by agency
   const ags={};for(const i of all){const a=ags[i.x.ag]=ags[i.x.ag]||{n:0,stalled:0,review:0,wk:0};a.n++;if(i.st==='stalled'||i.st==='contested')a.stalled++;if(i.st==='review'||i.st==='due')a.review++;a.wk+=i.extra||0}
   const agL=Object.entries(ags).sort((a,b)=>(b[1].stalled*100+b[1].review*10+b[1].wk)-(a[1].stalled*100+a[1].review*10+a[1].wk)),mx=Math.max(1,...agL.map(a=>a[1].stalled+a[1].review));
-  const btn=(k,v,l)=>`<button class="pbtn sm ${f[k]===v?'on':''}" data-a="pmf" data-k="${k}" data-v="${v}">${l}</button>`;
+  const match=(i,g)=>(g.ag==='all'||i.x.ag===g.ag)&&(g.ph==='all'||i.ph===g.ph)&&(g.st==='all'||(g.st==='open'?open(i):i.st===g.st)),nOf=(k,v)=>all.filter(i=>match(i,{...f,[k]:v})).length;
+  const btn=(k,v,l)=>`<button class="pbtn sm ${f[k]===v?'on':''}" data-a="pmf" data-k="${k}" data-v="${v}">${l} <span class="pmn">${nOf(k,v)}</span></button>`;
   const rows=all.filter(i=>(f.ag==='all'||i.x.ag===f.ag)&&(f.ph==='all'||i.ph===f.ph)&&(f.st==='all'||(f.st==='open'?open(i):i.st===f.st)))
     .sort((a,b)=>PST.findIndex(s=>s[0]===a.st)-PST.findIndex(s=>s[0]===b.st)||(a.left??a.due??0)-(b.left??b.due??0));
   let h=`<div class="pmtiles">${tiles.map(([k,l,c])=>`<button class="pmtile ${f.st===k?'on':''}" data-a="pmf" data-k="st" data-v="${f.st===k?'open':k}"><b class="${cnt(k)&&k!=='issued'?c:''}">${cnt(k)}</b><span>${l}</span></button>`).join('')}</div>`;
@@ -5591,7 +5596,7 @@ function permitsBody(){
     <div class="sleg" style="margin-top:6px"><span><i style="background:#b0453a"></i>Stalled or contested</span><span><i style="background:#c9a227"></i>In review or renewal due</span></div>
     <div class="mini" style="margin-top:8px"><span class="linkn" data-a="rbgo" data-d="permit">⚖ The permitting rules →</span></div></div>
    <div><div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('st','open','Open')}${btn('st','all','All')}<span class="lab">Phase</span>${btn('ph','all','Both')}${btn('ph','b','To build')}${btn('ph','o','To operate')}${f.ag!=='all'?`<span class="lab">Agency</span><button class="pbtn sm on" data-a="pmf" data-k="ag" data-v="all">${f.ag} ✕</button>`:''}</div>
-    ${rows.length?`<table class="ctable pmt"><tr><th>Permit</th><th>Program or site</th><th>Agency</th><th>Status</th><th style="text-align:right">Weeks</th></tr>${rows.map(i=>`<tr class="pmr" ${i.site?`data-a="node" data-n="${i.site}"`:`data-a="prog" data-u="${i.uid}"`}><td><b>${i.x.n}</b><div class="mini">${i.x.law}${i.ph==='b'?(i.odds>0?` · ${pct(i.odds)} odds of trouble`:''):` · every ${i.x.yrs===1?'year':i.x.yrs+' yr'} · ${pct(i.risk)} contested`}</div></td><td><span class="linkn">${i.nm}</span></td><td>${i.x.ag}</td><td class="${i.cls}">${i.t}</td><td style="text-align:right" class="${i.extra?'redt':''}">${i.ph==='b'?`${i.weeks}${i.extra?` (+${i.extra})`:''}`:`${i.x.yrs} yr`}</td></tr>`).join('')}</table>`:`<p class="mini">${all.length?'Nothing matches these filters.':'Order a new plant to start a permit docket.'}</p>`}</div></div>`;
+    ${rows.length?`<table class="ctable pmt"><tr><th>Permit</th><th>Program or site</th><th>Agency</th><th>Status</th><th style="text-align:right">Weeks</th></tr>${rows.map(i=>`<tr class="pmr" ${i.site?`data-a="node" data-n="${i.site}"`:`data-a="prog" data-u="${i.uid}"`}><td><b>${i.x.n}</b><div class="mini">${i.x.law}${i.ph==='b'?(i.odds>0?` · ${pct(i.odds)} odds of trouble`:''):` · every ${i.x.yrs===1?'year':i.x.yrs+' yr'} · ${pct(i.risk)} contested`}</div></td><td><span class="linkn">${i.nm}</span></td><td>${i.x.ag}</td><td class="${i.cls}">${i.t}</td><td style="text-align:right" class="${i.extra?'redt':''}">${i.ph==='b'?`${i.weeks}${i.extra?` (+${i.extra})`:''}`:`${i.x.yrs} yr`}</td></tr>`).join('')}</table>`:`<div class="pmnone">${all.length?`No ${f.st==='open'?'open ':''}permits${f.ph==='b'?' to build':f.ph==='o'?' to operate':''}${f.ag!=='all'?` at ${f.ag}`:''}.${f.st==='open'?(()=>{const sc=all.filter(i=>match(i,{...f,st:'all'})),iss=sc.filter(i=>i.st==='issued').length,rest=sc.length-iss;return ` Open means stalled, in review, contested or due for renewal within a year. Of these ${sc.length}, ${iss} ${iss===1?'is':'are'} issued${rest?` and ${rest} not yet started`:''}.`})():''} ${f.st!=='all'?'<button class="pbtn sm" data-a="pmf" data-k="st" data-v="all">Show all</button>':''}`:'Order a new plant to start a permit docket.'}</div>`}</div></div>`;
   return h}
 function openDossier(id){if(S.sel&&S.modal==='node'&&S.sel!==id)(S.navBack=S.navBack||[]).push(S.sel);S.sel=id;S.modal='node';S.speed=0}
 function endItemsOf(id){const seen=new Set(),st=[id],lines=new Set();while(st.length){const x=st.pop();for(const c of CONSUMERS[x]||[]){if(c.startsWith('L:'))lines.add(c.slice(2));else if(!seen.has(c)){seen.add(c);st.push(c)}}}return [...lines]}
