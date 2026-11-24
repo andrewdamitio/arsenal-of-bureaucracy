@@ -1592,6 +1592,7 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 #view .tog:not(.on){background:#e6dbbd;border-color:#9c8a5c}#view .tog:not(.on) i{background:#fff;box-shadow:0 1px 2px #0003}
 #view .tog.pick{box-shadow:0 0 0 2px #c9952a}#view .tog.pick i{left:8px}
 #view .tog:not(.on):not(:disabled):hover{border-color:#5a4a28}
+.pdnd{margin:6px 0 2px;padding:6px 10px;border:1px dashed #c2ad7c;border-radius:4px;background:#fbf6e8;font:12.5px/1.45 var(--f-body);color:#4a3d24}
 </style>
 </head>
 <body>
@@ -4152,7 +4153,7 @@ function polDomHTML(D){const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id);
   // in force: laws and court rulings, executive actions, enacted reforms, emergency powers running
   const inF=[...rs.filter(r=>!isExec(r)).map(ruleRow),...rs.filter(r=>isExec(r)&&ruleOn(r.id)).map(ruleRow),...ids.filter(x=>RD[x]&&passed(x)).map(x=>lawRowHTML(RD[x])),...ids.filter(x=>CD[x]&&carveOn(x)).map(x=>carveOnRowHTML(CD[x]))];
   // what you can do
-  const exA=rs.filter(r=>isExec(r)&&!ruleOn(r.id)),refs=ids.filter(x=>RD[x]&&!passed(x)).map(x=>RD[x]),cvs=ids.filter(x=>CD[x]&&!carveOn(x)).map(x=>CD[x]);
+  const exA=rs.filter(r=>isExec(r)&&!ruleOn(r.id)),refs=ids.filter(x=>RD[x]&&!passed(x)&&vehOf(RD[x])!=='ndaa').map(x=>RD[x]),nds=ids.filter(x=>RD[x]&&!passed(x)&&vehOf(RD[x])==='ndaa').map(x=>RD[x]),cvs=ids.filter(x=>CD[x]&&!carveOn(x)).map(x=>CD[x]);
   const nCan=exA.length+refs.length+cvs.length,nIn=inF.length;
   const worst=D.steps?Math.max(0,...D.steps.flatMap(([,ids2])=>ids2.map(i=>OD[i]).filter(o=>o&&facOk(o)).map(o=>oddsMax(o).c))):0;
   const open=S.domOpen?!!S.domOpen[D.id]:true;
@@ -4169,6 +4170,7 @@ function polDomHTML(D){const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id);
    <div class="pdsec rbcan"><h5>What you can do <span>executive actions act fastest but can be undone; emergency powers lapse; laws hold</span></h5>
     ${exA.length?tbl(exA.map(ruleRow)):''}
     ${cvs.length||refs.length?`<div class="ndaaref polref">${cvs.map(carveRowHTML).join('')}${refs.map(refRowHTML).join('')}</div>`:''}
+    ${nds.length?`<div class="pdnd">🏛 <b>In the NDAA:</b> ${nds.length} provision${nds.length>1?'s':''} for this area (${nds.slice(0,3).map(R=>rname(R)).join('; ')}${nds.length>3?'…':''}). <span class="linkn" data-a="brgo" data-v="ndaa" data-j="${nds[0].id}">On the NDAA tab →</span></div>`:''}
     ${!nCan?'<p class="mini">Nothing left to change here.</p>':''}</div>
    ${D.id==='permit'?xfPanel()+`<p class="mini"><span class="linkn" data-a="pmgo">📋 Every permit your plants need, on the permit docket →</span></p>`:''}${D.id==='source'?`<div class="rbic">${icPanel()}</div>`:''}${D.id==='money'?`<p class="mini">New plants and stockpile buys go in the annual NDAA request: <span class="linkn" data-a="view" data-v="ndaa">The NDAA tab →</span></p>`:''}</div>`}
 function polBody(){if(S.fac!=='US')return agendaHTML();
@@ -4556,7 +4558,7 @@ setInterval(tutTick,250);addEventListener('resize',tutTick);addEventListener('sc
 function decOpenFirst(){if(S.modal||S.queue.length)return;const x=decList()[0];if(!x)return;const v=(x.d.match(/="([^"]*)"/)||[])[1];
   if(x.a==='prog'){S.modal='prog';S.selP=v;S.progBack=null}else if(x.a==='evdo'){const it=(S.inbox||[]).find(y=>y.ev===v);S.inbox=(S.inbox||[]).filter(y=>y.ev!==v);S.queue.unshift({ev:v,fxDone:1,due:it?.due})}}
 function decBar(){const L=decList();if(!L.length)return '';
-  if(TURN())return `<div id="decbar" class="dbturn"><div class="dbhead"><b>${L.length===1?'A decision is waiting':L.length+' decisions are waiting'}</b><span>The turn is paused until you decide. Nothing is decided for you.</span></div><div class="dbs">${L.map((x,i)=>`<button class="dbc dbbig ${i===0?'first':''}" data-a="${x.a}" ${x.d}><span class="dbi">${x.ic}</span><span class="dbt"><b>${x.t}</b><span>${x.sub}</span></span><span class="dbgo">Decide ›</span></button>`).join('')}</div></div>`;
+  if(TURN())return `<div id="decbar" class="dbturn"><div class="dbhead"><b>${L.length===1?'A decision is waiting':L.length+' decisions are waiting'}</b><span>${S._trnDue&&S.trnRep?`Decide, and the ${turnLabel(S.trnRep.a?.w??S.w-8)} report opens. <span class="linkn" data-a="trnnow">See the report now</span>`:'The turn is paused until you decide. Nothing is decided for you.'}</span></div><div class="dbs">${L.map((x,i)=>`<button class="dbc dbbig ${i===0?'first':''}" data-a="${x.a}" ${x.d}><span class="dbi">${x.ic}</span><span class="dbt"><b>${x.t}</b><span>${x.sub}</span></span><span class="dbgo">Decide ›</span></button>`).join('')}</div></div>`;
   return `<div id="decbar"><span class="dbl">📬 <b>${L.length}</b> decision${L.length>1?'s':''}</span><div class="dbs">${L.map(x=>{const l=dLeft(x.due);return `<button class="dbc ${l<=2?'hot':''} ${l>=DECIDE_WK-1?'fresh':''}" data-a="${x.a}" ${x.d} data-tip="<b>${tipQ(x.t)}</b><br>${tipQ(x.sub)}<br>${l} wk left; then the default is taken"><span class="dbi">${x.ic}</span><span class="dbt"><b>${x.t}</b><span>${x.sub}</span></span><span class="dbk"><span class="dtb"><i style="width:${l/DECIDE_WK*100}%"></i></span><b>${l} wk</b></span></button>`}).join('')}</div></div>`}
 function autoDecide(){
   S.inbox=(S.inbox||[]).filter(x=>{if(S.w<x.due)return true;const e=ED[x.ev],os=V(e.o)||[],k=defOpt({o:os});if(k>=0){evApply(os[k]);log(`⏱ No decision in time. ${V(e.t)}${os.length>1?' → '+V(os[k].l):''}`,'ev')}return false});
@@ -4858,7 +4860,7 @@ function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)o
   return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
 function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play a turn soon, or end the tutorial.</span>');return}if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">A turn will not take a decision for you.</span>');return}
   if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
-function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown),moves:S.moves||[]};S.moves=[];S.mvAll=false;for(const x of S.rolls||[])x.shown=1;if(S.modal&&S.modal!=='turn')S._trnDue=1;else S.modal='turn'}
+function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown),moves:S.moves||[]};S.moves=[];S.mvAll=false;for(const x of S.rolls||[])x.shown=1;if((S.modal&&S.modal!=='turn')||S.queue.length||decisionsPending())S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
   if(S.over)return '';
   return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause inside the turn.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: a turn never decides for you.`:mid?`Continue to the end of the turn, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next turn ▸ ${turnLabel(S.w)}`}</button>`}
@@ -8407,7 +8409,7 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
 // does a supply move on this item touch a line’s current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.budget=9999}}
-function render(){if(!S){renderTitle();return}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav();guideBody()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
+function render(){if(!S){renderTitle();return}if(S._trnDue&&S.trnRep&&!S.modal&&!S.queue.length&&!decisionsPending()&&!S.sim){S._trnDue=0;S.modal='turn'}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav();guideBody()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
 const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_tbA','_prC','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
@@ -8459,7 +8461,13 @@ function undoDo(){if(!undoOK())return;const u=UNDO.pop(),d=JSON.parse(u.txt);S=d
 function mnav(){let el=document.getElementById('mnav');if(!S||S.over&&S.modal==='end'){if(el)el.remove();return}if(!el){el=document.createElement('div');el.id='mnav';document.body.appendChild(el)}
   const m=closable(),must=S.modal&&!m,home=S.view==='cmd'&&!S.modal;
   const h=`<button data-a="${m?'close':'goback'}" ${m||S.navH?.length?'':'disabled'}>${m?'✕ Close':'‹ Back'}</button><button data-a="home" ${home||must?'disabled':''}>⌂ Command</button>${undoOK()?'<button data-a="undo">↶ Undo</button>':''}`;if(el.innerHTML!==h)el.innerHTML=h}
+// a finger that lands on a button may be starting a scroll: act only when it lifts without moving and the browser did not scroll
+let TAP=null;
+document.addEventListener('pointerup',e=>{if(e.pointerType!=='touch'||!TAP)return;const t=TAP;TAP=null;if(Math.hypot(e.clientX-t.x,e.clientY-t.y)>10||Date.now()-t.t>900||!t.tg.isConnected)return;
+  const ev=new PointerEvent('pointerdown',{bubbles:true,cancelable:true,button:0,pointerType:'touch',clientX:e.clientX,clientY:e.clientY});ev._tap=1;t.tg.dispatchEvent(ev)});
+document.addEventListener('pointercancel',()=>{TAP=null});addEventListener('scroll',()=>{TAP=null},true);
 document.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch'&&!e._tap&&e.isTrusted){TAP={x:e.clientX,y:e.clientY,t:Date.now(),tg:e.target};return}
   if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else if(!closeToReport()){S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('off')){popWhy(b);return}
@@ -8564,6 +8572,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'brun':if(S.briefNo)delete S.briefNo[b.dataset.k];S._vdirty=true;break;
     case 'tball':S.modal='tball';break;
     case 'mvall':S.mvAll=!S.mvAll;S._vdirty=true;break;
+    case 'trnnow':if(S.trnRep){S._trnDue=0;S.modal='turn'}break;
     case 'brtog':UIP.nobrief=!UIP.nobrief;uiSave();S._vdirty=true;break;
     case 'bnmore':(S.bnMore=S.bnMore||{})[b.dataset.n]=!(S.bnMore[b.dataset.n]);S._vdirty=true;break;
     case 'prjump':S.view='bn';S._vdirty=true;S._scrollTo='#prio';if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
