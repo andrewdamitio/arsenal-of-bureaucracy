@@ -1608,6 +1608,13 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .crumb{margin:6px 0 8px}
 .dlede{margin-top:4px;max-width:760px;font:13px/1.45 var(--f-body);color:#4a3d24}
 .pool .pwhat{color:#b9ae90;font-style:italic}
+.t3-opts2{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:14px;margin:14px 0 4px;padding:14px 16px;border:1px solid #4a4230;border-radius:8px;background:#1c1b15}
+.t3-opts2 .t3-o p{margin:6px 0 0;font:12.5px/1.45 var(--f-body);color:#b9ae90}.t3-opts2 .t3-ol{margin-bottom:6px}
+.t3-seg{display:inline-flex;border:1px solid #6b5d38;border-radius:5px;overflow:hidden}.t3-seg button{background:transparent;border:0;border-left:1px solid #6b5d38;color:#d8cfb2;font:600 13px var(--f-body);padding:6px 12px;cursor:pointer}
+.t3-seg button:first-child{border-left:0}.t3-seg button:hover{background:#2a2820}.t3-seg button.on{background:#c9952a;color:#1c1608}
+.t3-chk{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.t3-chk b{font:700 14.5px var(--f-head);color:#efe6cf}
+.t3-box{flex:none;width:20px;height:20px;margin-top:1px;border:2px solid #c9952a;border-radius:4px;display:flex;align-items:center;justify-content:center;font:700 14px var(--f-body);color:#1c1608}.t3-box.on{background:#c9952a}
+@media (max-width:900px){.t3-opts2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -6767,10 +6774,11 @@ ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-
     <h2 class="t3-h2">Choose your scenario</h2>
     <div class="t3-cards">${SC.map(x=>`<button class="t3-card ${x.id===cur.id?'on':''}" data-a="tsel" data-s="${x.id}">${art(x.sc,'t3-thumb')}<span class="t3-cn"><b>${x.n}</b><em>${x.sub}</em></span></button>`).join('')}</div>
     <div class="t3-detail">${art(cur.sc,'t3-dart')}<div class="t3-dtext"><div class="t3-dh"><b>${cur.n}</b><em>${cur.sub}</em></div>${det}</div></div>
-    <div class="t3-opts ${TOPT?'open':''}"><button class="t3-optl" data-a="topt"><span>Options</span> <b>${optsTxt}</b> <i>${TOPT?'Done ▴':'Change ▾'}</i></button>
-     ${TOPT?`<div class="t3-optg"><div><div class="t3-ol">Rules</div>${rad('tmode','data-m="std"',TMODE==='std','Standard','A real budget and Political Capital. Every plant, order and reform competes for them.')}${rad('tmode','data-m="sbx"',TMODE==='sbx','Sandbox','No budget or Political Capital limits. See what time, permits and suppliers still hold back.')}</div>
-       <div><div class="t3-ol">Pace <span>you can change it later in the Menu</span></div>${rad('tpace','data-m="turn"',TPACE==='turn','Two-month turns','Press Next turn; time stops for every decision and nothing is decided for you.')}${rad('tpace','data-m="cont"',TPACE==='cont','Continuous','Time runs week by week at the speed you set; decisions you leave take their default.')}</div>
-       <div><div class="t3-ol">Guide</div>${rad('tguide','data-m="on"',gOn,'Guide me','Plays your first turn with you, then introduces each part of the game when it first matters. Parts you have seen before are skipped.')}${rad('tguide','data-m="off"',!gOn,'No guide','Everything is open from the start. Every tab still has a Tour button.')}</div></div>`:''}</div>
+    <div class="t3-opts2">
+     <div class="t3-o"><div class="t3-ol">Rules</div><div class="t3-seg"><button class="${TMODE==='std'?'on':''}" data-a="tmode" data-m="std">Standard</button><button class="${TMODE==='sbx'?'on':''}" data-a="tmode" data-m="sbx">Sandbox</button></div><p>${TMODE==='sbx'?'No budget or Political Capital limits: see what time, permits and suppliers still hold back.':'A real budget and Political Capital: every plant, order and reform competes for them.'}</p></div>
+     <div class="t3-o"><div class="t3-ol">Pace</div><div class="t3-seg"><button class="${TPACE==='turn'?'on':''}" data-a="tpace" data-m="turn">Two-month turns</button><button class="${TPACE==='cont'?'on':''}" data-a="tpace" data-m="cont">Continuous</button></div><p>${TPACE==='cont'?'Time runs week by week at the speed you set; decisions you leave take their default.':'Press Next turn; time stops for every decision and nothing is decided for you.'} You can change it later in the Menu.</p></div>
+     <label class="t3-o t3-chk" data-a="tguide" data-m="${gOn?'off':'on'}"><span class="t3-box ${gOn?'on':''}" role="checkbox" aria-checked="${gOn}">${gOn?'✓':''}</span><span><b>Guide me through my first game</b><p>Plays your first turn with you, then introduces each part of the game when it first matters. Without it, everything is open from the start; every tab still has a Tour button.</p></span></label>
+    </div>
     <div class="t3-bar"><div><b>${cur.n}</b><span>${optsTxt}${sv?' · replaces your saved game in this browser':''}</span></div><button class="t3-begin" data-a="tnew">Begin ›</button></div></div>`)}
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
