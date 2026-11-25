@@ -1739,6 +1739,12 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .acard .ah .tag{text-transform:none!important}
 #view .stmeth{margin-top:14px}#view .stmeth p{margin:0;font-size:12px;line-height:1.5}
 #view .trt.trtx>b{font:700 17px/1.25 var(--f-head)}
+/* Allies & imports */
+#view .wmtiles{margin:0 0 12px}#view .wmv .stgh{margin:16px 0 10px}#view .alcards{margin-top:10px}
+#view .alzone{border:1px solid #e0d4b4;border-left:3px solid #b0453a;background:#faf5e6;color:#3a3020;border-radius:3px}
+#view .alintro{font:14px/1.5 var(--f-body);color:#3a3020}
+.dhead .dtier{display:inline-grid;place-items:center;flex:none;width:40px;height:40px;border:1.5px solid #8a7850;border-radius:50%;font:700 15px var(--f-head);color:#5a4a26;background:#faf5e6}
+.dhead .dvic{color:#5a4a26;display:inline-grid;place-items:center}
 </style>
 </head>
 <body>
@@ -3259,7 +3265,7 @@ function cnHedge(){if(S.fac!=='US')return '';const n=cnNext(),ids=CN_MIN().filte
 function cnPanel(){const c=cnS(),rt=cnRate(),dr=cnDrivers(),nx=CN_RUNGS[c.rung],T=x=>`${Math.max(0,Math.min(100,x))}%`;
   const ticks=CN_RUNGS.map((r,i)=>`<span class="cnt ${i<c.rung?'done':i===c.rung?'next':''}" style="left:${T(r.th)}" data-tip="${tipQ(`<b>Step ${i+1}: ${r.n}</b><br>${r.d}<br>Possible once pressure passes ${r.th}.${i<c.rung?`<br>Taken ${fmtDate(c.hist.find(h=>h.k===i)?.w??S.w)}.`:''}`)}"><i></i><em>${i+1}</em></span>`).join('');
   const took=c.hist.map(h=>h.k<0?`<span class="cnh bad">${fmtDate(h.w)} · truce ended early</span>`:`<span class="cnh">${fmtDate(h.w)} · ${CN_RUNGS[h.k].s}${h.f<1?' (eased by talks)':''}</span>`).join('');
-  return `<div class="cnp"><div class="cnph"><b>${FLAGS.cn} Beijing’s export controls</b><span>Step ${c.rung} of ${CN_RUNGS.length} · pressure ${Math.round(c.heat)}/100, ${rt>=0?'rising':'falling'} ${fmt(Math.abs(rt),0)} a year · next review ${fmtDate(c.next)}</span>
+  return `<div class="cnp"><div class="cnph"><b>${FLAGS.cn} Beijing’s export controls</b><span>the ladder, what moves it, and how to hedge</span>
     <button class="btn sm" data-a="cntalk" ${c.talkTo>S.w||S.pc<CN_TALK?'disabled':''} data-tip="${tipQ(c.talkTo>S.w?`Talks run to ${fmtDate(c.talkTo)}.`:`Open a year of talks on export licenses: pressure −8 now and −10 a year while they run.`)}">${c.talkTo>S.w?'Talks under way':`Open talks · ${CN_TALK} PC`}</button></div>
    <div class="cnbar"><i style="width:${T(c.heat)}"></i>${ticks}</div>
    <div class="cnrow"><div class="mini">${S.truce?'<b>Truce in force.</b> Beijing’s December 2024 bans stay suspended and it takes no new steps, but pressure still builds; above 55 it may end the truce early. ':''}${nx?`Next step: <b>${nx.n}</b>, possible once pressure passes ${nx.th}. At each quarterly review Beijing may climb one step, likelier the further past the line; each step it takes releases 8 points.`:'Beijing has nothing left to escalate.'}${took?`<div class="cnhs">${took}</div>`:''}</div>
@@ -5533,7 +5539,7 @@ function progHTML(uid){
   const lost=Object.entries(p.lost||{}).filter(x=>x[1]>.5).sort((a,b)=>b[1]-a[1]),lostT=lost.reduce((a,x)=>a+x[1],0);
   const planDone=p.dur.slice(0,live?p.stage:STAGES.length).reduce((a,b)=>a+b,0)+(live?p.prog:0),behind=live?Math.max(0,behindOf(p)):Math.max(0,(p.w??S.w)-(p.started??0)-planDone);
   const back='';
-  let h=`${crumb()}<div class="dhead"><span class="dic">${def.ally?'🤝':p.inh?'📜':'🏗'}</span><div><h3>${nm}</h3><div class="sub2">${def.ally?'Allied deal for':needsContract(def)?'New plant for':'Upgrade for'} ${tgt} · ${p.inh?'started before you took office':'ordered '+fmtDate(p.started)}${p.ct?` · ${BUILDERS[p.ct.b].ic} ${BUILDERS[p.ct.b].n} · ${CONTRACTS[p.ct.k].ic} ${CONTRACTS[p.ct.k].n}`:''}</div></div><span class="dsp"></span>${back}</div>
+  let h=`${crumb()}<div class="dhead"><span class="dic dvic">${vic(def.ally?'allies':'fac',30)}</span><div><h3>${nm}</h3><div class="sub2">${def.ally?'Allied deal for':needsContract(def)?'New plant for':'Upgrade for'} ${tgt} · ${p.inh?'started before you took office':'ordered '+fmtDate(p.started)}${p.ct?` · ${BUILDERS[p.ct.b].ic} ${BUILDERS[p.ct.b].n} · ${CONTRACTS[p.ct.k].ic} ${CONTRACTS[p.ct.k].n}`:''}</div></div><span class="dsp"></span>${back}</div>
    <div class="pstat ${stC}">${stT}${behind>2&&!p.inh?` <span class="mini">· ${Math.round(behind)} weeks behind plan</span>`:''}${live&&STAGE_WHY[STAGES[Math.min(p.stage,5)]]?`<div class="pwhy">${STAGE_WHY[STAGES[Math.min(p.stage,5)]]}</div>`:''}</div>
    <div class="dsec"><h4>Progress</h4>${progStages(p,live)}</div>
    <!--WILL-->
@@ -5944,6 +5950,7 @@ function wmSVG(d,dsh=0){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1
   dots=`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="${(6+26*Math.sqrt(dsh)).toFixed(1)}" fill="#2d5f99" fill-opacity=".18" stroke="#2d5f99" stroke-width="1.2" stroke-dasharray="3 2"><title>US production: ${pct(dsh)} of supply in the game now</title></circle>`+dots+`<circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="5" fill="#1f2a36" stroke="#fff" stroke-width="1.6"/><text x="${(ux-10).toFixed(1)}" y="${(uy+16).toFixed(1)}" class="wml" text-anchor="end">United States</text><text x="${(ux-10).toFixed(1)}" y="${(uy+30).toFixed(1)}" class="wmv" fill="#2d5f99" text-anchor="end">US plants: ${pct(dsh)} of supply now</text>`;
   const mk=k=>`<marker id="wmah-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="${WM_COL[k]}"/></marker>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="wmsvg" role="img" aria-label="Map of US import sources for ${d.n}"><defs>${mk('adv')}${mk('al')}${mk('oth')}</defs>${g}${arcs}${dots}${labs.join('')}</svg>`}
+const lst3=a=>a.length>3?a.slice(0,3).join(', ')+' and '+(a.length-3)+' more':a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join('');
 function wmBody(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||production(false).P,p=P[d.node],cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
   if(!WM)wmLoad();
   const shOf=(x,k)=>x.src.filter(y=>wmGrp(y[0])===k).reduce((a,y)=>a+y[1],0);
@@ -5964,9 +5971,12 @@ function wmBody(){const d=WMD.find(x=>x.k===S.wmat)||WMD[2],P=S._R?.P||productio
     <div class="wmacts">${acts.length?acts.map(x=>`<div>${x}</div>`).join(''):'<div class="mini">Nothing under way for this material yet: build a plant, sign an allied deal, or request a stockpile buy from its page.</div>'}</div>
     <div style="margin-top:6px"><button class="btn sm" data-a="node" data-n="${d.node}">Open its page to act →</button></div></div>`:'';
   const body=WM?.err?`<div class="wmload">The map outlines could not load; they need an internet connection. The figures are listed below.</div>`:WM?wmSVG(d,dsh):'<div class="wmload">Loading map…</div>';
-  const top=`<div class="dtop"><div class="dhead"><span class="dic">🌍</span><div><h3>${d.n}</h3><div class="sub2">Shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
+  const top=`<div class="dtop"><div class="dhead"><div><h3>${d.n}</h3><div class="sub2">Shares of imports by country, 2021–24 · USGS Mineral Commodity Summaries 2026</div></div></div>
     <div class="wmhd"><div class="wmnir"><b>${d.nir}</b><span>net import reliance, 2025</span></div><div class="wmshare">${bar}</div></div></div>`;
-  return `<div class="billv wmv">${cnPanel()}${top}
+  const c=cnS(),rt=cnRate(),nx=CN_RUNGS[c.rung],cuts=ORDER.filter(id=>(cutOf(id)??1)<.999),most=WMD.filter(x=>shOf(x,'adv')>=50);
+  const tl=(lab,v,d)=>`<div class="trt"><span>${lab}</span><b>${v}</b><i class="trd">${d}</i></div>`;
+  const head=S.fac==='US'?`<div class="trts n4 wmtiles">${tl('Beijing’s export controls',`Step ${c.rung} of ${CN_RUNGS.length}`,nx?`next: ${nx.s.toLowerCase()}`:'nothing left to escalate')}${tl('Beijing’s pressure',`${Math.round(c.heat)}/100`,`${rt>=0?'rising':'falling'} ${fmt(Math.abs(rt),0)} a year · review ${fmtDate(c.next)}`)}${tl('Inputs under export controls',cuts.length,cuts.length?lst3(cuts.map(id=>lc(ND[id].n).replace(/ \([^)]*\)/,''))):'none withheld today')}${tl('Raw materials mostly from China and Russia',`${most.length} of ${WMD.length}`,'half or more of US imports, USGS')}</div>`:'';
+  return `<div class="billv wmv">${head}${cnPanel()}<div class="stgh"><b>Where each raw material comes from</b><span>US imports by the country that shipped them</span></div>${top}
     <div class="wmwrap"><div class="wmlist"><div class="wmlh"><span>Raw material</span><span>From China / Russia</span></div>${list}</div><div class="wmmain">
       ${body}
       <div class="wmsrc"><span class="wmk">Source</span>USGS, import sources 2021–24: “${d.ln}”${d.note?`<div class="wmnote">${d.note}</div>`:''}<div class="wmnote"><b>Allies:</b> NATO members, Japan, South Korea, Australia and Israel. <b>Neutral:</b> every other country except China and Russia. Neutral suppliers sell to both sides and can restrict exports for their own reasons.</div></div>${gm}
@@ -6035,7 +6045,7 @@ function dossierHTML(id,P){
     if(n.in.length)groups[`Raise the materials ceiling <span class="grps">— fix what it is made from: ${n.in.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${lc(ND[i].n)}</span>`).join(', ')}</span>`]=[];
     const act=S.projects.filter(q=>PD[q.def].t.node===id),plants=S.plants.filter(q=>q.target===id),fl=S.nflags[id]||{};
     const sameTier=NODES.filter(x=>x.t===n.t),ix=sameTier.findIndex(x=>x.id===id);
-    main=`${crumb()}<div class="dhead"><span class="dic">${n.ic}</span><div><h3>${n.n}</h3><div class="sub2">Tier ${n.t} · ${TIERS[n.t]} · <b class="st-t-${st}">${st.toUpperCase()}</b> · cover ${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'} · PRC exposure ${pct(p.expo)} · <span class="linkn" data-a="why" data-k="know" data-c="${id}">know-how ${Math.round(S.know[id])}</span></div><div class="dlede">${n.d}</div></div><span class="dsp"></span>${back}
+    main=`${crumb()}<div class="dhead"><span class="dic dtier" data-tip="Tier ${n.t}: ${TIERS[n.t]}">T${n.t}</span><div><h3>${n.n}</h3><div class="sub2">Tier ${n.t} · ${TIERS[n.t]} · <b class="st-t-${st}">${st.toUpperCase()}</b> · cover ${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'} · PRC exposure ${pct(p.expo)} · <span class="linkn" data-a="why" data-k="know" data-c="${id}">know-how ${Math.round(S.know[id])}</span></div><div class="dlede">${n.d}</div></div><span class="dsp"></span>${back}
       <button class="pbtn sm" data-a="node" data-n="${sameTier[(ix-1+sameTier.length)%sameTier.length].id}">‹</button><button class="pbtn sm" data-a="node" data-n="${sameTier[(ix+1)%sameTier.length].id}">›</button><div class="jtabs"><button data-a="ovjump" data-s="#makers">🏭 Producers</button><button data-a="flow" data-f="${id}">⇶ Flows</button></div></div>
      ${nodeLinks(id)}<!--CEIL-->${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>${n.in.length?'Made from, and what it feeds':'Where it goes'}</h4>${supplyWeb(id,P)}</div><div class="dsec"><h4>Why it matters</h4><p>${n.d}</p>${I.why?`<p>${I.why}</p>`:''}${n.ss?`<p class="warnp">⚠ ${n.ss}.</p>`:''}
       <div class="kv"><b>Feeds</b><span class="chipsP">${CONSUMERS[id].map(c=>c.startsWith('L:')?`<span class="npill np-ok" data-a="node" data-n="${c}">${LINES[c.slice(2)].n}</span>`:pill(c,P)).join('')}</span><b>Ends up in</b><span>${ends.map(l=>`<span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span>`).join(' · ')}</span></div></div>
@@ -7891,7 +7901,7 @@ function alliesBody(){if(S.fac!=='US')return '<p class="mini">The allies view co
   h=alHead()+h;
   if(rv==='eu')h+=ruPanel();
   if(rv==='pac'){const t=twShare();h+=`<div class="alzone">${AFLAG.tw}<div><b>Taiwan is inside the war zone.</b> Its lines count in peacetime, but in a blockade they stop and nothing they build can reach you. Without Taiwan’s output you would meet <b>${pct(t.wo)}</b> of the requirement instead of ${pct(t.now)}.</div></div>`}
-  h+=`<div class="alcards">${mem.map(m=>{const s=alS(m.k),hits=s.hit.filter(x=>x.left>0),rows=cs.filter(c=>(m.sh[c]||0)>0||ALLY_DEALS.some(D=>D.m===m.k&&D.c===c&&s.deals[D.id]));
+  h+=`<div class="stgh"><b>Your allies, one by one</b><span>what each builds now, and the deals you can sign with it</span></div><div class="alcards">${mem.map(m=>{const s=alS(m.k),hits=s.hit.filter(x=>x.left>0),rows=cs.filter(c=>(m.sh[c]||0)>0||ALLY_DEALS.some(D=>D.m===m.k&&D.c===c&&s.deals[D.id]));
     const deals=ALLY_DEALS.filter(D=>D.m===m.k&&D.t===rv);
     return `<div class="alc"><div class="alch">${AFLAG[m.k]}<b>${m.n}</b><span class="mini">${m.who}</span></div>
      ${hits.length?`<div class="alhit">${hits.map(x=>`⚠ ${x.why}: ${x.c==='*'?'all lines':lc(LINES[x.c].n)} −${pct(1-x.m)} · ${x.left} wk left`).join('<br>')}</div>`:''}
