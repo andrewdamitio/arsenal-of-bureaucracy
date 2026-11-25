@@ -1605,6 +1605,8 @@ svg.sk g.nd text{paint-order:stroke;stroke:#f3ecd8;stroke-width:3.5px;stroke-lin
 #top .turnbtn{white-space:nowrap!important;max-width:none!important;min-height:36px}
 @media (max-width:1560px){#top .tbw{display:none}#top .res{padding-left:7px;padding-right:7px}#top .res b{font-size:14px}#top .res span{font-size:9.5px;letter-spacing:.04em}.turnbtn{padding-left:10px;padding-right:10px}}
 .bdnote{margin:4px 0 8px;padding:6px 10px;border:1px solid #d9a58c;border-radius:4px;background:#f8e6dc;font:12.5px/1.45 var(--f-body);color:#5a2a1c}
+details.dbg>summary.dbgh{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:10px}details.dbg>summary.dbgh::-webkit-details-marker{display:none}
+details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>summary.dbgh::before{content:"▾"}details.dbg>summary .mini{font:12px var(--f-body);letter-spacing:0;text-transform:none;color:#8a7850}
 </style>
 </head>
 <body>
@@ -5902,7 +5904,8 @@ function dossierHTML(id,P){
    {let bg='',isv;for(const t of ['Situation','Why it matters','Where it comes from',"How it’s made"]){const r=takeSec(main,t);main=r[0];bg+=r[1]}
    [main,isv]=takeSec(main,'In service');const wd=WMD.filter(x=>x.node===id),mk=(wd.length?`<div class="dsec"><h4>Where US imports come from</h4>${wd.map(x=>`<div class="wmsrc" style="margin:2px 0 6px"><b>${x.n}</b> (USGS, 2021–24): ${x.ln} <button class="btn sm" data-a="map" data-m="${x.k}">🌍 On the map</button></div>`).join('')}</div>`:'')+(id.startsWith('L:')?'':makersHTML(id,S._R.P)),pk='<div class="dsec"><h4>Capacity pipeline';main=main.includes(pk)?main.replace(pk,mk+pk):main+mk;
    if(isv){const rk='<div class="dsec"><h4>Readiness';main=main.includes('<!--ISV-->')?main.replace('<!--ISV-->',isv):main.includes(rk)?main.replace(rk,isv+rk):main+isv}
-   if(bg)main+=`<div class="dbg"><div class="dbgh">Background</div>${bg}</div>`}
+   if(bg){const one=(bg.match(/<div class="dsec"><h4>/g)||[]).length===1,nc=(bg.match(/\[c:[^\]]+\]/g)||[]).reduce((a,m)=>a+m.split(',').length,0);if(one)bg=bg.replace(/<h4>[^<]*<\/h4>/,'');
+     main+=`<details class="dbg"><summary class="dbgh">In the real world<span class="mini">${one?'the situation today':'why it matters, where it comes from, how it is made'}${nc?` · ${nc} source${nc>1?'s':''}`:''}</span></summary>${bg}</details>`}}
   return `<div class="paper dossier"><div class="dwrap">${sb}<div class="dmain">${pinTop(main)}</div></div></div>`;
 }
 
