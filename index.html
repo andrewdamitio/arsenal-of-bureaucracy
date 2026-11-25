@@ -1660,6 +1660,9 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .ptn{font-size:13px;line-height:1.25}#view .ptc{margin-top:auto}
 #view .ptabs+.rbdom{border-top:0;padding-top:4px}
 @media (max-width:1300px){#view .ptabs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* an area is never shorter than the screen below the tabs, so switching areas does not make the page jump */
+#view .ptabs+.rbdom{min-height:calc(100vh - 190px);box-sizing:border-box}
+#view details.pdhow>summary h5 span{margin-left:8px}
 </style>
 </head>
 <body>
@@ -4261,7 +4264,7 @@ function polBody(){if(S.fac!=='US')return agendaHTML();
    </div>
    ${(()=>{const a=polAreaNow(all);return `<div class="ptabs" role="tablist">${all.map(D=>{const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id),can=rs.filter(r=>isExec(r)&&!ruleOn(r.id)).length+ids.filter(x=>(RD[x]&&!passed(x)&&!enacted(x)&&vehOf(RD[x])!=='ndaa')||(CD[x]&&!carveOn(x))).length,
       inF=rs.filter(r=>!isExec(r)||ruleOn(r.id)).length+ids.filter(x=>(RD[x]&&(passed(x)||enacted(x)))||(CD[x]&&carveOn(x))).length,st=S.projects.filter(p=>p.obs.length&&(D.layers||[]).includes(OD[p.obs[0].id]?.layer)).length;
-      return `<button class="ptab ${D.id===a?'on':''}" role="tab" aria-selected="${D.id===a}" data-a="parea" data-d="${D.id}"><span class="ptn">${D.ic} ${D.n}</span><span class="ptc">${can} available · ${inF} in force${st?` · <b class="redt">${st} stalled</b>`:''}</span></button>`}).join('')}</div>${polDomHTML(all.find(D=>D.id===a))}`})()}`}
+      return `<button class="ptab ${D.id===a?'on':''}" role="tab" aria-selected="${D.id===a}" data-a="parea" data-d="${D.id}"><span class="ptn">${D.n}</span><span class="ptc">${can} available · ${inF} in force${st?` · <b class="redt">${st} stalled</b>`:''}</span></button>`}).join('')}</div>${polDomHTML(all.find(D=>D.id===a))}`})()}`}
 // which area the page shows: one you are being taken to, else your choice, else the one stalling programs or costing most weeks
 function polAreaNow(all){const ok=id=>all.some(D=>D.id===id);let a=null;
   const j=S._jump||'',t=S._scrollTo||'';
@@ -6743,7 +6746,7 @@ function mountView(st0){
     for(const k in CH)if(CH[k].ctx==='v')delete CH[k];CHctx='v';
     viewEl.innerHTML=cz(viewHTML());xpPass(viewEl);tipPass(viewEl);viewW=S.w;viewT=now;if(viewKey!==S.view)viewEl.dataset.fresh=1;viewKey=S.view;S._vdirty=false;
     if(S.view==='flow')attachSankey(viewEl)}
-  slot.replaceWith(viewEl);if(S.view==='flow')skPlates(viewEl.querySelector('svg.sk'));if(viewEl.dataset.fresh){viewEl.scrollTop=0;delete viewEl.dataset.fresh}else viewEl.scrollTop=st;
+  slot.replaceWith(viewEl);if(S.view==='flow')skPlates(viewEl.querySelector('svg.sk'));if(viewEl.dataset.fresh){viewEl.scrollTop=0;delete viewEl.dataset.fresh}else viewEl.scrollTop=st;if(S._polKeep!=null){viewEl.scrollTop=S._polKeep;S._polKeep=null}
   if(S._citeScroll){const el=viewEl.querySelector('#cite-'+S.citeHi);if(el)el.scrollIntoView({block:'center'});S._citeScroll=false}
   const sk=viewEl.querySelector('.skwrap');if(sk&&S._skScroll!=null)sk.scrollLeft=S._skScroll;
   if(S._scrollTo){const el=viewEl.querySelector(S._scrollTo);if(el){el.scrollIntoView({block:/^#(rl|bl)-/.test(S._scrollTo)?'center':'start'});el.classList.remove('jumpto');void el.offsetWidth;el.classList.add('jumpto')}S._scrollTo=null}
@@ -8697,7 +8700,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;S._vdirty=true;break;
     case 'rbtab':S.rbTab=b.dataset.t;S._vdirty=true;break;
     case 'domtog':{if(!S.domOpen){S.domOpen={};for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1}const o=S.domOpen;o[b.dataset.d]=!o[b.dataset.d];S._vdirty=true;break}
-    case 'parea':S.polArea=b.dataset.d;S._vdirty=true;setTimeout(()=>document.querySelector('#view .ptabs')?.scrollIntoView({block:'start'}),0);break;
+    case 'parea':{const v=document.getElementById('view'),t=document.querySelector('#view .ptabs'),stuck=v&&t&&t.getBoundingClientRect().top<=v.getBoundingClientRect().top+2&&v.scrollTop>0,y0=t?t.offsetTop:0;S.polArea=b.dataset.d;S._vdirty=true;S._polKeep=stuck?y0:null;break}
     case 'domall':{S.domOpen={};if(b.dataset.v==='1')for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1;S._vdirty=true;break}
     case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
