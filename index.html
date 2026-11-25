@@ -1607,6 +1607,9 @@ svg.sk g.nd text{paint-order:stroke;stroke:#f3ecd8;stroke-width:3.5px;stroke-lin
 .bdnote{margin:4px 0 8px;padding:6px 10px;border:1px solid #d9a58c;border-radius:4px;background:#f8e6dc;font:12.5px/1.45 var(--f-body);color:#5a2a1c}
 details.dbg>summary.dbgh{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:10px}details.dbg>summary.dbgh::-webkit-details-marker{display:none}
 details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>summary.dbgh::before{content:"▾"}details.dbg>summary .mini{font:12px var(--f-body);letter-spacing:0;text-transform:none;color:#8a7850}
+#top .logo .lgs{display:none}#top.tfit1 .logo .lgf{display:none}#top.tfit1 .logo .lgs{display:inline}
+#top.tfit2 [data-k="req"],#top.tfit2 [data-k="strain"]{display:none}
+#top .turnbtn,#top .date,#top .rmenu{flex:none}
 </style>
 </head>
 <body>
@@ -7378,7 +7381,7 @@ function tbMoves(all){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='U
   return [...mv.filter(x=>x.urgent),...qk,...pts,...mv.filter(x=>!x.urgent&&x.pt==null)].filter(x=>all||!hid(x.k)).map(x=>({...x,hid:hid(x.k)})).slice(0,all?99:3)}
 // every move the brief can see this turn, kept until something changes
 function tbAll(){const k=[S.w,(S.acts||[]).length,S.projects.length,JSON.stringify(S.briefNo||{}),Math.floor(S.pc),Math.floor(S.budget*10)].join('|');if(S._tbA&&S._tbA.k===k&&S._tbA.r===S._R)return S._tbA.v;const v=tbMoves(true);S._tbA={k,v,r:S._R};return v}
-function tbCard(x){return `<div class="brc${x.hid?' brhid':''}"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}</div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}${x.hid?`<button class="brnot" data-a="brun" data-k="${x.k}" data-tip="Show it on Command again">Show again</button>`:`<button class="brnot" data-a="brno" data-k="${x.k}" data-tip="Hide this for two months">Not now</button>`}</div></div>`}
+function tbCard(x,inPop){return `<div class="brc${x.hid?' brhid':''}"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}</div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}${x.hid?`<button class="brnot" data-a="brun" data-k="${x.k}" data-tip="Show it on Command again">Show again</button>`:(inPop?'':`<button class="brnot" data-a="brno" data-k="${x.k}" data-tip="Hide this for two months">Not now</button>`)}</div></div>`}
 function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves(),n=tbAll().filter(x=>!x.hid).length;
   if(!paper&&S.w===PLAY0&&!S.tut&&n)return `<div class="brf brslim"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${n} move${n>1?'s':''} worth making before your first turn</span><span class="linkn brall" data-a="tball">Open the brief →</span></div></div>`;
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${mv.length?`The ${mv.length===1?'move':mv.length===2?'two moves':'three moves'} worth most now${n>mv.length?`, of ${n}`:''}`:'Nothing pressing'}</span>${n>mv.length?`<span class="linkn brall" data-a="tball">The full brief: all ${n} →</span>`:''}<span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide</span></div>${mv.length?`<div class="brcs">${mv.map(tbCard).join('')}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
@@ -7386,8 +7389,8 @@ function tbAllHTML(){const all=tbAll(),on=all.filter(x=>!x.hid),off=all.filter(x
   const grp=xs=>ORD.concat([...new Set(xs.map(x=>x.lab))].filter(l=>!ORD.includes(l))).map(l=>[l,xs.filter(x=>x.lab===l)]).filter(([,v])=>v.length);
   return `<div class="paper wide trp tball"><div class="hd"><span class="ic">📋</span>This turn’s brief · ${turnLabel()}</div><div class="bd">
     <p class="mini" style="margin:0 0 8px">${S.w===PLAY0?'<b>Before your first turn.</b> ':''}Every move worth making now, by kind, with what each adds to your share of the requirement where it can be worked out. The card on Command shows the ${Math.min(3,on.length)} worth most. Nothing here is decided for you.</p>
-    ${on.length?grp(on).map(([l,v])=>`<h5 class="th5">${l} <span class="mini">· ${v.length}</span></h5><div class="brcs brp">${v.map(tbCard).join('')}</div>`).join(''):'<p>Nothing pressing this turn.</p>'}
-    ${off.length?`<h5 class="th5">Hidden for now <span class="mini">· ${off.length}</span></h5><div class="brcs brp">${off.map(tbCard).join('')}</div>`:''}</div>
+    ${on.length?grp(on).map(([l,v])=>`<h5 class="th5">${l} <span class="mini">· ${v.length}</span></h5><div class="brcs brp">${v.map(x=>tbCard(x,1)).join('')}</div>`).join(''):'<p>Nothing pressing this turn.</p>'}
+    ${off.length?`<h5 class="th5">Hidden for now <span class="mini">· ${off.length}</span></h5><div class="brcs brp">${off.map(x=>tbCard(x,1)).join('')}</div>`:''}</div>
     <div class="ft trft"><button class="pbtn primary" data-a="close">${S.w===PLAY0?'To Command →':'Close'}</button></div></div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
 // ---- the mandate brief: the opening page of a game. The scenario as a lede beside its map, the three dates on a timeline,
@@ -7748,7 +7751,7 @@ function renderGame(){
   const R=production(false),P=R.P,f=F();S._R=R;noteChanges(R);
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
-  const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command">ARSENAL <small>of</small> BUREAUCRACY</button>
+  const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command"><span class="lgf">ARSENAL <small>of</small> BUREAUCRACY</span><span class="lgs">AoB</span></button>
     ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Click for the calculation.`,'why','data-k="suff"')}<i class="tsep"></i>
     ${res(S.sandbox?'∞':`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Click for its page.`,'why','data-k="pc"')}
     ${res(S.sandbox?'∞':`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,'Budget',`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.<br>Click for its page.`,'why','data-k="budget"')}
@@ -8464,7 +8467,8 @@ function renderReceipt(){let el=document.getElementById('receipt');if(!el){el=do
 // does a supply move on this item touch a line’s current limit?
 const nodeVerdict=id=>launchVerdict({t:{node:id}});
 function sbxFill(){if(S&&S.sandbox){if(S.pc<5000)S.pc=9999;if(S.budget<5000)S.budget=9999}}
-function render(){if(!S){renderTitle();return}if(S._trnDue&&S.trnRep&&!S.modal&&!S.queue.length&&!decisionsPending()&&!S.sim){S._trnDue=0;S.modal='turn'}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav();guideBody()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt()}
+function topFit(){const t=document.getElementById('top');if(!t)return;t.classList.remove('tfit1','tfit2');const over=()=>{const b=t.querySelector('.turnbtn');return t.scrollWidth>t.clientWidth+1||(b&&b.getBoundingClientRect().right>document.documentElement.clientWidth-2)};if(!over())return;t.classList.add('tfit1');if(over())t.classList.add('tfit2')}
+function render(){if(!S){renderTitle();return}if(S._trnDue&&S.trnRep&&!S.modal&&!S.queue.length&&!decisionsPending()&&!S.sim){S._trnDue=0;S.modal='turn'}if(S.pc<0)S.pc=0;try{mcheck();if(!S.mh?.length)mhist(true)}catch(e){console.error(e)}if(!S.sim&&S.w>=PLAY0&&!(S.base&&S.base.done&&S.base.k===baseKey())&&!BASEQ.busy){BASEQ.busy=true;setTimeout(()=>{BASEQ.busy=false;baseTick()},1500)}sbxFill();try{trkUpdate()}catch(e){console.error(e)}renderGame();renderModal();try{mnav();guideBody()}catch(e){console.error(e)}try{xpPass(document.getElementById('app'));xpPass(document.getElementById('ov'));tipPass(document.getElementById('app'));tipPass(document.getElementById('ov'))}catch(e){console.error(e)}rehover();renderReceipt();try{topFit()}catch(e){}}
 
 /* ---------- saving: autosave in this browser, plus a file to download or load ---------- */
 const SAVE_K='aob.save.v1',SAVE_SKIP=new Set(['_cpjX','_cpj','_R','_tbA','_prC','_sc','_np','_pvc','_sp','_reel','_flW','_handT0']);
@@ -8520,7 +8524,7 @@ function mnav(){let el=document.getElementById('mnav');if(!S||S.over&&S.modal===
 let TAP=null;
 document.addEventListener('pointerup',e=>{if(e.pointerType!=='touch'||!TAP)return;const t=TAP;TAP=null;if(Math.hypot(e.clientX-t.x,e.clientY-t.y)>10||Date.now()-t.t>900||!t.tg.isConnected)return;
   const ev=new PointerEvent('pointerdown',{bubbles:true,cancelable:true,button:0,pointerType:'touch',clientX:e.clientX,clientY:e.clientY});ev._tap=1;t.tg.dispatchEvent(ev)});
-document.addEventListener('pointercancel',()=>{TAP=null});addEventListener('scroll',()=>{TAP=null},true);
+document.addEventListener('pointercancel',()=>{TAP=null});addEventListener('scroll',()=>{TAP=null},true);addEventListener('resize',()=>{try{topFit()}catch(e){}});
 document.addEventListener('pointerdown',e=>{
   if(e.pointerType==='touch'&&!e._tap&&e.isTrusted){TAP={x:e.clientX,y:e.clientY,t:Date.now(),tg:e.target};return}
   if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else if(!closeToReport()){S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
