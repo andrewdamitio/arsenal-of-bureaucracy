@@ -1745,6 +1745,27 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .alintro{font:14px/1.5 var(--f-body);color:#3a3020}
 .dhead .dtier{display:inline-grid;place-items:center;flex:none;width:40px;height:40px;border:1.5px solid #8a7850;border-radius:50%;font:700 15px var(--f-head);color:#5a4a26;background:#faf5e6}
 .dhead .dvic{color:#5a4a26;display:inline-grid;place-items:center}
+/* the masthead's Today marker sits above the line, so it never runs into January 2030 */
+#needs .cm-tl{margin-top:40px}#needs .cm-now{flex-direction:column-reverse;justify-content:flex-end;top:auto;bottom:calc(100% - 17px)}#needs .cm-now b{margin:0}#needs .cm-now em{margin-bottom:0}#needs .cm-now::before{margin-top:3px}
+/* phones */
+@media(max-width:760px){
+ .trh{flex-wrap:wrap;row-gap:2px}.trh>span{white-space:normal}.trt .trd{white-space:normal}
+ .trp .yrout .whyt th:nth-child(4),.trp .yrout .whyt td:nth-child(4),.trp .yrout .whyt th:nth-child(5),.trp .yrout .whyt td:nth-child(5){display:none}
+ .trp .yrout .whyt .whys{grid-template-columns:44px 40px}.trp .endkv .whys{grid-template-columns:70px 56px}
+ #needs .cm-row{flex-direction:column;align-items:flex-start;gap:10px}#needs .cmast h1{font-size:28px}#needs .cm-big{border-left:0;padding-left:0}#needs .cm-how{margin-left:0}
+ #needs .sct th:nth-child(4),#needs .sct td:nth-child(4),#needs .sct th:nth-child(5),#needs .sct td:nth-child(5){display:none}
+ #needs .sct .sct-n{white-space:normal}#needs .sct .sct-bar{min-width:70px;width:22%}#needs .sct tr.sct-g td>span{display:block;margin:2px 0 0}
+ #app .vsubbar>button .vst em,#app .vsubbar>button .vsi{display:none}#app .vsubbar>button .vst b{font-size:15px}#app .vsubbar>button{padding:6px 10px}
+ .rc-rhead{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-rhead>*:first-child{grid-column:1/-1}.rc-rhead b{font-size:22px}
+ #view .stgh{flex-wrap:wrap;row-gap:2px}#view .trt.trtx>b{font-size:15px}
+}
+/* the brief's header: description, then the links at the right */
+.brf>.brh>span:not(.brhide):not(.brall){flex:0 1 auto!important}.brf>.brh>.brall{margin-left:auto}.brf>.brh>.brall+.brhide{margin-left:14px}
+.brp>.brh{border-bottom-color:#cdb98a!important}#app .brp>.brh>b{color:#2b241a}
+@media(max-width:760px){#app .panel .brh,#app .brf>.brh{flex-wrap:wrap;row-gap:4px}#app .panel .brh>span:not(.brhide):not(.brall),#app .brf>.brh>span:not(.brhide):not(.brall){flex:1 1 100%;order:3;white-space:normal}#app .brf>.brh>.brall{order:4;margin-left:0}#app .brf>.brh>.brhide{order:2;margin-left:auto}}
+@media(max-width:760px){#view .ptabs{grid-template-columns:repeat(2,minmax(0,1fr));position:static}}
+.brf>.brh>.brall,.brf>.brh>.brhide{flex:none!important}
+@media(max-width:760px){#view .agrid svg.lc{min-width:0}}
 </style>
 </head>
 <body>
