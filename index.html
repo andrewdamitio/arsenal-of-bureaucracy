@@ -1790,6 +1790,31 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 .mkp .mkt td{vertical-align:middle}.mkp .mkact{text-align:right;white-space:nowrap}.mkp .mkul{margin:0;padding-left:18px;font:13px/1.55 var(--f-body);color:#2b241a}.mkp .mkul li{margin:0 0 4px}.mkp .mkul li.mkbad{color:#7a2a20}
 @media(max-width:760px){#view .mkcyc{grid-template-columns:repeat(2,minmax(0,1fr))}.mkp .mkact{white-space:normal}}
 .nodem{cursor:help;border-bottom:1px dotted currentColor;font-weight:600}
+/* the NDAA popups: a document of the bill's passage */
+#ov .paper.mkp2{width:min(1080px,100%)}
+#ov .mkp2 .mk-mast{position:relative;padding:20px 30px 14px;background:#fffdf6;border-top:6px solid #2b241a;border-bottom:1px solid #cdb98a;border-radius:7px 7px 0 0}
+#ov .mkp2 .mk-k{font:700 11px var(--f-body);letter-spacing:.16em;text-transform:uppercase;color:#8a6a1f}
+#ov .mkp2 .mk-mast h2{margin:6px 0 2px;font:700 32px/1.1 var(--f-head);color:#231d14;letter-spacing:.005em;background:none;border:0;padding:0}
+#ov .mkp2 .mk-sub{font:14px var(--f-body);color:#5a4a26}
+#ov .mkp2 .mk-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px;border-top:1px solid #e0d4b4;padding-top:10px}
+#ov .mkp2 .mk-st{display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:center;color:#8a7850}#ov .mkp2 .mk-st i{grid-row:span 2;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid #b9a676;font:700 11px var(--f-body);font-style:normal}
+#ov .mkp2 .mk-st b{font:700 13px var(--f-head)}#ov .mkp2 .mk-st span{font:12px var(--f-body)}
+#ov .mkp2 .mk-st.done{color:#3f6b33}#ov .mkp2 .mk-st.done i{background:#3f6b33;border-color:#3f6b33;color:#fff}
+#ov .mkp2 .mk-st.cur{color:#231d14}#ov .mkp2 .mk-st.cur i{background:#c9952a;border-color:#c9952a;color:#231d14;box-shadow:0 0 0 4px #c9952a33}
+#ov .mkp2>.bd{padding:16px 30px}#ov .mkp2 .trts{margin-bottom:12px}
+#ov .mkp2 .mk-pri{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}#ov .mkp2 .mk-pl{font:700 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:#8a7850;margin-left:6px}#ov .mkp2 .mk-pl:first-child{margin-left:0}
+#ov .mkp2 .mk-tag{padding:2px 9px;border-radius:12px;font:600 12px var(--f-body)}#ov .mkp2 .mk-tag.up{background:#e3eed8;color:#2f5a24;border:1px solid #b9d2a5}#ov .mkp2 .mk-tag.dn{background:#f6e0da;color:#7a2a20;border:1px solid #deb3a8}
+#ov .mkp2 .mk-pn{flex:1 1 100%;font:12px var(--f-body);color:#7a6a48}
+#ov .mkp2 .mkpl{display:inline-block;padding:2px 9px;border-radius:3px;font:600 12px var(--f-body);white-space:nowrap}#ov .mkp2 .mkpl.k{background:#e3eed8;color:#2f5a24}#ov .mkp2 .mkpl.c{background:#f6e0da;color:#8a2a1c}#ov .mkp2 .mkpl.f{background:#f6ead0;color:#7a5410}#ov .mkp2 .mkpl.n{background:#ece6d6;color:#7a6a48}
+#ov .mkp2 .mkt td{padding:7px 8px}#ov .mkp2 .mkact{text-align:right}#ov .mkp2 .mkact .btn{margin-left:4px}
+#ov .mkp2 .mk-n{display:inline-block;font:italic 12.5px var(--f-body);color:#6b5a35;margin-right:6px}#ov .mkp2 .mk-n.up{color:#2f5a24}#ov .mkp2 .mk-n.dn{color:#8a2a1c}
+#ov .mkp2 .mk-list{display:flex;flex-direction:column;gap:6px}
+#ov .mkp2 .mk-li{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fbf7ec;border:1px solid #e0d4b4;border-left:4px solid #b9a676;border-radius:3px;font:13.5px/1.45 var(--f-body);color:#2b241a}
+#ov .mkp2 .mk-li.up{border-left-color:#5f9e4a}#ov .mkp2 .mk-li.dn{border-left-color:#b0453a}#ov .mkp2 .mk-li.nt{border-left-color:#c9952a}
+#ov .mkp2 .mk-ic{flex:none;width:16px;font-weight:700;color:#8a7850}#ov .mkp2 .mk-li.up .mk-ic{color:#3f7a34}#ov .mkp2 .mk-li.dn .mk-ic{color:#a3261c}
+#ov .mkp2 .mk-tx{flex:1}#ov .mkp2 .mk-li .btn{flex:none}
+#ov .mkp2 .trcol{margin-bottom:12px}
+@media(max-width:760px){#ov .paper.mkp2{display:block!important;overflow-y:auto!important}#ov .mkp2>.bd{overflow:visible!important;max-height:none!important;flex:none!important}#ov .mkp2>.ft{position:sticky;bottom:0;background:#efe6cf;z-index:2}#ov .mkp2 .mk-mast{padding:14px 16px}#ov .mkp2 .mk-mast h2{font-size:24px}#ov .mkp2 .mk-steps{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px}#ov .mkp2>.bd{padding:12px 14px}#ov .mkp2 .mkt{display:block;overflow-x:auto}#ov .mkp2 .mk-li{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -4296,15 +4321,15 @@ function mkAdds(ch,fy){const out=[],m=moodOf(fy),gen=m.f<1?1.25:m.f>1.3?.75:1;
   return out}
 function markup(ch,V){const fy=FYOF(V),M=mkOf(fy);if(M[ch])return;const pr=ch==='h'?cprioMake(fy):cprioMake(fy,'cprioS'),marks={};
   for(const it of mkItems(V)){const q=clamp(it.q*mkPrioF(it,pr),.02,.85),r=rand('mk'+ch+it.k);marks[it.k]=r<q?'cut':((it.kind==='plant'||it.kind==='deal')&&rand('mkF'+ch+it.k)<.12?'fence':'keep')}
-  M[ch]={w:S.w,marks,adds:mkAdds(ch,fy)};const n=Object.values(marks),cut=n.filter(x=>x==='cut').length;
+  M[ch]={w:S.w,marks,adds:mkAdds(ch,fy)};if(ch==='s')mkSenateWeigh(M);const n=Object.values(marks),cut=n.filter(x=>x==='cut').length;
   log(`🏛 FY${fy%100} ${billN()}: the ${MK_CH[ch]} Committee marks up the bill. Of your ${n.length} item${n.length===1?'':'s'}, ${n.length-cut} kept and ${cut} cut; it adds ${M[ch].adds.length} of its own. It backs ${pr.hi.map(k=>OFFICES[k].n.toLowerCase()).join(' and ')}, and questions ${OFFICES[pr.lo].n.toLowerCase()}.`,cut?'bad':'ev');
   if(!S.sim&&!S.histMode)S.queue.push({sys:'mk',ch,fy,V})}
 function conference(V){const fy=FYOF(V),M=mkOf(fy);if(M.c)return;const res={},cr=credOf()/100;
   for(const it of mkItems(V)){const h=M.h?.marks[it.k],s=M.s?.marks[it.k],kh=h==='keep'||h==='fence',ks=s==='keep'||s==='fence',f=M.fight[it.k]?1:0;
     let p=kh&&ks?1:(h==='cut'&&s==='cut')?.3*f:(kh||ks)&&(h==='cut'||s==='cut')?.35+.3*cr+.3*f:(kh||ks)?.6+.2*f:(h==='cut'||s==='cut')?.15+.2*f:.2+.2*f;
     res[it.k]=rand('mkC'+it.k)<p?(h==='fence'||s==='fence'?'fence':'keep'):'cut'}
-  const adds=[],seen=new Set();for(const ch of ['h','s'])for(const [i,a] of (M[ch]?.adds||[]).entries()){const key=a.t+':'+(a.def||a.c||a.id);if(seen.has(key))continue;seen.add(key);
-    const both=['h','s'].every(c=>(M[c]?.adds||[]).some(b=>b.t+':'+(b.def||b.c||b.id)===key)),opp=M.opp[ch+i]?1:0;if(rand('mkCA'+key)<(both?.95:.55)-(opp?.45:0))adds.push(a)}
+  const adds=[],seen=new Set();for(const ch of ['h','s'])for(const [i,a] of (M[ch]?.adds||[]).entries()){const key=mkKey(a);if(seen.has(key))continue;seen.add(key);
+    const both=['h','s'].every(c=>(M[c]?.adds||[]).some(b=>mkKey(b)===key)),opp=['h','s'].some(c=>(M[c]?.adds||[]).some((b,j)=>mkKey(b)===key&&M.opp[c+j]))?1:0;if(rand('mkCA'+key)<(both?.95:.55)-(opp?.45:0))adds.push(a)}
   M.c={w:S.w,V,res,adds};const v=Object.values(res),cut=v.filter(x=>x==='cut').length;
   log(`🏛 FY${fy%100} ${billN()}: conference settles the bill. Of your ${v.length} item${v.length===1?'':'s'}, ${v.length-cut} survive${cut?` and ${cut} ${cut===1?'is':'are'} cut`:''}; ${adds.length} of Congress’s own changes stay in.`,cut?'bad':'ev');
   if(!S.sim&&!S.histMode)S.queue.push({sys:'mk',ch:'c',fy,V})}
@@ -4322,6 +4347,10 @@ function mkApplyAdds(fy,added){const M=S.mk?.[fy];if(!M?.c)return false;if(M.don
     else if(a.t==='repeal'){const R=RD[a.id];if(!R||!passed(a.id))continue;delete S.reforms[a.id];(S.repealed=S.repealed||{})[a.id]=S.w;lawRec('Law','Repealed: '+rname(R));log(`✂ FY${fy%100} ${billN()}: Congress repeals ${rname(R)}. Programs already under way keep the time it saved them; new ones lose it. You can pass it again.`,'bad');added.push(`<span class="redt">Repealed: ${rname(R)}</span> (you can pass it again)`)}
     else if(a.t==='source'){(S.cBar=S.cBar||[]).push({id:a.id,until:S.w+104,fy});added.push(`Sourcing provision: no emergency buys of allied ${lc(ND[a.id].n)} for defense work until ${fmtDate(S.w+104)}`)}}
   return true}
+const mkKey=a=>a.t+':'+(a.def||a.c||a.id||'');
+function mkSenateWeigh(M){const sa=M.s.adds,keys=new Set(sa.map(mkKey));M.s.fromH={};
+  for(const [i,a] of (M.h?.adds||[]).entries()){const k=mkKey(a);if(keys.has(k)){M.s.fromH[i]='same';continue}
+    const p=a.t==='repeal'?.35:a.good?.55:.4;if(rand('mkW'+k)<p){sa.push({...a,fromH:1});keys.add(k);M.s.fromH[i]='took'}else M.s.fromH[i]='left'}}
 const mkFence=()=>MK_FENCE[0]+Math.floor(rand('mkFw')*(MK_FENCE[1]-MK_FENCE[0]));
 function mkFight(k){const fy=pkgFY(),it=mkItems(pkgW()).find(x=>x.k===k),M=mkOf(fy);if(!it||M.fight[k]||M.c)return;const c=mkFightPC(it);if(S.pc<c)return;S.pc-=c;spent('pc',c);M.fight[k]=1;actRec('mkf',{k});log(`🏛 You work the conferees to restore ${it.n} (${c} PC).`)}
 function mkOppose(i){const fy=pkgFY(),M=mkOf(fy),a=M[i[0]]?.adds?.[+i.slice(1)],c=mkOppPC(a);if(M.opp[i]||M.c||S.pc<c)return;S.pc-=c;spent('pc',c);M.opp[i]=1;actRec('mko',{i});log(`🏛 You ${a?.t==='repeal'?'defend '+rname(RD[a.id])+' against repeal':'oppose a committee provision'} in conference (${c} PC).`)}
@@ -4549,30 +4578,52 @@ function alReqSec(){if(S.fac!=='US')return '';const left0=pkgRoom()-pkgPlan().fi
   return `<div class="dsec" id="aldeals"><h4>Allied deals</h4><p class="mini" style="margin:0 0 6px">Co-production and supply deals with allies, paid by Congress if it funds them. They come after your plants, reforms and stockpile buys on the money line, and can be cut in markup. A deal Congress funds is signed when the bill passes. You can also sign any of them now from your budget on <span class="linkn" data-a="view" data-v="allies">Weapons built by allies</span>.</p>
     ${rows?`<table class="ctable bl-t"><tr><th>Deal</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:'<p class="mini">No allied deals in the request.</p>'}
     ${open.length?`<table class="ctable bl-t aldopen"><tr><th>Open deals</th><th class="num">Cost</th><th></th></tr>${open.map(D=>`<tr><td>${AFLAG[D.m]} ${D.n}<div class="mini">${LINES[D.c].n}: +${fmtN(D.add||0)} a year at full rate, after ${yrs(D.ramp||0)}</div></td><td class="num">${money(D.$)}</td><td class="num"><button class="btn sm" data-a="alreq" data-d="${D.id}" ${alReqOk(D)?'':'disabled'}>Request · ${alReqPC(D)} PC</button></td></tr>`).join('')}</table>`:''}</div>`}
-// one popup per stage: a committee's markup, the conference, and the bill as enacted
-function mkHTML(q){const fy=q.fy,M=mkOf(fy),V=q.V??billW(),D=mkDates(V),ch=q.ch;
-  const lab={keep:'<span class="okt">Kept</span>',fence:'<span class="amb">Kept, funds fenced</span>',cut:'<span class="redt">Cut</span>'},none='<span class="mini">not in its bill</span>';
-  const tag=v=>v?lab[v]:none,head=t=>`<div class="paper wide yrp trp mkp"><div class="hd"><span class="ic">${vic('ndaa',22)}</span>${t}</div><div class="bd">`,foot='</div><div class="ft trft"><button class="pbtn primary" data-a="evopt" data-k="-1">Continue</button></div></div>';
-  const card=(h,sb,x)=>`<div class="trcol"><div class="trh"><b>${h}</b><span>${sb||''}</span></div>${x}</div>`;
-  if(ch==='v'){const b=(S.bills||[]).find(x=>x.fy===fy&&!x.src)||S.bills?.[0];if(!b)return head('The NDAA is law')+foot;
-    const L=xs=>xs.length?`<ul class="mkul">${xs.map(x=>`<li>${x}</li>`).join('')}</ul>`:'<p class="trnone">Nothing.</p>';
-    return head(`The FY${fy} NDAA is law · ${fmtDate(b.w)}`)+`<p class="endp">Congress passed the bill. Below is what it did with your request, after conference and the money line, and what it added on its own.</p>
-      <div class="trts n3"><div class="trt"><span>Funded</span><b>${b.got.length}</b><i class="trd">of your requests</i></div><div class="trt"><span>Not funded</span><b class="${b.lost.length?'redt':''}">${b.lost.length}</b><i class="trd">cut, or below the money line</i></div><div class="trt"><span>Congress added</span><b>${b.added.length}</b><i class="trd">on its own</i></div></div>
-      <div class="trgrid">${card('Funded','contracting starts now',L(b.got))}${card('Not funded','its Political Capital is spent',L(b.lost))}</div>${card('What Congress added on its own','whatever you asked',L(b.added))}
-      <p class="whyn">Request again next year, or build it now from your budget. The House marks up next year’s bill about ${fmtDate(mkDates(billW()).h)}; the request locks then.</p>`+foot}
-  const its=mkItems(V),isC=ch==='c',m=isC?null:M[ch];if(!isC&&!m)return head('Markup')+foot;
-  const pr=ch==='h'?S.cprio?.[fy]:ch==='s'?S.cprioS?.[fy]:null;
-  const act=it=>{if(isC)return '';const v=m.marks[it.k];if(v!=='cut')return '';const fc=mkFightPC(it);
+// one popup per stage, set like a document of the bill's passage: the masthead, where the bill stands, the figures,
+// your request item by item, and what Congress wrote on its own
+function mkHTML(q){const fy=q.fy,M=mkOf(fy),V=q.V??M.c?.V??billW(),D=mkDates(V),ch=q.ch;
+  const pill=v=>v==='keep'?'<span class="mkpl k">Kept</span>':v==='fence'?'<span class="mkpl f">Kept, funds fenced</span>':v==='cut'?'<span class="mkpl c">Cut</span>':'<span class="mkpl n">Not in its bill</span>';
+  const steps=[['h','House markup',D.h],['s','Senate markup',D.s],['c','Conference',D.c],['v','The vote',D.v]],cur=steps.findIndex(x=>x[0]===ch);
+  const stepH=`<div class="mk-steps">${steps.map(([k,n,w],i)=>`<div class="mk-st ${i<cur?'done':i===cur?'cur':''}"><i>${i<cur?'✓':i+1}</i><b>${n}</b><span>${fmtDate(w)}</span></div>`).join('')}</div>`;
+  const mast=(kick,title,sub)=>`<div class="paper wide yrp trp mkp mkp2"><div class="mk-mast"><div class="mk-k">${kick}</div><h2>${title}</h2><div class="mk-sub">${sub}</div>${stepH}</div><div class="bd">`;
+  const foot=`</div><div class="ft trft"><button class="pbtn" data-a="mkndaa">The NDAA tab</button><button class="pbtn primary" data-a="evopt" data-k="-1">Continue</button></div></div>`;
+  const tile=(l,v,d,cls='')=>`<div class="trt"><span>${l}</span><b class="${cls}">${v}</b><i class="trd">${d}</i></div>`;
+  const card=(h,sb,x,cls='')=>`<div class="trcol ${cls}"><div class="trh"><b>${h}</b><span>${sb||''}</span></div>${x}</div>`;
+  const bill=`FY${fy} National Defense Authorization Act`;
+  // the bill as enacted
+  if(ch==='v'){const b=(S.bills||[]).find(x=>x.fy===fy&&!x.src)||S.bills?.[0];if(!b)return mast(bill,'The NDAA is law','')+foot;
+    const L=(xs,cls)=>xs.length?`<div class="mk-list">${xs.map(x=>`<div class="mk-li ${cls}">${x}</div>`).join('')}</div>`:'<p class="trnone">Nothing.</p>';
+    return mast(bill+' · enacted','The NDAA is law',`Passed by Congress and signed · ${fmtDate(b.w)}`)+`<div class="trts n3">${tile('Funded',b.got.length,'of your requests','okt')}${tile('Not funded',b.lost.length,'cut, or below the money line',b.lost.length?'redt':'')}${tile('Congress’s own changes',b.added.length,'whatever you asked')}</div>
+      <div class="trgrid">${card('Funded','contracting starts now',L(b.got,'up'))}${card('Not funded','its Political Capital is spent',L(b.lost,'dn'))}</div>${card('What Congress wrote in on its own','whatever you asked',L(b.added,''))}
+      <p class="whyn">Request again next year, or build it now from your budget. The House marks up next year’s bill about ${fmtDate(mkDates(billW()).h)}, and the request locks then.</p>`+foot}
+  const its=mkItems(V),isC=ch==='c',m=isC?null:M[ch];if(!isC&&!m)return mast(bill,'Markup','')+foot;
+  const pr=ch==='h'?S.cprio?.[fy]:ch==='s'?S.cprioS?.[fy]:null,marks=isC?M.c.res:m.marks,vals=its.map(it=>marks[it.k]);
+  const nK=vals.filter(v=>v==='keep'||v==='fence').length,nC=vals.filter(v=>v==='cut').length,nF=vals.filter(v=>v==='fence').length,adds=isC?M.c.adds:m.adds;
+  const tiles=`<div class="trts n4">${tile(isC?'Survive':'Kept',nK,`of ${its.length} items in your request`,'okt')}${tile('Cut',nC,isC?'final: not funded':'not final until conference',nC?'redt':'')}${tile('Funds fenced',nF,'funded, held pending a report',nF?'amb':'')}${tile(isC?'Its own changes kept':'Changes of its own',adds.length,isC?'from either bill':'whatever you asked')}</div>`;
+  const priH=pr?`<div class="mk-pri"><span class="mk-pl">Backs</span>${pr.hi.map(k=>`<span class="mk-tag up">${OFFICES[k].n}</span>`).join('')}<span class="mk-pl">Questions</span><span class="mk-tag dn">${OFFICES[pr.lo].n}</span><span class="mk-pn">Items in sectors it backs are cut about half as often; in the one it questions, about 1.5 times as often.</span></div>`:'';
+  // what each item's line says: how it differs from the House, or how conference settled it
+  const note=it=>{const h=M.h?.marks[it.k],sv=M.s?.marks[it.k],kh=h==='keep'||h==='fence',ks=sv==='keep'||sv==='fence';
+    if(ch==='s'){if(!h)return '<span class="mk-n">Added after the House markup</span>';if(kh&&sv==='cut')return '<span class="mk-n dn">Cut what the House kept</span>';if(h==='cut'&&ks)return '<span class="mk-n up">Restores what the House cut</span>';return ''}
+    if(isC){const r=M.c.res[it.k];if(kh&&ks)return '<span class="mk-n">Both bills kept it</span>';if(h&&sv&&kh!==ks)return `<span class="mk-n ${r==='cut'?'dn':'up'}">The bills differed: ${r==='cut'?'dropped':'kept'}${M.fight[it.k]?' (you fought for it)':''}</span>`;if(h==='cut'&&sv==='cut')return `<span class="mk-n ${r==='cut'?'dn':'up'}">Both cut it${r!=='cut'?': restored after your fight':''}</span>`;return '<span class="mk-n">Added late</span>'}
+    return ''};
+  const act=it=>{if(isC||m.marks[it.k]!=='cut')return '';const fc=mkFightPC(it);
     return (M.fight[it.k]?'<span class="mini gold">Fighting it in conference</span>':`<button class="btn sm" data-a="mkfight" data-k="${it.k}" ${S.pc>=fc?'':'disabled'} data-tip="${tipQ('Work the conferees to restore it: better odds when the two bills are settled in November.')}">Fight it in conference · ${fc} PC</button>`)
       +(it.kind==='plant'?` <button class="btn sm" data-a="bnow" data-u="${it.uid}" ${S.budget>=it.cost-1e-9?'':'disabled'} data-tip="${tipQ('Take it out of the request and pay from your budget; it starts today and its PC comes back.')}">Build now · ${money(it.cost)}</button>`:'')};
-  const rows=its.map(it=>`<tr><td>${it.n}</td><td class="num">${money(it.cost)}</td>${ch!=='h'?`<td>${tag(M.h?.marks[it.k])}</td>`:''}${ch!=='h'?`<td>${isC?tag(M.s?.marks[it.k]):tag(m.marks[it.k])}</td>`:`<td>${tag(m.marks[it.k])}</td>`}${isC?`<td><b>${tag(M.c.res[it.k])}</b></td>`:`<td class="mkact">${act(it)}</td>`}</tr>`).join('');
-  const th=`<tr><th>Your request</th><th class="num">Cost</th>${ch==='h'?'<th>House</th>':'<th>House</th><th>Senate</th>'}${isC?'<th>Conference</th>':'<th></th>'}</tr>`;
-  const adds=isC?M.c.adds:m.adds,addRows=adds.map((a,i)=>`<li class="${a.good?'':'mkbad'}">${a.n}${!isC&&!a.good?(M.opp[ch+i]?` <span class="mini gold">· ${a.t==='repeal'?'defending it':'opposing it'} in conference</span>`:` <button class="btn sm" data-a="mkopp" data-i="${ch}${i}" ${S.pc>=mkOppPC(a)?'':'disabled'}>${a.t==='repeal'?'Defend it in conference':'Oppose it in conference'} · ${mkOppPC(a)} PC</button>`):''}</li>`).join('');
-  const title=isC?`Conference settles the FY${fy} NDAA`:`${MK_CH[ch]} marks up the FY${fy} NDAA`;
-  const lede=isC?`House and Senate conferees reconcile their bills. Items both kept survive; items one cut were bargained over, and your standing with the committees (${Math.round(credOf())}) and any fight you paid for weighed in. Congress votes about ${fmtDate(V+1)}; Congress’s money for requests decides the rest, top of your list first.`
-    :`${pr?`The committee backs ${pr.hi.map(k=>OFFICES[k].n.toLowerCase()).join(' and ')}, and questions ${OFFICES[pr.lo].n.toLowerCase()}. `:''}A cut is not final: the ${ch==='h'?'Senate marks up about '+fmtDate(D.s)+', and ':''}conference settles the two bills about ${fmtDate(D.c)}. ${ch==='h'?'Your request is now locked: what you add from here goes in as a Senate amendment, with worse odds.':'What you add from here can only go in at conference, with poor odds; after conference it waits for next year’s bill.'}`;
-  return head(title)+`<p class="endp">${lede}</p>${its.length?card('Your request',isC?'as settled':'as marked',`<table class="whyt mkt">${th}${rows}</table>`):card('Your request','',`<p class="trnone">Nothing in your request carries money. Reforms and executive actions written into law are not marked up: they become law with the bill.</p>`)}
-    ${card(isC?'Congress’s own changes that stay in':'What the committee added on its own','whatever you asked',addRows?`<ul class="mkul">${addRows}</ul>`:'<p class="trnone">Nothing of its own this year.</p>')}`+foot}
+  const cols=ch==='h'?['House']:['House','Senate'].concat(isC?['Conference']:[]);
+  const rows=its.map(it=>`<tr><td><b>${it.n}</b></td><td class="num">${money(it.cost)}</td>${cols.map(c=>`<td>${pill(c==='House'?M.h?.marks[it.k]:c==='Senate'?M.s?.marks[it.k]:M.c.res[it.k])}</td>`).join('')}<td class="mkact">${note(it)}${act(it)}</td></tr>`).join('');
+  const table=its.length?`<table class="whyt mkt"><tr><th>Item</th><th class="num">Cost</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th></th></tr>${rows}</table>`:'<p class="trnone">Nothing in your request carries money. Reforms and executive actions written into law are not marked up: they become law with the bill.</p>';
+  // the committee's own changes, one row each
+  const chg=(a,i,chm)=>{const opp=chm&&['h','s'].some(c=>(M[c]?.adds||[]).some((b,j)=>mkKey(b)===mkKey(a)&&M.opp[c+j]));
+    const btn=!isC&&!a.good?(opp?`<span class="mini gold">${a.t==='repeal'?'Defending it':'Opposing it'} in conference</span>`:`<button class="btn sm" data-a="mkopp" data-i="${chm}${i}" ${S.pc>=mkOppPC(a)?'':'disabled'}>${a.t==='repeal'?'Defend it in conference':'Oppose it in conference'} · ${mkOppPC(a)} PC</button>`):'';
+    return `<div class="mk-li ${a.good?'up':'dn'}"><span class="mk-ic">${a.good?'▲':'▼'}</span><span class="mk-tx">${a.n}${a.fromH?' <span class="mk-n">also in the House bill</span>':''}</span>${btn}</div>`};
+  const own=adds.length?`<div class="mk-list">${adds.map((a,i)=>chg(a,i,isC?null:ch)).join('')}</div>`:`<p class="trnone">${isC?'None of either committee’s own changes stayed in.':'Nothing of its own this year.'}</p>`;
+  // the Senate against the House: the House's own changes it took up or left out
+  const vsH=ch==='s'&&M.h?.adds?.length?card('Against the House bill','what the House wrote on its own',`<div class="mk-list">${M.h.adds.map((a,i)=>{const w=M.s.fromH?.[i];return `<div class="mk-li ${w==='left'?'nt':''}"><span class="mk-ic">${w==='left'?'✕':'='}</span><span class="mk-tx">${a.n}</span><span class="mk-n ${w==='left'?'dn':''}">${w==='left'?'Left out of the Senate bill: settled in conference':'In the Senate bill too'}</span></div>`}).join('')}</div>`):'';
+  const title=isC?'Conference committee':ch==='h'?'House Armed Services Committee':'Senate Armed Services Committee';
+  const sub=isC?`Settles the House and Senate bills · ${fmtDate(S.mk[fy].c.w)}`:`Marks up the bill · ${fmtDate(m.w)}`;
+  const lede=isC?`Items both bills kept survive. Where the bills differed, the conferees bargained, and your standing with the committees (${Math.round(credOf())}) and any fight you paid for weighed in. Congress votes about ${fmtDate(D.v)}; its money for requests decides the rest, top of your list first.`
+    :ch==='h'?`A cut is not final: the Senate marks up about ${fmtDate(D.s)} and conference settles the two bills about ${fmtDate(D.c)}. Your request is now locked: what you add from here goes in as a Senate amendment, with worse odds.`
+    :`The Senate writes its own bill. Where it differs from the House, conference settles it about ${fmtDate(D.c)}. What you add from here can only go in at conference, with poor odds; after conference it waits for next year’s bill.`;
+  return mast(bill,title,sub)+`${tiles}${priH}<p class="endp">${lede}</p>${card('Your request',isC?'as settled':ch==='s'?'the Senate against the House':'as marked',table)}${vsH}${card(isC?'Congress’s own changes that stay in':'What the committee wrote on its own','whatever you asked',own)}`+foot}
 function congOutlook(B){const fy=B.fy,m=moodOf(fy),mi=S.moods?.[fy]?.i??1,pl=pkgPlan(),inL=pl.filter(x=>x.st==='in'),outL=pl.filter(x=>x.st==='out');
   const exp=inL.reduce((a,x)=>a+(1-cutP(x.p)),0),cp=cprioOf(fy),law=refReqs().length+codReqs().length,lawM=refReqs().filter(x=>x.req>0).length,crHalf=passed('crAnomaly');
   const card=(h,sub,x)=>`<div class="trcol"><div class="trh"><b>${h}</b><span>${sub}</span></div>${x}</div>`,row=(k,v)=>`<div class="ndkv"><span>${k}</span><b>${v}</b></div>`;
@@ -9151,6 +9202,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'aldrop':alDrop(b.dataset.d);S._vdirty=true;break;
     case 'mkfight':mkFight(b.dataset.k);S._vdirty=true;break;
     case 'mkopp':mkOppose(b.dataset.i);S._vdirty=true;break;
+    case 'mkndaa':S.queue.shift();S.modal=null;S.view='ndaa';S.ndTab='cong';S._vdirty=true;break;
     case 'ruguard':ruGuard();S._vdirty=true;break;
     case 'yrrec':S.modal=null;S.view='rec';break;
     case 'xpi':{const k=b.dataset.k;if(XP_OPEN.has(k))XP_OPEN.delete(k);else XP_OPEN.add(k);const el=b.nextElementSibling?.classList?.contains('xp')?b.nextElementSibling:b.parentElement?.nextElementSibling;if(el&&el.classList.contains('xp'))el.classList.toggle('xpshow');return}
