@@ -5745,7 +5745,7 @@ function wmLoad(){if(WM||WMload)return;const add=src=>new Promise((ok,no)=>{cons
     const fc=topojson.feature(t,t.objects.countries),land=fc.features.filter(f=>f.properties.name!=='Antarctica');
     const W=960,H=470,proj=d3.geoNaturalEarth1().fitExtent([[6,6],[W-6,H-6]],{type:'FeatureCollection',features:land}),path=d3.geoPath(proj);
     const byN={};for(const f of land)byN[f.properties.name]=path(f);
-    WM={W,H,proj,path,byN,grat:path(d3.geoGraticule10()),sph:path({type:'Sphere'})};render()}).catch(()=>{WM={err:1};render()})}
+    WM={W,H,proj,path,byN,grat:path(d3.geoGraticule10()),sph:path({type:'Sphere'})};if(S){S._vdirty=true;render()}}).catch(()=>{WM={err:1};if(S){S._vdirty=true;render()}})}
 function wmCPath(c){const ns=WM_NAME[c]||[c];for(const n of ns)if(WM.byN[n])return WM.byN[n];return null}
 function wmSVG(d,dsh=0){const {W,H,proj}=WM,cut=S.fac==='US'?1-(cutOf(d.node)??1):0;
   let g=`<path d="${WM.sph}" fill="#ece5d3"/><path d="${WM.grat}" fill="none" stroke="#ddd3bc" stroke-width=".4"/>`;
