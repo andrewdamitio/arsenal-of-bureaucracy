@@ -1619,6 +1619,18 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 .tbs-r{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:baseline;margin:4px 0;font:13px/1.5 var(--f-body);color:#3a3020}
 .tbs-news{margin:2px 0 6px}.tbs-n{display:grid;grid-template-columns:52px 1fr;gap:8px;font:12.5px/1.45 var(--f-body);color:#3a3020;padding:2px 0;border-bottom:1px dotted #e0d4b4}.tbs-d{color:#8a7850;font-size:11.5px}
 .tball .th5.tbmv{margin-top:4px}
+.sitrep{margin:0 0 16px;padding:16px 20px 14px;background:#fffdf6;border:1px solid #cdb98a;border-top:4px solid #2b241a;border-radius:4px}
+.sitrep header,.sr-acts header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding-bottom:8px;border-bottom:1px solid #cdb98a}
+.sr-k{flex-basis:100%;font:700 10.5px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:#8a6a1f}
+.sitrep h3,.sr-acts h3{margin:0;font:700 22px var(--f-head);color:#231d14}.sr-d{margin-left:auto;font:12.5px var(--f-body);color:#6b5a35}
+.sr-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin:12px 0 4px;border:1px solid #e0d4b4;border-radius:4px;overflow:hidden}
+.sr-tiles>div{padding:8px 12px;border-left:1px solid #e0d4b4;display:flex;flex-direction:column}.sr-tiles>div:first-child{border-left:0}
+.sr-tiles b{font:700 22px var(--f-head);color:#231d14}.sr-tiles span{font:600 12px var(--f-body);color:#3a3020}.sr-tiles i{font:normal 11.5px var(--f-body);color:#8a7850}
+.sitrep h4{margin:14px 0 6px;font:700 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:#6b5a35}
+.sr-f{margin:0;padding-left:20px;font:13.5px/1.55 var(--f-body);color:#2b241a}.sr-f li{margin:0 0 6px;padding-left:4px}.sr-f li::marker{font-weight:700;color:#8a6a1f}
+.sr-cal{width:100%;border-collapse:collapse;font:13px/1.45 var(--f-body);color:#2b241a}.sr-cal td{padding:4px 0;border-top:1px solid #efe5cc;vertical-align:top}.sr-cal tr:first-child td{border-top:0}
+.sr-cal td:first-child{width:78px;font:600 12px var(--f-body);color:#8a6a1f;white-space:nowrap}
+.sr-p{margin:8px 0 0;font:13px/1.5 var(--f-body);color:#4a3d24}.sr-acts{margin:4px 0 6px}.sr-acts h3{font-size:19px}
 </style>
 </head>
 <body>
@@ -7370,28 +7382,36 @@ function tbCard(x,inPop){return `<div class="brc${x.hid?' brhid':''}"><div class
 function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves(),n=tbAll().filter(x=>!x.hid).length;
   if(!paper&&S.w===PLAY0&&!S.tut&&n)return `<div class="brf brslim"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${n} move${n>1?'s':''} worth making before your first turn</span><span class="linkn brall" data-a="tball">Open the brief →</span></div></div>`;
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${mv.length?`The ${mv.length===1?'move':mv.length===2?'two moves':'three moves'} worth most now${n>mv.length?`, of ${n}`:''}`:'Nothing pressing'}</span>${n>mv.length?`<span class="linkn brall" data-a="tball">The full brief: all ${n} →</span>`:''}<span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide</span></div>${mv.length?`<div class="brcs">${mv.map(tbCard).join('')}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
-function tbSitHTML(){const R=S._R||production(false),start=S.w<=PLAY0+1,lst=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join(''),te=turnEndW(),row=(ic,h)=>`<div class="tbs-r"><span>${ic}</span><div>${h}</div></div>`;
-  // what happened since the last turn
+// the situation report at the head of the brief: key figures, then numbered findings, then the dated calendar for the turn
+function tbSitHTML(){const R=S._R||production(false),start=S.w<=PLAY0+1,lst=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join(''),te=turnEndW();
+  const short=S.order.filter(c=>R.out[c].bott),cn=cnNext(),cuts=ORDER.filter(id=>(cutOf(id)??1)<.999),lost=ORDER.filter(id=>R.P[id].lost>1e-6&&!cuts.includes(id)),dp=decisionsPending();
+  const mo=cn&&isFinite(cn.yrsTo)?(cn.yrsTo<.25?'under 3':String(Math.max(1,Math.round(cn.yrsTo*12)))):null;
+  const tiles=[[pct(raceIdx(R.out)),'of the requirement','you and your allies, all nine lines'],[`${short.length} of ${S.order.length}`,'lines short of parts','built capacity standing idle'],
+    ...(S.fac==='US'&&mo?[[`${mo} mo`,'to Beijing’s next step',cn.nx.s.toLowerCase()]]:[]),[pct(S.exposure||R.exposure||0),'Chinese & Russian content','in what you build']];
+  // findings
+  const fs=[];
+  fs.push(`<b>Production.</b> ${short.length?`${lst(short.map(c=>lc(LINES[c].n))).replace(/^./,x=>x.toUpperCase())} ${short.length>1?'are':'is'} held below capacity by a shortage of parts.`:'Every weapon line runs at the capacity it has.'}`);
+  if(S.fac==='US')fs.push(`<b>China.</b> ${S.truce?'The trade truce holds':'There is no truce, and Beijing’s export bans are in force'}${cuts.length?`, but its export controls already withhold ${lst(cuts.map(id=>`${pct(1-cutOf(id))} of ${lc(ND[id].n).replace(/ \([^)]*\)/,'')}`))}${lost.length?`, leaving ${lst(lost.slice(0,3).map(id=>lc(ND[id].n).replace(/ \([^)]*\)/,'')))} short`:''}`:''}.${mo?` Its next step, ${cn.nx.s.toLowerCase()}, is expected in ${mo==='under 3'?'under three months':'about '+mo+' months'}.`:''}`);
+  if(S.strain>=5)fs.push(`<b>Home front.</b> Civilian strain stands at ${Math.round(S.strain)} of 100${divOn()?', and does not recover while defense orders take civilian supply':''}.`);
+  if(dp)fs.push(`<b>Waiting on you.</b> ${dp} decision${dp>1?'s':''} on Command.`);
+  // what happened
   const w0=S.trnRep?.a?.w??S.w-9,news=start?[]:S.log.filter(l=>l.w>=w0&&['good','bad','ev'].includes(l.cls)&&!/you take over|^🎯 Scenario/.test(l.m)&&!(/^\s*→ /.test(l.m))).slice(0,8);
-  // where things stand
-  const short=S.order.filter(c=>R.out[c].bott),cn=cnNext(),cuts=ORDER.filter(id=>(cutOf(id)??1)<.999),lost=ORDER.filter(id=>R.P[id].lost>1e-6&&!cuts.includes(id));
-  const stand=[row('⚔',`<b>${short.length} of ${S.order.length} weapon lines are short of parts</b>${short.length?': '+lst(short.map(c=>lc(LINES[c].n))):'.'}${short.length?'.':''} Your share of the requirement: <b>${pct(raceIdx(R.out))}</b>.`),
-    S.fac==='US'?row(FLAGS.cn,`<b>China:</b> ${S.truce?'the trade truce holds':'no truce: its export bans are in force'}${cuts.length?`; its export controls already cut ${lst(cuts.map(id=>`${lc(ND[id].n)} by ${pct(1-cutOf(id))}`))}`:''}${lost.length?`, and supply of ${lst(lost.slice(0,3).map(id=>lc(ND[id].n)))} is short as a result`:''}.${cn&&isFinite(cn.yrsTo)?` Beijing's next step, <b>${cn.nx.s.toLowerCase()}</b>, is about ${cn.yrsTo<.25?'a few months':Math.max(1,Math.round(cn.yrsTo*12))+' months'} away.`:''}`):'',
-    S.strain>=5?row('🏚',`<b>Civilian strain ${Math.round(S.strain)}</b> of 100${divOn()?': recovery is paused while defense takes civilian supply':''}.`):'',
-    decisionsPending()?row('⚠',`<b>${decisionsPending()} decision${decisionsPending()>1?'s':''} waiting</b> on Command.`):''].filter(Boolean);
-  // coming this turn
-  const up=[...EVENTS.filter(e=>e.fixedW!=null&&e.fixedW>=S.w&&e.fixedW<=te&&!(S.fired?.[e.id])&&(!e.fac||e.fac.includes(S.fac))).map(e=>row('📅',`${V(e.t).replace(/\s*\([^)]*\)\s*$/,'')}, ${fmtDate(e.fixedW)}.`)),
-    ...(S.fac==='US'&&billW()<=te?[row('🏛',`Congress votes on the FY${pkgFY()} NDAA, ${fmtDate(billW())}: ${pkgItems().length+refReqs().length+ndsReqs().length?'your request goes with it':'nothing in your request yet'}.`)]:[]),
-    ...(cn&&cn.yrsTo<=(te-S.w)/52?[row(FLAGS.cn,`Beijing may take its next step, ${cn.nx.s.toLowerCase()}, this turn.`)]:[]),
-    ...Object.entries(S.impl||{}).filter(([,x])=>x.due<=te).map(([id,x])=>row('⚖',`${rname(RD[id])} takes effect, about ${fmtDate(x.due)}.`))];
-  return `<div class="tbsit"><h5 class="th5">${start?'Where things stand as you take office':'Since your last turn'}</h5>
-    ${start?'':(news.length?`<div class="tbs-news">${news.map(l=>`<div class="tbs-n"><span class="tbs-d">${fmtDate(l.w).replace(/ \d{4}$/,'')}</span><span class="${l.cls==='bad'?'redt':l.cls==='good'?'okt':''}">${linkify(l.m)}</span></div>`).join('')}</div>`:'<p class="mini">A quiet two months: nothing new outside your own programs.</p>')}
-    ${start?'':'<h5 class="th5">Where things stand</h5>'}${stand.join('')}
-    ${up.length?`<h5 class="th5">Coming this turn</h5>${up.join('')}`:''}</div>`}
+  const clean=m=>linkify(m).replace(/^\s*(📰|🎗|✅|✂|⚠|⛔|⏩|🏛|⚖)\s*/,'');
+  // the calendar
+  const cal=[...EVENTS.filter(e=>e.fixedW!=null&&e.fixedW>=S.w&&e.fixedW<=te&&!(S.fired?.[e.id])&&(!e.fac||e.fac.includes(S.fac))).map(e=>[e.fixedW,V(e.t).replace(/\s*\([^)]*\)\s*$/,'')]),
+    ...(S.fac==='US'&&billW()<=te?[[billW(),`Congress votes on the FY${pkgFY()} NDAA: ${pkgItems().length+refReqs().length+ndsReqs().length?'your request goes with it':'nothing in your request yet'}`]]:[]),
+    ...(cn&&cn.yrsTo<=(te-S.w)/52?[[te,`Beijing may take its next step, ${cn.nx.s.toLowerCase()}`]]:[]),
+    ...Object.entries(S.impl||{}).filter(([,x])=>x.due<=te).map(([id,x])=>[x.due,`${rname(RD[id])} takes effect`])].sort((a,b)=>a[0]-b[0]);
+  const dd=w=>fmtDate(w).replace(/ \d{4}$/,'');
+  return `<section class="sitrep"><header><span class="sr-k">Situation report</span><h3>${start?'As you take office':'Since your last turn'}</h3><span class="sr-d">${fmtDate(S.w)}${S.scen?` · ${SCD[S.scen].n}`:''}</span></header>
+    <div class="sr-tiles">${tiles.map(([v,l,sub])=>`<div><b>${v}</b><span>${l}</span><i>${sub}</i></div>`).join('')}</div>
+    ${!start?`<h4>What happened</h4>${news.length?`<table class="sr-cal">${news.map(l=>`<tr><td>${dd(l.w)}</td><td class="${l.cls==='bad'?'redt':l.cls==='good'?'okt':''}">${clean(l.m)}</td></tr>`).join('')}</table>`:'<p class="sr-p">A quiet two months: nothing new outside your own programs.</p>'}`:''}
+    <h4>Assessment</h4><ol class="sr-f">${fs.map(x=>`<li>${x}</li>`).join('')}</ol>
+    ${cal.length?`<h4>This turn, to ${fmtDate(te)}</h4><table class="sr-cal">${cal.map(([w,t])=>`<tr><td>${dd(w)}</td><td>${t}.</td></tr>`).join('')}</table>`:''}</section>`}
 function tbAllHTML(){const all=tbAll(),on=all.filter(x=>!x.hid),off=all.filter(x=>x.hid),ORD=['Hedge','Quick win','Fix a bottleneck','Build line capacity','Order idle capacity','Allied deal','Reform'];
   const grp=xs=>ORD.concat([...new Set(xs.map(x=>x.lab))].filter(l=>!ORD.includes(l))).map(l=>[l,xs.filter(x=>x.lab===l)]).filter(([,v])=>v.length);
   return `<div class="paper wide trp tball"><div class="hd"><span class="ic">📋</span>This turn’s brief · ${turnLabel()}</div><div class="bd">
-    ${tbSitHTML()}<h5 class="th5 tbmv">Moves worth making</h5><p class="mini" style="margin:0 0 8px">Every move worth making now, by kind, with what each adds to your share of the requirement where it can be worked out. The card on Command shows the ${Math.min(3,on.length)} worth most. Nothing here is decided for you.</p>
+    ${tbSitHTML()}<section class="sr-acts"><header><span class="sr-k">Options</span><h3>Recommended actions</h3></header><p class="sr-p">Grouped by kind. The points show how much each would raise your share of the requirement, where that can be estimated. The ${Math.min(3,on.length)} strongest also appear on Command. None is taken unless you choose it.</p></section>
     ${on.length?grp(on).map(([l,v])=>`<h5 class="th5">${l} <span class="mini">· ${v.length}</span></h5><div class="brcs brp">${v.map(x=>tbCard(x,1)).join('')}</div>`).join(''):'<p>Nothing pressing this turn.</p>'}
     ${off.length?`<h5 class="th5">Hidden for now <span class="mini">· ${off.length}</span></h5><div class="brcs brp">${off.map(x=>tbCard(x,1)).join('')}</div>`:''}</div>
     <div class="ft trft"><button class="pbtn primary" data-a="close">${S.w===PLAY0?'To Command →':'Close'}</button></div></div>`}
