@@ -1663,6 +1663,8 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 /* an area is never shorter than the screen below the tabs, so switching areas does not make the page jump */
 #view .ptabs+.rbdom{min-height:calc(100vh - 190px);box-sizing:border-box}
 #view details.pdhow>summary h5 span{margin-left:8px}
+/* Rules & policy tables: room for every kind badge, effects read left to right */
+#view .rbt col:first-child{width:132px!important}#view .rbt td:last-child{text-align:left}#view .rbt .fx{justify-content:flex-start}
 </style>
 </head>
 <body>
