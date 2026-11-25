@@ -1418,7 +1418,7 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 #app .panel .brc{background:#ffffff08;border:1px solid var(--edge);border-radius:5px;padding:8px 9px 9px}
 #app .panel .brk{font:600 10.5px var(--f-body);letter-spacing:.06em}
 #app .panel .brt{font:700 14px var(--f-head);color:var(--cream)}
-#app .panel .brw{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;cursor:help}
+#app .panel .brw{display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;cursor:help}
 /* the mandate card: quieter section breaks */
 #app .sc-sep{font:600 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--edge);margin-top:10px;padding-top:8px}
 #app .sc-sub{font-size:12px;color:#a89f86}
@@ -4694,7 +4694,9 @@ function lawEnact(id,how,fy){const R=RD[id],n=rname(R),d=S.w+implW(id);S.reforms
 // a law takes effect: its effects reach your programs, including those already under way
 function implTick(){for(const id in S.impl||{}){const x=S.impl[id];if(S.w<x.due)continue;delete S.impl[id];const R=RD[id];if(!R)continue;
   S.reforms[id]='passed';refRescale(id);R.on?.();log(`⚖ In force: ${rname(R)}.`,'good');toast(`⚖ <b>In force: ${rname(R)}</b><br><span class="dim">Its effects reach your programs now, including those already under way.</span>`,'good',{a:'remedy',r:id})}}
-function reformCost(R){return Math.round(R.pc*(S.reforms[R.id]==='failed'?.6:1))}
+// laws are certain now (they used to pass 50–70% of the time in the NDAA, less alone), so each costs 15% more Political Capital
+const LAW_PC=1.15;
+function reformCost(R){return Math.round(R.pc*LAW_PC*(S.reforms[R.id]==='failed'?.6:1))}
 function reformAvail(R){return facOk(R)&&!passed(R.id)&&!enacted(R.id)&&(!R.req||passed(R.req))}
 function reformsTick(){
   if(!S.bill||--S.bill.left>0)return;
@@ -8182,7 +8184,7 @@ Object.assign(MPAGE,{
      chart:MP.chart(MP.series('pc',v),{lo:0,hi:Math.max(150,...(S.mh||[]).map(r=>r[1]),v*1.1),f:f0,marks:[{v:PC_FADE,l:'fades above '+PC_FADE}],dots:L.map(x=>({w:x.w,t:`${x.d>0?'+':''}${fmt(x.d,0)}: ${x.why}`,good:x.d>0}))}),dotsNote:1,
      feeds:parts.map(([n,x,tip])=>MP.row(n,x*52,sc,f0,true,n.startsWith('Civilian')?'data-a="why" data-k="strain"':'')).join('')+`<div class="mpnet">Net: <b class="${rate>=0?'okt':'redt'}">${rate>=0?'+':'−'}${fmt(Math.abs(rate),0)} a year</b> before anything you spend</div>
        <h5 class="mph5">Spent and earned in one go</h5>${MP.ledger(L,f0,true,12)}`,feedsSub:'a year, at today’s pace',
-     does:`<div class="mpdo">It pays for anything that needs a vote or a fight. Typical prices:</div>${MP.kv([['A plant in the NDAA request','3–6 PC'],['A reform in the NDAA','16–40 PC','A stand-alone bill costs more.'],['An allied deal','10–30 PC'],['An emergency supplemental',SUPP_PC+' PC'],['A year of talks with Beijing',CN_TALK+' PC'],['Reprogramming $0.5B',reproCost()+' PC']])}
+     does:`<div class="mpdo">It pays for anything that needs a vote or a fight. Typical prices:</div>${MP.kv([['A plant in the NDAA request','3–6 PC'],['A reform in the NDAA','18–65 PC','Most are 20–35. Certain to pass; it takes effect once implemented. A stand-alone bill costs more.'],['An allied deal','10–30 PC'],['An emergency supplemental',SUPP_PC+' PC'],['A year of talks with Beijing',CN_TALK+' PC'],['Reprogramming $0.5B',reproCost()+' PC']])}
        <div class="mpdo"><b>When it runs short</b>, those choices lock until it builds back up; event answers that cost nothing are always open.</div>
        <div class="mpdo"><b>Elections</b> add or take it: +25 for a good presidential result, −20 for a bad one (+15/−15 in midterms). The odds of a good result now: <b>${pct(odds)}</b>${S.strain>30?', lowered by <span class="linkn" data-a="why" data-k="strain">civilian strain</span>':''}.</div>`,
      levers:`<div class="mpdo">Get plants to full rate: each brings +1.6 a year (up to +31). Keep <span class="linkn" data-a="why" data-k="strain">civilian strain</span> down: it costs strain ÷ 60 a week. Spend it before it passes ${PC_FADE}, where it fades. The <span class="linkn" data-a="rtab" data-t="home">Home front tab</span> shows this year’s totals.</div>`})}},
