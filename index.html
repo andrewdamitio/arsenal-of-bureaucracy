@@ -1641,6 +1641,15 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .rbic .icrow{border-bottom-color:#e8ddc0}#view .rbic .icrow.on{background:#e7eedd}#view .rbic .icrow .nm{color:#231d14}
 #view .rbic .fx .up{color:#3f7a34}#view .rbic .fx .dn{color:#a3261c}
 #view .rbic .tog{border-color:#9c8a5c}
+/* Rules & policy: area tabs */
+#view .ptabs{position:sticky;top:-1px;z-index:3;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px;margin:10px 0 0;padding:6px;background:#ebe1c6;border:1px solid var(--paperEdge,#cdb98a);border-radius:7px 7px 0 0}
+#view .ptab{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:7px 10px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;text-align:left}
+#view .ptab:hover{background:#f5eedb;border-color:#d6c79f}#view .ptab.on{background:#fffdf6;border-color:#b8860b;box-shadow:inset 0 -3px 0 #b8860b}
+#view .ptn{font:700 13.5px var(--f-head);color:#231d14}#view .ptc{font:11.5px var(--f-body);color:#6b5a35}
+#view .ptabs+.rbdom{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}#view .ptabs+.rbdom .pdh{cursor:default}#view .ptabs+.rbdom .pdcar{display:none}
+#view details.pdhow>summary{list-style:none;cursor:pointer}#view details.pdhow>summary::-webkit-details-marker{display:none}#view details.pdhow>summary h5::before{content:"▸ ";color:#8a6a1f}#view details.pdhow[open]>summary h5::before{content:"▾ "}
+#view .pdbars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#view .pdbar.pdne{grid-column:auto}#view .pdbar{padding:8px 10px}#view .pdnex{flex-basis:100%;font:12px var(--f-body)}#view .pdnex>summary{cursor:pointer;color:#8a5a1c;font:600 12px var(--f-body)}
+@media (max-width:900px){#view .pdbars{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -4209,7 +4218,7 @@ function polDomHTML(D){const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id);
   const exA=rs.filter(r=>isExec(r)&&!ruleOn(r.id)),refs=ids.filter(x=>RD[x]&&!passed(x)&&vehOf(RD[x])!=='ndaa').map(x=>RD[x]),nds=ids.filter(x=>RD[x]&&!passed(x)&&vehOf(RD[x])==='ndaa').map(x=>RD[x]),cvs=ids.filter(x=>CD[x]&&!carveOn(x)).map(x=>CD[x]);
   const nCan=exA.length+refs.length+cvs.length,nIn=inF.length;
   const worst=D.steps?Math.max(0,...D.steps.flatMap(([,ids2])=>ids2.map(i=>OD[i]).filter(o=>o&&facOk(o)).map(o=>oddsMax(o).c))):0;
-  const open=S.domOpen?!!S.domOpen[D.id]:true;
+  const open=true;
   const head=`<div class="rbh pdh" data-a="domtog" data-d="${D.id}"><span class="pdcar">${open?'▾':'▸'}</span><span class="ic">${D.ic}</span><b>${D.n}</b><span class="dsp"></span><span class="pdsum">${nIn} in force · ${nCan} you can change${D.steps?` · up to ${pct(worst)} odds a step stalls a program`:''}${lost?` · ${fmt(lost,0)} wk lost`:''}${stalled.length?` · <span class="redt">${stalled.length} stalled now</span>`:''}${Object.keys(S.rproc||{}).some(x=>RD2[x]?.dom===D.id)?' · <span class="gold">action under way</span>':''}</span></div>`;
   if(!open)return `<div class="rbdom pdom0" id="rb-${D.id}">${head}</div>`;
   const steps=D.steps?D.steps.map(([nm,ids2,t])=>{const os=ids2.map(i=>OD[i]).filter(o=>o&&facOk(o));const odds=os.map(o=>oddsMax(o)),mx=Math.max(0,...odds.map(x=>x.c));
@@ -4218,24 +4227,35 @@ function polDomHTML(D){const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id);
   const tbl=rows=>`<table class="ctable lev rbt"><colgroup><col style="width:100px"><col style="width:44%"><col></colgroup>${rows.join('')}</table>`;
   return `<div class="rbdom pdom1" id="rb-${D.id}">${head}
    ${stalled.length?`<div class="mini pdstall">Stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</div>`:''}
-   ${steps?`<div class="pdsec"><h5>How it works today <span>each step’s odds of stopping a new program, for the most exposed program you could launch now. Separate chances, not shares: a program can hit several, so they do not add up to 100%.</span></h5><div class="steps">${steps}</div></div>`:''}
-   <div class="pdsec"><h5>In force <span>laws, court rulings, executive actions and emergency powers</span></h5>${nIn?tbl(inF):'<p class="mini">Nothing beyond the process above.</p>'}</div>
    <div class="pdsec rbcan"><h5>What you can do <span>executive actions act fastest but can be undone; emergency powers lapse; laws hold</span></h5>
     ${exA.length?tbl(exA.map(ruleRow)):''}
     ${cvs.length||refs.length?`<div class="ndaaref polref">${cvs.map(carveRowHTML).join('')}${refs.map(refRowHTML).join('')}</div>`:''}
     ${nds.length?`<div class="pdnd">🏛 <b>In the NDAA:</b> ${nds.length} provision${nds.length>1?'s':''} for this area (${nds.slice(0,3).map(R=>rname(R)).join('; ')}${nds.length>3?'…':''}). <span class="linkn" data-a="brgo" data-v="ndaa" data-j="${nds[0].id}">On the NDAA tab →</span></div>`:''}
-    ${!nCan?'<p class="mini">Nothing left to change here.</p>':''}</div>
+    ${!nCan&&!nds.length?'<p class="mini">Nothing left to change here.</p>':''}</div>
+   <div class="pdsec"><h5>In force <span>laws, court rulings, executive actions and emergency powers</span></h5>${nIn?tbl(inF):'<p class="mini">Nothing beyond the process below.</p>'}</div>
+   ${steps?`<details class="pdsec pdhow" ${S.howOpen?.[D.id]?'open':''} data-d="${D.id}"><summary><h5>How it works today <span>${D.steps.length} steps · up to ${pct(worst)} odds a step stops a new program · click to ${S.howOpen?.[D.id]?'fold':'open'}</span></h5></summary><p class="mini" style="margin:2px 0 6px">Each step’s odds of stopping a new program, for the most exposed program you could launch now. Separate chances, not shares: a program can hit several, so they do not add up to 100%.</p><div class="steps">${steps}</div></details>`:''}
    ${D.id==='permit'?xfPanel()+`<p class="mini"><span class="linkn" data-a="pmgo">📋 Every permit your plants need, on the permit docket →</span></p>`:''}${D.id==='source'?`<div class="rbic">${icPanel()}</div>`:''}${D.id==='money'?`<p class="mini">New plants and stockpile buys go in the annual NDAA request: <span class="linkn" data-a="view" data-v="ndaa">The NDAA tab →</span></p>`:''}</div>`}
 function polBody(){if(S.fac!=='US')return agendaHTML();
   const onX=RULES.filter(r=>isExec(r)&&ruleOn(r.id)).length,und=Object.keys(S.rproc||{}).length,all=[...DOMAINS,XDOM];
   let bill='';if(S.bill){const Rf=RD[S.bill.id],p=clamp(Rf.p*primeFightF(Rf.id)+S.bill.boost,.05,.98);
     bill=`<div class="pdbar"><b>📜 On the floor: ${rname(Rf)}</b><span class="mini">${S.bill.left} wk to the vote, then about ${Math.round(implW(Rf.id)/4.33)} months to take effect</span><button class="btn sm" data-a="whip" ${S.pc<10||S.bill.whips>=3?'disabled':''}>Whip votes (10 PC, vote 4 wk sooner)</button></div>`}
   const neP=CARVES.filter(C=>facOk(C)&&(C.need==='ne'||C.need==='cut')),neL=neP.map(C=>`<span class="linkn" data-a="remedy" data-r="${C.id}">${cname(C)}</span>${C.need==='cut'?' <span class="mini">(otherwise needs a foreign supply cut)</span>':''}${carveOn(C.id)?' <span class="okt">✓ in force</span>':''}`),nxR=S.ne?S.ne.since+52*Math.ceil((S.w-S.ne.since+1)/52):null;
-  const ne=`<div class="pdbar pdne ${S.ne?'on':''}"><b>🚨 National emergency on the defense industrial base</b><span class="mini">${S.ne?`Declared ${fmtDate(S.ne.since)} under the National Emergencies Act. Renewal of ${NE_RENEW} PC due ${fmtDate(nxR)}; if you cannot pay, it lapses and every power resting on it ends.`:`Declared under the National Emergencies Act, it is the legal trigger for the emergency powers below. It costs ${NE_COST} PC now, adds 5 to civilian strain, and ${NE_RENEW} PC a year to keep; if you cannot pay, it lapses and the powers resting on it end. It does nothing by itself: each power is then used, and paid for, separately.`}</span><div class="pdnel"><span class="mini">${S.ne?'Powers it allows':'What it unlocks'}:</span><ul>${neL.map(x=>`<li>${x}</li>`).join('')}</ul></div>${S.ne?'<span class="sub green">In force</span>':`<button class="btn sm" data-a="ne" ${S.pc>=NE_COST?'':'disabled'}>Declare · ${NE_COST} PC</button>`}</div>`;
-  return `<div class="poltop"><p class="mini">Each area of the rulebook: how its process works today, what governs it, and what you can change. <b>Executive actions</b> act fastest and pick a route, but a new administration can undo them unless written into law; <b>emergency powers</b> act in weeks and lapse; <b>bills</b> are slow and permanent, one on the floor at a time. ${onX} executive actions in force${und?`, ${und} under way`:''}.</p>
+  const ne=`<div class="pdbar pdne ${S.ne?'on':''}"><b>🚨 National emergency on the defense industrial base</b><span class="mini pdne1">${S.ne?`Declared ${fmtDate(S.ne.since)}; renewal of ${NE_RENEW} PC due ${fmtDate(nxR)}.`:`Not declared. It unlocks ${neP.length} emergency powers.`}</span>${S.ne?'<span class="sub green">In force</span>':`<button class="btn sm" data-a="ne" ${S.pc>=NE_COST?'':'disabled'}>Declare · ${NE_COST} PC</button>`}<details class="pdnex"><summary>What it does</summary><span class="mini">${S.ne?`Declared ${fmtDate(S.ne.since)} under the National Emergencies Act. Renewal of ${NE_RENEW} PC due ${fmtDate(nxR)}; if you cannot pay, it lapses and every power resting on it ends.`:`Declared under the National Emergencies Act, it is the legal trigger for the emergency powers below. It costs ${NE_COST} PC now, adds 5 to civilian strain, and ${NE_RENEW} PC a year to keep; if you cannot pay, it lapses and the powers resting on it end. It does nothing by itself: each power is then used, and paid for, separately.`}</span><div class="pdnel"><span class="mini">${S.ne?'Powers it allows':'What it unlocks'}:</span><ul>${neL.map(x=>`<li>${x}</li>`).join('')}</ul></div></details></div>`;
+  return `<div class="poltop"><p class="mini">Pick an area below. <b>Executive actions</b> act fastest but a new administration can undo them unless written into law; <b>emergency powers</b> act in weeks and lapse; <b>laws</b> are slow and permanent. ${onX} executive actions in force${und?`, ${und} under way`:''}.</p>
    <div class="pdbars">${ne}${(()=>{const nr=refReqs().length,nc=codReqs().length;return `<div class="pdbar"><b>🏛 FY${pkgFY()} NDAA request</b><span class="mini">${nr||nc?`${nr} reform${nr===1?'':'s'}${nc?` and ${nc} executive action${nc===1?'':'s'} to write into law`:''}, decided with the bill about ${fmtDate(pkgWhen())}.`:`No reforms in it yet. NDAA reforms sit under the area they change; the bill is decided about ${fmtDate(pkgWhen())}.`}</span><span class="linkn" data-a="view" data-v="ndaa">The NDAA tab →</span></div>`})()}${bill||`<div class="pdbar"><b>📜 No stand-alone bill on the floor</b><span class="mini">One at a time. Bills sit under the area they change.</span></div>`}</div>
-   <div class="pdctl"><span class="linkn" data-a="domall" data-v="1">Open every area</span> · <span class="linkn" data-a="domall" data-v="0">Fold them all</span></div></div>
-   ${all.map(polDomHTML).join('')}`}
+   </div>
+   ${(()=>{const a=polAreaNow(all);return `<div class="ptabs" role="tablist">${all.map(D=>{const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id),can=rs.filter(r=>isExec(r)&&!ruleOn(r.id)).length+ids.filter(x=>(RD[x]&&!passed(x)&&!enacted(x)&&vehOf(RD[x])!=='ndaa')||(CD[x]&&!carveOn(x))).length,
+      inF=rs.filter(r=>!isExec(r)||ruleOn(r.id)).length+ids.filter(x=>(RD[x]&&(passed(x)||enacted(x)))||(CD[x]&&carveOn(x))).length,st=S.projects.filter(p=>p.obs.length&&(D.layers||[]).includes(OD[p.obs[0].id]?.layer)).length;
+      return `<button class="ptab ${D.id===a?'on':''}" role="tab" aria-selected="${D.id===a}" data-a="parea" data-d="${D.id}"><span class="ptn">${D.ic} ${D.n}</span><span class="ptc">${can} you can do · ${inF} in force${st?` · <b class="redt">${st} stalled</b>`:''}</span></button>`}).join('')}</div>${polDomHTML(all.find(D=>D.id===a))}`})()}`}
+// which area the page shows: one you are being taken to, else your choice, else the one stalling programs or costing most weeks
+function polAreaNow(all){const ok=id=>all.some(D=>D.id===id);let a=null;
+  const j=S._jump||'',t=S._scrollTo||'';
+  if(j){a=RD2?.[j]?.dom||(typeof domOf==='function'?domOf(j):null)}
+  if(!a&&t.startsWith('#rl-'))a=RD2?.[t.slice(4)]?.dom;if(!a&&t.startsWith('#rb-'))a=t.slice(4);
+  if(a&&ok(a)){S.polArea=a;return a}
+  if(S.polArea&&ok(S.polArea))return S.polArea;
+  const sc=D=>S.projects.filter(p=>p.obs.length&&(D.layers||[]).includes(OD[p.obs[0].id]?.layer)).length*1000+(D.layers||[]).reduce((x,l)=>x+(S.ledger[l]?.wk||0),0);
+  const best=all.slice().sort((x,y)=>sc(y)-sc(x))[0];return (S.polArea=sc(best)>0?best.id:all[0].id)}
 const refRowHTML=Rf=>{const ok=reformAvail(Rf),c=reformCost(Rf),fail=S.reforms[Rf.id]==='failed',v=vehOf(Rf),q=refReqs().find(x=>x.id===Rf.id),fy=pkgFY();
     const btns=enacted(Rf.id)?`<span class="sub gold">Enacted · in force about ${fmtDate(S.impl[Rf.id].due)}</span>`:q?`<span class="sub gold">${q.rider?'Rider on':'In'} the FY${FYOF(q.pkg)} NDAA · in force ~${Math.round(implW(Rf.id)/4.33)} months after</span> <button class="btn sm" data-a="refdrop" data-r="${Rf.id}" data-tip="Take it out; the PC comes back.">✕</button>`
       :v==='ndaa'?`<button class="btn sm" data-a="refadd" data-r="${Rf.id}" ${ok&&S.pc>=refReqCost(Rf)?'':'disabled'} data-tip="${tipQ(`<b>Add it to the FY${fy} NDAA</b><br>It becomes law with the bill on 18 December, then takes about ${Math.round(implW(Rf.id)/4.33)} months to take effect while agencies implement it.${Rf.$?` Its ${money(Rf.$)} comes out of Congress’s money for requests.`:''}`)}">+ FY${fy%100} NDAA · ${refReqCost(Rf)} PC${Rf.$?' · '+money(Rf.$):''}</button>`
@@ -4468,7 +4488,7 @@ const TUT=[
  {p:'ndaa',sel:'#view .ndaaref',t:'Reforms in the NDAA',x:'Defense law rides the bill: add a reform to the request and it is decided in December. Reforms are what make plants arrive in time.',next:1},
  // Rules & policy
  {p:'policy',...NAV('policy','Rules & policy')},
- {p:'policy',sel:'#view .rbdom',t:'One area of the rulebook',x:'Each area shows how its process works today, with the odds each step stops a new program; what is in force, from statutes to executive actions; and what you can change. Click a heading to open or fold it.',next:1},
+ {p:'policy',sel:'#view .rbdom',t:'One area of the rulebook',x:'The tabs above pick an area of the rulebook, with how many changes you can make in each and what is in force. Each area shows what you can change first, then what is in force, then how its process works today (click to open).',next:1},
  {p:'policy',sel:'#view .rbcan',t:'What you can do',x:'Executive actions pick a route: guidance or a directive acts in weeks but is easy to undo; a full rule takes most of a year and holds. Emergency powers act in weeks and lapse. Bills are slow and permanent.',next:1},
  {p:'policy',sel:'#view .xfst',t:'Large power transformers',x:'Every new energetics plant, smelter and greenfield site waits on one, ordered at contract award. These three actions cut the wait.',next:1},
  {p:'policy',sel:'#view .pdbars',t:'The emergency and the floor',x:'Many emergency powers need a declared national emergency first. Stand-alone bills go to the floor one at a time; the one on the floor shows here.',next:1},
@@ -4520,7 +4540,7 @@ const GUIDE={
   {skip:()=>!S.modal,t:'Close the window to go on',x:'Close it with ✕ or Esc.',wait:()=>!S.modal},
   {t:'Where problems come from',x:'Programs get stuck on permits, lawsuits, qualification and contracting, and those come from the rules. <b>Rules & policy</b> shows each process, what governs it, and what you can change so it happens less often. Reforms are what make plants arrive in time.',next:1},
   {...NAV('policy','Rules & policy')},
-  {sel:'#view .rbdom.pdom1',t:'One area of the rulebook',x:'How the process works today, with the odds each step stops a new program; what is in force; and what you can change.',next:1},
+  {sel:'#view .rbdom.pdom1',t:'One area of the rulebook',x:'What you can change comes first, then what is in force, then how the process works today, folded. The tabs above switch areas.',next:1},
   {sel:'#view .rbdom.pdom1 .rbcan',t:'What you can change',x:'Executive actions act fastest but a new administration can undo them; emergency powers act in weeks and lapse; bills and NDAA reforms are slow and permanent.',next:1}]},
  contract:{n:'Your first contract',modal:1,when:()=>S.modal==='contract'&&document.querySelector('#ov .ctp'),steps:[
   {sel:'#ov .ctp .ctsec',t:'Who builds it',x:'An <b>incumbent prime</b> knows the qualification process, but each award adds to its leverage over you: pricier work and more pushback. A <b>new entrant</b> is cheaper and quicker to build but must qualify from scratch. Prime leverage joins the top bar.',next:1},
@@ -8566,7 +8586,7 @@ function mnav(){let el=document.getElementById('mnav');if(!S||S.over&&S.modal===
 let TAP=null;
 document.addEventListener('pointerup',e=>{if(e.pointerType!=='touch'||!TAP)return;const t=TAP;TAP=null;if(Math.hypot(e.clientX-t.x,e.clientY-t.y)>10||Date.now()-t.t>900||!t.tg.isConnected)return;
   const ev=new PointerEvent('pointerdown',{bubbles:true,cancelable:true,button:0,pointerType:'touch',clientX:e.clientX,clientY:e.clientY});ev._tap=1;t.tg.dispatchEvent(ev)});
-document.addEventListener('pointercancel',()=>{TAP=null});addEventListener('scroll',()=>{TAP=null},true);addEventListener('resize',()=>{try{topFit()}catch(e){}});
+document.addEventListener('pointercancel',()=>{TAP=null});addEventListener('scroll',()=>{TAP=null},true);document.addEventListener('toggle',e=>{const d=e.target;if(S&&d.classList?.contains('pdhow')){(S.howOpen=S.howOpen||{})[d.dataset.d]=d.open;const sp=d.querySelector('summary h5 span');if(sp)sp.innerHTML=sp.innerHTML.replace(/click to (open|fold)/,'click to '+(d.open?'fold':'open'))}},true);addEventListener('resize',()=>{try{topFit()}catch(e){}});
 document.addEventListener('pointerdown',e=>{
   if(e.pointerType==='touch'&&!e._tap&&e.isTrusted){TAP={x:e.clientX,y:e.clientY,t:Date.now(),tg:e.target};return}
   if(e.button!==0)return;if(e.target===ov&&closable()){if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}else if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null}else if(!closeToReport()){S.modal=null;S.navBack=[]}render();return}if(e.target.classList?.contains('ov2')){S.modal=S.ctBack||null;S.ct=null;render();return}
@@ -8662,6 +8682,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'pmf':(S.pmF=S.pmF||{ag:'all',st:'open',ph:'all'})[b.dataset.k]=b.dataset.v;S._vdirty=true;break;
     case 'rbtab':S.rbTab=b.dataset.t;S._vdirty=true;break;
     case 'domtog':{if(!S.domOpen){S.domOpen={};for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1}const o=S.domOpen;o[b.dataset.d]=!o[b.dataset.d];S._vdirty=true;break}
+    case 'parea':S.polArea=b.dataset.d;S._vdirty=true;setTimeout(()=>document.querySelector('#view .ptabs')?.scrollIntoView({block:'start'}),0);break;
     case 'domall':{S.domOpen={};if(b.dataset.v==='1')for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1;S._vdirty=true;break}
     case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
