@@ -6621,7 +6621,7 @@ function hoverLocked(){if(PDRAG)return true;if(!lastPt||!viewEl)return false;con
 // display preferences (this browser only): explanations shown, side panel open on tabs, timeline open
 const UIP=(()=>{let v={};try{v=JSON.parse(localStorage.getItem('aob_ui')||'{}')}catch(e){}return v})();
 const uiSave=()=>{try{localStorage.setItem('aob_ui',JSON.stringify(UIP))}catch(e){}};
-const xpOn=()=>!!UIP.xp||!!(S&&S.tut);
+const xpOn=()=>!!(S&&S.tut); // explanations fold into ⓘ, except during the tutorial
 // Standing explanations: paragraphs that say what a section is for. With explanations hidden they fold into an ⓘ by their heading
 // (hover to read, click to open in place). Status lines and anything short stay.
 const XP_SEL=['.pintro','.alintro','.rbintro','.xintro','.wmfoot','.bnsort>.mini:last-child','.ordsec>p.mini','.ctsec',
@@ -8527,13 +8527,13 @@ function saveUpload(){const i=document.createElement('input');i.type='file';i.ac
 function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S._svAt)/60000)):null,can=saveable()||S.over;
   const when=!ok?'Not yet':ago<1?'Just now':ago<60?ago+' min ago':'Over an hour ago';
   const t=(l,v)=>`<div><span>${l}</span><b>${v}</b></div>`;
-  return `<div class="gmenu"><div class="gm-hd"><span>Menu</span><button class="gm-x" data-a="close" title="Close (Esc)" aria-label="Close">✕</button></div>
+  return `<div class="gmenu"><div class="gm-hd"><span>Menu</span></div>
    <div class="gm-bd"><div class="ti-save gm-info">${t('Game date',fmtDate(S.w))}${t('Mandate',S.scen?SCD[S.scen].n:'Open race')}${t('Mode',S.sandbox?'Sandbox':'Standard')}${t('Last saved',ok?when+' · '+fmtDate(S._svW):'Not yet')}</div>
    <button class="ti-btn primary" data-a="close">Resume ›</button>
    <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
    <button class="ti-btn" data-a="turnmode" data-tip="Two-month turns stop for every decision. Continuous play runs week by week and takes the default when a decision times out.">${S.turnMode===false?'Continuous play · switch to two-month turns':'Two-month turns · switch to continuous play'}</button>
-   <button class="ti-btn" data-a="brtog" data-tip="A short list at the top of Command and in each turn report: the bottleneck fix, orders, allied deal or reform worth making now.">${UIP.nobrief?'Turn brief hidden · show it':'Turn brief shown · hide it'}</button>
-   <button class="ti-btn" data-a="xptog" data-tip="Section explanations fold into an ⓘ by each heading; hover it to read, click to open in place. They are always shown during the tutorial.">${UIP.xp?'Explanations shown · fold them into ⓘ':'Explanations folded into ⓘ · show them all'}</button>
+   <button class="ti-btn" data-a="brtog" data-tip="The three moves worth most each turn, shown at the top of Command and in each turn report.">${UIP.nobrief?'Show recommended moves on Command':'Hide recommended moves on Command'}</button>
+   
    <div class="gm-row"><button class="ti-btn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="ti-btn gm-danger" data-a="savenew" data-tip="Starts over from the title screen. This game’s browser save is replaced; download a file first to keep it.">New game</button></div>
    <p class="ti-note">The game saves itself in this browser every four game weeks and when you close the tab. Clearing site data erases it, so download a file to keep a copy or move the game to another computer.</p>
    ${S._svErr?`<p class="gm-err">The browser refused the last save (${S._svErr}). Download a file to keep your game.</p>`:''}${S._svMsg?`<p class="gm-err">${S._svMsg}</p>`:''}</div></div>`}
@@ -8730,7 +8730,6 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'why':if(S.queue[0]?.sys==='outcome')S.queue.shift();S.whyK=b.dataset.k;S.whyC=b.dataset.c||null;S.modal='why';break;
     case 'briefopen':S.modal='brief';break;
     case 'briefprint':document.body.classList.add('printing');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing'),500)},50);return;
-    case 'xptog':UIP.xp=!UIP.xp;uiSave();S._vdirty=true;break;
     case 'rail':UIP.rail=!UIP.rail;uiSave();if(b.dataset.t)S.rtab=b.dataset.t;break;
     case 'logt':UIP.log=!UIP.log;uiSave();logKey='';break;
     case 'savem':saveGame();S.modal='save';S._svMsg='';S.speed=0;break;
