@@ -1631,6 +1631,7 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 .sr-cal{width:100%;border-collapse:collapse;font:13px/1.45 var(--f-body);color:#2b241a}.sr-cal td{padding:4px 0;border-top:1px solid #efe5cc;vertical-align:top}.sr-cal tr:first-child td{border-top:0}
 .sr-cal td:first-child{width:78px;font:600 12px var(--f-body);color:#8a6a1f;white-space:nowrap}
 .sr-p{margin:8px 0 0;font:13px/1.5 var(--f-body);color:#4a3d24}.sr-acts{margin:4px 0 6px}.sr-acts h3{font-size:19px}
+.trass .sr-f{font-size:13px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -4957,6 +4958,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
     <div class="trcol"><div class="trh"><b>What changed</b><span>${turnLabel(w0)}</span></div><div class="trsub">Output per year</div>${outH}${progH}</div>
     <div class="trcol"><div class="trh"><b>Coming next</b><span>${turnLabel(n0)}</span></div>${aheadH}</div>
    </div>
+   <div class="trcol trass"><div class="trh"><b>Assessment</b><span>where things stand</span></div>${sitFindings()}</div>
    ${tbHTML(1)}
    ${rollsHTML(r.rolls||[],'🎲 Your odds this turn')}
    <div class="trgrid">
@@ -7380,8 +7382,16 @@ function tbMoves(all){if(!S||S.histMode||S.replay||S.over||S.w<PLAY0||S.fac!=='U
 function tbAll(){const k=[S.w,(S.acts||[]).length,S.projects.length,JSON.stringify(S.briefNo||{}),Math.floor(S.pc),Math.floor(S.budget*10)].join('|');if(S._tbA&&S._tbA.k===k&&S._tbA.r===S._R)return S._tbA.v;const v=tbMoves(true);S._tbA={k,v,r:S._R};return v}
 function tbCard(x,inPop){return `<div class="brc${x.hid?' brhid':''}"><div class="brk"><span data-tip="${tipQ(x.lab)}">${x.lab}</span>${x.pt!=null?`<b>${x.ptl?x.ptl+' ':''}+${fmt(x.pt,1)} pt</b>`:''}</div><div class="brt">${x.t}</div><div class="brw" data-tip="${tipQ(x.why)}">${x.why}</div><div class="bra">${x.act}${x.hid?`<button class="brnot" data-a="brun" data-k="${x.k}" data-tip="Show it on Command again">Show again</button>`:(inPop?'':`<button class="brnot" data-a="brno" data-k="${x.k}" data-tip="Hide this for two months">Not now</button>`)}</div></div>`}
 function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves(),n=tbAll().filter(x=>!x.hid).length;
-  if(!paper&&S.w===PLAY0&&!S.tut&&n)return `<div class="brf brslim"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${n} move${n>1?'s':''} worth making before your first turn</span><span class="linkn brall" data-a="tball">Open the brief →</span></div></div>`;
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${mv.length?`The ${mv.length===1?'move':mv.length===2?'two moves':'three moves'} worth most now${n>mv.length?`, of ${n}`:''}`:'Nothing pressing'}</span>${n>mv.length?`<span class="linkn brall" data-a="tball">The full brief: all ${n} →</span>`:''}<span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide</span></div>${mv.length?`<div class="brcs">${mv.map(tbCard).join('')}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
+// numbered findings on where things stand: production, China, the home front, decisions waiting
+function sitFindings(R){R=R||S._R||production(false);const lst=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join('');
+  const short=S.order.filter(c=>R.out[c].bott),cn=cnNext(),cuts=ORDER.filter(id=>(cutOf(id)??1)<.999),lost=ORDER.filter(id=>R.P[id].lost>1e-6&&!cuts.includes(id)),dp=decisionsPending();
+  const mo=cn&&isFinite(cn.yrsTo)?(cn.yrsTo<.25?'under 3':String(Math.max(1,Math.round(cn.yrsTo*12)))):null,nm=id=>lc(ND[id].n).replace(/ \([^)]*\)/,''),fs=[];
+  fs.push(`<b>Production.</b> ${short.length?`${lst(short.map(c=>lc(LINES[c].n))).replace(/^./,x=>x.toUpperCase())} ${short.length>1?'are':'is'} held below capacity by a shortage of parts.`:'Every weapon line runs at the capacity it has.'}`);
+  if(S.fac==='US')fs.push(`<b>China.</b> ${S.truce?'The trade truce holds':'There is no truce, and Beijing’s export bans are in force'}${cuts.length?`, but its export controls already withhold ${lst(cuts.map(id=>`${pct(1-cutOf(id))} of ${nm(id)}`))}${lost.length?`, leaving ${lst(lost.slice(0,3).map(nm))} short`:''}`:''}.${mo?` Its next step, ${cn.nx.s.toLowerCase()}, is expected in ${mo==='under 3'?'under three months':'about '+mo+' months'}.`:''}`);
+  if(S.strain>=5)fs.push(`<b>Home front.</b> Civilian strain stands at ${Math.round(S.strain)} of 100${divOn()?', and does not recover while defense orders take civilian supply':''}.`);
+  if(dp)fs.push(`<b>Waiting on you.</b> ${dp} decision${dp>1?'s':''} on Command.`);
+  return `<ol class="sr-f">${fs.map(x=>`<li>${x}</li>`).join('')}</ol>`}
 // the situation report at the head of the brief: key figures, then numbered findings, then the dated calendar for the turn
 function tbSitHTML(){const R=S._R||production(false),start=S.w<=PLAY0+1,lst=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join(''),te=turnEndW();
   const short=S.order.filter(c=>R.out[c].bott),cn=cnNext(),cuts=ORDER.filter(id=>(cutOf(id)??1)<.999),lost=ORDER.filter(id=>R.P[id].lost>1e-6&&!cuts.includes(id)),dp=decisionsPending();
@@ -7411,10 +7421,10 @@ function tbSitHTML(){const R=S._R||production(false),start=S.w<=PLAY0+1,lst=a=>a
 function tbAllHTML(){const all=tbAll(),on=all.filter(x=>!x.hid),off=all.filter(x=>x.hid),ORD=['Hedge','Quick win','Fix a bottleneck','Build line capacity','Order idle capacity','Allied deal','Reform'];
   const grp=xs=>ORD.concat([...new Set(xs.map(x=>x.lab))].filter(l=>!ORD.includes(l))).map(l=>[l,xs.filter(x=>x.lab===l)]).filter(([,v])=>v.length);
   return `<div class="paper wide trp tball"><div class="hd"><span class="ic">📋</span>This turn’s brief · ${turnLabel()}</div><div class="bd">
-    ${tbSitHTML()}<section class="sr-acts"><header><span class="sr-k">Options</span><h3>Recommended actions</h3></header><p class="sr-p">Grouped by kind. The points show how much each would raise your share of the requirement, where that can be estimated. The ${Math.min(3,on.length)} strongest also appear on Command. None is taken unless you choose it.</p></section>
+    <section class="sr-acts"><header><span class="sr-k">Options</span><h3>Recommended actions</h3></header><p class="sr-p">Grouped by kind. The points show how much each would raise your share of the requirement, where that can be estimated. The ${Math.min(3,on.length)} strongest also appear on Command. None is taken unless you choose it.</p></section>
     ${on.length?grp(on).map(([l,v])=>`<h5 class="th5">${l} <span class="mini">· ${v.length}</span></h5><div class="brcs brp">${v.map(x=>tbCard(x,1)).join('')}</div>`).join(''):'<p>Nothing pressing this turn.</p>'}
     ${off.length?`<h5 class="th5">Hidden for now <span class="mini">· ${off.length}</span></h5><div class="brcs brp">${off.map(x=>tbCard(x,1)).join('')}</div>`:''}</div>
-    <div class="ft trft"><button class="pbtn primary" data-a="close">${S.w===PLAY0?'To Command →':'Close'}</button></div></div>`}
+    <div class="ft trft"><button class="pbtn primary" data-a="close">Close</button></div></div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
 // ---- the mandate brief: the opening page of a game. The scenario as a lede beside its map, the three dates on a timeline,
 // then what you must reach, what you can do and how it is judged. Opens when a game starts; the mandate card on Command reopens it.
@@ -8669,7 +8679,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'spares':S.spares[b.dataset.l]=!S.spares[b.dataset.l];log(`🔧 ${LINES[b.dataset.l].n}: spare-parts priority ${S.spares[b.dataset.l]?'on':'off'}.`);break;
     case 'lineup':{const l=b.dataset.l,i=S.order.indexOf(l);if(i>0)prioMove(i,i-1);break}
     case 'close':if(S.billAlert){S.billAlert=null;S.speed=TURN()?0:(S.billSpd||1);S.billSpd=null}
-if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(closeToReport())break;if(S.modal==='sbrief'&&S.w===PLAY0&&!S.tbOpened&&!S.tut&&!UIP.nobrief&&S.fac==='US'&&tbAll().length){S.tbOpened=1;S.modal='tball';break}if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;if(S._trnDue&&S.trnRep){S._trnDue=0;S.modal='turn'}break;
+if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.sel;S.progBack=null;break}if(closeToReport())break;if(S.modal==='scenPick')S.scenSkip=true;S.modal=null;S.navBack=[];S.progBack=null;if(S._trnDue&&S.trnRep){S._trnDue=0;S.modal='turn'}break;
     case 'pvopen':S.pvBack={m:S.modal,sel:S.sel,selP:S.selP};S.pvId=b.dataset.p;S.modal='pv';S.speed=0;break;
     case 'pvback':{const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;if(k.selP)S.selP=k.selP;S.pvBack=null;break}
     case 'launch':{if(S.modal==='pv'){const k=S.pvBack||{};S.modal=k.m||null;if(k.sel)S.sel=k.sel;S.pvBack=null}const d=PD[b.dataset.p];if(needsContract(d)){S.ctBack=S.modal;S.ct={id:d.id,...ctDefault(d)};S.modal='contract';S.speed=0}else{startProject(d.id)}break}
