@@ -1559,8 +1559,8 @@ body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g
 .dpbox .hmnote{padding:4px 0 6px}.dprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--edge)}
 .dprow .sub{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:1px}.dprow .sub.red{color:#e0806e}.dprow .sub.green{color:#9fd08a}.dpb{text-align:right}.dpb .sub{text-align:right}
 .dprow.off .dpm>.linkn{opacity:.8}
-#ov .crumb span[data-a="goback"]{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border:1px solid #c2ad7c;border-radius:4px;background:#fbf6e8;color:#5a4626;font:600 12.5px var(--f-body);cursor:pointer}
-#ov .crumb span[data-a="goback"]:hover{background:#fff;border-color:#9c8a5c}
+#ov .crumb span[data-a="goback"],#view .crumb span[data-a="goback"]{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border:1px solid #c2ad7c;border-radius:4px;background:#fbf6e8;color:#5a4626;font:600 12.5px var(--f-body);cursor:pointer}
+#ov .crumb span[data-a="goback"]:hover,#view .crumb span[data-a="goback"]:hover{background:#fff;border-color:#9c8a5c}
 /* the brief: a stronger title with the turn's dates; the full brief as a popup */
 #app .brf>.brh{align-items:center;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid rgba(201,149,42,.35)}#app .brf>.brh>b{font:700 19px var(--f-head)!important;color:#f3d98a}
 .brh .brdate{flex:none;font:600 11px var(--f-body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:#1c1608;background:#c9952a;border-radius:3px;padding:2px 7px}
@@ -1610,6 +1610,7 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #top .logo .lgs{display:none}#top.tfit1 .logo .lgf{display:none}#top.tfit1 .logo .lgs{display:inline}
 #top.tfit2 [data-k="req"],#top.tfit2 [data-k="strain"]{display:none}
 #top .turnbtn,#top .date,#top .rmenu{flex:none}
+#view .crumb{margin:6px 0 8px}
 </style>
 </head>
 <body>
@@ -5839,7 +5840,7 @@ function dossierHTML(id,P){
   let main='';
   if(id.startsWith('L:')){const l=id.slice(2),L=LINES[l],o=S._R.out[l],f=F();
     const projs=PROJECTS.filter(d=>facOk(d)&&d.t.line===l&&d.kind!=='maint');const lp=linePipe(l),pj0=project(Object.fromEntries(Object.keys(LINES).map(c=>[c,S._R.out[c].yr]))),rq=reqRate(l,pj0);
-    main=`${crumb()}<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div><div class="sub2 lmxp">${lineMix(l,S._R||production(false)).html}</div></div><span class="dsp"></span><div class="jtabs"><button data-a="ovtop">Overview</button><button data-a="flow" data-f="L:${l}">⇶ Flows</button><button data-a="arsenal">📈 Stocks</button></div></div>
+    main=`${crumb()}<div class="dhead"><span class="dic">${lineIcon(l,36,'lic big')}</span><div><h3>${L.n}</h3><div class="sub2">Tier 5 · End item · ${pct(o.n/Math.max(o.cap,1e-9))} of capacity · ${fmtN(o.yr)}/yr of ${fmtN(o.capYr)}/yr</div><div class="sub2 lmxp">${lineMix(l,S._R||production(false)).html}</div></div><span class="dsp"></span><div class="jtabs"><button data-a="ovtop">Overview</button><button data-a="flow" data-f="L:${l}">⇶ Flows</button></div></div>
      <div class="dsec"><h4>The race: output per year</h4>${outRaceHTML(l,o,lp)}<p class="mini"><span class="linkn" data-a="why" data-k="line" data-c="${l}">🧮 How the share, output and requirement are worked out →</span></p></div><!--CEIL--><div class="dsec dlim"><h4>What limits output</h4>${ladder(l,S._R,6)}</div>${ordSec(l,o)}<!--ISV-->${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>Situation</h4><p>${LINEINFO[l]}</p></div>
      <div class="dsec"><h4>Made from</h4>${supplyWeb(id,P)}${o.bott?`<p class="warnp">Short right now. Root cause: ${o.chain.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${ND[i].n}</span>`).join(' ← ')} · <span class="linkn" data-a="bngo" data-n="${o.chain[o.chain.length-1]}">⛓ Why it’s short →</span></p>`:''}</div>
      <div class="dsec"><h4>In service</h4>${inServiceHTML(l,o,pj0)}</div>
@@ -5916,7 +5917,7 @@ function dossierHTML(id,P){
    ARSENAL — stocks vs need vs enemy, projections, production vs required
    ===================================================================== */
 let CH={},CHn=0,CHctx='v';
-function chartRange(){if(S.range==='near'){const b=Math.min(END_W,Math.max(S.w+156,312));return [Math.max(0,b-312),b]}return [0,END_W]}
+function chartRange(){S.range='all';if(S.range==='near'){const b=Math.min(END_W,Math.max(S.w+156,312));return [Math.max(0,b-312),b]}return [0,END_W]}
 function lineChart({W=440,H=150,series,yMax,yFmt=fmtN,hl=[],marks=[],vf,unit}){
   const [x0,x1]=chartRange(),pl=38,pr=8,pt=8,pb=18,X=w=>pl+((w-x0)/(x1-x0))*(W-pl-pr),Y=v=>pt+(1-Math.min(v,yMax*1.05)/yMax)*(H-pt-pb);
   const hid=k=>k&&S.hide&&S.hide[k];
@@ -5939,7 +5940,8 @@ function lineChart({W=440,H=150,series,yMax,yFmt=fmtN,hl=[],marks=[],vf,unit}){
 }
 /* legend items that toggle series on and off */
 function legI(k,label,sw){return `<span class="lgi ${S.hide&&S.hide[k]?'off':''}" data-a="ser" data-k="${k}" data-tip="Click to ${S.hide&&S.hide[k]?'show':'hide'}">${sw}${label}</span>`}
-function rangeBtns(){return `<span class="rng"><button class="pbtn sm ${S.range!=='near'?'on':''}" data-a="range" data-r="all">2025–37</button><button class="pbtn sm ${S.range==='near'?'on':''}" data-a="range" data-r="near">Zoom: 6 years</button></span>`}
+// the charts always show the whole game, 2025 to 2035: at nine years a zoom adds little
+function rangeBtns(){return ''}
 function arsenalTabs(){return `<div class="ptab">${[['stock','📈 Stocks vs need'],['ready','🔧 Readiness']].map(([k,l])=>`<button class="pbtn ${S.atab===k?'on':''}" data-a="atab" data-t="${k}">${l}</button>`).join('')}</div>`}
 function stockBody(){
   const R=S._R,f=F(),H=S.hist;
