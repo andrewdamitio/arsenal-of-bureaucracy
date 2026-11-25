@@ -1725,6 +1725,20 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #needs .sct tr.sct-g td{padding:12px 8px 4px;font:600 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:#c9952a;border-bottom:1px solid #4a4230}#needs .sct tr.sct-g td>span{margin-left:6px;letter-spacing:0;text-transform:none;font-weight:400;color:#9c916f}
 #needs .sct .sct-i{margin-left:5px;cursor:help;color:#8a7850;font-size:12px}#needs .sct tr.sct-rdy{cursor:pointer}#needs .sct tr.sct-rdy:hover td{background:#ffffff08}
 #needs .sct th{white-space:nowrap}#needs .sct .sct-st b{white-space:nowrap}#needs .sct .sct-bar{width:24%;min-width:90px}#needs .sct td{padding:6px 6px}
+/* the end report */
+.trp .endst{font-size:24px;margin:4px 0 10px}.trp .endp{margin:0 0 8px;font:14px/1.5 var(--f-body);color:#2b241a}
+.trp .endkv{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:4px 0;border-bottom:1px dotted #d6c79f;font-size:13px}.trp .endkv>b{font-weight:600}
+.trp .endkv .whys{grid-template-columns:150px 64px}.trp .debc{margin:4px 0}.trp .trcol+.trcol,.trp .trgrid+.trcol{margin-top:0}.trp>.bd>.trcol{margin-bottom:10px}
+/* Stocks & needs */
+#view .sthead{margin:0 0 10px}#view .sthead .stlede{margin:0 0 8px;font:14px/1.5 var(--f-body);color:#3a3020}
+#view .sthead .trts{margin:0 0 10px}#view .sthead .aleg{margin:0;padding:6px 10px;border:1px solid #e0d4b4;border-radius:3px;background:#faf5e6;align-items:center}
+#view .aleg .alk{font:var(--ds-lab-f);letter-spacing:.08em;text-transform:uppercase;color:var(--ds-lab)}
+#view .acard .ah.sth{align-items:baseline;border-bottom:1px solid #d6c9a4;padding-bottom:4px;margin-bottom:4px}#view .acard .ah .stk{font:var(--ds-lab-f);letter-spacing:.08em;text-transform:uppercase;color:var(--ds-lab)}
+#view .acard .stsub{font:13px/1.45 var(--f-body);color:#3a3020;margin:0 0 4px}#view .acard .stnote{margin-top:4px}
+#view .stgh{display:flex;align-items:baseline;gap:10px;margin:18px 0 0;padding-bottom:5px;border-bottom:1px solid #b9a676}#view .stgh b{font:700 19px var(--f-head);color:#231d14}#view .stgh span{font:13px var(--f-body);color:#7a6a48}
+#view .acard .ah .tag{text-transform:none!important}
+#view .stmeth{margin-top:14px}#view .stmeth p{margin:0;font-size:12px;line-height:1.5}
+#view .trt.trtx>b{font:700 17px/1.25 var(--f-head)}
 </style>
 </head>
 <body>
@@ -4595,9 +4609,9 @@ const TUT=[
  {p:'policy',sel:'#view .pmtiles',t:'The permit docket',x:'Every permit your plants hold or need, agency by agency, and where each stands: in review, stalled, contested or due for renewal.',next:1},
  // Stocks & needs
  {p:'stocks',...NAV('arsenal','Stocks & needs')},
- {p:'stocks',sel:'#view .acard',t:'Could you fight?',x:'Output is one thing; what you hold is another. This tests whether your stocks and production would sustain the campaign, against the enemy’s.',next:1},
- {p:'stocks',sel:'#view .acard:nth-of-type(2)',t:'One end item',x:'Stock in service, output a year and capacity, against what the campaign needs, projected to 2035.',next:1},
- {p:'stocks',sel:'#view .rng',t:'Time range',x:'Zoom the charts in or out.',next:1},
+ {p:'stocks',sel:'#view .sthead .trts',t:'Could you fight?',x:'Output is one thing; what you hold is another. These four figures say whether your stocks and production would sustain the campaign: today, in 2035, line by line, and the weakest link.',next:1},
+ {p:'stocks',sel:'#view .ogrid .acard',t:'The campaign',x:'The share of the campaign your stocks would cover, from 2025 to 2035: history solid, your projection dashed, and what full capacity would give.',next:1},
+ {p:'stocks',sel:'#view .agrid .acard',t:'One end item',x:'Stock in service, output a year and capacity, against what the campaign needs, projected to 2035. Munitions come first, then platforms; within each, the lines furthest behind lead.',next:1},
  {p:'stocks',...SUB('rec','The record')},
  {p:'stocks',sel:'#view .rec-tiles',t:'The record',x:'Everything that has changed since you took over: share of the requirement, money spent, jobs, Chinese content, laws changed, plants built, decisions.',next:1},
  {p:'stocks',sel:'#view .rec-tl',t:'What you changed',x:'Every law, executive action, waiver and deal you made, on one timeline with your share of the requirement and the do-nothing line. Hover a dot for what changed.',next:1},
@@ -5079,7 +5093,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
   if(FYOF(n1)===IB_RECON_END+1&&FYOF(n0)<=IB_RECON_END)ahead.push('💵 Reconciliation money ends with this fiscal year.');
   {const cn=cnNext();if(cn&&cn.yrsTo>=0&&cn.yrsTo<=1)ahead.push(`${FLAGS.cn} Beijing could reach its next step, ${cn.nx.s.toLowerCase()}, within ${cn.yrsTo<.25?'a few months':Math.round(cn.yrsTo*12)+' months'}${cn.mine?`; your plants replacing Chinese supply add ${cn.mine} pressure a year`:''}. Hedges: stockpile buys (a year of supply for these minerals), the minerals partnership, talks.`)}
   const aheadH=ahead.length?ahead.slice(0,8).map(x=>`<div class="tra">${x}</div>`).join(''):'<p class="trnone">Nothing scheduled. A good time to start programs or push a reform.</p>';
-  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('turn',22)}</span>${turnLabel(w0)}: turn report</div><div class="bd">
+  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('turn',22)}</span>Turn report · ${turnLabel(w0)}</div><div class="bd">
    <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,1)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines short',`${b.short}/${S.order.length}`,dl(a.short,b.short,v=>String(Math.round(v)),-1))}${tile('Budget',money(S.budget),dl(a.budget,b.budget,v=>money(v)))}${tile('Political Capital',Math.floor(S.pc),dl(a.pc,b.pc,v=>fmt(v,0)))}</div>
    ${r.moves?.length?`<div class="trcol mvrep mvlead"><div class="trh"><b>What your moves set in motion</b><span>what each did this turn, and what it does by 2035</span></div>${mvRows(r.moves,0,r)}</div>`:`<div class="trcol mvrep mvlead mvnone"><div class="trh"><b>You made no moves last turn</b><span>the brief below has three worth making</span></div></div>`}
    <div class="trgrid">
@@ -5146,7 +5160,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r;
     +ah('⛓ Biggest limits now',lim.length?lim.join('<br>'):'No input holds a line back right now: line capacity is the limit.')
     +ah(`${FLAGS.cn} Beijing next`,nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year).`:'Nothing left to escalate.')
     +(S.fac==='US'?ah('🏛 Next bill',`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}. Request plants, stockpile buys and reforms before then on the NDAA tab.`):'');
-  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('year',22)}</span>${r.y}: the year in review</div><div class="bd">
+  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('year',22)}</span>The year in review · ${r.y}</div><div class="bd">
    <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,0)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines sufficient',`${b.suff}/${Object.keys(LINES).length}`,dl(a.suff,b.suff,v=>String(v)))}${tile('Bottlenecks cleared',r.cleared.length,'<i class="trd">this year</i>')}${tile('Beijing’s escalation',`${cnS().rung}/${CN_RUNGS.length}`,dl(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
    <div class="trcol yrout"><div class="trh"><b>Output per year</b><span>${r.y-1} → ${r.y} · against ${RV().n}</span></div>
     <div class="yro yrhd"><span>Line</span><span>A year ago → now</span><span>Change</span><span>${RV().n}</span><span>You vs. ${RV().n}</span></div>${outH}</div>
@@ -5156,6 +5170,26 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r;
    </div>
    ${rollsHTML((S.rolls||[]).filter(x=>x.w>a.w&&x.w<=b.w),'🎲 Your odds this year')}
    </div><div class="ft trft"><button class="pbtn" data-a="yrrec">${vic('rec')}The full record</button><button class="pbtn primary" data-a="close">Begin ${r.y+1} →</button></div></div>`}
+// the after-action report: verdict, tiles, then cards, like the turn report and the year in review
+function endHTML(L,tot){const out=S.lastOut||production(false).out,idx=raceIdx(out),cs=Object.keys(LINES),n=cs.length;
+  const tile=(lab,v,d,tip)=>`<div class="trt"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b>${d}</div>`,sub=x=>`<i class="trd">${x}</i>`;
+  const card=(h,sb,x,cls='')=>`<div class="trcol ${cls}"><div class="trh"><b>${h}</b><span>${sb||''}</span></div>${x}</div>`;
+  const cleared=Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length,suff=cs.filter(c=>suffLine(c,out[c]?.yr||0,S.w)>=1).length,r0=S.race0??0;
+  const tiles=`<div class="trts n4">${tile('Share of the requirement',pct(idx),idx-r0>=.005?`<i class="trd up">▲ ${fmt((idx-r0)*100,0)} pt from January 2027</i>`:idx-r0<=-.005?`<i class="trd dn">▼ ${fmt((r0-idx)*100,0)} pt from January 2027</i>`:sub('same as January 2027'),`You and ${AL().n}, against what the plan requires across the end-item lines.`)}
+    ${tile('Lines sufficient',`${suff}/${n}`,sub('at 100% of their requirement'))}${tile('Plants built',S.plants.filter(p=>!p.inh).length||S.plants.length,sub(`${S.plants.filter(p=>p.full).length} at full rate`))}${tile('Bottlenecks cleared',cleared,sub('since January 2027'))}</div>`;
+  const lead=`${S.verdict?`<div class="stamp endst">${S.verdict}</div>`:''}${S.overWhy?`<p class="endp">${S.overWhy}</p>`:''}${S.scenRes?`<p class="endp"><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} in January 2035 (${S.scenRes.met} of ${S.scenRes.ms.length} targets met; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}`;
+  const rows=S.order.map(c=>{const y=out[c]?.yr||0,rv=cnOut(c),vs=rv>0?y/rv:null;return `<tr><td>${LINES[c].n}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num">~${fmtN(rv)}</td><td class="num">${fmtN(S.inv[c])}</td><td class="num">${S.theaters.map(t=>'~'+fmtN(S.enemy[t].inv[c])).join(' · ')}</td><td class="num">${vs==null?'—':`<span class="whys"><span class="yrvb"><i class="${vs>=1?'ok':'pt'}" style="width:${(Math.min(1,vs)*100).toFixed(1)}%"></i></span><b>${pct(vs)}</b></span>`}</td></tr>`}).join('');
+  const outT=card('Output and stocks',`against ${RV().n}`,`<table class="whyt"><tr><th>Line</th><th class="num">You, a year</th><th class="num">${RV().n}, a year</th><th class="num">You, in service</th><th class="num">${S.theaters.length>1?S.theaters.map(t=>S.enemy[t].n).join(' · '):RV().n}, in service</th><th class="num">Your output vs. ${RV().n}</th></tr>${rows}</table>`,'yrout');
+  const kv=(k,v)=>`<div class="endkv"><span>${k}</span><b>${v}</b></div>`;
+  const rec=card('The record in numbers','',kv('Plants built',`${S.plants.length} (${S.plants.filter(p=>p.full).length} at full rate)`)+kv('Allied deals',S.done.filter(d=>PD[d.def].ally).length)+kv('Reforms passed',REFORMS.filter(R=>passed(R.id)).length)+kv('Programs abandoned or cut',S.gone.length)+kv('Waivers and exceptions',S.waivers)+kv('Chinese and Russian content',pct(S.exposure)));
+  const time=card('Where the time went',`${fmt(tot,0)} program-weeks lost`,L.filter(x=>x[1].wk>0).map(([k,v])=>`<div class="endkv"><span>${LAYERS[k].n}</span><span class="whys"><span class="yrvb"><i class="pt" style="width:${(v.wk/Math.max(1,tot)*100).toFixed(1)}%"></i></span><b>${fmt(v.wk,0)} wk</b></span></div>`).join('')||'<p class="trnone">No program lost a week.</p>');
+  const bt=billTable();
+  return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('ndaa',22)}</span>After-action report · ${fmtDate(S.w)}</div><div class="bd">
+    ${lead}${tiles}${outT}<div class="trgrid">${rec}${time}</div>
+    ${card('Debrief','go deeper',debCards())}
+    ${card('What your reforms were worth','',refWorthHTML(true))}
+    ${bt?card('The bill','everything the effort has cost, by fiscal year (Oct–Sep)',bt.replace(/^<div class="pdg">[\s\S]*?<\/div>/,'')):''}
+    </div><div class="ft trft"><button class="pbtn" data-a="restart">Play again</button><button class="pbtn primary" data-a="recgo">${vic('rec')}See the full record</button></div></div>`}
 function gameOver(why){
   if(S.over)return;S.over=true;S.overWhy=why;S.speed=0;
   if(why)S.verdict='DEFEAT';else{const x=raceIdx(S.lastOut||production(false).out),h0=S.hist.find(h=>h.w>=PLAY0&&h.prod),x0=h0?raceIdx(null,h0.w,c=>h0.prod[c]):x;S.race0=x0;S.verdict=x>=1?'ARSENAL RESTORED':x>=.75?'WITHIN REACH':x>=x0+.05?'GAINED GROUND':'OUT-BUILT'}
@@ -6067,46 +6101,57 @@ function legI(k,label,sw){return `<span class="lgi ${S.hide&&S.hide[k]?'off':''}
 // the charts always show the whole game, 2025 to 2035: at nine years a zoom adds little
 function rangeBtns(){return ''}
 function arsenalTabs(){return `<div class="ptab">${[['stock','📈 Stocks vs need'],['ready','🔧 Readiness']].map(([k,l])=>`<button class="pbtn ${S.atab===k?'on':''}" data-a="atab" data-t="${k}">${l}</button>`).join('')}</div>`}
+// one line on Stocks & needs: the figures its card shows
+function stockRow(c,R,pj,pc,cr,prodCap){const H=S.hist;
+  const L=LINES[c],o=R.out[c],nw=needOf(c),bt=nw.t||S.theaters[0],E=S.enemy[bt],ev=S._sc[bt].est;
+  const nxt=cr.find(x=>x[2]===bt&&x[1]>S.w+52)||[null,END_W,bt,'2035'];const T=Math.max(4,nxt[1]-S.w)/52;
+  const at=(arr,w)=>arr.reduce((b,x)=>Math.abs(x.w-w)<Math.abs(b.w-w)?x:b,arr[0]);
+  const tgt=at(pj,nxt[1]).need[c],invT=at(pj,nxt[1]).inv[c],invTc=at(pc,nxt[1]).inv[c];
+  const r=retRate(c),e=Math.exp(-r*T),req=r>1e-6?Math.max(0,r*(tgt-S.inv[c]*e)/(1-e)):Math.max(0,(tgt-S.inv[c])/T);
+  const shr=S.inv[c]/Math.max(nw.n,1e-9),shrT=invT/Math.max(tgt,1e-9),shrC=invTc/Math.max(tgt,1e-9);
+  const status=shrT>=1?['On track','ok']:shrC>=1?['Bottlenecked','tight']:shrT>=shr-.02?[`${pct(shr)} of need, holding`,'tight']:[`${pct(shr)} of need, falling`,'short'];
+  const yMax=Math.max(...H.map(h=>Math.max(h.inv?.[c]||0,h.need?.[c]||0)),...pj.map(h=>Math.max(h.inv[c],h.need[c])),...pc.map(h=>h.inv[c]),E.inv[c]*.0)*1.08||1;
+  const enHist=H.filter(h=>h.en).map(h=>[h.w,h.en[bt][c]]),enPj=pj.map(h=>[h.w,h.en[bt][c]]);
+  const showEn=Math.max(...enPj.map(x=>x[1]))<yMax*2.5;const enNote=showEn?'':`<div class="mini">${E.flag} ${E.n}’s ~${fmtN(estInv(E,c))} in service (estimate) is off this chart’s scale.</div>`;
+  const bmax=Math.max(o.yr,prodCap[c],req)*1.1||1,B=v=>Math.min(100,v/bmax*100);
+  const wk=MUN.includes(c)?ev.wks[c]:null;
+  return {c,L,o,nw,bt,E,ev,nxt,tgt,r,req,shr,shrT,shrC,status,yMax,enHist,enPj,showEn,enNote,bmax,B,wk}}
+function stockCard(x,R,pj,pc,cr,prodCap,H){const {c,L,o,nw,bt,E,ev,nxt,tgt,r,req,shr,shrT,shrC,status,yMax,enHist,enPj,showEn,enNote,bmax,B,wk}=x;
+  let html='';
+  html+=`<div class="acard"><div class="ah"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b><span class="tag ${status[1]}">${status[0]}</span></div>
+   ${lineChart({unit:'In service',W:440,H:150,yMax:showEn?Math.max(yMax,...enPj.map(x=>x[1]))*1.02:yMax,marks:cr.filter(x=>x[2]===bt).map(x=>({w:x[1],t:'Crisis: '+x[3]})),
+     series:[...(showEn?[{pts:enHist,c:'#b0453a',wd:1.2,n:E.n+' in service',k:'enemy'},{pts:enPj,c:'#b0453a',wd:1.2,dash:'5 4',n:E.n+' in service',k:'enemy'}]:[]),
+      {pts:H.filter(h=>h.need).map(h=>[h.w,h.need[c]]),c:'#b8860b',wd:1.6,n:'Need (scenario)',k:'need'},{pts:pj.map(h=>[h.w,h.need[c]]),c:'#b8860b',wd:1.6,dash:'5 4',n:'Need (scenario)',k:'need'},
+      {pts:H.filter(h=>h.inv).map(h=>[h.w,h.inv[c]]),c:'#2f62a0',wd:2.2,n:'You, in service',k:'you'},{pts:pj.map(h=>[h.w,h.inv[c]]),c:'#2f62a0',dash:'6 4',n:'You, in service',k:'proj'},{pts:pc.map(h=>[h.w,h.inv[c]]),c:'#7fa3cc',dash:'2 3',n:'At full capacity',k:'cap'}]})}
+   ${enNote}<div class="rates"><div class="lcu2">Per year</div><div class="rr"><span>Producing</span><div class="rb"><i style="width:${B(o.yr)}%;background:#2f62a0"></i></div><b>${fmtN(o.yr)}/yr</b></div>
+    <div class="rr"><span>Capacity</span><div class="rb"><i style="width:${B(prodCap[c])}%;background:#7fa3cc"></i></div><b>${fmtN(prodCap[c])}/yr</b></div>
+    <div class="rr"><span>Needed</span><div class="rb"><i style="width:${B(req)}%;background:#b8860b"></i></div><b>${req>0?fmtN(req)+'/yr':'met'}</b></div></div>
+   <div class="acfoot">${(()=>{const cell=(v,l,tip,cls='')=>`<div class="acs ${cls}"${tip?` data-tip="${tipQ(tip)}"`:''}><b>${v}</b><span>${l}</span></div>`,yE=nxt[3]==='2035'?'2035':dateOf(nxt[1]).getFullYear();
+     return `<div class="acstats">${cell(fmtN(S.inv[c]),'in service',S.ready[c]!=null?`${pct(S.ready[c])} available now`:'')}${nw.n<1e-6?cell('—','not needed for this campaign'):cell(fmtN(nw.n),'needed for the campaign',SCEN[bt].short)}${nw.n<1e-6&&tgt<1e-6?'':cell(shrF(shr),'stock against need',`Now ${shrF(shr)} → ${shrF(shrT)} at current output, ${shrF(shrC)} at capacity by ${yE}`,shr<1?'bad':'')}${wk!=null&&nw.n>1e-6?cell(wk>=99?'all '+Math.round(ev.wk)+' wk':fmt(wk,1)+' wk',`the stock lasts, of ${Math.round(ev.wk)} wk needed`,'',wk<ev.wk?'bad':''):''}${cell('~'+fmtN(estInv(E,c)),`${E.flag} ${E.n} in service`,`Intelligence estimate · retiring ${pct(r)} a year`)}</div>${o.bott?`<div class="acshort">Short: ${o.chain.map(i=>ND[i].n).join(' ← ')}</div>`:''}`})()}</div></div>`;
+  return html}
 function stockBody(){
   const R=S._R,f=F(),H=S.hist;
   const prodNow={},prodCap={};for(const c in LINES){prodNow[c]=R.out[c].yr;prodCap[c]=lineName(c)*LINES[c].k}
   const pj=project(prodNow),pc=project(prodCap);
   const cr=CRISES[S.fac]||[];
-  let html=`${S.fac==='US'?`<p class="mini" style="margin:0 0 6px">Showing the ${SCEN[S.theaters[0]].short.replace(/^an? /,'')} against ${RV().f} ${RV().n}${S.scen?`, the theater of your mandate, <b>${SCD[S.scen].n.replace(/^The /,'the ')}</b>`:''}. ${S.scen?'':`Switch the rival on Command to see the other theater.`}</p>`:''}<div class="aleg">${legI('you','You (history)','<i style="background:#2f62a0"></i>')}${legI('proj','You, projected at current output','<i class="dsh" style="border-color:#2f62a0"></i>')}${legI('cap','You, if every line ran at capacity','<i class="dot2" style="border-color:#7fa3cc"></i>')}${legI('need','Need (scenario)','<i style="background:#b8860b"></i>')}${legI('band','80% range','<i class="dot2" style="border-color:#9a9a9a"></i>')}${legI('enemy','Enemy in service','<i style="background:#b0453a"></i>')}<span><i style="background:#a03a30;width:2px"></i>Crisis</span></div>
+  const st0=S._sc[S.theaters[0]],t0=S.theaters[0],end0=pj[pj.length-1][t0],endC0=pc[pc.length-1][t0],nx0=cr.find(c=>c[2]===t0&&c[1]>S.w);
+  const ln0=Object.keys(LINES).map(c=>stockRow(c,R,pj,pc,cr,prodCap)),onT=ln0.filter(x=>x.status[1]==='ok').length,fall=ln0.filter(x=>x.status[1]==='short').length;
+  const tl=(lab,v,d,tip,cls='')=>`<div class="trt ${cls}"${tip?` data-tip="${tipQ(tip)}"`:''}><span>${lab}</span><b>${v}</b><i class="trd">${d}</i></div>`;
+  let html=`<div class="sthead"><p class="stlede">Whether what you hold, and what you make, would carry ${SCEN[t0].short.replace(/^an? /,'the ')} against ${RV().f} ${RV().n}${S.scen?`, the theater of your mandate, <b>${SCD[S.scen].n.replace(/^The /,'the ')}</b>`:''}.${S.scen||S.fac!=='US'?'':' Switch the rival on Command to see the other theater.'}</p>
+   <div class="trts n4">${tl('Campaign covered today',pct(st0.est.score),`estimate; 80% range ${pct(st0.pes.score)}–${pct(st0.opt.score)}`,'Your stocks and forces against what the campaign needs, on your central intelligence estimate. 100% means fully covered.')}${tl('Covered in 2035',pct(end0),`at today’s output; ${pct(endC0)} if every line ran at capacity`)}${tl('Lines on track',`${onT}/${ln0.length}`,fall?`${fall} falling behind the need`:'none falling behind')}${tl('Weakest link now',st0.est.bind?LINES[st0.est.bind].n:'None',nx0?`next test: ${nx0[3]}, ${fmtDate(nx0[1])}`:'judged in January 2035','','trtx')}</div>
+   <div class="aleg"><span class="alk">Key</span>${legI('you','You (history)','<i style="background:#2f62a0"></i>')}${legI('proj','You, projected at current output','<i class="dsh" style="border-color:#2f62a0"></i>')}${legI('cap','You, if every line ran at capacity','<i class="dot2" style="border-color:#7fa3cc"></i>')}${legI('need','Need (scenario)','<i style="background:#b8860b"></i>')}${legI('band','80% range','<i class="dot2" style="border-color:#9a9a9a"></i>')}${legI('enemy','Enemy in service','<i style="background:#b0453a"></i>')}<span><i style="background:#a03a30;width:2px"></i>Crisis</span></div></div>
    <div class="ogrid">`;
   for(const t of S.theaters){const E=S.enemy[t];const end=pj[pj.length-1][t],endC=pc[pc.length-1][t];
     const nxt=cr.find(c=>c[2]===t&&c[1]>S.w);const at=(arr,w)=>arr.reduce((b,x)=>Math.abs(x.w-w)<Math.abs(b.w-w)?x:b,arr[0]);
     const yMax=Math.max(1.3,...H.map(h=>h.opt?.[t]??h[t]??0),...pc.map(h=>h.opt?.[t]??h[t]))*1.05;
-    html+=`<div class="acard wide2"><div class="ah"><b>${THEATERS[t]} — can you sustain ${SCEN[t].short}? vs ${E.flag} ${E.n}</b><span class="mini">${nxt?`Next test: ${nxt[3]} (${fmtDate(nxt[1])}) — projected <b>${fmt(at(pj,nxt[1])[t],2)}</b> at current output (80% range ${fmt(at(pj,nxt[1]).pes[t],2)}–${fmt(at(pj,nxt[1]).opt[t],2)}), <b>${fmt(at(pc,nxt[1])[t],2)}</b> at capacity`:''}</span></div>
-     ${lineChart({unit:'Coverage of the campaign (1 = fully covered)',W:S.theaters.length>1?560:1000,H:S.theaters.length>1?150:140,yMax,yFmt:v=>fmt(v,1),vf:v=>fmt(v,2),hl:[{v:1,c:'#5f9e4a',n:'Fully covered'},{v:CRISIS_WIN,c:'#b8860b',n:'Deters (true score)'},{v:CRISIS_TENSE,c:'#d0503f',n:'Below: deterrence fails'}],marks:cr.filter(c=>c[2]===t).map(c=>({w:c[1],t:'Crisis: '+c[3]})),
+    html+=`<div class="acard wide2"><div class="ah sth"><b>Could you sustain ${SCEN[t].short}?</b><span class="stk">${THEATERS[t]} · against ${E.flag} ${S.theaters.length>1?E.n:RV().n}</span></div>${nxt?`<div class="stsub">Next test: <b>${nxt[3]}</b>, ${fmtDate(nxt[1])}. Projected <b>${pct(at(pj,nxt[1])[t])}</b> at current output (80% range ${pct(at(pj,nxt[1]).pes[t])}–${pct(at(pj,nxt[1]).opt[t])}), <b>${pct(at(pc,nxt[1])[t])}</b> at capacity.</div>`:''}
+     ${lineChart({unit:'Share of the campaign covered',W:S.theaters.length>1?560:1000,H:S.theaters.length>1?150:150,yMax,yFmt:v=>pct(v),vf:v=>pct(v),hl:[{v:1,c:'#5f9e4a',n:'Fully covered'},{v:CRISIS_WIN,c:'#b8860b',n:'Deters (true score)'},{v:CRISIS_TENSE,c:'#d0503f',n:'Below: deterrence fails'}],marks:cr.filter(c=>c[2]===t).map(c=>({w:c[1],t:'Crisis: '+c[3]})),
        series:[{pts:H.filter(h=>h.opt).map(h=>[h.w,h.opt[t]]),c:'#9a9a9a',wd:1,dash:'1 3',n:'90th percentile',k:'band'},{pts:H.filter(h=>h.pes).map(h=>[h.w,h.pes[t]]),c:'#9a9a9a',wd:1,dash:'1 3',n:'10th percentile',k:'band'},{pts:pj.map(h=>[h.w,h.opt[t]]),c:'#b5b5b5',wd:1,dash:'1 3',n:'90th percentile',k:'band'},{pts:pj.map(h=>[h.w,h.pes[t]]),c:'#b5b5b5',wd:1,dash:'1 3',n:'10th percentile',k:'band'},{pts:H.map(h=>[h.w,h[t]]),c:'#2f62a0',wd:2.2,n:'Your coverage (estimate)',k:'you'},{pts:pj.map(h=>[h.w,h[t]]),c:'#2f62a0',dash:'6 4',n:'Your coverage (estimate)',k:'proj'},{pts:pc.map(h=>[h.w,h[t]]),c:'#7fa3cc',dash:'2 3',n:'At full capacity',k:'cap'}]})}
-     <div class="mini">2035 at current output: <b>${fmt(end,2)}</b> · if every line ran at capacity: <b>${fmt(endC,2)}</b>. Weakest link now: <b>${S._sc[t].est.bind?LINES[S._sc[t].est.bind].n:'—'}</b>. The grey dotted lines are the 10th and 90th percentiles over 40 draws from the scenario and intelligence ranges.</div></div>`}
-  html+=`</div><div class="agrid">`;
-  for(const c of Object.keys(LINES)){
-    const L=LINES[c],o=R.out[c],nw=needOf(c),bt=nw.t||S.theaters[0],E=S.enemy[bt],ev=S._sc[bt].est;
-    const nxt=cr.find(x=>x[2]===bt&&x[1]>S.w+52)||[null,END_W,bt,'2035'];const T=Math.max(4,nxt[1]-S.w)/52;
-    const at=(arr,w)=>arr.reduce((b,x)=>Math.abs(x.w-w)<Math.abs(b.w-w)?x:b,arr[0]);
-    const tgt=at(pj,nxt[1]).need[c],invT=at(pj,nxt[1]).inv[c],invTc=at(pc,nxt[1]).inv[c];
-    const r=retRate(c),e=Math.exp(-r*T),req=r>1e-6?Math.max(0,r*(tgt-S.inv[c]*e)/(1-e)):Math.max(0,(tgt-S.inv[c])/T);
-    const shr=S.inv[c]/Math.max(nw.n,1e-9),shrT=invT/Math.max(tgt,1e-9),shrC=invTc/Math.max(tgt,1e-9);
-    const status=shrT>=1?['On track','ok']:shrC>=1?['Bottlenecked','tight']:shrT>=shr-.02?[`${pct(shr)} of need, holding`,'tight']:[`${pct(shr)} of need, falling`,'short'];
-    const yMax=Math.max(...H.map(h=>Math.max(h.inv?.[c]||0,h.need?.[c]||0)),...pj.map(h=>Math.max(h.inv[c],h.need[c])),...pc.map(h=>h.inv[c]),E.inv[c]*.0)*1.08||1;
-    const enHist=H.filter(h=>h.en).map(h=>[h.w,h.en[bt][c]]),enPj=pj.map(h=>[h.w,h.en[bt][c]]);
-    const showEn=Math.max(...enPj.map(x=>x[1]))<yMax*2.5;const enNote=showEn?'':`<div class="mini">${E.flag} ${E.n}’s ~${fmtN(estInv(E,c))} in service (estimate) is off this chart’s scale.</div>`;
-    const bmax=Math.max(o.yr,prodCap[c],req)*1.1||1,B=v=>Math.min(100,v/bmax*100);
-    const wk=MUN.includes(c)?ev.wks[c]:null;
-    html+=`<div class="acard"><div class="ah"><b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b><span class="tag ${status[1]}">${status[0]}</span></div>
-     ${lineChart({unit:'📦 In service (stock)',W:440,H:150,yMax:showEn?Math.max(yMax,...enPj.map(x=>x[1]))*1.02:yMax,marks:cr.filter(x=>x[2]===bt).map(x=>({w:x[1],t:'Crisis: '+x[3]})),
-       series:[...(showEn?[{pts:enHist,c:'#b0453a',wd:1.2,n:E.n+' in service',k:'enemy'},{pts:enPj,c:'#b0453a',wd:1.2,dash:'5 4',n:E.n+' in service',k:'enemy'}]:[]),
-        {pts:H.filter(h=>h.need).map(h=>[h.w,h.need[c]]),c:'#b8860b',wd:1.6,n:'Need (scenario)',k:'need'},{pts:pj.map(h=>[h.w,h.need[c]]),c:'#b8860b',wd:1.6,dash:'5 4',n:'Need (scenario)',k:'need'},
-        {pts:H.filter(h=>h.inv).map(h=>[h.w,h.inv[c]]),c:'#2f62a0',wd:2.2,n:'You, in service',k:'you'},{pts:pj.map(h=>[h.w,h.inv[c]]),c:'#2f62a0',dash:'6 4',n:'You, in service',k:'proj'},{pts:pc.map(h=>[h.w,h.inv[c]]),c:'#7fa3cc',dash:'2 3',n:'At full capacity',k:'cap'}]})}
-     ${enNote}<div class="rates"><div class="lcu2">⟳ Per year (flow)</div><div class="rr"><span>Producing</span><div class="rb"><i style="width:${B(o.yr)}%;background:#2f62a0"></i></div><b>${fmtN(o.yr)}/yr</b></div>
-      <div class="rr"><span>Capacity</span><div class="rb"><i style="width:${B(prodCap[c])}%;background:#7fa3cc"></i></div><b>${fmtN(prodCap[c])}/yr</b></div>
-      <div class="rr"><span>Needed</span><div class="rb"><i style="width:${B(req)}%;background:#b8860b"></i></div><b>${req>0?fmtN(req)+'/yr':'met'}</b></div></div>
-     <div class="acfoot">${(()=>{const cell=(v,l,tip,cls='')=>`<div class="acs ${cls}"${tip?` data-tip="${tipQ(tip)}"`:''}><b>${v}</b><span>${l}</span></div>`,yE=nxt[3]==='2035'?'2035':dateOf(nxt[1]).getFullYear();
-       return `<div class="acstats">${cell(fmtN(S.inv[c]),'in service',S.ready[c]!=null?`${pct(S.ready[c])} available now`:'')}${nw.n<1e-6?cell('—','not needed for this campaign'):cell(fmtN(nw.n),'needed for the campaign',SCEN[bt].short)}${nw.n<1e-6&&tgt<1e-6?'':cell(shrF(shr),'stock against need',`Now ${shrF(shr)} → ${shrF(shrT)} at current output, ${shrF(shrC)} at capacity by ${yE}`,shr<1?'bad':'')}${wk!=null&&nw.n>1e-6?cell(wk>=99?'all '+Math.round(ev.wk)+' wk':fmt(wk,1)+' wk',`the stock lasts, of ${Math.round(ev.wk)} wk needed`,'',wk<ev.wk?'bad':''):''}${cell('~'+fmtN(estInv(E,c)),`${E.flag} ${E.n} in service`,`Intelligence estimate · retiring ${pct(r)} a year`)}</div>${o.bott?`<div class="acshort">Short: ${o.chain.map(i=>ND[i].n).join(' ← ')}</div>`:''}`})()}</div></div>`;
-  }
-  html+=`</div><p class="mini" style="margin-top:8px"><b>Need (scenario)</b> = the in-service level that would cover the scenario in this category’s binding theater, on your central estimate. <b>Munitions:</b> the campaign’s weekly burn × the required weeks, net of allies’ share and of what your lines make during the campaign, divided by the share of your stock assigned to the theater. Interceptor burn is the enemy’s salvo (launch rate × missiles in service, plus output) × interceptors per threat × the share aimed at defended targets. Taiwan strike burn is long-range missiles per PLAN battle-force ship: CSIS found the US fired more than 5,000 in three weeks and ran out of LRASM in the first.[c:csiswg,csis] Shell, drone and European strike burns are anchored to observed rates (Russia’s output,[c:estonia] Ukraine’s ~4M drones a year[c:uadrone]) and scale with the enemy’s ability to sustain fire. <b>Platforms:</b> the 2025 in-theater force, scaled by the enemy’s growth in available platforms net of allies’ growth. (CSIS’s base case had the 2026 force win at a cost of hundreds of aircraft and dozens of ships.[c:csisloss]) Only available platforms count (see Readiness). <b>Needed</b> = the steady output that would reach the need by the next crisis at least a year out (or 2035), after retirements. Every parameter has a range; see 📚 Sources → Scenario.</p>`;
+     <div class="mini stnote">2035 at current output: <b>${pct(end)}</b> · if every line ran at capacity: <b>${pct(endC)}</b>. Weakest link now: <b>${S._sc[t].est.bind?LINES[S._sc[t].est.bind].n:'none'}</b>. The grey dotted lines are the 10th and 90th percentiles over 40 draws from the scenario and intelligence ranges.</div></div>`}
+  html+=`</div>`;
+  const grp=(t,sub,cs)=>{const xs=ln0.filter(x=>cs.includes(x.c)).sort((a,b)=>({short:0,tight:1,ok:2})[a.status[1]]-({short:0,tight:1,ok:2})[b.status[1]]||a.shr-b.shr);return xs.length?`<div class="stgh"><b>${t}</b><span>${sub}</span></div><div class="agrid">${xs.map(x=>stockCard(x,R,pj,pc,cr,prodCap,H)).join('')}</div>`:''};
+  html+=grp('Munitions','will the stock last the fight? Lines losing ground first',MUN)+grp('Platforms','enough ships, submarines and aircraft in service? Lines losing ground first',PLAT);
+  html+=`<div class="trcol stmeth"><div class="trh"><b>How the need is worked out</b><span>method</span></div><p class="mini"><b>Need (scenario)</b> = the in-service level that would cover the scenario in this category’s binding theater, on your central estimate. <b>Munitions:</b> the campaign’s weekly burn × the required weeks, net of allies’ share and of what your lines make during the campaign, divided by the share of your stock assigned to the theater. Interceptor burn is the enemy’s salvo (launch rate × missiles in service, plus output) × interceptors per threat × the share aimed at defended targets. Taiwan strike burn is long-range missiles per PLAN battle-force ship: CSIS found the US fired more than 5,000 in three weeks and ran out of LRASM in the first.[c:csiswg,csis] Shell, drone and European strike burns are anchored to observed rates (Russia’s output,[c:estonia] Ukraine’s ~4M drones a year[c:uadrone]) and scale with the enemy’s ability to sustain fire. <b>Platforms:</b> the 2025 in-theater force, scaled by the enemy’s growth in available platforms net of allies’ growth. (CSIS’s base case had the 2026 force win at a cost of hundreds of aircraft and dozens of ships.[c:csisloss]) Only available platforms count (see Readiness). <b>Needed</b> = the steady output that would reach the need by the next crisis at least a year out (or 2035), after retirements. Every parameter has a range; see Sources → Scenario.</p></div>`;
   return html;
 }
 
@@ -8534,18 +8579,7 @@ function renderModal(){
   const P=S._R?.P||production(false).P;const build=()=>{let html='';
   if(S.modal==='end'){
     const L=Object.entries(S.ledger).sort((a,b)=>b[1].wk-a[1].wk),tot=L.reduce((a,x)=>a+x[1].wk,0);
-    html=`<div class="paper wide yrp"><div class="hd"><span class="ic">🏛</span>After-action report · ${fmtDate(S.w)}</div><div class="bd">
-      ${S.verdict?`<div class="stamp" style="font-size:24px">${S.verdict}</div>`:''}${S.overWhy?`<p>${S.overWhy}</p>`:''}
-      ${S.scenRes?`<p><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} in January 2035 (${S.scenRes.met} of ${S.scenRes.ms.length} mandates; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}<p>With ${AL().n}, you meet <b>${pct(raceIdx(S.lastOut||production(false).out))}</b> of what the plan requires across the end-item lines, from ${pct(S.race0??0)} in January 2027. Bottlenecks cleared: <b>${Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length}</b>.</p>
-      <p style="font-size:13px">${S.order.map(c=>`${LINES[c].n}: ${fmtN(S.lastOut?.[c]?.yr||0)}/yr vs. ${RV().n}’s ~${fmtN(cnOut(c))}`).join(' · ')}</p>
-      <p style="font-size:13px">In service: ${Object.keys(LINES).map(c=>`${fmtN(S.inv[c])} ${LINES[c].u}`).join(', ')}.<br>${S.theaters.map(t=>{const E=S.enemy[t];return `${E.n}: ${Object.keys(LINES).map(c=>`${fmtN(E.inv[c])} ${LINES[c].u}`).join(', ')}.`}).join('<br>')}</p>
-      <p>Plants built: <b>${S.plants.length}</b> (${S.plants.filter(p=>p.full).length} at full rate). Allied deals: <b>${S.done.filter(d=>PD[d.def].ally).length}</b>. Programs abandoned or cut: <b>${S.gone.length}</b>. PRC exposure: <b>${pct(S.exposure)}</b>. Waivers and exceptions: <b>${S.waivers}</b>.</p>
-      <h5 class="yrh">Debrief</h5>${debCards()}
-      <h5 class="yrh">What your reforms were worth</h5>${refWorthHTML(true)}
-      ${billTable()||'<p class="mini">Nothing was spent.</p>'}
-      <h5 class="yrh">Where the time went <span class="mini">(${fmt(tot,0)} program-weeks lost)</span></h5>
-      ${L.filter(x=>x[1].wk>0).map(([k,v])=>`<div style="display:flex;justify-content:space-between;font-size:13px;border-bottom:1px dotted #a89770"><span>${LAYERS[k].n}</span><span>${fmt(v.wk,0)} wk · ${Math.round(v.wk/Math.max(1,tot)*100)}%</span></div>`).join('')}
-      </div><div class="ft trft"><button class="pbtn" data-a="restart">Play again</button><button class="pbtn primary" data-a="recgo">${vic('rec')}See the full record</button></div></div>`;
+    html=endHTML(L,tot);
   } else if(S.queue.length){
     const q=S.queue[0];
     if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${lc(L.n)}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
