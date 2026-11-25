@@ -1653,6 +1653,13 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 .xfas{margin:2px 10px 10px;border:1px solid var(--edge);border-radius:5px;background:var(--frame2)}.xfh{padding:5px 10px;font:600 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--edge)}
 .xfa{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;padding:7px 10px;border-top:1px solid var(--edge)}.xfa:first-of-type{border-top:0}.xfa.on{background:#1c2619}
 .xfa b{font:600 12.5px var(--f-body);color:var(--cream)}.xfa .mini{color:var(--muted);font-size:11.5px;line-height:1.4}.xfc{min-width:30px;padding-top:2px}
+#view .ptabs{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:8px;background:#e4d8b8;border-radius:7px 7px 0 0;border-bottom:3px solid #2b241a}
+#view .ptab{border:1px solid #c2ad7c;background:#fbf6e8;border-radius:5px;padding:8px 10px;min-height:62px;box-shadow:0 1px 0 #0000000d}
+#view .ptab:hover{background:#fffdf6;border-color:#8a7850}
+#view .ptab.on{background:#2b241a;border-color:#2b241a;box-shadow:none}#view .ptab.on .ptn{color:#f3d98a}#view .ptab.on .ptc{color:#d8cfb2}#view .ptab.on .ptc .redt{color:#f0a090}
+#view .ptn{font-size:13px;line-height:1.25}#view .ptc{margin-top:auto}
+#view .ptabs+.rbdom{border-top:0;padding-top:4px}
+@media (max-width:1300px){#view .ptabs{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -4233,9 +4240,9 @@ function polDomHTML(D){const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id);
       const cr=nm==='Continuing resolution',bj=nm==='Beijing’s controls';
       return `<div class="rstep ${mx>=.4?'hot':mx>=.2?'warm':''}" data-tip="${tipQ(os.length?odds.map(x=>`<b>${V(x.o.n)}</b>: up to ${pct(x.c)}${x.who?` (${x.who.n})`:''}`).join('<br>'):t)}"><b>${nm}</b><span class="mini">${t}</span>${os.length?`<span class="odds">${pct(mx)} odds</span>`:cr?`<span class="odds">${S.cr>0?S.cr+' wk left':'none now'}</span>`:bj?`<span class="odds">${S.truce?'suspended':'in force'}</span>`:nm==='Range time'?(()=>{const q=poolState().ranges;return q?`<span class="odds">${q.d}/${fmt(q.cap,0)} slots</span>`:''})():`<span class="odds mini">no delay</span>`}</div>`}).join('<span class="sarr">→</span>'):'';
   const tbl=rows=>`<table class="ctable lev rbt"><colgroup><col style="width:100px"><col style="width:44%"><col></colgroup>${rows.join('')}</table>`;
-  return `<div class="rbdom pdom1" id="rb-${D.id}">${head}
+  return `<div class="rbdom pdom1" id="rb-${D.id}">
    ${stalled.length?`<div class="mini pdstall">Stalled now: ${stalled.map(p=>`<span class="linkn" data-a="prog" data-u="${p.uid}">${projName(p)}</span>`).join(', ')}</div>`:''}
-   <div class="pdsec rbcan"><h5>What you can do <span>executive actions act fastest but can be undone; emergency powers lapse; laws hold</span></h5>
+   <div class="pdsec rbcan"><h5>Available actions <span>executive actions act fastest but can be undone; emergency powers lapse; laws hold</span></h5>
     ${exA.length?tbl(exA.map(ruleRow)):''}
     ${cvs.length||refs.length?`<div class="ndaaref polref">${cvs.map(carveRowHTML).join('')}${refs.map(refRowHTML).join('')}</div>`:''}
     ${nds.length?`<div class="pdnd">🏛 <b>In the NDAA:</b> ${nds.length} provision${nds.length>1?'s':''} for this area (${nds.slice(0,3).map(R=>rname(R)).join('; ')}${nds.length>3?'…':''}). <span class="linkn" data-a="brgo" data-v="ndaa" data-j="${nds[0].id}">On the NDAA tab →</span></div>`:''}
@@ -4254,7 +4261,7 @@ function polBody(){if(S.fac!=='US')return agendaHTML();
    </div>
    ${(()=>{const a=polAreaNow(all);return `<div class="ptabs" role="tablist">${all.map(D=>{const ids=domIds(D.id),rs=RULES.filter(r=>r.dom===D.id),can=rs.filter(r=>isExec(r)&&!ruleOn(r.id)).length+ids.filter(x=>(RD[x]&&!passed(x)&&!enacted(x)&&vehOf(RD[x])!=='ndaa')||(CD[x]&&!carveOn(x))).length,
       inF=rs.filter(r=>!isExec(r)||ruleOn(r.id)).length+ids.filter(x=>(RD[x]&&(passed(x)||enacted(x)))||(CD[x]&&carveOn(x))).length,st=S.projects.filter(p=>p.obs.length&&(D.layers||[]).includes(OD[p.obs[0].id]?.layer)).length;
-      return `<button class="ptab ${D.id===a?'on':''}" role="tab" aria-selected="${D.id===a}" data-a="parea" data-d="${D.id}"><span class="ptn">${D.ic} ${D.n}</span><span class="ptc">${can} you can do · ${inF} in force${st?` · <b class="redt">${st} stalled</b>`:''}</span></button>`}).join('')}</div>${polDomHTML(all.find(D=>D.id===a))}`})()}`}
+      return `<button class="ptab ${D.id===a?'on':''}" role="tab" aria-selected="${D.id===a}" data-a="parea" data-d="${D.id}"><span class="ptn">${D.ic} ${D.n}</span><span class="ptc">${can} available · ${inF} in force${st?` · <b class="redt">${st} stalled</b>`:''}</span></button>`}).join('')}</div>${polDomHTML(all.find(D=>D.id===a))}`})()}`}
 // which area the page shows: one you are being taken to, else your choice, else the one stalling programs or costing most weeks
 function polAreaNow(all){const ok=id=>all.some(D=>D.id===id);let a=null;
   const j=S._jump||'',t=S._scrollTo||'';
@@ -4496,8 +4503,8 @@ const TUT=[
  {p:'ndaa',sel:'#view .ndaaref',t:'Reforms in the NDAA',x:'Defense law rides the bill: add a reform to the request and it is decided in December. Reforms are what make plants arrive in time.',next:1},
  // Rules & policy
  {p:'policy',...NAV('policy','Rules & policy')},
- {p:'policy',sel:'#view .rbdom',t:'One area of the rulebook',x:'The tabs above pick an area of the rulebook, with how many changes you can make in each and what is in force. Each area shows what you can change first, then what is in force, then how its process works today (click to open).',next:1},
- {p:'policy',sel:'#view .rbcan',t:'What you can do',x:'Executive actions pick a route: guidance or a directive acts in weeks but is easy to undo; a full rule takes most of a year and holds. Emergency powers act in weeks and lapse. Bills are slow and permanent.',next:1},
+ {p:'policy',sel:'#view .rbdom',t:'One area of the rulebook',x:'The tabs pick an area of the rulebook, with how many actions are available in each and how many measures are in force. Each area lists its available actions first, then what is in force, then how its process works today (click to open).',next:1},
+ {p:'policy',sel:'#view .rbcan',t:'Available actions',x:'Executive actions pick a route: guidance or a directive acts in weeks but is easy to undo; a full rule takes most of a year and holds. Emergency powers act in weeks and lapse. Bills are slow and permanent.',next:1},
  {p:'policy',skip:()=>true,sel:'#view .xfst',t:'Large power transformers',x:'Every new energetics plant, smelter and greenfield site waits on one, ordered at contract award. These three actions cut the wait.',next:1},
  {p:'policy',sel:'#view .pdbars',t:'The emergency and the floor',x:'Many emergency powers need a declared national emergency first. Stand-alone bills go to the floor one at a time; the one on the floor shows here.',next:1},
  {p:'policy',...SUB('rules','Permit docket')},
@@ -4548,8 +4555,8 @@ const GUIDE={
   {skip:()=>!S.modal,t:'Close the window to go on',x:'Close it with ✕ or Esc.',wait:()=>!S.modal},
   {t:'Where problems come from',x:'Programs get stuck on permits, lawsuits, qualification and contracting, and those come from the rules. <b>Rules & policy</b> shows each process, what governs it, and what you can change so it happens less often. Reforms are what make plants arrive in time.',next:1},
   {...NAV('policy','Rules & policy')},
-  {sel:'#view .rbdom.pdom1',t:'One area of the rulebook',x:'What you can change comes first, then what is in force, then how the process works today, folded. The tabs above switch areas.',next:1},
-  {sel:'#view .rbdom.pdom1 .rbcan',t:'What you can change',x:'Executive actions act fastest but a new administration can undo them; emergency powers act in weeks and lapse; bills and NDAA reforms are slow and permanent.',next:1}]},
+  {sel:'#view .rbdom.pdom1',t:'One area of the rulebook',x:'Available actions come first, then what is in force, then how the process works today, folded. The tabs above switch areas.',next:1},
+  {sel:'#view .rbdom.pdom1 .rbcan',t:'Available actions',x:'Executive actions act fastest but a new administration can undo them; emergency powers act in weeks and lapse; bills and NDAA reforms are slow and permanent.',next:1}]},
  contract:{n:'Your first contract',modal:1,when:()=>S.modal==='contract'&&document.querySelector('#ov .ctp'),steps:[
   {sel:'#ov .ctp .ctsec',t:'Who builds it',x:'An <b>incumbent prime</b> knows the qualification process, but each award adds to its leverage over you: pricier work and more pushback. A <b>new entrant</b> is cheaper and quicker to build but must qualify from scratch. Prime leverage joins the top bar.',next:1},
   {sel:()=>document.querySelectorAll('#ov .ctp .ctsec')[1]||null,t:'On what terms',x:'Cost-plus is quick to sign but every delay lands on your bill; fixed-price is cheaper but slower to negotiate; a multiyear order costs more up front but ramps faster.',next:1},
