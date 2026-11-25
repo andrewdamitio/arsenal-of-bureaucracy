@@ -5915,7 +5915,7 @@ function bnBody(){
        ${p.div>1e-9?`<div class="bnc mini">🏭 Defense orders already take ${pct(p.div/Math.max(p.need,1e-9))} of need from civilian buyers</div>`:prioOff(id)?`<div class="bnc"><button class="pbtn sm" data-a="prio" data-n="${id}">🏭 Restore defense priority</button></div>`:''}</div></div></div>`}).join('');
   return h+prS}
 /* ---------- getting around: one back stack for every jump, and a finder for everything ---------- */
-const NAV_ACTS=new Set(['why','blgo','brgo','prjump','pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat']);
+const NAV_ACTS=new Set(['why','blgo','brgo','prjump','pmgo','home','view','node','prog','bngo','rbgo','flow','cite','arsenal','map','cat','yrrec','recgo']);
 // where Back goes, in words
 function backLbl(){const t=S.navH?.at(-1);if(!t)return '';if(t.modal==='node'&&t.sel)return t.sel.startsWith('L:')?LINES[t.sel.slice(2)]?.n:ND[t.sel]?.n;
   if(t.modal==='prog'){const r=progRec(t.selP);return r?(r.p.nm||PD[r.p.def].n):'the program'}if(t.modal)return ({turn:'the turn report',year:'the year in review',end:'the after-action report',brief:'the one-page brief',time:'Where the time went',cf:'What it would have taken',why:'the explanation',bill:'the request',cat:'New order',contract:'the award',pv:'the preview',suppc:'the supplemental'})[t.modal]||'the previous page';return SUBN[t.view]||(VIEWS.find(v=>v[0]===t.view)?.[1]||'the map')}
