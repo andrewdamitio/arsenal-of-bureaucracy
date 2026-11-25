@@ -265,7 +265,7 @@ table.mtab{width:100%;border-collapse:collapse;font-size:11.5px}table.mtab td,ta
 .pool{display:grid;grid-template-columns:18px 1fr 34px;gap:5px;align-items:center;font-size:11px}.pool b{text-align:right;color:#cfc6ad}.pool.over b{color:#e49a8e}.pool .pic{text-align:center}
 #tip{max-width:370px}
 /* navigation */
-.vback{padding:4px 10px;font-weight:700}.vback:disabled{opacity:.35;cursor:default}.vfind{margin-left:auto}
+.vback{padding:4px 10px;font-weight:700}.vback:disabled{opacity:.35;cursor:default}
 .toast.act{pointer-events:auto;cursor:pointer}.toast.act:hover{filter:brightness(1.25)}.toast.news:hover{filter:none;box-shadow:0 6px 22px #000c}
 #qj{position:fixed;inset:0;z-index:300;background:#000a;display:flex;justify-content:center;align-items:flex-start;padding-top:90px}
 .qjbox{width:min(660px,92vw);background:var(--paper) linear-gradient(#efe6cf,#e2d5b4);border:3px double #6b5a35;box-shadow:0 10px 40px #000}
@@ -5464,36 +5464,6 @@ function closeToReport(){if(['why','cat'].includes(S.modal)){const H=S.navH||[],
 function navBackG(){const s=S.navH?.pop();if(!s)return;if(S.queue.length||S.modal==='end')return;Object.assign(S,s);S._vdirty=true}
 // fire any data-a action from code, through the same handler a click uses
 function act(a,d={}){const b=document.createElement('span');b.dataset.a=a;for(const k in d)b.dataset[k]=d[k];document.body.appendChild(b);b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}));b.remove()}
-let QJ=null;
-function qjItems(){const it=[],us=S.fac==='US';
-  for(const n of NODES)it.push({t:n.n,s:`Material · tier ${n.t}`,ic:n.ic,a:'node',d:{n:n.id}});
-  for(const c in LINES)it.push({t:LINES[c].n,s:'End item',ic:'🏭',a:'node',d:{n:'L:'+c}});
-  for(const p of S.projects)it.push({t:projName(p),s:'Program · '+progStatus(p,true)[0].replace(/^\S+\s/,''),ic:'🏗',a:'prog',d:{u:p.uid}});
-  for(const p of [...S.done,...S.gone])if(p.uid)it.push({t:p.nm,s:p.cancelled?'Program · cancelled':'Program · built',ic:p.cancelled?'✖':'✔',a:'prog',d:{u:p.uid}});
-  if(us){for(const r of RULES)it.push({t:r.n,s:'Rule · '+KIND[r.kind][0],ic:'⚖',a:'rbgo',d:{d:r.dom,r:r.id}});
-    for(const c of IC)it.push({t:c.n,s:'Import control',ic:'🛂',a:'rbgo',d:{d:'source'}})}
-  for(const R of REFORMS)if(facOk(R))it.push({t:rname(R),s:passed(R.id)?'Bill · enacted':'Bill · on the agenda',ic:'📜',a:'remedy',d:{r:R.id}});
-  for(const C of CARVES)if(facOk(C))it.push({t:cname(C),s:'Emergency carve-out',ic:'🖋',a:'remedy',d:{r:C.id}});
-  for(const [k,l] of VIEWS)it.push({t:l.replace(/^\S+\s/,''),s:'View',ic:l.split(' ')[0],a:'view',d:{v:k}});
-  return it}
-function qjMatch(q){q=q.trim().toLowerCase();const it=qjItems();if(!q)return it.filter(x=>x.a==='view');const ws=q.split(/\s+/);
-  return it.map(x=>{const t=x.t.toLowerCase(),i=t.indexOf(q),all=ws.every(w=>t.includes(w)||x.s.toLowerCase().includes(w));return {x,sc:i===0?0:i>0?1:all?2:9}})
-    .filter(y=>y.sc<9).sort((a,b)=>a.sc-b.sc||a.x.t.length-b.x.t.length).slice(0,9).map(y=>y.x)}
-function qjOpen(){if(!S||S.replay)return;QJ={q:'',ix:0};let el=document.getElementById('qj');
-  if(!el){el=document.createElement('div');el.id='qj';el.innerHTML='<div class="qjbox"><input placeholder="Jump to a material, program, rule, bill or view…" autocomplete="off" spellcheck="false"><div class="qjl"></div></div>';document.body.appendChild(el);
-    const inp=el.querySelector('input');
-    inp.addEventListener('input',()=>{QJ.q=inp.value;QJ.ix=0;qjList()});
-    inp.addEventListener('keydown',e=>{e.stopPropagation();const m=QJ._m||[];
-      if(e.key==='ArrowDown'){QJ.ix=Math.min(m.length-1,QJ.ix+1);qjList();e.preventDefault()}
-      else if(e.key==='ArrowUp'){QJ.ix=Math.max(0,QJ.ix-1);qjList();e.preventDefault()}
-      else if(e.key==='Enter'){if(m[QJ.ix])qjGo(m[QJ.ix])}else if(e.key==='Escape')qjClose()});
-    el.addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===el)qjClose()})}
-  qjList();el.querySelector('input').focus()}
-function qjClose(){QJ=null;document.getElementById('qj')?.remove()}
-function qjList(){const el=document.querySelector('#qj .qjl');if(!el)return;const m=qjMatch(QJ.q);QJ._m=m;
-  el.innerHTML=m.map((x,i)=>`<div class="qji ${i===QJ.ix?'on':''}" data-qi="${i}"><span class="qic">${x.ic}</span><span>${x.t}</span><span class="mini">${x.s}</span></div>`).join('')||'<div class="qji"><span></span><span class="mini">No matches</span></div>';
-  el.querySelectorAll('[data-qi]').forEach(d=>d.addEventListener('pointerdown',e=>{e.stopPropagation();qjGo(QJ._m[+d.dataset.qi])}))}
-function qjGo(x){qjClose();act(x.a,x.d)}
 // what squeezes a node: its bottleneck rank and the rules acting on it
 function nodeLinks(id){if(!S||!S.nodes[id])return '';const out=[],L=(t,d)=>`<span class="npill" data-a="rbgo" data-d="${d}">⚖ ${t} →</span>`;
   const ix=bnScan().rows.findIndex(r=>r.id===id);if(ix>=0)out.push(`<span class="npill np-short" data-a="bngo" data-n="${id}">⛓ Bottleneck #${ix+1} →</span>`);
@@ -6591,7 +6561,7 @@ const vSubStrip=()=>{const g=vGroup(S.view);if(g.length<2)return '';const ord=SU
   return `<div class="vsub vsubbar">${ord.map(v=>`<button class="${S.view===v?'on':''}" data-a="view" data-v="${v}"><span class="vsi">${VIC[v]?vic(v,22):''}</span><span class="vst"><b>${SUBN[v]}</b><em>${V(SUBD[v])||''}</em></span></button>`).join('')}</div>`};
 let viewEl=null,viewKey='',viewW=-1,viewT=0;
 function decisionsPending(){return (S.inbox?.length||0)+S.projects.filter(p=>p.obs.length&&!p.obs[0].wait).length+S.plants.filter(pl=>pl.issue&&!pl.issue.wait).length}
-function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>{const g=vGroup(k),on=g.includes(S.view);return `<button class="vbtn ${on?'on':''}" data-a="view" data-g="${k}" data-v="${on?S.view:(S.vlast?.[k]&&g.includes(S.vlast[k])?S.vlast[k]:VDEF[k]||k)}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`}).join('')}<span class="dsp"></span><button class="vbtn vfind" data-a="qj" data-tip="Jump to anything (Ctrl+K or /)">${vic('find')}Find</button></div>`}
+function viewStrip(){const dp=decisionsPending();return `<div id="views"><button class="vbtn vback" data-a="goback" ${S.navH?.length?'':'disabled'} data-tip="Back (Alt+←)">←</button>${VIEWS.map(([k,l])=>{const g=vGroup(k),on=g.includes(S.view);return `<button class="vbtn ${on?'on':''}" data-a="view" data-g="${k}" data-v="${on?S.view:(S.vlast?.[k]&&g.includes(S.vlast[k])?S.vlast[k]:VDEF[k]||k)}">${vic(k)}${l}${k==='cmd'&&dp&&S.view!=='cmd'?` <span class="vbadge">${dp} decision${dp>1?'s':''}</span>`:''}</button>`}).join('')}<span class="dsp"></span></div>`}
 function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   const foreign=id=>{const x=srcSplit(id,P),t=x.dom+x.ally+x.neut+x.spot+x.prc;return t>1e-9?(x.ally+x.neut+x.spot+x.prc)/t:0};
   const keep=id=>f==='all'||(f==='short'&&P[id].need>1e-6&&P[id].cover<.999)||(f==='foreign'&&foreign(id)>.5)||(f==='barred'&&!!allyBar(id));
@@ -8630,7 +8600,6 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'domtog':{if(!S.domOpen){S.domOpen={};for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1}const o=S.domOpen;o[b.dataset.d]=!o[b.dataset.d];S._vdirty=true;break}
     case 'domall':{S.domOpen={};if(b.dataset.v==='1')for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1;S._vdirty=true;break}
     case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'qj':setTimeout(qjOpen,0);break;
     case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'pvzoom':UIP.pvFull=!UIP.pvFull;uiSave();S._vdirty=true;break;
     case 'sbrief':S.modal='sbrief';S.speed=0;break;
@@ -8724,8 +8693,7 @@ document.addEventListener('dragover',e=>{if(!PDRAG)return;const tr=e.target.clos
 document.addEventListener('drop',e=>{if(!PDRAG)return;e.preventDefault();const {i,to}=PDRAG;PDRAG=null;prClr();if(to==null)return;const j=to>i?to-1:to;if(j!==i){prioMove(i,j);S._vdirty=true;render()}});
 document.addEventListener('dragend',()=>{PDRAG=null;prClr();document.querySelectorAll('.prtab tr.prdrag').forEach(x=>x.classList.remove('prdrag'))});
 document.addEventListener('keydown',e=>{
-  if(!S||S.over||QJ||e.target.tagName==='INPUT')return;
-  if((e.key==='k'&&(e.ctrlKey||e.metaKey))||e.key==='/'){e.preventDefault();qjOpen();return}
+  if(!S||S.over||e.target.tagName==='INPUT')return;
   if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();navBackG();render();return}
   if((e.ctrlKey||e.metaKey)&&e.key==='z'&&undoOK()){e.preventDefault();undoDo();return}
   if(e.code==='Space'&&TURN()){e.preventDefault();if(S.speed)S.speed=0;else turnGo();render();return}
