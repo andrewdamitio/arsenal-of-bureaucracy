@@ -1781,6 +1781,14 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 .t3-gno{display:flex;gap:8px;align-items:center}.t3-gno input{width:110px;padding:7px 10px;font:700 18px var(--f-head);letter-spacing:.12em;color:#f3e6c4;background:#12120e;border:1px solid #6b5d38;border-radius:4px}.t3-gno input:focus{outline:none;border-color:#c9952a}
 .t3-gbtn{padding:7px 12px;font:600 13px var(--f-body);color:#e6dcc2;background:transparent;border:1px solid #6b5d38;border-radius:4px;cursor:pointer}.t3-gbtn:hover{background:#ffffff0d}
 .trp .endno{font-size:12.5px;color:#6b5a35}
+/* the NDAA cycle */
+#view .mkcyc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:4px 0 6px;border:1px solid #d6c79f;border-radius:4px;overflow:hidden}
+#view .mkst{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-left:1px solid #d6c79f;background:#fbf7ec;position:relative}#view .mkst:first-child{border-left:0}
+#view .mkst b{font:700 14px var(--f-head);color:#231d14}#view .mkst span{font:600 12px var(--f-body);color:#8a6a1f}#view .mkst em{font:normal 12px var(--f-body);color:#6b5a35}
+#view .mkst.done{background:#f1ead6}#view .mkst.done b::before{content:'✓ ';color:#3f7a34}
+#view .mklock{margin:4px 0 0;font:13px var(--f-body);color:#3a3020}#view .mktag{margin-top:2px}
+.mkp .mkt td{vertical-align:middle}.mkp .mkact{text-align:right;white-space:nowrap}.mkp .mkul{margin:0;padding-left:18px;font:13px/1.55 var(--f-body);color:#2b241a}.mkp .mkul li{margin:0 0 4px}.mkp .mkul li.mkbad{color:#7a2a20}
+@media(max-width:760px){#view .mkcyc{grid-template-columns:repeat(2,minmax(0,1fr))}.mkp .mkact{white-space:normal}}
 </style>
 </head>
 <body>
@@ -2507,7 +2515,7 @@ const RD2=Object.fromEntries(RULES.map(r=>[r.id,r]));
 // laws that bar foreign supply even from allies, and what lifts each
 const ALLY_BARS=[{r:'rShipyard',nodes:['shipyard','sub_yard'],waive:()=>passed('byrnes')||carveOn('cvJones'),fix:'the Ensuring Naval Readiness Act, or a presidential exception under a national emergency'},
  {r:'rBearings',nodes:['bearings'],waive:()=>carveOn('cvBuyAm'),fix:'a Buy American waiver'}];
-const allyBar=id=>S.fac==='US'?ALLY_BARS.find(b=>b.nodes.includes(id)&&ruleOn(b.r)&&!b.waive())||null:null;
+const allyBar=id=>{if(S.fac!=='US')return null;const cb=(S.cBar||[]).find(x=>x.id===id&&x.until>S.w);if(cb)return {r:null,n:`A sourcing provision in the FY${cb.fy} NDAA`,since:`until ${fmtDate(cb.until)}`,fix:'the provision to expire'};return ALLY_BARS.find(b=>b.nodes.includes(id)&&ruleOn(b.r)&&!b.waive())||null};
 const ruleOn=id=>S.fac==='US'&&!!S.rules?.[id];
 const ruleFits=(r,def)=>!r.eff.tags||!def||r.eff.tags.some(t=>def.tags.includes(t));
 function ruleChance(o,def){if(S.fac!=='US')return 1;let m=1;for(const r of RULES)if(ruleOn(r.id)&&ruleFits(r,def)){const e=r.eff,sr=ruleStr(r.id);for(const t of [e.chance,e.chance2])if(t)m*=1+((t[o.id]??t[o.layer]??1)-1)*sr}return m}
@@ -3694,7 +3702,7 @@ function ordDrop(c){const x=ordReqs().find(y=>y.c===c);if(x){S.pc+=x.pc;spent('p
 function ordBuy(c,add){const cost=add*UC[c];if(add<=0||S.budget<cost)return;actRec('obuy',{c,add});spendB(cost,'Weapons bought now');spent('$',cost);(S.ordBuy=S.ordBuy||[]).push({c,add,left:52});
   log(`Bought from the budget: +${fmtN(add)} ${LINES[c].u} over the next year (${money(cost)}).`)}
 function ordEnact(got,lost,fy){const its=ordReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.ordReq=ordReqs().filter(x=>!its.includes(x));
-  for(const x of its){const nm=`Orders: +${fmtN(x.add)} ${LINES[x.c].u} a year`;if(rand('r24')<ordCut(fy)){lost.push(nm+' (cut in markup)');continue}
+  for(const x of its){const nm=`Orders: +${fmtN(x.add)} ${LINES[x.c].u} a year`,mr=mkRes(fy,'o:'+x.c);if(mr?mr==='cut':rand('r24')<ordCut(fy)){lost.push(nm+(mr?' (cut in conference)':' (cut in markup)'));continue}
     S.ord[x.c]+=x.add;actRec('ord',{c:x.c,add:x.add});got.push(nm);log(`🏛 FY${fy%100} ${billN()}: ${nm} funded (${money(x.add*UC[x.c])} a year).`,'good')}}
 const RATION=[.05,.1,.15,.2,.25]; // equal shares, as fractions of each line’s claim
 function production(commit){
@@ -4248,11 +4256,60 @@ function billSev(def){const R=S._R||production(false),P=R.P;
 // The committees have their own priorities, set by members’ districts and the year’s headlines, not your list. They
 // become clear in the chairman’s marks about seven weeks before the bill: two sectors they back, one they question.
 const CP_WK=7,CP_W={ship:1.6,mun:1.3,msl:1.3,air:1.1,elec:.8,mat:.9};
-function cprioMake(fy){S.cprio=S.cprio||{};if(S.cprio[fy])return S.cprio[fy];const ks=Object.keys(CP_W),pick=ex=>{const c=ks.filter(k=>!ex.includes(k)),w=c.map(k=>CP_W[k]*(.6+rand('r31'))),t=w.reduce((a,b)=>a+b,0);let r=rand('r32')*t;for(let i=0;i<c.length;i++){r-=w[i];if(r<0)return c[i]}return c.at(-1)};
-  const a=pick([]),b=pick([a]),lo=pick([a,b]);return S.cprio[fy]={hi:[a,b],lo}}
+// ===== The NDAA cycle, on the real calendar: the House Armed Services Committee marks up the bill in May, the Senate's in
+// June, a conference settles the two in November, and Congress votes in December. Each committee keeps, cuts or fences each
+// item in your request and adds its own; the conference settles items the two treat differently. Laws stay certain.
+const MK_H=30,MK_S=26,MK_C=5,MK_FENCE=[8,16],MK_CH={h:'House Armed Services',s:'Senate Armed Services'};
+const mkOf=fy=>{S.mk=S.mk||{};return S.mk[fy]||(S.mk[fy]={h:null,s:null,c:null,fight:{},opp:{}})};
+const mkRes=(fy,k)=>S.mk?.[fy]?.c?.res?.[k]??null,mkDates=V=>({h:V-MK_H,s:V-MK_S,c:V-MK_C,v:V+1});
+// every money item in the request for the bill voted in week V
+function mkItems(V){const fy=FYOF(V),m=moodOf(fy),r=[];
+  for(const p of S.projects)if(p.pkg===V){const d=PD[p.def],{s:sv}=billSev(d);r.push({k:'p:'+p.uid,kind:'plant',n:projName(p),def:d,pc:p.pc||0,cost:p.req,q:clamp(m.f*(.03+.22*Math.pow(1-sv,1.5))*(p.champ?.3:1)*(p.pledge?.6:1)*credF(),.02,.75),uid:p.uid})}
+  for(const x of alReqs())if(x.pkg===V){const D=ADD[x.id];r.push({k:'a:'+x.id,kind:'deal',n:D.n,pc:x.pc,cost:x.req,q:alCut(),id:x.id})}
+  for(const x of ndsReqs())if(x.pkg===V)r.push({k:'n:'+x.id,kind:'nds',n:'Stockpile: '+ND[x.id].n,def:{t:{node:x.id}},pc:x.pc,cost:x.req,q:clamp(m.f*.08,.02,.5),id:x.id});
+  for(const x of ordReqs())if(x.pkg===V)r.push({k:'o:'+x.c,kind:'ord',n:`Orders: ${LINES[x.c].n}, +${fmtN(x.add)} a year`,pc:x.pc,cost:x.add*UC[x.c],q:ordCut(fy),c:x.c});
+  return r}
+const mkPrioF=(it,pr)=>{if(!pr||!it.def)return 1;const k=officeOf(it.def);return pr.hi.includes(k)?.5:pr.lo===k?1.5:1};
+const mkFightPC=it=>Math.max(3,Math.round((it.pc||4)*.5)),MK_OPP_PC=6;
+// what a committee adds on its own, drawn by the year's politics
+function mkAdds(ch,fy){const out=[],m=moodOf(fy),gen=m.f<1?1.25:m.f>1.3?.75:1;
+  if(rand('mkA'+ch)<.35*gen){const d=plusUpPick();if(d)out.push({t:'plant',def:d.id,n:`${d.n}, a plant for a member’s district`,good:1})}
+  {const idl=ordIdle(),cs=Object.keys(idl).filter(c=>idl[c].add>0);if(cs.length&&rand('mkB'+ch)<.4*gen){const c=cs[Math.floor(rand('mkB2'+ch)*cs.length)],add=Math.max(LINES[c].u==='ships'||PLAT.includes(c)?1:1,Math.round(idl[c].add*.5));out.push({t:'buy',c,add,n:`More ${lc(LINES[c].n)} than you asked: +${fmtN(add)} a year on the base budget`,good:1})}}
+  if(rand('mkR'+ch)<.25){const c=rand('mkR2'+ch)<.5?'surface':'aircraft',n=c==='surface'?2:24;out.push({t:'retire',c,k:n,n:`Blocks the retirement of ${n} ${c==='surface'?'old ships':'old aircraft'}: they stay in service, and their upkeep (${money(c==='surface'?.4:.3)}) comes from your budget`,cost:c==='surface'?.4:.3,good:0})}
+  if(rand('mkS'+ch)<.15){const ids=Object.keys(ND).filter(id=>ND[id].t<=3&&S.nodes[id]&&S.nodes[id].ally.amt/Math.max(S.nodes[id].scale,1e-9)>=.08&&!allyBar(id));if(ids.length){const id=ids[Math.floor(rand('mkS2'+ch)*ids.length)];out.push({t:'source',id,n:`A sourcing provision: no emergency buys of allied ${lc(ND[id].n)} for defense work for two years`,good:0})}}
+  return out}
+function markup(ch,V){const fy=FYOF(V),M=mkOf(fy);if(M[ch])return;const pr=ch==='h'?cprioMake(fy):cprioMake(fy,'cprioS'),marks={};
+  for(const it of mkItems(V)){const q=clamp(it.q*mkPrioF(it,pr),.02,.85),r=rand('mk'+ch+it.k);marks[it.k]=r<q?'cut':((it.kind==='plant'||it.kind==='deal')&&rand('mkF'+ch+it.k)<.12?'fence':'keep')}
+  M[ch]={w:S.w,marks,adds:mkAdds(ch,fy)};const n=Object.values(marks),cut=n.filter(x=>x==='cut').length;
+  log(`🏛 FY${fy%100} ${billN()}: the ${MK_CH[ch]} Committee marks up the bill. Of your ${n.length} item${n.length===1?'':'s'}, ${n.length-cut} kept and ${cut} cut; it adds ${M[ch].adds.length} of its own. It backs ${pr.hi.map(k=>OFFICES[k].n.toLowerCase()).join(' and ')}, and questions ${OFFICES[pr.lo].n.toLowerCase()}.`,cut?'bad':'ev');
+  if(!S.sim&&!S.histMode)S.queue.push({sys:'mk',ch,fy,V})}
+function conference(V){const fy=FYOF(V),M=mkOf(fy);if(M.c)return;const res={},cr=credOf()/100;
+  for(const it of mkItems(V)){const h=M.h?.marks[it.k],s=M.s?.marks[it.k],kh=h==='keep'||h==='fence',ks=s==='keep'||s==='fence',f=M.fight[it.k]?1:0;
+    let p=kh&&ks?1:(h==='cut'&&s==='cut')?.3*f:(kh||ks)&&(h==='cut'||s==='cut')?.35+.3*cr+.3*f:(kh||ks)?.6+.2*f:(h==='cut'||s==='cut')?.15+.2*f:.2+.2*f;
+    res[it.k]=rand('mkC'+it.k)<p?(h==='fence'||s==='fence'?'fence':'keep'):'cut'}
+  const adds=[],seen=new Set();for(const ch of ['h','s'])for(const [i,a] of (M[ch]?.adds||[]).entries()){const key=a.t+':'+(a.def||a.c||a.id);if(seen.has(key))continue;seen.add(key);
+    const both=['h','s'].every(c=>(M[c]?.adds||[]).some(b=>b.t+':'+(b.def||b.c||b.id)===key)),opp=M.opp[ch+i]?1:0;if(rand('mkCA'+key)<(both?.95:.55)-(opp?.45:0))adds.push(a)}
+  M.c={w:S.w,res,adds};const v=Object.values(res),cut=v.filter(x=>x==='cut').length;
+  log(`🏛 FY${fy%100} ${billN()}: conference settles the bill. Of your ${v.length} item${v.length===1?'':'s'}, ${v.length-cut} survive${cut?` and ${cut} ${cut===1?'is':'are'} cut`:''}; ${adds.length} of Congress’s own changes stay in.`,cut?'bad':'ev');
+  if(!S.sim&&!S.histMode)S.queue.push({sys:'mk',ch:'c',fy,V})}
+function mkTick(){if(S.fac!=='US'||S.histMode)return;const V=billW(),D=mkDates(V),fy=FYOF(V),M=mkOf(fy);
+  if(S.w>=D.h&&!M.h)markup('h',V);if(S.w>=D.s&&!M.s)markup('s',V);if(S.w>=D.c&&!M.c)conference(V)}
+// at the vote: what conference settled decides each item, before the money line
+function mkApplyAdds(fy,added){const M=S.mk?.[fy];if(!M?.c)return false;
+  for(const a of M.c.adds){if(a.t==='plant'){const d=PD[a.def];if(!d||S.projects.some(p=>p.def===d.id))continue;const c=projCost(d),p={uid:uidN++,def:d.id,stage:0,prog:d.dur[0],dur:[...d.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:0,plus:1};
+      S.projects.push(p);S.built[d.id]=(S.built[d.id]||0)+1;fyLed('cong',c);added.push(`${d.n} (a plant for a member’s district, ${money(c)} Congress added)`)}
+    else if(a.t==='buy'){S.ord[a.c]+=a.add;fyLed('proc',a.add*UC[a.c]);added.push(`${LINES[a.c].n}: +${fmtN(a.add)} a year on the base budget`)}
+    else if(a.t==='retire'){S.inv[a.c]+=a.k;spendB(a.cost,'Sustainment');added.push(`Retirements blocked: ${a.k} ${a.c==='surface'?'old ships':'old aircraft'} kept (${money(a.cost)} of upkeep from your budget)`)}
+    else if(a.t==='source'){(S.cBar=S.cBar||[]).push({id:a.id,until:S.w+104,fy});added.push(`Sourcing provision: no emergency buys of allied ${lc(ND[a.id].n)} for defense work until ${fmtDate(S.w+104)}`)}}
+  return true}
+const mkFence=()=>MK_FENCE[0]+Math.floor(rand('mkFw')*(MK_FENCE[1]-MK_FENCE[0]));
+function mkFight(k){const fy=pkgFY(),it=mkItems(pkgW()).find(x=>x.k===k),M=mkOf(fy);if(!it||M.fight[k]||M.c)return;const c=mkFightPC(it);if(S.pc<c)return;S.pc-=c;spent('pc',c);M.fight[k]=1;actRec('mkf',{k});log(`🏛 You work the conferees to restore ${it.n} (${c} PC).`)}
+function mkOppose(i){const fy=pkgFY(),M=mkOf(fy);if(M.opp[i]||M.c||S.pc<MK_OPP_PC)return;S.pc-=MK_OPP_PC;spent('pc',MK_OPP_PC);M.opp[i]=1;actRec('mko',{i});log(`🏛 You oppose a committee provision in conference (${MK_OPP_PC} PC).`)}
+function cprioMake(fy,store='cprio'){S[store]=S[store]||{};if(S[store][fy])return S[store][fy];const ks=Object.keys(CP_W),pick=ex=>{const c=ks.filter(k=>!ex.includes(k)),w=c.map(k=>CP_W[k]*(.6+rand('r31'))),t=w.reduce((a,b)=>a+b,0);let r=rand('r32')*t;for(let i=0;i<c.length;i++){r-=w[i];if(r<0)return c[i]}return c.at(-1)};
+  const a=pick([]),b=pick([a]),lo=pick([a,b]);return S[store][fy]={hi:[a,b],lo}}
 const cprioOf=fy=>S.cprio?.[fy]||null,cpF=(def,fy)=>{const c=cprioOf(fy);if(!c)return 1;const k=officeOf(def);return c.hi.includes(k)?.5:c.lo===k?1.5:1};
 function cutP(p){const fy=FYOF(p.pkg),m=moodOf(fy),{s}=billSev(PD[p.def]);return clamp(m.f*(.03+.22*Math.pow(1-s,1.5))*(p.champ?.3:1)*(p.pledge?.6:1)*credF()*cpF(PD[p.def],fy),.02,.75)}
-function billAlertTick(){if(S.fac!=='US')return;const w=billW(),fy=FYOF(w);if(w-S.w>CP_WK||cprioOf(fy))return;const c=cprioMake(fy);
+function billAlertTick(){return;if(S.fac!=='US')return;const w=billW(),fy=FYOF(w);if(w-S.w>CP_WK||cprioOf(fy))return;const c=cprioMake(fy);
   log(`🏛 FY${fy%100} ${billN()}: the committees’ marks are out. They back ${c.hi.map(k=>OFFICES[k].n.toLowerCase()).join(' and ')}, and question ${OFFICES[c.lo].n.toLowerCase()}.`,'ev');
   if(S.sim||S.histMode)return;S.billAlert=fy;S.billSpd=S.speed;S.speed=0;S.view='ndaa';if(!S.queue.length)S.modal=null}
 const CHAMP_PC=4,PLUS_OK=.5;
@@ -4264,19 +4321,24 @@ function pkgRoom(){return billTop(pkgFY())}
 function pkgPlan(){let room=pkgRoom();return pkgOrd().map(p=>{const ok=room>=p.req-1e-9;if(ok)room-=p.req;else room=-1;return {p,st:ok?'in':'out',left:room}})}
 function plusUpPick(){const P=S._R?.P||production(false).P;const c=PROJECTS.filter(d=>d.t.node&&!d.ally&&!d.req&&facOk(d)&&!d.kind&&!S.projects.some(p=>p.def===d.id)&&P[d.t.node]&&P[d.t.node].cover<1);
   if(!c.length)return null;const fy=FYOF(S.w-1),w=c.map(d=>(.15+billSev(d).s)/cpF(d,fy)),t=w.reduce((a,b)=>a+b,0);let r=rand('r33')*t;for(let i=0;i<c.length;i++){r-=w[i];if(r<0)return c[i]}return c.at(-1)}
-function enactPkg(src){const its=pkgOrd().filter(p=>p.pkg<S.w),nds=ndsReqs().filter(x=>x.pkg<S.w),rfs=refReqs().filter(x=>x.pkg<S.w),ors=ordReqs().filter(x=>x.pkg<S.w),als=alReqs().filter(x=>x.pkg<S.w);if(!its.length&&!nds.length&&!rfs.length&&!ors.length&&!als.length&&!codReqs().some(x=>x.pkg<S.w))return;
+function enactPkg(src){
+  // items requested after conference miss this bill: they roll to next year's
+  if(!src){const late=(x,k)=>x.pkg&&x.pkg<S.w&&S.mk?.[FYOF(x.pkg)]?.c&&!(k in S.mk[FYOF(x.pkg)].c.res);const nx=billW();
+    for(const p of S.projects)if(late(p,'p:'+p.uid)){p.pkg=nx;log(`🏛 ${projName(p)} came after the conference: it goes to the FY${FYOF(nx)} bill.`)}
+    for(const [L,f] of [[alReqs(),x=>'a:'+x.id],[ndsReqs(),x=>'n:'+x.id],[ordReqs(),x=>'o:'+x.c]])for(const x of L)if(late(x,f(x)))x.pkg=nx}
+  const its=pkgOrd().filter(p=>p.pkg<S.w),nds=ndsReqs().filter(x=>x.pkg<S.w),rfs=refReqs().filter(x=>x.pkg<S.w),ors=ordReqs().filter(x=>x.pkg<S.w),als=alReqs().filter(x=>x.pkg<S.w);if(!its.length&&!nds.length&&!rfs.length&&!ors.length&&!als.length&&!codReqs().some(x=>x.pkg<S.w))return;
   const fy=FYOF((its[0]||nds[0]||rfs[0]||ors[0]||als[0]||codReqs()[0]).pkg),got=[],lost=[],added=[];
   const drop=(p,why)=>{S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);lost.push(`${projName(p)} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${projName(p)} not funded, ${why}.`,'bad')};
   const fund=p=>{p.spent=p.req;p.cong=1;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1});fyLed('cong',p.req)},room={r:src?Infinity:billTop(fy)};
-  for(const p of its){const why=room.r<p.req-1e-9?'below the money line':rand('r34')<cutP(p)?'cut in markup':null;
-    if(why){if(why!=='cut in markup')room.r=-1;drop(p,why);continue}room.r-=p.req;fund(p);got.push(projName(p))}
+  for(const p of its){const mr=mkRes(fy,'p:'+p.uid),why=room.r<p.req-1e-9?'below the money line':(mr?mr==='cut':rand('r34')<cutP(p))?(mr?'cut in conference':'cut in markup'):null;
+    if(why){if(!/^cut/.test(why))room.r=-1;drop(p,why);continue}room.r-=p.req;fund(p);if(mr==='fence'){const fw=mkFence();p.dur[1]+=fw;pmark(p,{fence:fw});got.push(`${projName(p)} (funds fenced: contract about ${fw} weeks later)`)}else got.push(projName(p))}
   refEnact(got,lost,fy,room);ndsEnact(got,lost,fy,room);alEnact(got,lost,fy,room);ordEnact(got,lost,fy);
-  if(!src&&S.fac==='US'&&rand('r35')<PLUS_OK){const d=plusUpPick();if(d){const c=projCost(d),p={uid:uidN++,def:d.id,stage:0,prog:d.dur[0],dur:[...d.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:0,plus:1};
+  if(!src&&S.fac==='US'&&!mkApplyAdds(fy,added)&&rand('r35')<PLUS_OK){const d=plusUpPick();if(d){const c=projCost(d),p={uid:uidN++,def:d.id,stage:0,prog:d.dur[0],dur:[...d.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:0,plus:1};
     S.projects.push(p);S.built[d.id]=(S.built[d.id]||0)+1;fyLed('cong',c);added.push(`${d.n} (a plus-up for a member’s district, ${money(c)} Congress added)`);log(`🏛 FY${fy%100} ${billN()}: Congress adds ${d.n}, unrequested.`,'ev')}}
   S.bills=S.bills||[];S.bills.unshift({fy,src:src||'',w:S.w,got,lost,added});S.bills.length=Math.min(S.bills.length,4);
-  const n=got.length+added.length;
+  const n=got.length+added.length;if(!src&&S.mk?.[fy]?.c&&!S.sim)S.queue.push({sys:'mk',ch:'v',fy});
   log(`🏛 ${src||`FY${fy%100} ${billN()}`} enacted: ${got.length} of ${its.length+nds.length+rfs.length+ors.length+als.length} requested items funded${added.length?`, ${added.length} added`:''}.`,n?'good':'bad');
-  receipt({ic:'🏛',lab:`${src||`FY${fy} ${billN()}`} enacted`,title:`${got.length} funded · ${added.length} added · ${lost.length} not funded`,ok:!lost.length,act:'data-a="bill"',actL:'See the bill →',
+  if(src||!S.mk?.[fy]?.c)receipt({ic:'🏛',lab:`${src||`FY${fy} ${billN()}`} enacted`,title:`${got.length} funded · ${added.length} added · ${lost.length} not funded`,ok:!lost.length,act:'data-a="bill"',actL:'See the bill →',
     lines:[got.length?`Funded: ${got.join(', ')}. Contracting starts now.`:'',added.length?`Added: ${added.join(', ')}.`:'',lost.length?`<span class="redt">Not funded: ${lost.join(', ')}. The Political Capital is spent. Request it again next year, or build it now from your budget.</span>`:'']})}
 // National Defense Stockpile buys are authorized in the NDAA (Strategic and Critical Materials Stock Piling Act). Each buy
 // here is about half a year of base demand for one raw or processed material (not energetics, which age and are hazardous to
@@ -4286,8 +4348,8 @@ function ndsAdd(id){const k=REQ_PC(NDS_C);if(!ndsOk(id)||ndsReqs().some(x=>x.id=
 function ndsDrop(id){const x=ndsReqs().find(y=>y.id===id);if(x){S.pc+=x.pc||0;spent('pc',-(x.pc||0))}S.ndsReq=ndsReqs().filter(y=>y.id!==id)}
 function ndsCut(id){const fy=pkgFY();return clamp(moodOf(fy).f*.08*cpF({t:{node:id}},fy),.02,.5)}
 function ndsEnact(got,lost,fy,room){const its=ndsReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.ndsReq=ndsReqs().filter(x=>!its.includes(x));
-  for(const x of its){const n=ND[x.id].n,why=room.r<x.req-1e-9?'below the money line':rand('r36')<ndsCut(x.id)?'cut in markup':null;
-    if(why){if(why!=='cut in markup')room.r=-1;lost.push(`Stockpile: ${n} (${why})`);continue}room.r-=x.req;fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
+  for(const x of its){const n=ND[x.id].n,mr=mkRes(fy,'n:'+x.id),why=room.r<x.req-1e-9?'below the money line':(mr?mr==='cut':rand('r36')<ndsCut(x.id))?(mr?'cut in conference':'cut in markup'):null;
+    if(why){if(!/^cut/.test(why))room.r=-1;lost.push(`Stockpile: ${n} (${why})`);continue}room.r-=x.req;fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
 function billAct(a,uid,d){const p=S.projects.find(x=>x.uid===+uid);if(!p||!p.pkg)return;const o=pkgOrd();o.forEach((x,i)=>x.pri=i);
   if(a==='mv'){const i=o.indexOf(p),j=i+(+d);if(j<0||j>=o.length)return;[o[i].pri,o[j].pri]=[o[j].pri,o[i].pri]}
   else if(a==='top'){p.pri=-1}
@@ -4333,7 +4395,7 @@ function ordBillSec(){const rs=ordReqs(),fy=pkgFY();
   return `<div class="dsec"><h4 class="bh">Weapons orders</h4><p class="mini">Requests to buy more than Congress funds now, so capacity you build does not sit idle. Each costs Political Capital; Congress cuts about ${Math.round(ordCut(fy)*100)}% in markup. Request from an end item’s page, or from the idle lines below.</p>${ordIdleSec()}${rs.length?`<table class="ctable"><tr><th>Line</th><th class="num">More a year</th><th class="num">Cost a year</th><th></th></tr>${rs.map(x=>`<tr><td><span class="linkn" data-a="node" data-n="L:${x.c}">${LINES[x.c].n}</span></td><td class="num">+${fmtN(x.add)}</td><td class="num">${money(x.add*UC[x.c])}</td><td><button class="btn sm" data-a="orddrop" data-c="${x.c}">✕</button></td></tr>`).join('')}</table>`:'<p class="mini">No order increases in the request yet.</p>'}</div>`}
 function ndsSec(){const P=S._R?.P||production(false).P,left0=pkgRoom()-pkgPlan().filter(x=>x.st==='in').reduce((a,x)=>a+x.p.req,0);let left=left0;
   const rows=ndsReqs().map(x=>{const ok=left>=x.req-1e-9;if(ok)left-=x.req;else left=-1;const q=ndsCut(x.id);
-    return `<tr class="${ok?'':'bl-out'}"><td>${pill(x.id,P)}<div class="mini">${(()=>{const w=(S.stock[x.id]||0)/Math.max(S.nodes[x.id].scale,1e-9);return `${w>=1?`holds ${fmt(w,0)} weeks now`:'none held yet'}; this buy adds ${ndsWk(x.id)===52?'a year':ndsWk(x.id)+' weeks'}`})()}</div></td><td class="num">${money(x.req)}</td><td>${ok?`<span class="okt">~${Math.round(q*100)}% cut risk</span>`:'<span class="redt">Not funded: below the money line</span>'}</td><td><button class="btn sm" data-a="ndsdrop" data-n="${x.id}" data-tip="Take it out of the request.">✕</button></td></tr>`}).join('');
+    return `<tr class="${ok?'':'bl-out'}"><td>${pill(x.id,P)}<div class="mini">${(()=>{const w=(S.stock[x.id]||0)/Math.max(S.nodes[x.id].scale,1e-9);return `${w>=1?`holds ${fmt(w,0)} weeks now`:'none held yet'}; this buy adds ${ndsWk(x.id)===52?'a year':ndsWk(x.id)+' weeks'}`})()}</div></td><td class="num">${money(x.req)}</td><td>${ok?(mkTag('n:'+x.id)||`<span class="okt">~${Math.round(q*100)}% markup risk</span>`):'<span class="redt">Not funded: below the money line</span>'}</td><td><button class="btn sm" data-a="ndsdrop" data-n="${x.id}" data-tip="Take it out of the request.">✕</button></td></tr>`}).join('');
   const k=REQ_PC(NDS_C),can=Object.keys(ND).filter(id=>ndsOk(id)&&P[id]&&!ndsReqs().some(x=>x.id===id)),cn=CN_MIN(),c0=cnS().rung;
   const cnOf=id=>{const x=P[id],t=Math.max(1e-9,x.dom+x.ally+x.neut+x.prc+(x.lost||0));return (x.prc+(x.lost||0))/t};
   const stepOf=id=>{const i=CN_RUNGS.findIndex(r=>(r.nodes||[]).some(y=>y[0]===id));return i<0?'':i<c0?'<span class="redt">cut now</span>':`step ${i+1}: ${CN_RUNGS[i].s.toLowerCase()}`};
@@ -4435,7 +4497,7 @@ function billBody(asParts){const fy=pkgFY(),cp=cprioOf(fy),pl=pkgPlan(),room=pkg
   const when=fmtDate(pkgWhen()),pcIn=pl.reduce((a,x)=>a+(x.p.pc||0),0)+ndsReqs().reduce((a,x)=>a+(x.pc||0),0)+refReqs().reduce((a,x)=>a+(x.pc||0),0);
   const gainOf=p=>{const d=PD[p.def];return d.t.line?`+${fmtN(projGain(d,p.gm)*lineMultOf(d.t.line)*LINES[d.t.line].k)} ${LINES[d.t.line].u}/yr`:`+${pct(projGain(d,p.gm)/Math.max(P[d.t.node].need,S.nodes[d.t.node].scale*.5))} of need`};
   const tgt=p=>{const d=PD[p.def];return d.t.node?pill(d.t.node,P):`<span class="linkn" data-a="node" data-n="L:${d.t.line}">${LINES[d.t.line].n}</span>`};
-  const odds=x=>x.st==='out'?'<span class="redt">Not funded: below the money line</span>':(()=>{const q=cutP(x.p),b=billSev(PD[x.p.def]);return `<span class="${q>.25?'amb':'okt'}">~${Math.round(q*100)}% cut risk</span>${x.p.champ?' <span class="mini">(championed)</span>':''}<div class="mini">${b.why}</div>`})();
+  const odds=x=>x.st==='out'?'<span class="redt">Not funded: below the money line</span>':(()=>{const q=cutP(x.p),b=billSev(PD[x.p.def]),mt=mkTag('p:'+x.p.uid);if(mt)return mt+`<div class="mini">${b.why}</div>`;return `<span class="${q>.25?'amb':'okt'}">~${Math.round(q*100)}% markup risk</span>${x.p.champ?' <span class="mini">(championed)</span>':''}<div class="mini">${b.why}</div>`})();
   let line=false,rows='';pl.forEach((x,i)=>{const p=x.p;
     if(!line&&x.st!=='in'&&pl.slice(i).every(y=>y.st!=='in')){line=true;rows+=`<tr class="bl-line"><td colspan="6">— The money line: Congress has about ${money(room)} for requests this year. Everything below is not funded, and its PC is lost. —</td></tr>`}
     rows+=`<tr id="bl-${p.uid}" class="${x.st==='out'?'bl-out':''}${S._blHi===p.uid?' blhl':''}"><td class="bl-ord"><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="-1" ${i?'':'disabled'} title="Higher priority">▲</button><button class="btn sm" data-a="bmv" data-u="${p.uid}" data-d="1" ${i<pl.length-1?'':'disabled'} title="Lower priority">▼</button></td>
@@ -4462,15 +4524,39 @@ const NDAA_TABS=[['cong','Congress & the Vote'],['ref','Reforms'],['plant','Plan
 // how this year's bill will go: the vote, the year's appetite, your request's outlook, and what Congress does on its own
 function alReqSec(){if(S.fac!=='US')return '';const left0=pkgRoom()-pkgPlan().filter(x=>x.st==='in').reduce((a,x)=>a+x.p.req,0)-refReqs().reduce((a,x)=>a+(x.req||0),0)-ndsReqs().reduce((a,x)=>a+(x.req||0),0);let left=left0;const q=alCut();
   const rows=alReqs().map(x=>{const D=ADD[x.id],ok=left>=x.req-1e-9;if(ok)left-=x.req;else left=-1;const M=alMem().find(m=>m.k===D.m);
-    return `<tr class="${ok?'':'bl-out'}"><td>${AFLAG[D.m]} <b>${D.n}</b><div class="mini">${M?M.n:''} · ${LINES[D.c].n}: +${fmtN(D.add||0)} a year at full rate, after ${yrs(D.ramp||0)}</div></td><td class="num">${money(x.req)}<div class="mini">${x.pc} PC spent</div></td><td>${ok?`<span class="okt">~${Math.round(q*100)}% cut risk</span>`:'<span class="redt">Not funded: below the money line</span>'}</td><td><button class="btn sm" data-a="aldrop" data-d="${x.id}" data-tip="Take it out of the request. Its PC comes back.">✕</button></td></tr>`}).join('');
+    return `<tr class="${ok?'':'bl-out'}"><td>${AFLAG[D.m]} <b>${D.n}</b><div class="mini">${M?M.n:''} · ${LINES[D.c].n}: +${fmtN(D.add||0)} a year at full rate, after ${yrs(D.ramp||0)}</div></td><td class="num">${money(x.req)}<div class="mini">${x.pc} PC spent</div></td><td>${ok?(mkTag('a:'+x.id)||`<span class="okt">~${Math.round(q*100)}% markup risk</span>`):'<span class="redt">Not funded: below the money line</span>'}</td><td><button class="btn sm" data-a="aldrop" data-d="${x.id}" data-tip="Take it out of the request. Its PC comes back.">✕</button></td></tr>`}).join('');
   const open=ALLY_DEALS.filter(D=>D.$&&alOpen(D));
   return `<div class="dsec" id="aldeals"><h4>Allied deals</h4><p class="mini" style="margin:0 0 6px">Co-production and supply deals with allies, paid by Congress if it funds them. They come after your plants, reforms and stockpile buys on the money line, and can be cut in markup. A deal Congress funds is signed when the bill passes. You can also sign any of them now from your budget on <span class="linkn" data-a="view" data-v="allies">Weapons built by allies</span>.</p>
     ${rows?`<table class="ctable bl-t"><tr><th>Deal</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:'<p class="mini">No allied deals in the request.</p>'}
     ${open.length?`<table class="ctable bl-t aldopen"><tr><th>Open deals</th><th class="num">Cost</th><th></th></tr>${open.map(D=>`<tr><td>${AFLAG[D.m]} ${D.n}<div class="mini">${LINES[D.c].n}: +${fmtN(D.add||0)} a year at full rate, after ${yrs(D.ramp||0)}</div></td><td class="num">${money(D.$)}</td><td class="num"><button class="btn sm" data-a="alreq" data-d="${D.id}" ${alReqOk(D)?'':'disabled'}>Request · ${alReqPC(D)} PC</button></td></tr>`).join('')}</table>`:''}</div>`}
+// one popup per stage: a committee's markup, the conference, and the bill as enacted
+function mkHTML(q){const fy=q.fy,M=mkOf(fy),V=q.V??billW(),D=mkDates(V),ch=q.ch;
+  const lab={keep:'<span class="okt">Kept</span>',fence:'<span class="amb">Kept, funds fenced</span>',cut:'<span class="redt">Cut</span>'},none='<span class="mini">not in its bill</span>';
+  const tag=v=>v?lab[v]:none,head=t=>`<div class="paper wide yrp trp mkp"><div class="hd"><span class="ic">${vic('ndaa',22)}</span>${t}</div><div class="bd">`,foot='</div><div class="ft trft"><button class="pbtn primary" data-a="evopt" data-k="-1">Continue</button></div></div>';
+  const card=(h,sb,x)=>`<div class="trcol"><div class="trh"><b>${h}</b><span>${sb||''}</span></div>${x}</div>`;
+  if(ch==='v'){const b=(S.bills||[]).find(x=>x.fy===fy&&!x.src)||S.bills?.[0];if(!b)return head('The NDAA is law')+foot;
+    const L=xs=>xs.length?`<ul class="mkul">${xs.map(x=>`<li>${x}</li>`).join('')}</ul>`:'<p class="trnone">Nothing.</p>';
+    return head(`The FY${fy} NDAA is law · ${fmtDate(b.w)}`)+`<p class="endp">Congress passed the bill. Below is what it did with your request, after conference and the money line, and what it added on its own.</p>
+      <div class="trts n3"><div class="trt"><span>Funded</span><b>${b.got.length}</b><i class="trd">of your requests</i></div><div class="trt"><span>Not funded</span><b class="${b.lost.length?'redt':''}">${b.lost.length}</b><i class="trd">cut, or below the money line</i></div><div class="trt"><span>Congress added</span><b>${b.added.length}</b><i class="trd">on its own</i></div></div>
+      <div class="trgrid">${card('Funded','contracting starts now',L(b.got))}${card('Not funded','its Political Capital is spent',L(b.lost))}</div>${card('What Congress added on its own','whatever you asked',L(b.added))}
+      <p class="whyn">Request again next year, or build it now from your budget. The House marks up next year’s bill about ${fmtDate(mkDates(billW()).h)}; the request locks then.</p>`+foot}
+  const its=mkItems(V),isC=ch==='c',m=isC?null:M[ch];if(!isC&&!m)return head('Markup')+foot;
+  const pr=ch==='h'?S.cprio?.[fy]:ch==='s'?S.cprioS?.[fy]:null;
+  const act=it=>{if(isC)return '';const v=m.marks[it.k];if(v!=='cut')return '';const fc=mkFightPC(it);
+    return (M.fight[it.k]?'<span class="mini gold">Fighting it in conference</span>':`<button class="btn sm" data-a="mkfight" data-k="${it.k}" ${S.pc>=fc?'':'disabled'} data-tip="${tipQ('Work the conferees to restore it: better odds when the two bills are settled in November.')}">Fight it in conference · ${fc} PC</button>`)
+      +(it.kind==='plant'?` <button class="btn sm" data-a="bnow" data-u="${it.uid}" ${S.budget>=it.cost-1e-9?'':'disabled'} data-tip="${tipQ('Take it out of the request and pay from your budget; it starts today and its PC comes back.')}">Build now · ${money(it.cost)}</button>`:'')};
+  const rows=its.map(it=>`<tr><td>${it.n}</td><td class="num">${money(it.cost)}</td>${ch!=='h'?`<td>${tag(M.h?.marks[it.k])}</td>`:''}${ch!=='h'?`<td>${isC?tag(M.s?.marks[it.k]):tag(m.marks[it.k])}</td>`:`<td>${tag(m.marks[it.k])}</td>`}${isC?`<td><b>${tag(M.c.res[it.k])}</b></td>`:`<td class="mkact">${act(it)}</td>`}</tr>`).join('');
+  const th=`<tr><th>Your request</th><th class="num">Cost</th>${ch==='h'?'<th>House</th>':'<th>House</th><th>Senate</th>'}${isC?'<th>Conference</th>':'<th></th>'}</tr>`;
+  const adds=isC?M.c.adds:m.adds,addRows=adds.map((a,i)=>`<li class="${a.good?'':'mkbad'}">${a.n}${!isC&&!a.good?(M.opp[ch+i]?' <span class="mini gold">· opposing it in conference</span>':` <button class="btn sm" data-a="mkopp" data-i="${ch}${i}" ${S.pc>=MK_OPP_PC?'':'disabled'}>Oppose it in conference · ${MK_OPP_PC} PC</button>`):''}</li>`).join('');
+  const title=isC?`Conference settles the FY${fy} NDAA`:`${MK_CH[ch]} marks up the FY${fy} NDAA`;
+  const lede=isC?`House and Senate conferees reconcile their bills. Items both kept survive; items one cut were bargained over, and your standing with the committees (${Math.round(credOf())}) and any fight you paid for weighed in. Congress votes about ${fmtDate(V+1)}; Congress’s money for requests decides the rest, top of your list first.`
+    :`${pr?`The committee backs ${pr.hi.map(k=>OFFICES[k].n.toLowerCase()).join(' and ')}, and questions ${OFFICES[pr.lo].n.toLowerCase()}. `:''}A cut is not final: the ${ch==='h'?'Senate marks up about '+fmtDate(D.s)+', and ':''}conference settles the two bills about ${fmtDate(D.c)}. ${ch==='h'?'Your request is now locked: what you add from here goes in as a Senate amendment, with worse odds.':'What you add from here can only go in at conference, with poor odds; after conference it waits for next year’s bill.'}`;
+  return head(title)+`<p class="endp">${lede}</p>${its.length?card('Your request',isC?'as settled':'as marked',`<table class="whyt mkt">${th}${rows}</table>`):card('Your request','',`<p class="trnone">Nothing in your request carries money. Reforms and executive actions written into law are not marked up: they become law with the bill.</p>`)}
+    ${card(isC?'Congress’s own changes that stay in':'What the committee added on its own','whatever you asked',addRows?`<ul class="mkul">${addRows}</ul>`:'<p class="trnone">Nothing of its own this year.</p>')}`+foot}
 function congOutlook(B){const fy=B.fy,m=moodOf(fy),mi=S.moods?.[fy]?.i??1,pl=pkgPlan(),inL=pl.filter(x=>x.st==='in'),outL=pl.filter(x=>x.st==='out');
   const exp=inL.reduce((a,x)=>a+(1-cutP(x.p)),0),cp=cprioOf(fy),law=refReqs().length+codReqs().length,lawM=refReqs().filter(x=>x.req>0).length,crHalf=passed('crAnomaly');
   const card=(h,sub,x)=>`<div class="trcol"><div class="trh"><b>${h}</b><span>${sub}</span></div>${x}</div>`,row=(k,v)=>`<div class="ndkv"><span>${k}</span><b>${v}</b></div>`;
-  const vote=card('The vote',B.when,`<p class="ndp">The NDAA has become law every year since 1961, and here it always passes. What is uncertain is what it carries.</p>`
+  const vote=card('The vote',B.when,`<p class="ndp">The NDAA has become law every year since 1961, and here it always passes. What is uncertain is what it carries: each committee marks up your request, conference settles the two, and the money line decides the rest.</p>`
     +row('Reforms and executive actions written into it',law?`${law} in the request · <span class="okt">become law with it</span>`:'none in the request yet')
     +row('New plants, allied deals, stockpile buys and weapons orders','can be cut, or fall below the money line'));
   const app=card('This year’s appetite',`FY${fy}`,`<p class="ndp"><b class="${['okt','','amb','redt'][mi]}">${m.n}.</b> Congress has about <b>${money(billTop(fy))}</b> for new plants and stockpile buys you request (${money(BILL_TOP)} in an ordinary year), and cuts items in markup ${mi===1?'at the usual rate':`about ${fmt(m.f,1)} times as often as usual`}.</p>`
@@ -4480,11 +4566,20 @@ function congOutlook(B){const fy=B.fy,m=moodOf(fy),mi=S.moods?.[fy]?.i??1,pl=pkg
     +row('Weapons orders',ordReqs().length?`${ordReqs().length} · can be cut in markup`:'none requested')+row('Stockpile buys',ndsReqs().length?`${ndsReqs().length} · share the money line`:'none requested')+row('Allied deals',alReqs().length?`${alReqs().length} · share the money line`:'none requested')+row('Laws',law?`${law} · certain${lawM?`, except ${lawM} that carr${lawM===1?'ies':'y'} money and share${lawM===1?'s':''} the money line`:''}`:'none requested')
     :`<p class="ndp">Nothing in the request yet. Reforms are on the Reforms tab; new plants join the request when you order one for the NDAA.</p>`);
   const own=card('What Congress does on its own','whatever you ask',`<ul class="ndul">
-    <li><b>Committee marks.</b> ${cp?`They back ${cp.hi.map(k=>OFFICES[k].n.toLowerCase()).join(' and ')}, and question ${OFFICES[cp.lo].n.toLowerCase()}.`:`About ${CP_WK} weeks before the vote (around ${fmtDate(billW()-CP_WK)}) the committees back two sectors and question one, following members’ districts and the headlines.`} Plants in sectors they back are cut about half as often; in the one they question, about 1.5 times as often.</li>
-    <li><b>Plants of its own.</b> About even odds each year that it adds a plant you did not ask for, for a member’s district, paid with money it adds.</li>
+    <li><b>Markups.</b> The House committee marks up in May and the Senate’s in June. Each backs two sectors and questions one, following members’ districts and the headlines: items in sectors it backs are cut about half as often, in the one it questions about 1.5 times as often. Items one cuts are bargained over in conference.</li>
+    <li><b>Its own changes.</b> Each committee may add a plant for a member’s district, buy more ships, aircraft or munitions than you asked, block retirements of old ships or aircraft, or write a sourcing provision that stops emergency buys of an allied material. The conference keeps what both added, and some of the rest; you can oppose the harmful ones.</li>
     <li><b>Weapons orders.</b> It keeps ordering the January 2027 amounts unless you ask for more.</li>
     <li><b>Continuing resolutions.</b> About two years in three, the fiscal year opens on 1 October under a continuing resolution lasting six to twenty weeks: programs waiting on appropriations ${crHalf?'run at half pace (the CR anomaly authority you passed)':'are frozen'}, and about one in seven brings a shutdown.${S.cr>0?` <span class="redt">A continuing resolution is in force for ${S.cr} more week${S.cr===1?'':'s'}.</span>`:''}</li></ul>`);
-  return `<div class="dsec"><h4>How this year’s bill will go</h4><div class="ndpol">${vote}${app}${out}${own}</div></div>`}
+  const V=billW(),Dd=mkDates(V),M=mkOf(fy),st=(w,done)=>done?'done':S.w>=w?'now':'';
+  const sum=x=>{if(!x)return '';const v=Object.values(x.marks||x.res||{}),c=v.filter(y=>y==='cut').length;return `${v.length-c} kept · ${c} cut · ${(x.adds||[]).length} added`};
+  const steps=[['House markup',Dd.h,M.h,'the request locks'],['Senate markup',Dd.s,M.s,'late items as Senate amendments'],['Conference',Dd.c,M.c,'the two bills settled'],['The vote',Dd.v,null,'the money line, then law']];
+  const cyc=`<div class="mkcyc">${steps.map(([n,w,x,d])=>`<div class="mkst ${x?'done':''}"><b>${n}</b><span>${fmtDate(w)}</span><em>${x?sum(x):d}</em></div>`).join('')}</div>`;
+  const lock=S.w<Dd.h?`<span class="okt">Open:</span> add to the request until the House markup, ${fmtDate(Dd.h)}.`:S.w<Dd.s?'<span class="amb">Locked in the House:</span> new items go in as Senate amendments, with worse odds.':S.w<Dd.c?'<span class="amb">Both committees have marked up:</span> new items can only be added in conference, with poor odds.':'<span class="redt">Settled:</span> new items wait for next year’s bill.';
+  return `<div class="dsec"><h4>This year’s bill, step by step</h4>${cyc}<p class="mklock">${lock}</p></div><div class="dsec"><h4>How this year’s bill will go</h4><div class="ndpol">${vote}${app}${out}${own}</div></div>`}
+// an item's marks so far, for the request tables
+function mkTag(k){const V=billW(),fy=FYOF(V),M=S.mk?.[fy];if(!M||!(M.h||M.s))return '';const L={keep:'kept',fence:'kept, fenced',cut:'cut'};
+  if(M.c){const r=M.c.res[k];return r?`<div class="mini mktag">Conference: <b class="${r==='cut'?'redt':'okt'}">${L[r]}</b></div>`:'<div class="mini mktag amb">After conference: goes to next year’s bill</div>'}
+  const h=M.h?.marks[k],s=M.s?.marks[k];return `<div class="mini mktag">House: ${h?`<b class="${h==='cut'?'redt':'okt'}">${L[h]}</b>`:'not in its bill'}${M.s?` · Senate: ${s?`<b class="${s==='cut'?'redt':'okt'}">${L[s]}</b>`:'not in its bill'}`:''}${M.fight[k]?' · <span class="gold">fighting</span>':''}</div>`}
 function ndaaBody(){if(S.fac!=='US')return `<div class="ndaav"><div class="billv">${billBody()}</div><div class="ndaaref">${agendaHTML('ndaa')}</div></div>`;
   {const k=ndTabFor();if(k)S.ndTab=k}const B=billBody(true),wk=Math.max(0,Math.round(pkgWhen()-S.w));if(S.ndTab==='cod')S.ndTab='ref';const t=S.ndTab||'cong';
   const nRef=REFORMS.filter(R=>vehOf(R)==='ndaa'&&reformAvail(R)&&!inReq(R.id)).length,inRef=refReqs().filter(x=>!x.rider).length+refReqs().filter(x=>x.rider).length;
@@ -5004,7 +5099,7 @@ const blitzP=()=>clamp((S.lev-40)/60,0,.85);
 const reaF=()=>clamp(S.lev/60,.5,1.6);
 function blitzMaybe(id){if(!PRIME_REF.includes(id)||S.histMode)return;if(rand('rblz'+id+S.w)<blitzP()){S._blz=id;queueEvent('blitz')}}
 function queueEvent(id){S.queue.push({ev:id})}
-function infoOnly(q){if(q.read||q.sys==='outcome')return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
+function infoOnly(q){if(q.read||q.sys==='outcome'||q.sys==='mk')return false;if(q.sys)return true;if(!q.ev)return false;const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}const o=V(e.o)||[{l:'OK'}];return o.length===1&&!o[0].pc&&!o[0].$}
 function drainInfo(){S.inbox=S.inbox||[];S.queue=S.queue.filter(q=>{if(!infoOnly(q)){if(true)return true;if(S.inbox.some(x=>x.ev===q.ev))return false; // already waiting on you: one decision covers both
     const e=ED[q.ev];S.inbox.push({ev:q.ev,due:S.w+DECIDE_WK,w:S.w});return false}
   if(q.ev){const e=ED[q.ev],o=(V(e.o)||[])[0];o?.fx?.();const ans='',t=`📰 ${V(e.t)}`,x=S.log.find(z=>z.m===t&&S.w-z.w<=2);if(x)x.m+=ans;else log(t+ans,'ev')} // news with no decision: no card; the timeline records it
@@ -5055,7 +5150,7 @@ function crisisOpts(id,place){const c=S.cres[id];
 const spotKind=id=>allyBar(id)?null:ND[id].civ>0&&ND[id].t<=3?'market':S.nodes[id].ally.amt/Math.max(S.nodes[id].scale,1e-9)>=.05?'ally':null;
 const SPOT_L={market:['💸','Spot purchase','Emergency spot purchase'],ally:['🤝','Allied emergency buy','Emergency buy from allied producers']};
 function spotCost(id){const u=nodeSupply(id);const cutFrac=(u.prcRaw+u.allyRaw+u.neutRaw)>0?u.lost/(u.prcRaw+u.allyRaw+u.neutRaw):0;return .12*(1+4*cutFrac)*(spotKind(id)==='ally'?1.5:1)}
-function spotNone(id){const b=allyBar(id);if(b)return `Barred by law: ${RD2[b.r].n} (${RD2[b.r].since}). Foreign supply for defense work needs ${b.fix}.`;return `No market to buy from: ${lc(ND[id].n)} ${/s$/.test(ND[id].n.replace(/s*(.*)$/,''))?'are':'is'} built to order by a few defense suppliers, and no ally has spare output. Only new capacity helps.`}
+function spotNone(id){const b=allyBar(id);if(b)return `Barred by law: ${b.n||RD2[b.r].n} (${b.since||RD2[b.r].since}). Foreign supply for defense work needs ${b.fix}.`;return `No market to buy from: ${lc(ND[id].n)} ${/s$/.test(ND[id].n.replace(/s*(.*)$/,''))?'are':'is'} built to order by a few defense suppliers, and no ally has spare output. Only new capacity helps.`}
 // what you just spent floats off its counter in the top bar for a moment
 function spent(k,v){(S._sp=S._sp||{})[k]={v,t0:performance.now()}}
 function spentTag(k){const x=S._sp?.[k];if(!x)return '';const el=performance.now()-x.t0;if(el>2600)return '';return `<i class="spentf ${v0(x.v)}" style="animation-delay:${-Math.round(el)}ms">${x.v<0?'+':'−'}${k==='$'?money(Math.abs(x.v)):Math.abs(x.v)+' PC'}</i>`}
@@ -5114,7 +5209,7 @@ function tick0(){
   if(S.fac==='US'&&(S.histMode?fyStart():billNow())){const fb=S.histMode?F().fyBudget:fyBud(S.w);gainB(fb,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(fb)}.`,'good');
    if(!S.histMode&&FYOF(S.w)===IB_RECON_END+1)log(S.reforms?.ibfPerm==='passed'?`Reconciliation money ran out after FY${IB_RECON_END%100}; the permanent Industrial Base Fund keeps your budget at ${money(fb)}.`:`<b>Reconciliation money ran out after FY${IB_RECON_END%100}.</b> Your industrial-base budget falls by ${money(IB_RECON)} a year, to ${money(fb)}. A permanent Industrial Base Fund in the NDAA would restore it.`,S.reforms?.ibfPerm==='passed'?'good':'bad');if(!S.histMode)S._yrDue=1}
   if(S.cr>0&&--S.cr===0)log('CR ends. Full-year appropriations enacted; new starts may proceed.','good');
-  if(!S.histMode){enactPkg();suppTick();billAlertTick();cnTick();alTick();ruTick()}
+  if(!S.histMode){enactPkg();mkTick();suppTick();billAlertTick();cnTick();alTick();ruTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
@@ -5247,7 +5342,7 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r;
   const ahead=ah('Next checkpoint',sc&&dlY?`${sc.n}: ${dlY} to ${nxW===sc.mid?'the halfway floors':'the real targets'}, ${fmtDate(nxW)}.`:`The race runs to ${fmtDate(END_W)}.`)
     +ah('Biggest limits now',lim.length?lim.join('<br>'):'No input holds a line back right now: line capacity is the limit.')
     +ah('Beijing next',nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year).`:'Nothing left to escalate.')
-    +(S.fac==='US'?ah('Next bill',`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}. Request plants, stockpile buys and reforms before then on the NDAA tab.`):'');
+    +(S.fac==='US'?ah('Next bill',`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}. The House marks up its bill about ${fmtDate(mkDates(billW()).h)}, and your request locks then.`):'');
   return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('year',22)}</span>The year in review · ${r.y}</div><div class="bd">
    <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,0)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines sufficient',`${b.suff}/${Object.keys(LINES).length}`,dl(a.suff,b.suff,v=>String(v)))}${tile('Bottlenecks cleared',r.cleared.length,'<i class="trd">this year</i>')}${tile('Beijing’s export controls',`Step ${cnS().rung} of ${CN_RUNGS.length}`,dl(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
    <div class="trcol yrout"><div class="trh"><b>Output per year</b><span>${r.y-1} → ${r.y} · against ${RV().n}</span></div>
@@ -7925,9 +8020,9 @@ function alReq(id){const D=ADD[id];if(!D||!alReqOk(D))return;const k=alReqPC(D);
 function alDrop(id){const x=alReqs().find(y=>y.id===id);if(x){S.pc+=x.pc||0;spent('pc',-(x.pc||0))}S.alReq=alReqs().filter(y=>y.id!==id)}
 function alSign(id,w){const D=ADD[id];alS(D.m).deals[id]={w0:w??S.w};if(D.stock)S.inv[D.c]+=D.stock;lawRec('Allied deal',D.n)}
 function alEnact(got,lost,fy,room){const its=alReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.alReq=alReqs().filter(x=>!its.includes(x));
-  for(const x of its){const D=ADD[x.id];if(!D||alS(D.m).deals[x.id])continue;const why=room.r<x.req-1e-9?'below the money line':rand('r37')<alCut()?'cut in markup':null;
-    if(why){if(why!=='cut in markup')room.r=-1;lost.push(`${D.n} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${D.n} not funded, ${why}.`,'bad');continue}
-    room.r-=x.req;fyLed('cong',x.req);alSign(x.id);got.push(`Allied deal: ${D.n}`);log(`🤝 FY${fy%100} ${billN()}: ${D.n} funded and signed.`,'good')}}
+  for(const x of its){const D=ADD[x.id];if(!D||alS(D.m).deals[x.id])continue;const mr=mkRes(fy,'a:'+x.id),why=room.r<x.req-1e-9?'below the money line':(mr?mr==='cut':rand('r37')<alCut())?(mr?'cut in conference':'cut in markup'):null;
+    if(why){if(!/^cut/.test(why))room.r=-1;lost.push(`${D.n} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${D.n} not funded, ${why}.`,'bad');continue}
+    room.r-=x.req;fyLed('cong',x.req);const fz=mr==='fence'?mkFence():0;alSign(x.id,S.w+fz);got.push(`Allied deal: ${D.n}${fz?` (funds fenced: starts about ${fz} weeks later)`:''}`);log(`🤝 FY${fy%100} ${billN()}: ${D.n} funded and signed.`,'good')}}
 // the buttons for one deal, wherever it is offered
 function alBtns(D,cls='btn sm',pri=''){const x=alS(D.m).deals[D.id];if(x)return '';
   if(alInReq(D.id))return `<span class="mini gold">In the FY${FYOF(alReqs().find(y=>y.id===D.id).pkg)} NDAA request</span> <button class="${cls}" data-a="aldrop" data-d="${D.id}" data-tip="Take it out of the request. Its PC comes back.">✕</button>`;
@@ -8299,6 +8394,8 @@ function cfApply(a){try{switch(a.t){
   case 'obuy':(S.ordBuy=S.ordBuy||[]).push({c:a.c,add:a.add,left:52});return true;
   case 'deal':alDeal(a.id);return true;
   case 'alreq':alReq(a.id);return true;
+  case 'mkf':mkFight(a.k);return true;
+  case 'mko':mkOppose(a.i);return true;
   case 'spot':spotBuy(a.id);return true;
   case 'nshift':toggleNShift(a.id);return true;
   case 'prio':if(a.o&&a.o.length===S.order.length)S.order=a.o.slice();return true;
@@ -8699,6 +8796,7 @@ function renderModal(){
     const q=S.queue[0];
     if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework target met':'Inspector General: output far below goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${lc(L.n)}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else if(q.sys==='outcome'){html=outHTML(q).replace(/\bknow-how\b/g,'Know-how')}
+    else if(q.sys==='mk'){html=mkHTML(q)}
     else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
@@ -9030,6 +9128,8 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'aldeal':alDeal(b.dataset.d);S._vdirty=true;break;
     case 'alreq':alReq(b.dataset.d);S._vdirty=true;break;
     case 'aldrop':alDrop(b.dataset.d);S._vdirty=true;break;
+    case 'mkfight':mkFight(b.dataset.k);S._vdirty=true;break;
+    case 'mkopp':mkOppose(b.dataset.i);S._vdirty=true;break;
     case 'ruguard':ruGuard();S._vdirty=true;break;
     case 'yrrec':S.modal=null;S.view='rec';break;
     case 'xpi':{const k=b.dataset.k;if(XP_OPEN.has(k))XP_OPEN.delete(k);else XP_OPEN.add(k);const el=b.nextElementSibling?.classList?.contains('xp')?b.nextElementSibling:b.parentElement?.nextElementSibling;if(el&&el.classList.contains('xp'))el.classList.toggle('xpshow');return}
