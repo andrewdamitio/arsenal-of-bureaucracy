@@ -1777,6 +1777,10 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .ndsopt tr.mkg td{padding-top:8px;font:600 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:#8a6a1f;border-bottom:1px solid #d6c79f}#view .ndsopt tr.mkg td>span{text-transform:none;letter-spacing:0;font-weight:400;color:#7a6a48;margin-left:6px}
 #view .aldb{white-space:nowrap}#view .aldb .btn+.btn{margin-left:4px}
 #view .codfx .fx{display:flex;flex-direction:column;gap:2px}#view .codfx .fx>span{white-space:normal}
+/* the game number */
+.t3-gno{display:flex;gap:8px;align-items:center}.t3-gno input{width:110px;padding:7px 10px;font:700 18px var(--f-head);letter-spacing:.12em;color:#f3e6c4;background:#12120e;border:1px solid #6b5d38;border-radius:4px}.t3-gno input:focus{outline:none;border-color:#c9952a}
+.t3-gbtn{padding:7px 12px;font:600 13px var(--f-body);color:#e6dcc2;background:transparent;border:1px solid #6b5d38;border-radius:4px;cursor:pointer}.t3-gbtn:hover{background:#ffffff0d}
+.trp .endno{font-size:12.5px;color:#6b5a35}
 </style>
 </head>
 <body>
@@ -1812,7 +1816,8 @@ let RNG=Math.random;// common random numbers for replays: each call site draws f
 // different decision) cannot shift the luck everywhere else. In normal play the key is ignored.
 let RNG_K=null;function rngK(base){let wk=-1,cnt={};const h=s=>{let x=2166136261;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)}return x>>>0};
   return k=>{if(S.w!==wk){wk=S.w;cnt={}}const n=cnt[k]=(cnt[k]||0)+1;return mulb((base^Math.imul(S.w+1,2654435761)^h(k)^Math.imul(n,40503))|0)()}}
-let NEXT_SEED=null;const hstr=s=>{let x=2166136261;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)}return x>>>0};
+let NEXT_SEED=null,NEXT_GNO=null,TGNO=null;const gnoNew=()=>100000+Math.floor(Math.random()*900000),seedOfNo=n=>hstr('aob:'+n)|0,gnoOk=v=>/^\d{6}$/.test(String(v).trim());
+const hstr=s=>{let x=2166136261;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)}return x>>>0};
 function rk(k){const r=S._rk&&S._rk.w===S.w?S._rk:(S._rk={w:S.w,c:{}});const n=r.c[k]=(r.c[k]||0)+1;return mulb((S.seed^Math.imul(S.w+1,2654435761)^hstr(k)^Math.imul(n,40503))|0)()}
 const rand=k=>{if(RNG_K&&k)return RNG_K(k);if(k&&S){if(S.seed==null)S.seed=(Math.random()*2147483647)|0;return rk(k)}return RNG()},clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const fmt=(x,d=1)=>(Math.round(x*10**d)/10**d).toFixed(d);
@@ -2987,7 +2992,7 @@ const EVENTS=[
   o:()=>[{dflt:1,l:'Absorb it and keep building',fx:()=>cnApply(S._cnR,1,'absorbed')},
    {l:'Negotiate licenses for defense buyers (−12 PC: the cuts are halved, pressure −6)',pc:12,fx:()=>{cnApply(S._cnR,.5,'eased by talks');cnS().heat=Math.max(0,cnS().heat-6)}},
    {l:'Answer with US controls of your own (+8 PC from the hawks; pressure +10)',fx:()=>{cnApply(S._cnR,1,'answered');S.pc+=8;cnS().heat=Math.min(100,cnS().heat+10)}}]},
- {id:'magCtl',pre:"Autumn 2021: power curbs in Shaanxi halved China’s magnesium output, and European Aluminium warned that Europe’s stocks would run out within weeks.[c:mg21]",at:[60,180],ic:'⛏',t:'Magnesium supply squeeze',body:"Power curbs or export licensing in China, which makes ~88% of primary magnesium, cut supply. Aluminum alloyers and the few titanium-sponge makers scramble.",fx:()=>cutAll(['magnesium'],.5),o:[{l:'Noted. (+5 PC)',fx:()=>{S.pc+=5}}]},
+ {id:'magCtl',pre:"Autumn 2021: power curbs in Shaanxi halved China’s magnesium output, and European Aluminium warned that Europe’s stocks would run out within weeks.[c:mg21]",at:[60,180],chance:.7,ic:'⛏',t:'Magnesium supply squeeze',body:"Power curbs or export licensing in China, which makes ~88% of primary magnesium, cut supply. Aluminum alloyers and the few titanium-sponge makers scramble.",fx:()=>cutAll(['magnesium'],.5),o:[{l:'Noted. (+5 PC)',fx:()=>{S.pc+=5}}]},
 
  {id:'thaw',pre:"November 2025: Beijing suspended its mineral bans as part of a trade deal.[c:truce]",p:.0025,once:false,cond:()=>Object.values(S.cut).some(v=>v<.7),ic:'🤝',t:'Partial thaw',
   fx:()=>{const ids=Object.keys(S.cut).filter(k=>S.cut[k]<.7);const id=ids[Math.floor(rand('r7')*ids.length)];S.cut[id]=Math.min(1,S.cut[id]+.35);S._thaw=id;cnS().heat=Math.max(0,cnS().heat-5)},
@@ -3035,15 +3040,15 @@ const EVENTS=[
  {id:'rayonBack',fac:['US'],once:true,ic:'🧵',when:()=>rayonReady()&&rand('r54')<(passed('multiyear')?.05:.025),t:'A US firm restarts aerospace rayon',
   body:()=>{const g=lineName('interceptors')/Math.max(S.lines.interceptors.base,1e-9)-1,n=rayonBase();return `${g>.005?`Interceptor lines are ${pct(g)} bigger than in 2027`:'Interceptor demand is steady'}${n?`, and ${n} new US plant${n===1?'':'s'} and upgrade${n===1?' has':'s have'} been delivered`:''}. A US specialty-chemicals firm decides missile-grade rayon is worth making again, with its own money, at a chemical site it already runs. It still needs an air permit for the carbon disulfide, a year of building, and a year or more of nozzle qualification.`},
   fx:()=>rayonRestart(),o:[{l:'Welcome it and watch it'},{l:'Back it with a DPA Title III grant (−$0.3B: a bigger line)',$:.3,fx:()=>{const p=S.projects.find(x=>x.uid===S._rayP);if(p)p.gm*=1.6}}]},
- {id:'cruisers',pre:"March 2024: the Navy’s FY2025 plan proposed decommissioning 19 ships, 10 of them early. Congress has blocked most such requests.[c:navy25]",fac:['US'],fixedW:PLAY0+40,ic:'⚓',t:'Navy proposes early ship retirements',body:"To free money for new construction, the Navy proposes decommissioning 10 ships before the end of their service lives. Congress can block it — and pay to keep them running.",
+ {id:'cruisers',pre:"March 2024: the Navy’s FY2025 plan proposed decommissioning 19 ships, 10 of them early. Congress has blocked most such requests.[c:navy25]",fac:['US'],at:[26,70],chance:.8,ic:'⚓',t:'Navy proposes early ship retirements',body:"To free money for new construction, the Navy proposes decommissioning 10 ships before the end of their service lives. Congress can block it — and pay to keep them running.",
   o:[{l:'Approve the retirements (−10 ships, +$1.5B)',fx:()=>{S.inv.surface-=10;gainB(1.5,'Retirements')}},{l:'Block it in the NDAA (−10 PC, −$0.5B)',pc:10,fx:()=>{spendB(.5,'Events')}}]},
- {id:'divest',pre:"March 2023: the Air Force’s FY2024 request proposed divesting 310 aircraft.[c:af310]",at:[80,120],ic:'✈',t:{US:'Air Force proposes divesting old aircraft'},body:"Retire about 300 old airframes to fund modernization. They are expensive to maintain — and, in a war, would still be airframes.",
+ {id:'divest',pre:"March 2023: the Air Force’s FY2024 request proposed divesting 310 aircraft.[c:af310]",at:[80,120],chance:.75,ic:'✈',t:{US:'Air Force proposes divesting old aircraft'},body:"Retire about 300 old airframes to fund modernization. They are expensive to maintain — and, in a war, would still be airframes.",
   o:[{l:'Approve (−300 aircraft, +$2B)',fx:()=>{S.inv.aircraft-=300;gainB(2,'Retirements')}},{l:'Block it (−8 PC)',pc:8}]},
  {id:'ceasefire',pre:"Talks have failed repeatedly; as of October 2026 only local ceasefires hold.[c:uaceasefire]",p:.006,once:false,cond:()=>!S.ceasefire,ic:'🕊',t:'Ceasefire talks in Ukraine',
   fx:()=>{S._cf=rand('r12')<.6;if(S._cf)doCeasefire()},
   body:()=>S._cf?"The guns fall silent along the front. Russian factories keep running at war tempo — but the output now goes into depots instead of the front. Russia’s in-service stocks begin to climb.":"Talks collapse. The war of attrition grinds on, consuming Russian output nearly as fast as it is produced.",o:[{l:'Watch the depots.',fx:()=>{if(S._cf)S.pc+=8}}]},
  
- {id:'japanBuild',pre:"December 2022: Japan set a goal of 2% of GDP for defense by fiscal 2027.[c:jp2pct]",fac:['US'],at:[30,90],ic:'🇯🇵',t:'Japan accelerates its buildup',body:"Tokyo accelerates defense spending ahead of its 2% target. Allied forces in the Indo-Pacific +10%.",fx:()=>{S.allied.pac*=1.1},o:[{l:'Arigatō.'}]},
+ {id:'japanBuild',pre:"December 2022: Japan set a goal of 2% of GDP for defense by fiscal 2027.[c:jp2pct]",fac:['US'],at:[30,90],chance:.75,ic:'🇯🇵',t:'Japan accelerates its buildup',body:"Tokyo accelerates defense spending ahead of its 2% target. Allied forces in the Indo-Pacific +10%.",fx:()=>{S.allied.pac*=1.1},o:[{l:'Arigatō.'}]},
  {id:'buyback',pre:"RTX ran a $10 billion buyback in 2023, and the primes kept buying back shares in 2024 despite the Navy Secretary’s public criticism.[c:buyback24]",p:.005,once:false,cond:()=>S.lev>(ruleOn('rEO14372')?60:45),ic:'💼',t:{US:'Prime announces $10B buyback'},
   body:{US:"Citing “supply chain headwinds” for late deliveries, a prime contractor announces a $10 billion share repurchase and a dividend increase."},
   o:()=>[...(ruleOn('rEO14372')?[{l:'Flag it as underperforming under EO 14372 (−4 PC; leverage −6; the buyback is blocked)',pc:4,fx:()=>{S.lev-=6}}]:[]),{l:'Publicly shame them (−6 PC; leverage −4)',pc:6,fx:()=>{S.lev-=4}},{l:'Say nothing (leverage +3)',fx:()=>{S.lev+=3}}]},
@@ -3185,15 +3190,18 @@ const CONSUMERS=(()=>{const c={};for(const n of NODES)c[n.id]=[];for(const n of 
 
 function newGame(fac,watch){ // watch: play 2025–26 on the board instead of starting in January 2027
   const X=FACTIONS[fac];
-  S={seed:NEXT_SEED!=null?NEXT_SEED:(Math.random()*2147483647)|0,fac,w:0,speed:0,pc:X.pc0,budget:X.budget0,lev:X.lev0,slots:X.slots,strain:0,mob:0,mobLow:0,
+  const gno=NEXT_SEED!=null?null:(NEXT_GNO??gnoNew());
+  S={seed:NEXT_SEED!=null?NEXT_SEED:seedOfNo(gno),gameNo:gno,fac,w:0,speed:0,pc:X.pc0,budget:X.budget0,lev:X.lev0,slots:X.slots,strain:0,mob:0,mobLow:0,
      nodes:{},lines:Object.fromEntries(Object.entries(X.lines).map(([k,v])=>[k,{base:v}])),order:[...X.order],
      know:{},inv:{...X.inv},q:{...X.q},allied:{...X.allied},theaters:[...X.theaters],
-     enemy:{pac:mkEnemy('pac'),eu:mkEnemy('eu')},scT:{pac:sampleScen('pac'),eu:sampleScen('eu')},mc:null,aidLvl:1,q0:{...X.q},btRec:{},ready:{...READY0[fac]},ready0:{...READY0[fac]},mxAdd:{aircraft:0,surface:0,subs:0},mxDone:{},spares:{},atab:'stock',view:'cmd',range:'all',hide:{},
+     enemy:null,scT:null,mc:null,aidLvl:1,q0:{...X.q},btRec:{},ready:{...READY0[fac]},ready0:{...READY0[fac]},mxAdd:{aircraft:0,surface:0,subs:0},mxDone:{},spares:{},atab:'stock',view:'cmd',range:'all',hide:{},
      cut:Object.fromEntries(NODES.map(n=>[n.id,1])),stock:{},tmods:[],gmods:[],costMods:[],nflags:{},navBack:[],spot:[],prio:{},carve:{},fw:{},
      cn:cnInit(),projects:[],plants:[],built:{},done:[],reforms:{},bill:null,cr:0,dfars:false,truce:false,tension:0,
      ledger:Object.fromEntries(Object.keys(LAYERS).map(k=>[k,{n:0,wk:0}])),
      pages:0,waivers:0,log:[],fired:{},evAt:{},queue:[],low:{pac:0,eu:0},hist:[],cres:{},ic:{},icOnshore:0,icSince:{},gone:[],rules:{},rulesSince:{},shifts:{},ne:null,
      over:false,overWhy:'',modal:null,autoPause:true,exposure:0,tab:'bott',ptab:1,sel:null};
+  // drawn once the new game exists, so they follow its seed (inside the literal above they drew from the previous game)
+  S.enemy={pac:mkEnemy('pac'),eu:mkEnemy('eu')};S.scT={pac:sampleScen('pac'),eu:sampleScen('eu')};
   // size each node from starting demand
   const lineCap0=l=>S.lines[l].base;
   const need={},pot={};for(const id of ORDER){need[id]=0;pot[id]=0}
@@ -3207,7 +3215,7 @@ function newGame(fac,watch){ // watch: play 2025–26 on the board instead of st
     S.know[id]=c.kn??40}
   for(const l in LINES)S.know[l]=X.lineKn[l];
   for(const r of RULES)if(r.on0)setRule(r.id,true);
-  for(const e of EVENTS){if(e.fixedW!=null)S.evAt[e.id]=e.fixedW;else if(e.at)S.evAt[e.id]=PLAY0+e.at[0]+Math.floor(rand('r19')*(e.at[1]-e.at[0]))}
+  for(const e of EVENTS){if(e.fixedW!=null)S.evAt[e.id]=e.fixedW;else if(e.at){const w=PLAY0+e.at[0]+Math.floor(rand('r19')*(e.at[1]-e.at[0]));if(e.chance==null||rand('r19c')<e.chance)S.evAt[e.id]=w;else S.fired[e.id]=S.fired[e.id]||0}}
   mcInit();S.req0={};for(const t of S.theaters){S.req0[t]={};for(const c of PLAT)S.req0[t][c]=blueAvail(t,c,S.inv)}
   // programs already under way in January 2025
   S.histMode=true;for(const ih of X.inherited){const def=PD[ih.def];if(!def)continue;
@@ -5257,7 +5265,7 @@ function endHTML(L,tot){const out=S.lastOut||production(false).out,idx=raceIdx(o
   const cleared=Object.values(S.limH||{}).flat().filter(x=>x.up&&x.w1>=PLAY0).length,suff=cs.filter(c=>suffLine(c,out[c]?.yr||0,S.w)>=1).length,r0=S.race0??0;
   const tiles=`<div class="trts n4">${tile('Share of the requirement',pct(idx),idx-r0>=.005?`<i class="trd up">▲ ${fmt((idx-r0)*100,0)} pt from January 2027</i>`:idx-r0<=-.005?`<i class="trd dn">▼ ${fmt((r0-idx)*100,0)} pt from January 2027</i>`:sub('same as January 2027'),`You and ${AL().n}, against what the plan requires across the end-item lines.`)}
     ${tile('Lines sufficient',`${suff}/${n}`,sub('at 100% of their requirement'))}${tile('Plants built',S.plants.filter(p=>!p.inh).length||S.plants.length,sub(`${S.plants.filter(p=>p.full).length} at full rate`))}${tile('Bottlenecks cleared',cleared,sub('since January 2027'))}</div>`;
-  const lead=`${S.verdict?`<div class="stamp endst">${S.verdict}</div>`:''}${S.overWhy?`<p class="endp">${S.overWhy}</p>`:''}${S.scenRes?`<p class="endp"><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} in January 2035 (${S.scenRes.met} of ${S.scenRes.ms.length} targets met; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}`;
+  const lead=`${S.gameNo?`<p class="endp endno">Game number <b>${S.gameNo}</b>: type it on the new-game screen to play the same world again.</p>`:''}${S.verdict?`<div class="stamp endst">${S.verdict}</div>`:''}${S.overWhy?`<p class="endp">${S.overWhy}</p>`:''}${S.scenRes?`<p class="endp"><b>${SCD[S.scen].n}:</b> ${S.scenRes.verdict} in January 2035 (${S.scenRes.met} of ${S.scenRes.ms.length} targets met; the test ${S.scenRes.test.ok?'passed':'failed'}).</p>`:''}`;
   const rows=S.order.map(c=>{const y=out[c]?.yr||0,rv=cnOut(c),vs=rv>0?y/rv:null;return `<tr><td>${LINES[c].n}</td><td class="num"><b>${fmtN(y)}</b></td><td class="num">~${fmtN(rv)}</td><td class="num">${fmtN(S.inv[c])}</td><td class="num">${S.theaters.map(t=>'~'+fmtN(S.enemy[t].inv[c])).join(' · ')}</td><td class="num">${vs==null?'—':`<span class="whys"><span class="yrvb"><i class="${vs>=1?'ok':'pt'}" style="width:${(Math.min(1,vs)*100).toFixed(1)}%"></i></span><b>${pct(vs)}</b></span>`}</td></tr>`}).join('');
   const outT=card('Output and stocks',`against ${RV().n}`,`<table class="whyt"><tr><th>Line</th><th class="num">You, a year</th><th class="num">${RV().n}, a year</th><th class="num">You, in service</th><th class="num">${S.theaters.length>1?S.theaters.map(t=>S.enemy[t].n).join(' · '):RV().n}, in service</th><th class="num">Your output vs. ${RV().n}</th></tr>${rows}</table>`,'yrout');
   const kv=(k,v)=>`<div class="endkv"><span>${k}</span><b>${v}</b></div>`;
@@ -7043,17 +7051,20 @@ ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-
       <div class="t3-dk">${cur.sc.open?'What you are measured on':'What you must reach, a year'}</div><ul class="t3-tg">${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:m.kind==='suff'?` <b>65%</b> against China, <b>85%</b> against Russia`:m.kind==='lines'?` <b>${m.tgt} of 9</b>`:m.kind==='margin'?` <b>+${fmt(m.tgt*100,0)} pt</b>`:''}</li>`).join('')}</ul>
       <div class="t3-dates"><span><b>January ${dateOf(cur.sc.mid).getFullYear()}</b> halfway check</span><span><b>January ${dateOf(cur.sc.dl).getFullYear()}</b> ${cur.sc.open?'the verdict':'the real targets'}</span></div>`:'';
   const rad=(a,attr,on,n,d)=>`<button class="t3-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
+  if(TGNO==null)TGNO=gnoNew();
   const gOn=TGUIDE??!gMem().open;
-  const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'}${gOn?' · with the guide':''}`;
+  const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'} · game ${TGNO}${gOn?' · with the guide':''}`;
   app.innerHTML=cz(`<div id="title" class="ti3 t3new"><div class="t3-top"><button class="t3-back" data-a="tscr" data-s="menu">‹ Back</button><div class="t3-brand sm"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1></div><span></span></div>
     <h2 class="t3-h2">Choose your scenario</h2>
     <div class="t3-cards">${SC.map(x=>`<button class="t3-card ${x.id===cur.id?'on':''}" data-a="tsel" data-s="${x.id}">${art(x.sc,'t3-thumb')}<span class="t3-cn"><b>${x.n}</b><em>${x.sub}</em></span></button>`).join('')}</div>
     <div class="t3-detail">${art(cur.sc,'t3-dart')}<div class="t3-dtext"><div class="t3-dh"><b>${cur.n}</b><em>${cur.sub}</em></div>${det}</div></div>
     <div class="t3-opts2">
      <div class="t3-o"><div class="t3-ol">Rules</div><div class="t3-seg"><button class="${TMODE==='std'?'on':''}" data-a="tmode" data-m="std">Standard</button><button class="${TMODE==='sbx'?'on':''}" data-a="tmode" data-m="sbx">Sandbox</button></div><p>${TMODE==='sbx'?'No budget or Political Capital limits: see what time, permits and suppliers still hold back.':'A real budget and Political Capital: every plant, order and reform competes for them.'}</p></div>
+     <div class="t3-o"><div class="t3-ol">Game number</div><div class="t3-gno"><input id="t3gno" inputmode="numeric" maxlength="6" autocomplete="off" value="${TGNO}" aria-label="Game number"><button class="t3-gbtn" data-a="tgno">New number</button></div><p>Sets this game’s luck: the enemy’s true strength, when events strike and how each chance falls. Type in a number from another game to play the same world again.</p></div>
      <label class="t3-o t3-chk" data-a="tguide" data-m="${gOn?'off':'on'}"><span class="t3-box ${gOn?'on':''}" role="checkbox" aria-checked="${gOn}">${gOn?'✓':''}</span><span><b>Guide me through my first game</b><p>Plays your first turn with you, then introduces each part of the game when it first matters. Without it, everything is open from the start; every tab still has a Tour button.</p></span></label>
     </div>
     <div class="t3-bar"><div><b>${cur.n}</b><span>${optsTxt}${sv?' · replaces your saved game in this browser':''}</span></div><button class="t3-begin" data-a="tnew">Begin ›</button></div></div>`)}
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='t3gno'){const v=e.target.value.replace(/\D/g,'').slice(0,6);if(v!==e.target.value)e.target.value=v;if(gnoOk(v)){TGNO=+v;const sp=document.querySelector('.t3-bar span');if(sp)sp.textContent=sp.textContent.replace(/game \d+/,'game '+v)}}});
 function renderStart(){
   app.innerHTML=`<div id="start"><h1>ARSENAL <span style="font-size:22px;font-style:italic;color:var(--dim)">of</span> BUREAUCRACY</h1>
    <div class="tag2">A grand strategy game of rearmament, exemptions, and self-inflicted wounds · 2027–2035 (2025–26 replayed)</div>
@@ -8823,7 +8834,7 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
   const when=!ok?'Not yet':ago<1?'Just now':ago<60?ago+' min ago':'Over an hour ago';
   const t=(l,v)=>`<div><span>${l}</span><b>${v}</b></div>`;
   return `<div class="gmenu"><div class="gm-hd"><span>Menu</span></div>
-   <div class="gm-bd"><div class="ti-save gm-info">${t('Game date',fmtDate(S.w))}${t('Mandate',S.scen?SCD[S.scen].n:'Open race')}${t('Mode',S.sandbox?'Sandbox':'Standard')}${t('Last saved',ok?when+' · '+fmtDate(S._svW):'Not yet')}</div>
+   <div class="gm-bd"><div class="ti-save gm-info">${t('Game date',fmtDate(S.w))}${t('Mandate',S.scen?SCD[S.scen].n:'Open race')}${t('Mode',S.sandbox?'Sandbox':'Standard')}${S.gameNo?t('Game number',`<span data-tip="${tipQ('Type it on the new-game screen to play the same world again: the same enemy, and the same events and chances until your choices change them.')}">${S.gameNo}</span>`):''}${t('Last saved',ok?when+' · '+fmtDate(S._svW):'Not yet')}</div>
    <button class="ti-btn primary" data-a="close">Resume ›</button>
    <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
    <button class="ti-btn" data-a="brtog" data-tip="The three moves worth most each turn, shown at the top of Command and in each turn report.">${UIP.nobrief?'Show recommended moves on Command':'Hide recommended moves on Command'}</button>
@@ -8870,7 +8881,8 @@ if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
   if(a==='ttut'){try{localStorage.removeItem(GMEM_K)}catch(e){}TGUIDE=true;TSCR='new';renderTitle();window.scrollTo(0,0);return}
 if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
-  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();{const g=TGUIDE??!gMem().open,m=gMem();if(g){S.guide=1;S.gSeen={...m};S.gOpenDone=!!m.open;S.tips=1;S.tipSeen={decision:1,stuck:1,marks:1,beijing:1}}}S.modal='sbrief';render();saveGame();return}
+  if(a==='tgno'&&!S){TGNO=gnoNew();renderTitle();return}
+  if(a==='tnew'){const gi=document.getElementById('t3gno')?.value;if(gi&&gnoOk(gi))TGNO=+gi.trim();clearSave();NEXT_GNO=TGNO;newGame('US');NEXT_GNO=null;TGNO=null;S.sandbox=TMODE==='sbx';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();{const g=TGUIDE??!gMem().open,m=gMem();if(g){S.guide=1;S.gSeen={...m};S.gOpenDone=!!m.open;S.tips=1;S.tipSeen={decision:1,stuck:1,marks:1,beijing:1}}}S.modal='sbrief';render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
