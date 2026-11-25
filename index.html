@@ -5389,7 +5389,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
     <div class="trcol"><div class="trh"><b>Problems your programs hit</b><span>${probs.length||'none'}</span></div>${probH}</div>
     <div class="trcol"><div class="trh"><b>News and results</b><span>${news.length||'none'}</span></div>${newsH}</div>
    </div>
-   </div><div class="ft trft"><button class="pbtn" data-a="close">Close</button><button class="pbtn primary" data-a="turn">Next turn ▸ ${turnLabel(n0)}</button></div></div>`}
+   </div><div class="ft trft"><button class="pbtn primary" data-a="turn">Next turn ▸ ${turnLabel(n0)}</button></div></div>`}
 
 // ---- what each reform was worth, built up during play: delay avoided, schedule cut, money saved, Political Capital spent
 // delivering earns Political Capital: a finished plant +5, any other program +2, and +3 more when it lands close to plan
@@ -7885,7 +7885,7 @@ function tbAllHTML(){const all=tbAll(),on=all.filter(x=>!x.hid),off=all.filter(x
     <section class="sr-acts"><header><span class="sr-k">Options</span><h3>Recommended actions</h3></header><p class="sr-p">Grouped by kind. The points show how much each would raise your share of the requirement, where that can be estimated. The ${Math.min(3,on.length)} strongest also appear on Command. None is taken unless you choose it.</p></section>
     ${on.length?grp(on).map(([l,v])=>`<h5 class="th5">${l} <span class="mini">· ${v.length}</span></h5><div class="brcs brp">${v.map(x=>tbCard(x,1)).join('')}</div>`).join(''):'<p>Nothing pressing this turn.</p>'}
     ${off.length?`<h5 class="th5">Hidden for now <span class="mini">· ${off.length}</span></h5><div class="brcs brp">${off.map(x=>tbCard(x,1)).join('')}</div>`:''}</div>
-    <div class="ft trft"><button class="pbtn primary" data-a="close">Close</button></div></div>`}
+    </div>`}
 function scLeg(){return `<div class="sc-leg"><span><i class="lm"></i>Made</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i class="lx"></i>No capacity</span><span><i class="lo"></i>2035 outlook</span><span><i class="lk"></i>2030 floor</span></div>`}
 // ---- the mandate brief: the opening page of a game. The scenario as a lede beside its map, the three dates on a timeline,
 // then what you must reach, what you can do and how it is judged. Opens when a game starts; the mandate card on Command reopens it.
@@ -8543,7 +8543,7 @@ function cfChart(cf){const W=640,H=200,L=44,Rm=150,T=12,B=26,x0=PLAY0,x1=Math.ma
 function cfHTML(){const live=CFQ,cf=live?{toW:live.toW,res:live.res,runs:live.runs}:S.cf;
   const head=`<div class="hd"><span class="ic">🔁</span>What it would have taken</div>`;
   if(!cf)return `<div class="paper wide cfp">${head}<div class="bd"><p>Replays your game from January 2027 with the same luck: once as you played it, once doing nothing, and once with each package of reforms in force from the first week, each three times with different luck. It takes about a minute.</p>
-    ${S.w<PLAY0+13?'<p class="redt">Play at least a turn first.</p>':''}</div><div class="ft trft"><button class="pbtn" data-a="close">Close</button><button class="pbtn primary" data-a="cfgo" ${S.w<PLAY0+13?'disabled':''}>Run the replays</button></div></div>`;
+    ${S.w<PLAY0+13?'<p class="redt">Play at least a turn first.</p>':''}</div><div class="ft trft"><button class="pbtn primary" data-a="cfgo" ${S.w<PLAY0+13?'disabled':''}>Run the replays</button></div></div>`;
   const R=cf.res,mine=R.mine,none=R.none,done=!live,yr=dateOf(cf.toW).getFullYear();
   const prog=live?`<div class="cfprog"><b>Replaying: ${(live.tasks[live.i]||live.tasks[live.tasks.length-1]).r.n.toLowerCase()}, with luck ${Math.floor(live.i/live.runs.length)+1} of ${live.seeds}…</b> ${live.i} of ${live.tasks.length} replays<div class="pbar"><i style="width:${live.i/live.tasks.length*100}%"></i></div></div>`:'';
   const md=r=>r?.mand?`${fmt(r.mand.met,r.mand.met%1?1:0)} met · ${fmt(r.mand.half,r.mand.half%1?1:0)} floors`:'—',stp=r=>r?fmt(ruOn()?r.ru:r.cn,1):'—',rg=r=>r&&r.n>1?`<div class="mini">${pct(r.lo)}–${pct(r.hi)}</div>`:'';
@@ -8557,7 +8557,7 @@ function cfHTML(){const live=CFQ,cf=live?{toW:live.toW,res:live.res,runs:live.ru
      ${none?`<tr class="cfbase"><td>Doing nothing</td><td class="num">${pct(none.end)}</td><td class="num">${mine?`${none.end>=mine.end?'+':'−'}${fmt(Math.abs(none.end-mine.end)*100,1)} pt`:''}</td><td class="num">${md(none)}</td><td class="num">${stp(none)}</td><td></td><td></td></tr>`:''}
      ${mine?`<tr class="cfbase"><td>Your plan, replayed <span class="mini">(your actual game: ${pct(raceIdx(production(false).out))})</span></td><td class="num">${pct(mine.end)}</td><td class="num">—</td><td class="num">${md(mine)}</td><td class="num">${stp(mine)}</td><td></td><td></td></tr>`:''}${rows}</table>
     <p class="mini">Every row is the average of three replays with different luck; the small range under each share is the spread between them. Differences of a point or two are within the noise. Faster plants that replace Chinese supply also raise Beijing’s pressure, so a reform can bring its next step sooner; the steps column shows when that happened. Each replay makes your decisions on the weeks you made them (programs with their contracts, orders Congress funded, deals, emergency buys, priority changes, reforms and rules as they passed), takes the default for every event and problem, and uses the same luck as the others, so the differences come from the reforms. That is also why your plan, replayed, differs a little from your actual game.</p>
-    </div><div class="ft trft">${done?`<button class="pbtn" data-a="cfgo">Run again</button>`:''}<button class="pbtn primary" data-a="close">Close</button></div></div>`}
+    </div>${done?`<div class="ft trft"><button class="pbtn" data-a="cfgo">Run again</button></div>`:''}</div>`}
 // ---- where the time went, across every program you started since January 2027
 const STG_C={approp:'#c9a227',contract:'#4a78c8',permit:'#6aa84f',build:'#8a6a3a',qual:'#4fb3b0',ramp:'#a07ad0'};
 function progsMine(){return [...S.done.map(x=>({...x,st:'done',end:x.w})),...S.gone.map(x=>({...x,st:'gone',end:x.w})),...S.projects.map(x=>({...x,st:'live',end:S.w}))].filter(x=>!x.inh&&(x.started??0)>=PLAY0)}
@@ -8583,7 +8583,7 @@ function timeHTML(){const d=timeData(),x0=PLAY0,x1=Math.max(S.w,PLAY0+26),W=100,
   return `<div class="paper wide tpw"><div class="hd"><span class="ic">⏱</span>Where the time went</div><div class="bd">${timeSummary(d)}
     <h5 class="th5">Every program you started</h5><div class="gleg">${STAGES.map(s=>`<span><i style="background:${STG_C[s]}"></i>${STEP_N[s]}</span>`).join('')}<span class="mini">· the share at the end of each row is time lost to delay · ✓ finished · ✕ cancelled</span></div>
     <div class="gantt"><div class="gax"><span class="gn"></span><span class="gt">${yrs.join('')}</span><span class="gd"></span></div>${rows||'<p class="mini">No programs yet.</p>'}</div>
-    </div><div class="ft trft"><button class="pbtn" data-a="briefopen">🖨 One-page brief</button><button class="pbtn primary" data-a="close">Close</button></div></div>`}
+    </div><div class="ft trft"><button class="pbtn" data-a="briefopen">🖨 One-page brief</button></div></div>`}
 // ---- value for money: points of the 2035 outlook per $1B, worked out in the background for the options on screen
 const VFM={k:'',m:{},q:[],busy:false};
 function vfmKey(){return S.w+'|'+uidN+'|'+S.projects.length+'|'+JSON.stringify(S.ord||{})}
@@ -8617,7 +8617,7 @@ function briefHTML(){const R=S._R||production(false),sc=S.scen&&SCD[S.scen],d=ti
     <div>${timeSummary(d)}</div></div>
    <h5 class="th5">What it would have taken</h5>${cfRows?`<table class="ctable bft"><tr><th>Reforms in force from January 2027, on top of your plan</th><th class="num">Change</th><th class="num">Would cost</th></tr>${cfRows.map(([n,v,pc])=>`<tr><td>${n}</td><td class="num">${v>=0?'+':'−'}${fmt(Math.abs(v),1)} pt</td><td class="num">${pc} PC</td></tr>`).join('')}</table><p class="mini">Average of three replays of your plan with the same luck, to ${fmtDate(cf.toW)}.</p>`:`<p class="mini noprint">Not run yet. <button class="btn sm" data-a="cfopen">Run the replays</button> to include them.</p><p class="mini printonly">The replays were not run.</p>`}
    <h5 class="th5">Lessons</h5><ul>${lessons.map(l=>`<li>${l}</li>`).join('')}</ul></div>
-   <div class="ft trft noprint"><button class="pbtn" data-a="close">Close</button><button class="pbtn" data-a="timeopen">⏱ Where the time went</button><button class="pbtn primary" data-a="briefprint">Print or save as PDF</button></div></div>`}
+   <div class="ft trft noprint"><button class="pbtn" data-a="timeopen">⏱ Where the time went</button><button class="pbtn primary" data-a="briefprint">Print or save as PDF</button></div></div>`}
 // ---- the do-nothing twin: your game started again from January 2027 with the same luck and no decisions, run to 2035 a few months
 // at a time in the background (so the page stays live), kept with the save
 const BASEQ={k:null,sim:null,u:0,rec:[]};
@@ -8884,7 +8884,7 @@ function whyHTML(){const k=S.whyK,c=S.whyC,R=S._R||production(false),A=AL(),cs=O
       +fx(`For each input, the share of its supply that comes from China or Russia, directly or through its own inputs. Each end item’s content is the average over its direct inputs, and the headline is the average over your lines <b>weighted by how much each makes</b>.`)
       +card('Every line','',tbl(['Line','Chinese/Russian content','Output a year'],rows,['Weighted average',`<b>${pct(R.exposure)}</b>`,'']))
       +note('Where it enters:','<span class="linkn" data-a="view" data-v="flow">Supply flows →</span>')}
-  return `<div class="paper whyp trp"><div class="hd"><span class="ic">${vic(MPAGE[k]?'stats':'calc',22)}</span>${t}</div><div class="bd">${body}</div><div class="ft trft"><span class="linkn trall" data-a="view" data-v="stats">All the numbers explained →</span><button class="pbtn" data-a="close">Close</button></div></div>`}
+  return `<div class="paper whyp trp"><div class="hd"><span class="ic">${vic(MPAGE[k]?'stats':'calc',22)}</span>${t}</div><div class="bd">${body}</div><div class="ft trft"><span class="linkn trall" data-a="view" data-v="stats">All the numbers explained →</span></div></div>`}
 function renderModal(){
   for(const k in CH)if(CH[k].ctx==='m')delete CH[k];CHctx='m';
   const P=S._R?.P||production(false).P;const build=()=>{let html='';
