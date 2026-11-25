@@ -1615,6 +1615,10 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 .t3-chk{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.t3-chk b{font:700 14.5px var(--f-head);color:#efe6cf}
 .t3-box{flex:none;width:20px;height:20px;margin-top:1px;border:2px solid #c9952a;border-radius:4px;display:flex;align-items:center;justify-content:center;font:700 14px var(--f-body);color:#1c1608}.t3-box.on{background:#c9952a}
 @media (max-width:900px){.t3-opts2{grid-template-columns:1fr}}
+.tbsit{margin:0 0 14px;padding:10px 14px 12px;border:1px solid #d6c79f;border-radius:6px;background:#fbf7ec}.tbsit .th5:first-child{margin-top:0}
+.tbs-r{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:baseline;margin:4px 0;font:13px/1.5 var(--f-body);color:#3a3020}
+.tbs-news{margin:2px 0 6px}.tbs-n{display:grid;grid-template-columns:52px 1fr;gap:8px;font:12.5px/1.45 var(--f-body);color:#3a3020;padding:2px 0;border-bottom:1px dotted #e0d4b4}.tbs-d{color:#8a7850;font-size:11.5px}
+.tball .th5.tbmv{margin-top:4px}
 </style>
 </head>
 <body>
@@ -7366,10 +7370,28 @@ function tbCard(x,inPop){return `<div class="brc${x.hid?' brhid':''}"><div class
 function tbHTML(paper){if(!S||UIP.nobrief||(S.tut&&!S.tut.g)||S.w<PLAY0||S.histMode||S.replay||S.over||S.fac!=='US')return '';const mv=tbMoves(),n=tbAll().filter(x=>!x.hid).length;
   if(!paper&&S.w===PLAY0&&!S.tut&&n)return `<div class="brf brslim"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${n} move${n>1?'s':''} worth making before your first turn</span><span class="linkn brall" data-a="tball">Open the brief →</span></div></div>`;
   return `<div class="brf${paper?' brp':''}"><div class="brh"><b>This turn’s brief</b><em class="brdate">${turnLabel()}</em><span>${mv.length?`The ${mv.length===1?'move':mv.length===2?'two moves':'three moves'} worth most now${n>mv.length?`, of ${n}`:''}`:'Nothing pressing'}</span>${n>mv.length?`<span class="linkn brall" data-a="tball">The full brief: all ${n} →</span>`:''}<span class="linkn brhide" data-a="brtog" data-tip="Bring it back from the Menu">Hide</span></div>${mv.length?`<div class="brcs">${mv.map(tbCard).join('')}</div>`:'<p class="brnone">No bottleneck with a fix you can start, no idle capacity and no deal worth signing. A good turn to push a reform or plan ahead.</p>'}</div>`}
+function tbSitHTML(){const R=S._R||production(false),start=S.w<=PLAY0+1,lst=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join(''),te=turnEndW(),row=(ic,h)=>`<div class="tbs-r"><span>${ic}</span><div>${h}</div></div>`;
+  // what happened since the last turn
+  const w0=S.trnRep?.a?.w??S.w-9,news=start?[]:S.log.filter(l=>l.w>=w0&&['good','bad','ev'].includes(l.cls)&&!/you take over|^🎯 Scenario/.test(l.m)&&!(/^\s*→ /.test(l.m))).slice(0,8);
+  // where things stand
+  const short=S.order.filter(c=>R.out[c].bott),cn=cnNext(),cuts=ORDER.filter(id=>(cutOf(id)??1)<.999),lost=ORDER.filter(id=>R.P[id].lost>1e-6&&!cuts.includes(id));
+  const stand=[row('⚔',`<b>${short.length} of ${S.order.length} weapon lines are short of parts</b>${short.length?': '+lst(short.map(c=>lc(LINES[c].n))):'.'}${short.length?'.':''} Your share of the requirement: <b>${pct(raceIdx(R.out))}</b>.`),
+    S.fac==='US'?row(FLAGS.cn,`<b>China:</b> ${S.truce?'the trade truce holds':'no truce: its export bans are in force'}${cuts.length?`; its export controls already cut ${lst(cuts.map(id=>`${lc(ND[id].n)} by ${pct(1-cutOf(id))}`))}`:''}${lost.length?`, and supply of ${lst(lost.slice(0,3).map(id=>lc(ND[id].n)))} is short as a result`:''}.${cn&&isFinite(cn.yrsTo)?` Beijing's next step, <b>${cn.nx.s.toLowerCase()}</b>, is about ${cn.yrsTo<.25?'a few months':Math.max(1,Math.round(cn.yrsTo*12))+' months'} away.`:''}`):'',
+    S.strain>=5?row('🏚',`<b>Civilian strain ${Math.round(S.strain)}</b> of 100${divOn()?': recovery is paused while defense takes civilian supply':''}.`):'',
+    decisionsPending()?row('⚠',`<b>${decisionsPending()} decision${decisionsPending()>1?'s':''} waiting</b> on Command.`):''].filter(Boolean);
+  // coming this turn
+  const up=[...EVENTS.filter(e=>e.fixedW!=null&&e.fixedW>=S.w&&e.fixedW<=te&&!(S.fired?.[e.id])&&(!e.fac||e.fac.includes(S.fac))).map(e=>row('📅',`${V(e.t).replace(/\s*\([^)]*\)\s*$/,'')}, ${fmtDate(e.fixedW)}.`)),
+    ...(S.fac==='US'&&billW()<=te?[row('🏛',`Congress votes on the FY${pkgFY()} NDAA, ${fmtDate(billW())}: ${pkgItems().length+refReqs().length+ndsReqs().length?'your request goes with it':'nothing in your request yet'}.`)]:[]),
+    ...(cn&&cn.yrsTo<=(te-S.w)/52?[row(FLAGS.cn,`Beijing may take its next step, ${cn.nx.s.toLowerCase()}, this turn.`)]:[]),
+    ...Object.entries(S.impl||{}).filter(([,x])=>x.due<=te).map(([id,x])=>row('⚖',`${rname(RD[id])} takes effect, about ${fmtDate(x.due)}.`))];
+  return `<div class="tbsit"><h5 class="th5">${start?'Where things stand as you take office':'Since your last turn'}</h5>
+    ${start?'':(news.length?`<div class="tbs-news">${news.map(l=>`<div class="tbs-n"><span class="tbs-d">${fmtDate(l.w).replace(/ \d{4}$/,'')}</span><span class="${l.cls==='bad'?'redt':l.cls==='good'?'okt':''}">${linkify(l.m)}</span></div>`).join('')}</div>`:'<p class="mini">A quiet two months: nothing new outside your own programs.</p>')}
+    ${start?'':'<h5 class="th5">Where things stand</h5>'}${stand.join('')}
+    ${up.length?`<h5 class="th5">Coming this turn</h5>${up.join('')}`:''}</div>`}
 function tbAllHTML(){const all=tbAll(),on=all.filter(x=>!x.hid),off=all.filter(x=>x.hid),ORD=['Hedge','Quick win','Fix a bottleneck','Build line capacity','Order idle capacity','Allied deal','Reform'];
   const grp=xs=>ORD.concat([...new Set(xs.map(x=>x.lab))].filter(l=>!ORD.includes(l))).map(l=>[l,xs.filter(x=>x.lab===l)]).filter(([,v])=>v.length);
   return `<div class="paper wide trp tball"><div class="hd"><span class="ic">📋</span>This turn’s brief · ${turnLabel()}</div><div class="bd">
-    <p class="mini" style="margin:0 0 8px">${S.w===PLAY0?'<b>Before your first turn.</b> ':''}Every move worth making now, by kind, with what each adds to your share of the requirement where it can be worked out. The card on Command shows the ${Math.min(3,on.length)} worth most. Nothing here is decided for you.</p>
+    ${tbSitHTML()}<h5 class="th5 tbmv">Moves worth making</h5><p class="mini" style="margin:0 0 8px">Every move worth making now, by kind, with what each adds to your share of the requirement where it can be worked out. The card on Command shows the ${Math.min(3,on.length)} worth most. Nothing here is decided for you.</p>
     ${on.length?grp(on).map(([l,v])=>`<h5 class="th5">${l} <span class="mini">· ${v.length}</span></h5><div class="brcs brp">${v.map(x=>tbCard(x,1)).join('')}</div>`).join(''):'<p>Nothing pressing this turn.</p>'}
     ${off.length?`<h5 class="th5">Hidden for now <span class="mini">· ${off.length}</span></h5><div class="brcs brp">${off.map(x=>tbCard(x,1)).join('')}</div>`:''}</div>
     <div class="ft trft"><button class="pbtn primary" data-a="close">${S.w===PLAY0?'To Command →':'Close'}</button></div></div>`}
