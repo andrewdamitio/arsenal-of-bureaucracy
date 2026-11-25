@@ -1819,6 +1819,24 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #ov .mkp2 .mkv{table-layout:fixed;width:100%}#ov .mkp2 .mkv th,#ov .mkp2 .mkv td{vertical-align:top;padding:8px;white-space:normal!important;overflow-wrap:anywhere}#ov .mkp2 .mkv th:first-child{width:27%}#ov .mkp2 .mkv th:last-child{width:24%}
 #ov .mkp2 .mk-kd{display:block;margin-top:2px;font:600 10.5px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:#8a7850}#ov .mkp2 .mk-li .mk-kd{display:inline;margin-left:6px}
 #ov .mkp2 .mk-wh{font:13px/1.45 var(--f-body);color:#3a3020}#ov .mkp2 .mk-od{margin-top:3px;font:12px/1.4 var(--f-body);color:#6b5a35}#ov .mkp2 tr.mkno td:first-child b{color:#7a2a20}
+/* a stuck program: the obstacle block */
+.ob2{padding:10px 12px!important}.ob2 .ob-hd{display:flex;align-items:flex-start;gap:12px}.ob2 .ob-t{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.ob2 .ob-t>b{font:700 16px var(--f-head)}.ob2 .ob-l{display:inline-flex;align-items:center;gap:5px;font:600 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;opacity:.8}.ob2 .ob-l i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.ob2 .ob-st{flex:none;display:flex;flex-direction:column;align-items:flex-end;line-height:1}.ob2 .ob-st b{font:700 26px var(--f-head)}.ob2 .ob-st span{font:600 10.5px var(--f-body);letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:3px}
+.ob2 .ob-st.dec span{padding:3px 8px;border-radius:3px;background:#c9952a;color:#231d14;opacity:1}
+.ob2 .ob-d{margin:6px 0 8px!important;font:13.5px/1.5 var(--f-body)}
+.ob2 .ob-w{padding:8px 10px;border-radius:4px;background:#0000000d;margin:0 0 8px}.ob2 .ob-wl{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:6px}
+.ob2 .ob-wl>span{font:700 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;opacity:.7}.ob2 .ob-wl>b{font:600 14px var(--f-body)}.ob2 .ob-wl>em{margin-left:auto;font:normal 12.5px var(--f-body);opacity:.8}
+.ob2 .ob-bar{height:8px;border-radius:4px;background:#ffffff1f;overflow:hidden}.ob2 .ob-w{background:#ffffff0d}.ob2 .ob-bar i{display:block;height:100%;border-radius:4px}
+.ob2 .ob-fx{margin:2px 0 6px}.ob2 .ob-fxh{font:700 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;opacity:.7;margin-bottom:5px}
+.ob2 .ob-fxs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.ob2 .ob-rm{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:7px 10px;border-radius:4px;cursor:pointer;font:inherit;border:1px solid #5a5236;background:#1d1b14;color:#e6dcc2}
+.ob2 .ob-rm b{font:600 13px var(--f-body)}.ob2 .ob-rm span{font:12px var(--f-body);opacity:.75}.ob2 .ob-rm.on{cursor:default;border-color:#4f7a40}
+.ob2 .ob-ft{margin-top:4px;font:12.5px var(--f-body)}
+.paper .ob2 .ob-t>b{color:#231d14}.paper .ob2 .ob-l{color:#5a4a26}.paper .ob2 .ob-st b{color:#231d14}.paper .ob2 .ob-d{color:#2b241a}
+.paper .ob2 .ob-w{background:#efe5c9;border:1px solid #e0d4b4}.paper .ob2 .ob-wl>b{color:#2b241a}.paper .ob2 .ob-bar{background:#e0d4b4}
+.paper .ob2 .ob-rm{background:#fbf7ec;border-color:#d6c79f;color:#2b241a}.paper .ob2 .ob-rm:hover:not(.on){border-color:#8a7850;background:#fffdf6}.paper .ob2 .ob-rm.on{background:#e3eed8;border-color:#b9d2a5;color:#2f5a24}
+#ov .dsec.stucksec>h4{color:#231d14!important;border-bottom-color:#e0c4b8!important}
 </style>
 </head>
 <body>
@@ -7205,9 +7223,9 @@ document.addEventListener('mouseover',e=>{if(!S)return;const el=e.target.closest
 function remedies(od){
   const ks=[...new Set([...Object.keys(od.mods||{}),...Object.keys(od.wm||{}),...(od.layer==='QUAL'?['cvQual']:[])])];
   const h=ks.map(k=>{const R=RD[k],C=CD[k],X=R||C;if(!X||!facOk(X))return '';const on=active(k);
-    const eff=[od.mods?.[k]!=null?`odds ×${od.mods[k]}`:'',od.wm?.[k]!=null?`waits ×${od.wm[k]}`:k==='cvQual'?'waits ×0.6':''].filter(Boolean).join(', ');
-    return `<span class="rem ${on?'on':''}" ${on?'':`data-a="remedy" data-r="${k}"`} data-tip="${R?'Reform':'Carve-out'}${on?' in force':''}: ${eff}">${on?'✓':R?'📜':'🖋'} ${R?rname(R):cname(C)}</span>`}).join('');
-  return h?`<div class="rems"><span class="remh">Fixes for next time, which make this rarer or shorter:</span>${h}</div>`:''}
+    const m=od.mods?.[k],w=od.wm?.[k]??(k==='cvQual'?.6:null),eff=[m!=null?(m<1?`happens ${Math.round((1-m)*100)}% less often`:`odds ×${m}`):'',w!=null?(w<1?`waits ${Math.round((1-w)*100)}% shorter`:`waits ×${w}`):''].filter(Boolean).join(', ');
+    return `<button class="ob-rm ${on?'on':''}" ${on?'':`data-a="remedy" data-r="${k}"`}><b>${on?'✓ ':''}${R?rname(R):cname(C)}</b><span>${R?'Reform':'Emergency power'}${on?' · in force':''}${eff?' · '+eff:''}</span></button>`}).join('');
+  return h?`<div class="ob-fx"><div class="ob-fxh">Make it rarer or shorter next time</div><div class="ob-fxs">${h}</div></div>`:''}
 // node and line names in the timeline become links
 const LINKN=[...NODES.map(n=>[n.n,n.id]),...Object.entries(LINES).map(([k,L])=>[L.n,'L:'+k])].filter(x=>x[0].length>3).sort((a,b)=>b[0].length-a[0].length);
 const LKC=new Map(),isW=ch=>!!ch&&/[\w&]/.test(ch);
@@ -7291,9 +7309,10 @@ function optExplain(od,o){const t=[],w=o.wait?Math.round(o.wait*waitMult(od)):0,
   return t.join(' ')}
 function failTip(o,od){if(!o.fail)return '';const f=o.fail;return ` If it fails: ${f.spawn?'triggers a new obstacle':f.cancel?'project mothballed':f.adv?'PRC dependence added':f.gain?'output reduced':Math.round((f.wait||0)*waitMult(od))+' wk'}.`}
 function obsBlock(od,inst,action,uid,extra=''){
-  const more=`${remedies(od)}${(()=>{const D=LAYER_DOM(od.layer);return D&&S.fac==='US'?`<div style="margin:4px 0 0;font-size:11px"><span class="linkn" data-a="rbgo" data-d="${D.id}" style="color:inherit">⚖ How ${lc(D.n)} works →</span></div>`:''})()}`;
-  let h=`<div class="obs" style="border-left-color:${LAYERS[od.layer].c}"><div class="ot"><b>${inst.wait>0?'⏳':'⛔'} ${V(od.n)}</b>${chip(od.layer)}${extra}</div><p>${V(od.t)}</p>`;
-  if(inst.wait>0)h+=`<div class="waiting">${inst.label} — <b>${inst.wait}</b> wk remaining${inst.after==='cancel'?' <span class="red">(project will be mothballed)</span>':''}</div><div class="prog" style="margin:5px 0 0"><i style="width:${(1-inst.wait/inst.total)*100}%;background:${LAYERS[od.layer].c}"></i></div>`;
+  const Ly=LAYERS[od.layer],D=LAYER_DOM(od.layer);
+  const more=`${remedies(od)}${D&&S.fac==='US'?`<div class="ob-ft"><span class="linkn" data-a="rbgo" data-d="${D.id}">How ${lc(D.n)} works →</span></div>`:''}`;
+  let h=`<div class="obs ob2" style="border-left-color:${Ly.c}"><div class="ob-hd"><div class="ob-t"><b>${V(od.n)}</b><span class="ob-l"><i style="background:${Ly.c}"></i>${Ly.n}</span>${extra}</div>${inst.wait>0?`<div class="ob-st"><b>${inst.wait}</b><span>week${inst.wait===1?'':'s'} left</span></div>`:'<div class="ob-st dec"><span>Your decision</span></div>'}</div><p class="ob-d">${V(od.t)}</p>`;
+  if(inst.wait>0){const done=Math.max(0,1-inst.wait/Math.max(1,inst.total));h+=`<div class="ob-w"><div class="ob-wl"><span>Getting past it</span><b>${inst.label}</b><em>${pct(done)} done · clears about ${fmtDate(S.w+inst.wait)}${inst.after==='cancel'?' · <span class="redt">then the project is mothballed</span>':''}</em></div><div class="ob-bar"><i style="width:${Math.max(1.5,done*100)}%;background:${Ly.c}"></i></div></div>`}
   else{const dk=defOpt(od);
     if(dk>=0&&!TURN())h+=dTimer(inst.due,V(od.o[dk].l));
     h+=`<div class="ochoose">Choose how to get past it. Each way trades time against Political Capital, money and risk.${dk>=0&&!TURN()?' If you do nothing, the outlined choice happens when the timer runs out.':TURN()?' The turn waits for your choice.':''}</div><div class="opts">${od.o.map((o,k)=>`<button class="btn opt ${k===dk&&!TURN()?'dflt':''}" data-a="${action}" data-u="${uid}" data-k="${k}" ${optOk(o)?'':'disabled'}><span>${o.waiver?'✎ ':''}${V(o.l)}</span><span class="c">${optCost(od,o)}</span><span class="ox">${optExplain(od,o)}</span></button>`).join('')}</div>`;}
