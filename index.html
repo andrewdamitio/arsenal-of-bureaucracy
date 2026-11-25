@@ -6775,7 +6775,7 @@ function renderTitle(){ov.innerHTML='';ov.classList.remove('show');ov.dataset.k=
       <p class="t3-pitch">China and Russia out-produce the United States in munitions, ships and missiles. You take charge of an industrial base that has withered, suppliers that move slowly, and minerals that come from the rivals you are racing. You have until 2035.</p>
       <div class="t3-menu">
        ${sv?`<button class="t3-btn prime" data-a="tcont"><b>Continue</b><span>${sv.scen&&SCD[sv.scen]?SCD[sv.scen].n:'Open race'} · ${fmtDate(sv.w)} · saved ${agoT}</span></button>`:''}
-${sv?`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`:''}       <button class="t3-btn ${first?'':'plain'}" data-a="ttut"><b>Play with the guide${first?' <i class="t3-new">New here? Start with this</i>':''}</b><span>Any scenario. The guide plays your first turn with you, then introduces each part of the game when it first matters.</span></button>
+${sv?`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`:''}       
 ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-s="new"><b>New game</b><span>Choose a scenario: the Taiwan Window, the Eastern Flank, the Rare-Earth Cutoff, or your own race.</span></button>`}
        <button class="t3-link" data-a="saveul">Load a save file</button>
       </div>
