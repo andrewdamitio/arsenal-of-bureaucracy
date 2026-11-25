@@ -4638,7 +4638,7 @@ const TUT=[
  {p:'cmd',sel:'#supply',t:'The supply chain',x:'The parts that leave lines you have already built standing idle, with what each costs you, then the inputs worst covered. Hover one to light up the lines it holds back in the centre.',next:1},
  {p:'cmd',sel:'#right',t:'Programs under way',x:'Plants, deals and upgrades already started. Each passes through funding, contract, permits, construction, qualification and ramp-up. Click one to open its page.',next:1},
  {p:'cmd',sel:'#right .rtabs',t:'Factories and Home front',x:'<b>Factories</b> lists every plant producing for you: the ones you built and the ones you inherited, and any trouble they are in. <b>Home front</b> holds the next NDAA vote, Political Capital, civilian strain, the next election, and defense priority over civilian buyers.',next:1},
- {p:'cmd',sel:'[data-a="savem"]',t:'The Menu',x:'Save or load a game, switch between two-month turns and continuous play, or go back to the title screen.',next:1},
+ {p:'cmd',sel:'[data-a="savem"]',t:'The Menu',x:'Save or load a game, show or hide the recommended moves, or go back to the title screen.',next:1},
  // Supply chain
  {p:'bn',...NAV('bn','Supply chain')},
  {p:'bn',sel:'#view .skctl',t:'Supply flows',x:'The tab opens on the whole supply chain. The controls: Show the diagram or a sourcing table; follow one end item or all; size the bands by deterrence value or output; trace value to raw materials or to each manufacturing step.',next:1},
@@ -5130,8 +5130,8 @@ function tick0(){
 /* ---------- the year in review: the turn of each year, right after the annual bill ---------- */
 // ---- two-month turns. A turn ends at the start of January, March, May, July, September or November, so December’s NDAA vote
 // falls in the November-December turn. Time runs only inside a turn, and stops whenever a decision is waiting: no decision is
-// ever taken by default while you play in turns. Continuous play is a setting in the Menu.
-const TURN_M=[0,2,4,6,8,10],TURN=()=>S&&!S.histMode&&!S.replay&&S.turnMode!==false;
+// ever taken by default. (Continuous play, with timed defaults, was retired: turns are the only pace.)
+const TURN_M=[0,2,4,6,8,10],TURN=()=>S&&!S.histMode&&!S.replay;
 function turnEndW(w=S.w){const d=dateOf(w+2);let y=d.getFullYear(),m=TURN_M.find(x=>x>d.getMonth());if(m==null){y++;m=0}let t=weekOf(y,m,1);if(t<=w)t=w+1;return Math.min(t,END_W)}
 // the label of the turn that starts at week w: taken at its middle, since a turn can start a few days before the 1st
 function turnLabel(w=S.w){w=Math.round((w+turnEndW(w))/2);const d=dateOf(w),m=d.getMonth()-d.getMonth()%2;return `${MON[m]}–${MON[m+1]} ${d.getFullYear()}`}
@@ -7043,14 +7043,13 @@ ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-
       <div class="t3-dates"><span><b>January ${dateOf(cur.sc.mid).getFullYear()}</b> halfway check</span><span><b>January ${dateOf(cur.sc.dl).getFullYear()}</b> ${cur.sc.open?'the verdict':'the real targets'}</span></div>`:'';
   const rad=(a,attr,on,n,d)=>`<button class="t3-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
   const gOn=TGUIDE??!gMem().open;
-  const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'} · ${TPACE==='cont'?'continuous time':'two-month turns'}${gOn?' · with the guide':''}`;
+  const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'}${gOn?' · with the guide':''}`;
   app.innerHTML=cz(`<div id="title" class="ti3 t3new"><div class="t3-top"><button class="t3-back" data-a="tscr" data-s="menu">‹ Back</button><div class="t3-brand sm"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1></div><span></span></div>
     <h2 class="t3-h2">Choose your scenario</h2>
     <div class="t3-cards">${SC.map(x=>`<button class="t3-card ${x.id===cur.id?'on':''}" data-a="tsel" data-s="${x.id}">${art(x.sc,'t3-thumb')}<span class="t3-cn"><b>${x.n}</b><em>${x.sub}</em></span></button>`).join('')}</div>
     <div class="t3-detail">${art(cur.sc,'t3-dart')}<div class="t3-dtext"><div class="t3-dh"><b>${cur.n}</b><em>${cur.sub}</em></div>${det}</div></div>
     <div class="t3-opts2">
      <div class="t3-o"><div class="t3-ol">Rules</div><div class="t3-seg"><button class="${TMODE==='std'?'on':''}" data-a="tmode" data-m="std">Standard</button><button class="${TMODE==='sbx'?'on':''}" data-a="tmode" data-m="sbx">Sandbox</button></div><p>${TMODE==='sbx'?'No budget or Political Capital limits: see what time, permits and suppliers still hold back.':'A real budget and Political Capital: every plant, order and reform competes for them.'}</p></div>
-     <div class="t3-o"><div class="t3-ol">Pace</div><div class="t3-seg"><button class="${TPACE==='turn'?'on':''}" data-a="tpace" data-m="turn">Two-month turns</button><button class="${TPACE==='cont'?'on':''}" data-a="tpace" data-m="cont">Continuous</button></div><p>${TPACE==='cont'?'Time runs week by week at the speed you set; decisions you leave take their default.':'Press Next turn; time stops for every decision and nothing is decided for you.'} You can change it later in the Menu.</p></div>
      <label class="t3-o t3-chk" data-a="tguide" data-m="${gOn?'off':'on'}"><span class="t3-box ${gOn?'on':''}" role="checkbox" aria-checked="${gOn}">${gOn?'✓':''}</span><span><b>Guide me through my first game</b><p>Plays your first turn with you, then introduces each part of the game when it first matters. Without it, everything is open from the start; every tab still has a Tour button.</p></span></label>
     </div>
     <div class="t3-bar"><div><b>${cur.n}</b><span>${optsTxt}${sv?' · replaces your saved game in this browser':''}</span></div><button class="t3-begin" data-a="tnew">Begin ›</button></div></div>`)}
@@ -8826,7 +8825,6 @@ function saveHTML(){const ok=S._svAt,ago=ok?Math.max(0,Math.round((Date.now()-S.
    <div class="gm-bd"><div class="ti-save gm-info">${t('Game date',fmtDate(S.w))}${t('Mandate',S.scen?SCD[S.scen].n:'Open race')}${t('Mode',S.sandbox?'Sandbox':'Standard')}${t('Last saved',ok?when+' · '+fmtDate(S._svW):'Not yet')}</div>
    <button class="ti-btn primary" data-a="close">Resume ›</button>
    <div class="gm-row"><button class="ti-btn" data-a="savedl" ${can?'':'disabled'}>Download save file</button><button class="ti-btn" data-a="saveul">Load a save file</button></div>
-   <button class="ti-btn" data-a="turnmode" data-tip="Two-month turns stop for every decision. Continuous play runs week by week and takes the default when a decision times out.">${S.turnMode===false?'Continuous play · switch to two-month turns':'Two-month turns · switch to continuous play'}</button>
    <button class="ti-btn" data-a="brtog" data-tip="The three moves worth most each turn, shown at the top of Command and in each turn report.">${UIP.nobrief?'Show recommended moves on Command':'Hide recommended moves on Command'}</button>
    
    <div class="gm-row"><button class="ti-btn" data-a="tmenu" data-tip="Saves this game and returns to the title screen.">Main menu</button><button class="ti-btn gm-danger" data-a="savenew" data-tip="Starts over from the title screen. This game’s browser save is replaced; download a file first to keep it.">New game</button></div>
@@ -8871,7 +8869,7 @@ if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
   if(a==='tcont'){if(!resumeSave())renderTitle();return}
   if(a==='ttut'){try{localStorage.removeItem(GMEM_K)}catch(e){}TGUIDE=true;TSCR='new';renderTitle();window.scrollTo(0,0);return}
 if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
-  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.turnMode=TPACE!=='cont';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();{const g=TGUIDE??!gMem().open,m=gMem();if(g){S.guide=1;S.gSeen={...m};S.gOpenDone=!!m.open;S.tips=1;S.tipSeen={decision:1,stuck:1,marks:1,beijing:1}}}S.modal='sbrief';render();saveGame();return}
+  if(a==='tnew'){clearSave();newGame('US');S.sandbox=TMODE==='sbx';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();{const g=TGUIDE??!gMem().open,m=gMem();if(g){S.guide=1;S.gSeen={...m};S.gOpenDone=!!m.open;S.tips=1;S.tipSeen={decision:1,stuck:1,marks:1,beijing:1}}}S.modal='sbrief';render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
@@ -8895,7 +8893,6 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'guideoff':S.guide=0;S.tut=null;guideBody();break;
     case 'tutskip':if(S.tut){const k=VIEW_PART[S.view];if(k)(S.toured=S.toured||{})[k]=1;if(!S.tut.solo)S.tips=1}S.tut=null;break;
     case 'tutpart':if(S.tut){S.tut.skipP=TUT[S.tut.i]?.p;const nx=tutPart(S.tut.i).next;if(nx){S.tut.i=nx.i;S.tut.sc=-1;if(!S.queue.length&&S.modal!=='turn'){S.modal=null;S.pvBack=null;S.ct=null;S.navBack=[]}}}break;
-    case 'turnmode':S.turnMode=S.turnMode===false;S.speed=0;S.turnEnd=null;break;
     case 'ap':S.autoPause=!S.autoPause;break;
     case 'tab':S.tab=b.dataset.t==='bott'?'bott':+b.dataset.t;S.view='cmd';if(S.modal&&S.modal!=='end'&&!S.queue.length)S.modal=null;break;
     case 'ptab':S.ptab=+b.dataset.t;break;
