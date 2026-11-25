@@ -1419,7 +1419,7 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 #app .sc-sub{font-size:12px;color:#a89f86}
 #app .panel .brk{flex-wrap:nowrap;min-width:0}#app .panel .brk>span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#app .panel .brk>b{flex:none;white-space:nowrap;font-size:11px;letter-spacing:0}#app .panel .brk .brx{margin-left:2px}
 #app .panel .brt{font-size:13.5px;line-height:1.25}
-#app .tag.tight,#app .tag.short,#app .tag.ok,#app .tag.t{text-transform:capitalize}
+#app .tag.tight,#app .tag.short,#app .tag.ok,#app .tag.t{text-transform:none}#app .tag.tight::first-letter,#app .tag.short::first-letter,#app .tag.ok::first-letter,#app .tag.t::first-letter{text-transform:uppercase}
 /* ---- charts: one text scale and one ink across every chart ---- */
 #ov svg text,#view svg text,#app svg text{font-family:var(--f-body)}
 .lc text,.ceilsvg text,.pjsvg text,.mpch text,.pvisvg text,.gantt text,.rtl text{font-size:11px;fill:#7a6a48}
@@ -2790,40 +2790,40 @@ for(const d of PROJECTS)d.n=sentCase(d.n);
 
 /* ---------- POST-CONSTRUCTION PRODUCTION ISSUES ---------- */
 const OPS=[
- {id:'yield',layer:'EXPERT',mult:.5,n:'Yield Below Plan',
+ {id:'yield',layer:'EXPERT',mult:.5,n:'Yield below plan',
   t:"Scrap rate is 40%. The engineers who knew how to run this process retired a decade ago, and the documentation is a binder with coffee on it.",
   o:[{l:'Hire allied process engineers',$:.1,pc:6,wait:6,know:12},{l:'Bring in OEM technical reps',$:.15,wait:10,know:5},{l:'Learn by trial and error',wait:26,know:8}]},
  {id:'scaleup',layer:'EXPERT',mult:.4,n:"Process Doesn’t Scale",
   t:"The pilot line worked beautifully. The full-scale line has a heat-transfer problem nobody saw at pilot scale.",
   o:[{l:'Re-engineer the line',$:.3,wait:20,know:4},{l:'Run permanently at reduced rate',yieldMul:.8},{l:'License the process from an ally',$:.2,pc:8,wait:10,know:10}]},
- {id:'zero',layer:'EXPERT',tags:['metal','shell','heavy','assembly','energetic'],mult:0,n:'Plant Built, Zero Usable Parts',
+ {id:'zero',layer:'EXPERT',tags:['metal','shell','heavy','assembly','energetic'],mult:0,n:'Plant built, zero usable parts',
   t:"The plant is finished and every part fails inspection. It happens: as of March 2026 a $469M US shell-body plant had produced zero usable parts.",
   o:[{l:'Bring in an experienced operator',$:.2,wait:26,know:10},{l:'Redesign the process',wait:52,know:6},{l:'Cut the plan to two lines',yieldMul:.66,wait:12}]},
- {id:'quality',layer:'QUAL',mult:0,n:'Quality Escape: Lot Rejected',
+ {id:'quality',layer:'QUAL',mult:0,n:'Quality escape: lot rejected',
   t:"A lot fails acceptance. Root cause: a mislabeled drum. Production halts during the investigation.",
   o:[{l:'Full corrective action',wait:8,know:3},{l:'Deviation waiver',pc:6,p:.7,fail:{wait:12},waiver:1}]},
- {id:'turnover',layer:'LABOR',mult:.6,n:'Workforce Turnover',
+ {id:'turnover',layer:'LABOR',mult:.6,n:'Workforce turnover',
   t:"Half of last year’s hires left for warehouse jobs that pay the same and don’t involve hazardous chemistry.",
   o:[{l:'Retention bonuses',$:.1,wait:4},{l:'Re-hire and re-train',wait:20,yieldMul:.85},{l:'Apprenticeship pipeline',pc:6,wait:12,know:4}]},
- {id:'precursor',layer:'MARKET',kind:'node',mult:.3,n:'Sub-Tier Supplier Exits',
+ {id:'precursor',layer:'MARKET',kind:'node',mult:.3,n:'Sub-tier supplier exits',
   t:"The only domestic supplier of a key precursor — a solvent, an acid, a binder — closes. Your plant is fine. Its supplier’s supplier is not.",
   o:[{l:'Import the precursor from China (for now)',adv:.5,tip:"Fast. Makes this plant’s output PRC-dependent."},{l:'Qualify an allied source',$:.1,wait:20},{l:'Fund a domestic replacement',$:.3,wait:40}]},
- {id:'freeze',layer:'GRID',tags:['smelter','power'],mult:0,n:'Potline Freeze',
+ {id:'freeze',layer:'GRID',tags:['smelter','power'],mult:0,n:'Potline freeze',
   t:"A grid event cuts power for four hours and the molten bath solidifies. Restarting takes months and a jackhammer.",
   o:[{l:'Full restart',$:.15,wait:20},{l:'Restart one line, mothball the other',wait:8,yieldMul:.6}]},
- {id:'tooldown',layer:'ALLIED',tags:['electronics','energetic','line','assembly'],mult:.3,n:'Imported Tool Down',
+ {id:'tooldown',layer:'ALLIED',tags:['electronics','energetic','line','assembly'],mult:.3,n:'Imported tool down',
   t:"A critical Japanese machine is down. The spare part ships in six weeks; the technician needs a visa and site-access clearance.",
   o:[{l:'Wait for parts and tech',wait:12},{l:'Air-freight + expedited access',$:.05,pc:4,wait:4},{l:'Cannibalize the pilot line',yieldMul:.9}]},
- {id:'remote',layer:'GRID',icOff:'icGrid',tags:['greenfield','brownfield','line','assembly'],mult:.2,n:'Inverter Firmware Shutdown',
+ {id:'remote',layer:'GRID',icOff:'icGrid',tags:['greenfield','brownfield','line','assembly'],mult:.2,n:'Inverter firmware shutdown',
   t:"The plant’s foreign-made solar inverters and battery controllers took an overnight update. They are now off, and the vendor’s support line is in Shenzhen.",
   o:[{l:'Rip and replace the inverters',$:.08,wait:8},{l:'Run on grid power alone',yieldMul:.85},{l:'Wait for the vendor',wait:20}]},
- {id:'permitRenew',manual:1,layer:'PERMIT',mult:.6,n:'Operating Permit Renewal Contested',
+ {id:'permitRenew',manual:1,layer:'PERMIT',mult:.6,n:'Operating permit renewal contested',
   t:"The agency wants new monitoring, a tighter limit, or another public hearing before it renews. Until then the plant runs under restrictions.",
   o:[{l:'Accept the new conditions and retrofit',$:.05,wait:10},{l:'Negotiate a consent order',pc:6,wait:4},{l:'Run reduced until the hearing',wait:20}]},
- {id:'latemat',layer:'EXPERT',tags:['shipyard','subs','surface','heavy'],mult:.4,n:'Late Material & Design Rework',
+ {id:'latemat',layer:'EXPERT',tags:['shipyard','subs','surface','heavy'],mult:.4,n:'Late material & design rework',
   t:"Castings arrive late and modules built last year don’t fit modules designed this year. Deliveries slip 24–36 months, like recent Virginias.",
   o:[{l:'Rework in place',wait:26,know:5},{l:'Outsource modules to other yards',$:.3,wait:12,know:6},{l:"Bring in an allied shipbuilder’s planners",$:.2,wait:10,know:12}]},
- {id:'safety',layer:'PERMIT',tags:['energetic','shells','ap','srm'],mult:0,n:'Safety Stand-Down',
+ {id:'safety',layer:'PERMIT',tags:['energetic','shells','ap','srm'],mult:0,n:'Safety stand-down',
   t:"A near-miss in a hazardous building triggers a stand-down and a regulator inspection.",
   o:[{l:'Full investigation',wait:12,know:3},{l:'Expedited restart waiver',pc:10,wait:3,waiver:1}]},
 ];
@@ -3075,7 +3075,7 @@ const POWER_NODES=['al_primary','magnesium','ti_sponge'];
 function gmod(mult,weeks,label,stages=['build'],layer='LABOR'){S.gmods.push({mult,left:weeks,total:weeks,label,stages,dom:stages.includes('build'),layer})}
 const gmodOn=label=>S.gmods.some(g=>g.label===label);
 function spawnWhere(fn,id){for(const p of S.projects)if(fn(p)&&!p.obs.some(i=>i.id===id))spawnObs(p,id)}
-function freezeOne(){const pl=S.plants.find(p=>POWER_NODES.includes(p.target)&&!p.issue);if(pl){pl.issue={id:'freeze',wait:0};S.ledger.GRID.n++;log(`⚠ ${pl.nm}: Potline Freeze`,'bad')}else tmod('node','al_primary',.5,16,'Potline freeze')}
+function freezeOne(){const pl=S.plants.find(p=>POWER_NODES.includes(p.target)&&!p.issue);if(pl){pl.issue={id:'freeze',wait:0};S.ledger.GRID.n++;log(`⚠ ${pl.nm}: potline freeze`,'bad')}else tmod('node','al_primary',.5,16,'Potline freeze')}
 EVENTS.push(
  // ---- operating-plant disruptions
  {id:'strike',pre:"May 2025: 3,000 machinists struck Pratt & Whitney’s F-35 engine plants for three weeks. Boeing’s 2024 strike lasted seven.[c:pwstrike]",p:.0035,once:false,cond:()=>!S.tmods.some(m=>m.kind==='line'&&m.label==='Strike'),ic:'✊',t:'Strike shuts a prime contractor plant',
@@ -5129,7 +5129,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
    </div>
    <div class="trcol trass"><div class="trh"><b>Assessment</b><span>where things stand</span></div>${sitFindings()}</div>
    ${tbHTML(1)}
-   ${rollsHTML(r.rolls||[],'🎲 Your odds this turn')}
+   ${rollsHTML(r.rolls||[],'Your odds this turn')}
    <div class="trgrid">
     <div class="trcol"><div class="trh"><b>Problems your programs hit</b><span>${probs.length||'none'}</span></div>${probH}</div>
     <div class="trcol"><div class="trh"><b>News and results</b><span>${news.length||'none'}</span></div>${newsH}</div>
@@ -5173,29 +5173,29 @@ function yrHTML(){const r=S.yrRev;if(!r)return '';const {a,b}=r;
   const outH=Object.keys(LINES).map(c=>{const x=a.out[c]||0,y=b.out[c]||0,ch=x>0?y/x-1:0,rv=cnOut(c),vs=rv>0?y/rv:null;
     return `<div class="yro"><span class="tron">${LINES[c].n}</span><span class="trov">${fmtN(x)} <em>→</em> <b>${fmtN(y)}</b></span><span class="trd ${ch>.005?'up':ch<-.005?'dn':''}">${Math.abs(ch)<.005?'no change':(ch>0?'▲ +':'▼ −')+pct(Math.abs(ch))}</span><span class="yrrv">${fmtN(rv)}</span><span class="yrvs"><span class="yrvb"><i class="${vs!=null&&vs>=1?'ok':''}" style="width:${vs==null?0:Math.min(100,vs*100).toFixed(1)}%"></i></span><b class="${vs!=null&&vs>=1?'okt':'redt'}">${vs==null?'—':pct(vs)}</b></span></div>`}).join('');
   // what changed
-  const bl=r.bill,cong=bl?chips(`🏛 FY${bl.fy} ${billN()}: funded`,'ok',bl.got.length?bl.got:[])+(bl.got.length?'':`<div class="trpg"><span class="trlab">🏛 FY${bl.fy} ${billN()}</span><p class="trnone">Nothing you requested was funded.</p></div>`)+chips('Added by Congress','',bl.added)+chips('Not funded','no',bl.lost):`<div class="trpg"><span class="trlab">🏛 Congress</span><p class="trnone">No requests were in this year’s bill.</p></div>`;
+  const bl=r.bill,cong=bl?chips(`FY${bl.fy} ${billN()}: funded`,'ok',bl.got.length?bl.got:[])+(bl.got.length?'':`<div class="trpg"><span class="trlab">FY${bl.fy} ${billN()}</span><p class="trnone">Nothing you requested was funded.</p></div>`)+chips('Added by Congress','',bl.added)+chips('Not funded','no',bl.lost):`<div class="trpg"><span class="trlab">Congress</span><p class="trnone">No requests were in this year’s bill.</p></div>`;
   const sp=b.spend-a.spend,inc=b.inc-a.inc;
   const cnRows=[...r.cn.map(h=>[h.k<0?'Ended the truce early':CN_RUNGS[h.k].s+(h.f<1?' (eased by talks)':''),'step','redt']),['Pressure',`${Math.round(a.cn.heat)} → ${Math.round(b.cn.heat)} of 100`,b.cn.heat>a.cn.heat+.5?'redt':''],['Truce',r.truce?'holds':'none',r.truce?'okt':'']];
-  const chg=cong+chips('📜 Laws, rules and carve-outs','',r.laws.map(x=>`<em>${x.kind}:</em> ${x.n}`))+chips('🏭 Plants that started producing','ok',r.online)+chips('⛓ Bottlenecks cleared','ok',r.cleared.map(x=>`${LINES[x.c].n}: ${ND[x.id]?.n||'line capacity'}`))
-    +kv(`${FLAGS.cn} Beijing`,cnRows)
-    +kv('💰 Money',[['Weapons bought by Congress',money(S.procY||0)],['Came in',money(inc)],['Spent',money(sp)],['In hand',money(S.budget)],['Political Capital',`${Math.floor(S.pc)}: +${fmt(r.pcY.inc,0)} earned${r.pcY.sp>=.5?`, −${fmt(r.pcY.sp,0)} spent`:', none spent'}${Math.abs(r.pcY.ev)>=.5?`, ${r.pcY.ev>0?'+':'−'}${fmt(Math.abs(r.pcY.ev),0)} from events`:''}`]]);
+  const chg=cong+chips('Laws, rules and carve-outs','',r.laws.map(x=>`<em>${x.kind}:</em> ${x.n}`))+chips('Plants that started producing','ok',r.online)+chips('Bottlenecks cleared','ok',r.cleared.map(x=>`${LINES[x.c].n}: ${ND[x.id]?.n||'line capacity'}`))
+    +kv('Beijing',cnRows)
+    +kv('Money',[['Weapons bought by Congress',money(S.procY||0)],['Came in',money(inc)],['Spent',money(sp)],['In hand',money(S.budget)],['Political Capital',`${Math.floor(S.pc)}: +${fmt(r.pcY.inc,0)} earned${r.pcY.sp>=.5?`, −${fmt(r.pcY.sp,0)} spent`:', none spent'}${Math.abs(r.pcY.ev)>=.5?`, ${r.pcY.ev>0?'+':'−'}${fmt(Math.abs(r.pcY.ev),0)} from events`:''}`]]);
   // the year ahead
   const sc=S.scen&&SCD[S.scen],nxW=sc?(S.w<sc.mid?sc.mid:sc.dl):null,dlY=sc&&nxW>S.w?yrs(nxW-S.w):null,nx=CN_RUNGS[cnS().rung];
   const lim=r.lim.map(([id,cs])=>`<b>${ND[id].n}</b> hold${/s$/.test(ND[id].n.replace(/\s*\(.*\)$/,''))?'':'s'} back ${cs.map(c=>lc(LINES[c].n)).join(', ')}`);
   const ah=(lab,x)=>`<div class="tra"><span class="trlab">${lab}</span>${x}</div>`;
-  const ahead=ah('⏱ Next checkpoint',sc&&dlY?`${sc.n}: ${dlY} to ${nxW===sc.mid?'the halfway floors':'the real targets'}, ${fmtDate(nxW)}.`:`The race runs to ${fmtDate(END_W)}.`)
-    +ah('⛓ Biggest limits now',lim.length?lim.join('<br>'):'No input holds a line back right now: line capacity is the limit.')
-    +ah(`${FLAGS.cn} Beijing next`,nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year).`:'Nothing left to escalate.')
-    +(S.fac==='US'?ah('🏛 Next bill',`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}. Request plants, stockpile buys and reforms before then on the NDAA tab.`):'');
+  const ahead=ah('Next checkpoint',sc&&dlY?`${sc.n}: ${dlY} to ${nxW===sc.mid?'the halfway floors':'the real targets'}, ${fmtDate(nxW)}.`:`The race runs to ${fmtDate(END_W)}.`)
+    +ah('Biggest limits now',lim.length?lim.join('<br>'):'No input holds a line back right now: line capacity is the limit.')
+    +ah('Beijing next',nx?`${nx.s}, possible once pressure passes ${nx.th} (now ${Math.round(b.cn.heat)}, ${cnRate()>=0?'+':'−'}${Math.abs(cnRate())} a year).`:'Nothing left to escalate.')
+    +(S.fac==='US'?ah('Next bill',`Congress votes on the FY${pkgFY()} ${billN()} in December ${dateOf(billW()).getFullYear()}. Request plants, stockpile buys and reforms before then on the NDAA tab.`):'');
   return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('year',22)}</span>The year in review · ${r.y}</div><div class="bd">
-   <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,0)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines sufficient',`${b.suff}/${Object.keys(LINES).length}`,dl(a.suff,b.suff,v=>String(v)))}${tile('Bottlenecks cleared',r.cleared.length,'<i class="trd">this year</i>')}${tile('Beijing’s escalation',`${cnS().rung}/${CN_RUNGS.length}`,dl(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
+   <div class="trts">${tile('Share of the requirement',pct(b.race),dl(a.race*100,b.race*100,v=>fmt(v,0)+' pt'),'You and your allies, against what the plan requires.')}${tile('Lines sufficient',`${b.suff}/${Object.keys(LINES).length}`,dl(a.suff,b.suff,v=>String(v)))}${tile('Bottlenecks cleared',r.cleared.length,'<i class="trd">this year</i>')}${tile('Beijing’s export controls',`Step ${cnS().rung} of ${CN_RUNGS.length}`,dl(a.cn.rung,b.cn.rung,v=>v+' this year',-1))}</div>
    <div class="trcol yrout"><div class="trh"><b>Output per year</b><span>${r.y-1} → ${r.y} · against ${RV().n}</span></div>
     <div class="yro yrhd"><span>Line</span><span>A year ago → now</span><span>Change</span><span>${RV().n}</span><span>You vs. ${RV().n}</span></div>${outH}</div>
    <div class="trgrid">
     <div class="trcol"><div class="trh"><b>What changed</b><span>${r.y}</span></div>${chg}</div>
     <div class="trcol"><div class="trh"><b>The year ahead</b><span>${r.y+1}</span></div>${ahead}</div>
    </div>
-   ${rollsHTML((S.rolls||[]).filter(x=>x.w>a.w&&x.w<=b.w),'🎲 Your odds this year')}
+   ${rollsHTML((S.rolls||[]).filter(x=>x.w>a.w&&x.w<=b.w),'Your odds this year')}
    </div><div class="ft trft"><button class="pbtn" data-a="yrrec">${vic('rec')}The full record</button><button class="pbtn primary" data-a="close">Begin ${r.y+1} →</button></div></div>`}
 // the after-action report: verdict, tiles, then cards, like the turn report and the year in review
 function endHTML(L,tot){const out=S.lastOut||production(false).out,idx=raceIdx(out),cs=Object.keys(LINES),n=cs.length;
@@ -8613,9 +8613,9 @@ function renderModal(){
     html=endHTML(L,tot);
   } else if(S.queue.length){
     const q=S.queue[0];
-    if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework Target Met':'Inspector General: Output Far Below Goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${lc(L.n)}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
+    if(q.sys==='fw'){const L=LINES[q.lid];html=`<div class="paper"><div class="hd"><span class="ic">${q.r>=.7?'📈':'📉'}</span>${q.r>=.7?'Framework target met':'Inspector General: output far below goal'}</div><div class="bd"><p>Three years ago you announced a framework agreement for ${lc(L.n)}. Actual output is at <b>${pct(q.r)}</b> of the announced capacity.</p><p>${q.r>=.7?'The ribbon-cutters were, for once, right. (+10 PC)':'"Capacity does not equate to actual production," notes the report. Headlines follow. (−20 PC)'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else if(q.sys==='outcome'){html=outHTML(q).replace(/\bknow-how\b/g,'Know-how')}
-    else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in Conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
+    else if(q.sys){const R=RD[q.id];html=`<div class="paper"><div class="hd"><span class="ic">${q.sys==='pass'?'✅':'❌'}</span>${q.sys==='pass'?'Enacted':'Stripped in conference'}</div><div class="bd"><p><b>${rname(R)}</b></p><p>${q.sys==='pass'?R.d:'The bill died in conference over an unrelated provision. Political Capital spent is gone. You may reintroduce it at a discount.'}</p></div><div class="ft"><button class="pbtn" data-a="evopt" data-k="-1">Continue</button></div></div>`}
     else{const e=ED[q.ev];if(!q.fxDone&&e.fx){e.fx();q.fxDone=1}
       const opts=q.read?[{l:'Close'}]:V(e.o)||[{l:'OK'}],b=V(e.body);
       const nq=S.queue.filter(x=>x.ev&&!x.read).length;
