@@ -1789,6 +1789,7 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .mklock{margin:4px 0 0;font:13px var(--f-body);color:#3a3020}#view .mktag{margin-top:2px}
 .mkp .mkt td{vertical-align:middle}.mkp .mkact{text-align:right;white-space:nowrap}.mkp .mkul{margin:0;padding-left:18px;font:13px/1.55 var(--f-body);color:#2b241a}.mkp .mkul li{margin:0 0 4px}.mkp .mkul li.mkbad{color:#7a2a20}
 @media(max-width:760px){#view .mkcyc{grid-template-columns:repeat(2,minmax(0,1fr))}.mkp .mkact{white-space:normal}}
+.nodem{cursor:help;border-bottom:1px dotted currentColor;font-weight:600}
 </style>
 </head>
 <body>
@@ -3757,6 +3758,14 @@ function needCalc(P){
   return need;
 }
 function chainOf(P,id){const path=[id];let cur=id;while(P[cur].starvedBy&&path.length<7&&!path.includes(P[cur].starvedBy)){cur=P[cur].starvedBy;path.push(cur)}return path}
+function idleWhy(id,P){const par=ORDER.filter(x=>ND[x].in.includes(id)),L=Object.keys(LINES).filter(l=>LINES[l].in.includes(id));
+  const live=par.filter(x=>P[x].need>1e-6);
+  if(!par.length&&!L.length)return `Nothing you build uses ${lc(ND[id].n)}.`;
+  if(live.length){const nm=lst2(live.map(x=>lc(ND[x].n)));return `No defense demand for ${lc(ND[id].n)} right now. Imported ${nm} cover${live.length===1&&!/s$/.test(nm)?'s':''} what your lines need, so the US plants that would make ${live.length===1&&!/s$/.test(nm)?'it':'them'} from ${lc(ND[id].n)} sit idle. If those imports are cut, as Beijing’s export controls can do, those plants start up and demand for ${lc(ND[id].n)} returns.`}
+  return `No defense demand for ${lc(ND[id].n)} right now: the items made from it are not needed by your lines at today’s orders.`}
+const lst2=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join('');
+// coverage, or a plain statement that there is no demand, with the reason on hover
+const covTxt=(id,P,none='no demand now')=>P[id].need>1e-6?pct(Math.min(P[id].cover,9.99)):`<span class="nodem" data-tip="${tipQ(idleWhy(id,P))}">${none}</span>`;
 function nodeStatus(p){if(p.need<1e-6)return 'idle';if(p.lost>.05*(p.ext+p.lost+.0001)&&p.cover<1)return 'cut';if(p.cover<.8)return 'short';if(p.cover<1)return 'tight';return 'ok'}
 
 /* ---------- forces ---------- */
@@ -6004,7 +6013,7 @@ function supplyWeb(id,P){
   // inputs
   ins.forEach((i,k)=>{const y=rowY(k,nIn),st=nodeStatus(P[i]),b=i===bind;
     g+=`<path d="M${IX},${y+20} C${IX+50},${y+20} ${CX-60},${cyM} ${CX-4},${cyM}" fill="none" stroke="${b?ST_C.short:ST_C[st]}" stroke-opacity="${b?.9:.55}" stroke-width="${b?2.6:1.5}"/>`;
-    g+=`<g class="swr" data-a="node" data-n="${i}" data-tip="${srcTip(i,P)}"><rect x="0" y="${y}" width="300" height="${RH-4}" fill="transparent"/><text x="0" y="${y+11}" class="swn${b?' swb':''}">${ND[i].n}${b?' · ⛓ binds':''}</text><text x="296" y="${y+11}" text-anchor="end" class="swp" fill="${ST_C[st]}">${P[i].need>1e-6?pct(Math.min(P[i].cover,9.99)):'—'}</text>${srcBar(i,P,0,y+15,296,10)}</g>`});
+    g+=`<g class="swr" data-a="node" data-n="${i}" data-tip="${srcTip(i,P)}"><rect x="0" y="${y}" width="300" height="${RH-4}" fill="transparent"/><text x="0" y="${y+11}" class="swn${b?' swb':''}">${ND[i].n}${b?' · ⛓ binds':''}</text><text x="296" y="${y+11}" text-anchor="end" class="swp" fill="${ST_C[st]}">${P[i].need>1e-6?pct(Math.min(P[i].cover,9.99)):'no demand'}</text>${srcBar(i,P,0,y+15,296,10)}</g>`});
   if(!ins.length)g+=`<text x="0" y="${cyM+4}" class="swm">Mined or made from raw stock: no tracked inputs.</text>`;
   // what allies make of this weapon: it does not pass through US plants, so it feeds the total directly
   if(isL&&alv>1e-9){const y=rowY(ins.length,nIn)+gapA,tot=o.yr+alv,A=AL();g+=`<text x="0" y="${y-10}" class="swh">Made abroad · share of total output</text>`;
@@ -6222,7 +6231,7 @@ function dossierHTML(id,P){
     if(n.in.length)groups[`Raise the materials ceiling <span class="grps">— fix what it is made from: ${n.in.map(i=>`<span class="linkn" data-a="node" data-n="${i}">${lc(ND[i].n)}</span>`).join(', ')}</span>`]=[];
     const act=S.projects.filter(q=>PD[q.def].t.node===id),plants=S.plants.filter(q=>q.target===id),fl=S.nflags[id]||{};
     const sameTier=NODES.filter(x=>x.t===n.t),ix=sameTier.findIndex(x=>x.id===id);
-    main=`${crumb()}<div class="dhead"><span class="dic dtier" data-tip="Tier ${n.t}: ${TIERS[n.t]}">T${n.t}</span><div><h3>${n.n}</h3><div class="sub2">Tier ${n.t} · ${TIERS[n.t]} · <b class="st-t-${st}">${st.toUpperCase()}</b> · cover ${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'} · PRC exposure ${pct(p.expo)} · <span class="linkn" data-a="why" data-k="know" data-c="${id}">know-how ${Math.round(S.know[id])}</span></div><div class="dlede">${n.d}</div></div><span class="dsp"></span>${back}
+    main=`${crumb()}<div class="dhead"><span class="dic dtier" data-tip="Tier ${n.t}: ${TIERS[n.t]}">T${n.t}</span><div><h3>${n.n}</h3><div class="sub2">Tier ${n.t} · ${TIERS[n.t]} · ${st==='idle'?`<b class="st-t-idle nodem" data-tip="${tipQ(idleWhy(id,P))}">NO DEMAND NOW</b>`:`<b class="st-t-${st}">${st.toUpperCase()}</b> · cover ${pct(Math.min(p.cover,9.99))}`} · PRC exposure ${pct(p.expo)} · <span class="linkn" data-a="why" data-k="know" data-c="${id}">know-how ${Math.round(S.know[id])}</span></div><div class="dlede">${n.d}</div></div><span class="dsp"></span>${back}
       <button class="pbtn sm" data-a="node" data-n="${sameTier[(ix-1+sameTier.length)%sameTier.length].id}">‹</button><button class="pbtn sm" data-a="node" data-n="${sameTier[(ix+1)%sameTier.length].id}">›</button><div class="jtabs"><button data-a="ovjump" data-s="#makers">🏭 Producers</button><button data-a="flow" data-f="${id}">⇶ Flows</button></div></div>
      ${nodeLinks(id)}<!--CEIL-->${raisePanel(id,P)}<!--AOHERE--><div class="dsec"><h4>${n.in.length?'Made from, and what it feeds':'Where it goes'}</h4>${supplyWeb(id,P)}</div><div class="dsec"><h4>Why it matters</h4><p>${n.d}</p>${I.why?`<p>${I.why}</p>`:''}${n.ss?`<p class="warnp">⚠ ${n.ss}.</p>`:''}
       <div class="kv"><b>Feeds</b><span class="chipsP">${CONSUMERS[id].map(c=>c.startsWith('L:')?`<span class="npill np-ok" data-a="node" data-n="${c}">${LINES[c.slice(2)].n}</span>`:pill(c,P)).join('')}</span><b>Ends up in</b><span>${ends.map(l=>`<span class="linkn" data-a="node" data-n="L:${l}">${LINES[l].n}</span>`).join(' · ')}</span></div></div>
@@ -6949,7 +6958,7 @@ function madeBody(){const R=S._R||production(false),P=R.P,f=S.mdF||'all';
   const row=id=>{const x0=srcSplit(id,P),p0=P[id],x={...x0,dom:x0.need>1e-6?x0.dom:p0.dom},d=Math.max(x.dom+x.ally+x.neut+x.spot+x.prc+x.lost,1e-9),tot=Math.max(x.need,x.dom+x.ally+x.neut+x.spot+x.prc+x.lost,1e-9),W=v=>(v/tot*100).toFixed(1),b=allyBar(id),src=S.nodes[id].ally.src;let l=0;
     const seg=(v,c)=>{const o=`<i style="left:${W(l)}%;width:${W(v)}%;background:${c}"></i>`;l+=v;return o};
     return `<tr class="trc" data-n="${id}"><td><span class="linkn" data-a="node" data-n="${id}">${ND[id].n}</span></td><td><div class="mdbar">${seg(x.dom,SRC_C.dom)}${seg(x.ally,SRC_C.ally)}${seg(x.neut,SRC_C.neut)}${seg(x.spot,SRC_C.spot)}${seg(x.prc,SRC_C.prc)}${x.lost>0?`<i class="mdcut" style="left:${W(l)}%;width:${W(x.lost)}%"></i>`:''}<span class="mdneed" style="left:${W(x.need)}%"></span></div></td>`+
-      cell(x.dom,d,'#3f6b33')+cell(x.ally+x.spot,d,'#2f62a0')+cell(x.neut,d,'#8a6d1f')+cell(x.prc,d,'#a3261c')+cell(x.lost,d,'#8a1f15')+`<td class="mdv"><b class="${x.need>1e-6&&P[id].cover<.8?'redt':x.need>1e-6&&P[id].cover<.999?'st-t-tight':''}">${x.need>1e-6?pct(Math.min(P[id].cover,9.99)):'no demand'}</b></td>`+
+      cell(x.dom,d,'#3f6b33')+cell(x.ally+x.spot,d,'#2f62a0')+cell(x.neut,d,'#8a6d1f')+cell(x.prc,d,'#a3261c')+cell(x.lost,d,'#8a1f15')+`<td class="mdv"><b class="${x.need>1e-6&&P[id].cover<.8?'redt':x.need>1e-6&&P[id].cover<.999?'st-t-tight':''}">${x.need>1e-6?pct(Math.min(P[id].cover,9.99)):covTxt(id,P)}</b></td>`+
       `<td class="mdn">${b?`<span class="linkn redt" data-a="rbgo" data-d="source" data-tip="${tipQ(spotNone(id))}">⚖ Allies barred by law</span>`:src?src:''}${x.spot>.005?`${b||src?' · ':''}spot ${pct(x.spot/d)}`:''}</td></tr>`};
   const btn=(v,l)=>`<button class="pbtn sm ${f===v?'on':''}" data-a="mdf" data-v="${v}">${l}</button>`;
   let h=`<div class="sktool" style="padding:0 0 6px"><span class="lab">Show</span>${btn('all','Everything')}${btn('short','Short now')}${btn('foreign','Mostly foreign')}${btn('barred','Allies barred by law')}</div>
@@ -7215,7 +7224,7 @@ function nodeRow(id,P,trk){
   const domUse=Math.min(p.dom,Math.max(0,p.avail0-p.ext-(S.stock[id]||0)));
   return `<div class="nrow trc" data-a="node" data-n="${id}"><div class="top"><span class="nm">${n.n}</span><span>${trk?trkChip(trkOf(id),id)+' ':''}${n.ss?`<span class="tag ss" data-tip="<b>Sole source</b><br>${tipQ(n.ss)}">Sole source</span> `:''}${p.div>1e-9?'<span class="tag dpa" data-tip="Defense orders are taking supply that civilian buyers would have had.">DPA</span> ':''}${S.fac==='US'&&S.dfars&&DFARS_NODES.includes(id)&&!carveOn('cvDfars')?'<span class="tag ban" title="DFARS: PRC-linked supply unusable">DFARS</span> ':''}${stTag(st)} <span class="tag kh khl" data-a="why" data-k="know" data-c="${id}" data-tip="<b>Know-how</b><br>How practised US industry is at making it, 0–100. Click for what it changes and what moved it.">Know-how ${Math.round(S.know[id])}</span></span></div>
    <div class="bar"><i style="left:0;width:${W(domUse)}%;background:var(--green)"></i><i style="left:${W(domUse)}%;width:${W(p.ally+p.spot+p.div)}%;background:var(--blue)"></i><i style="left:${W(domUse+p.ally+p.spot+p.div)}%;width:${W(p.neut)}%;background:#c2a04e"></i><i style="left:${W(domUse+p.ally+p.spot+p.div+p.neut)}%;width:${W(p.prc)}%;background:#a03a30"></i><i class="hatch" style="left:${W(domUse+p.ext)}%;width:${W(p.lost)}%"></i><span class="need" style="left:${Math.min(99.5,W(p.need))}%"></span></div>
-   <div class="nums"><span>Cover <b class="${st==='ok'?'green':st==='tight'?'amber':'red'}">${p.need>1e-6?pct(Math.min(p.cover,9.99)):'—'}</b></span>${p.need>1e-6?[['Dom',domUse],['Ally',p.ally],['Neut',p.neut],['PRC',p.prc]].filter(x=>x[1]/p.need>.005).map(x=>`<span>${x[0]} ${pct(x[1]/p.need)}</span>`).join(''):''}${p.starvedBy?`<span class="red">Starved by ${lc(ND[p.starvedBy].n)}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
+   <div class="nums"><span>Cover <b class="${st==='ok'||st==='idle'?'green':st==='tight'?'amber':'red'}">${covTxt(id,P)}</b></span>${p.need>1e-6?[['Dom',domUse],['Ally',p.ally],['Neut',p.neut],['PRC',p.prc]].filter(x=>x[1]/p.need>.005).map(x=>`<span>${x[0]} ${pct(x[1]/p.need)}</span>`).join(''):''}${p.starvedBy?`<span class="red">Starved by ${lc(ND[p.starvedBy].n)}</span>`:''}${S.stock[id]>0?'<span class="gold">stockpile</span>':''}</div></div>`;
 }
 /* ---------- defense needs: per end item, what the campaign requires vs what you have and build ---------- */
 function needsProj(R){if(S._np?.w===S.w)return S._np.pj;const prod={};for(const c in LINES)prod[c]=R.out[c].yr;const pj=project(prod,true);S._np={w:S.w,pj};return pj}
