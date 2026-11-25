@@ -1677,6 +1677,43 @@ details.dbg>summary.dbgh::before{content:"▸";font-size:12px}details.dbg[open]>
 #view .ndbody .ndaaref>h2{display:none}
 #view .pdreq{flex-basis:100%;margin:2px 0 4px;padding-left:18px;font:12.5px/1.45 var(--f-body);color:#2b241a}#view .pdbars:has(> :nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
 #view .pdfixed{margin:2px 0 8px;padding:6px 10px;border-left:3px solid #8a7850;background:#f5eedb;color:#4a3d24;line-height:1.45}
+/* ===== Command, toward the opening screen ===== */
+/* 1. masthead */
+#needs .cmast{position:relative;margin:0;padding:16px 20px 30px;background:radial-gradient(ellipse at 80% 0%,#3a331f 0%,transparent 60%),linear-gradient(#24261d,#1a1c16);border-bottom:1px solid #6b5d38}
+#needs .cm-k{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:700 10.5px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:#c9952a}
+#needs .cm-rv{display:flex;align-items:center;gap:6px;color:#b9ae90;letter-spacing:.08em}#needs .cm-rv .rc-pick{display:inline-flex;gap:4px;letter-spacing:0;text-transform:none}
+#needs .cm-how{margin-left:auto;letter-spacing:0;text-transform:none;font:600 12px var(--f-body)}
+#needs .cm-row{display:flex;align-items:flex-end;gap:20px;margin-top:6px}#needs .cm-tt{flex:1;min-width:0}
+#needs .cmast h1{margin:0;font:700 34px/1.05 var(--f-head);color:#f3e6c4;letter-spacing:.01em}
+#needs .cm-sub{margin-top:6px;font:13px var(--f-body);color:#d8cfb2}#needs .cm-sub b{color:#f3d98a}
+#needs .cm-big{display:grid;grid-template-columns:auto auto;column-gap:10px;align-items:center;cursor:pointer;padding:6px 0 0 18px;border-left:1px solid #4a4230}
+#needs .cm-big b{grid-row:span 2;font:700 46px/1 var(--f-head);color:#f3e6c4}#needs .cm-big b.redt{color:#e8806e}#needs .cm-big b.okt{color:#9fd08a}
+#needs .cm-big span{font:12px/1.3 var(--f-body);color:#b9ae90}#needs .cm-big i{font:normal 12px var(--f-body);color:#8fb6e0}
+#needs .cm-tl{position:relative;margin:18px 10px 0;height:30px}#needs .cm-line{position:absolute;left:0;right:0;top:5px;height:2px;background:#4a4230}#needs .cm-line i{display:block;height:100%;background:#c9952a}
+#needs .cm-pt{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;white-space:nowrap}
+#needs .cm-pt::before{content:"";width:12px;height:12px;border-radius:50%;border:2px solid #8a7850;background:#1a1c16}
+#needs .cm-pt.done::before,#needs .cm-now::before{background:#c9952a;border-color:#c9952a}#needs .cm-now::before{box-shadow:0 0 0 4px #c9952a33}
+#needs .cm-pt b{margin-top:3px;font:700 11.5px var(--f-body);color:#efe6cf}#needs .cm-pt em{font:normal 11px var(--f-body);color:#9c916f}
+#needs .cm-pt:first-of-type{transform:none;align-items:flex-start}#needs .cm-end{transform:translateX(-100%);align-items:flex-end}
+#needs .cmast+* {margin-top:10px}
+#needs .sc-card .sc-ch>b,#needs .sc-card .sc-ch>.sc-ic,#needs .sc-card .sc-ch>.sc-clock,#needs .sc-card .sc-ch>.sc-brief{display:none}
+/* 2. the center leads; the sides are quieter */
+#main{grid-template-columns:318px minmax(520px,1fr) 372px}
+#supply>h2,#right>h2:not(.csec){font-size:16px!important;color:#d8cfb2!important}
+#supply,#right{--cream:#e3dac0}#supply .csec>span:first-child,#right h2.csec{font-size:14.5px!important}
+/* 3. a calmer palette: change flashes as a soft gold edge, tracing dims less */
+@keyframes flb{0%{background:rgba(201,149,42,.18);box-shadow:inset 3px 0 0 #d0503f}100%{background:transparent;box-shadow:inset 3px 0 0 transparent}}
+@keyframes flg{0%{background:rgba(201,149,42,.18);box-shadow:inset 3px 0 0 #7fae5f}100%{background:transparent;box-shadow:inset 3px 0 0 transparent}}
+#app.tracing .trc:not(.hot){opacity:.45}
+/* 5. the top bar: three labelled groups, serif figures, the turn button like the opening screen's Begin */
+#top .tgrp{display:flex;flex-direction:column;gap:1px;padding:0 8px;border-left:1px solid #3f3b2b}#top .tgrp:first-of-type{border-left:0}
+#top .tgl{font:700 9px var(--f-body);letter-spacing:.16em;text-transform:uppercase;color:#8a7850;padding-left:4px}#top .tgi{display:flex;gap:2px}
+#top .tgrp .res{height:auto;padding:1px 6px 2px;justify-content:flex-start;background:transparent;border-color:transparent;box-shadow:none;min-width:58px}#top .tgrp .res:hover{background:#ffffff0a;border-color:#3f3b2b}
+#top .tgrp .res b{font:700 17px/1.1 var(--f-head);letter-spacing:0}#top .tgrp .res span{font:600 9px/1.2 var(--f-body);letter-spacing:.08em;margin-top:1px}#top .tgl{line-height:1.1}
+#top .turnbtn{background:linear-gradient(#c9952a,#a8781c);border:1px solid #e0b24a;color:#231a0c;font:700 15px var(--f-head);padding:8px 18px;border-radius:5px}#top .turnbtn:hover{background:linear-gradient(#d8a536,#b8862a)}
+/* 7. one type scale: page and panel titles serif; sections serif; labels small capitals; looser body */
+#main .panel{line-height:1.45}#needs .brh b{font-size:17px!important}#app .rc-rrow .rc-ttl b{font-family:var(--f-head);letter-spacing:.01em;text-transform:none!important;font-size:17px!important}
+@media (max-width:760px){#needs .cm-row{flex-wrap:wrap}#needs .cmast h1{font-size:26px}#needs .cm-big{border-left:0;padding-left:0}#needs .cm-big b{font-size:36px}#top .tgl{display:none}}
 </style>
 </head>
 <body>
@@ -7827,6 +7864,18 @@ function lineMix(c,R,compact){const o=R.out[c],us=o.yr,al=allyOut(c),t=us+al,e=o
   const ex=us>1e-9?`<span class="linkn lmex" data-a="why" data-k="expo"><b class="${ec}">${pct(e)}</b> Chinese and Russian content</span>`:'';
   return {us,al,sh:us/t,e,html:compact?`<span class="lmx" data-tip="${tip}">US ${pct(us/t)} · allies ${pct(al/t)}${us>1e-9?` · <b class="${ec}">${pct(e)}</b> Chinese & Russian content`:''}</span>`
     :`<span class="lmx" data-tip="${tip}">Made: <b class="lmus">US ${pct(us/t)}</b> · <b class="lmal">allies ${pct(al/t)}</b>${ex?` · US-made: ${ex}`:''}</span>`}}
+// the masthead: the mandate, where you stand, and the road to its two checkpoints
+function cmMast(R,pick){const sc=S.scen?SCD[S.scen]:null,idx=raceIdx(R.out),o=S.w>=PLAY0&&!S.histMode?trkAll():null,res=S.scenRes,mid=S.scenMid;
+  const t0=PLAY0,t1=END_W,X=w=>Math.max(0,Math.min(100,(w-t0)/(t1-t0)*100)),mw=sc?.mid??weekOf(2030,0,7),dw=sc?.dl??END_W;
+  const nextW=S.w<mw?mw:dw,left=Math.max(0,nextW-S.w),until=left>52?`${fmt(left/52,1)} years`:`${left} weeks`;
+  const title=sc?sc.n:'The Open Race';
+  return `<section class="cmast"><div class="cm-k"><span>${sc&&!sc.open?'Your mandate':'Your own race'}</span><span class="cm-rv">arming against ${pick}</span>${sc?'<span class="linkn cm-how" data-a="sbrief">How you are judged →</span>':''}</div>
+   <div class="cm-row"><div class="cm-tt"><h1>${title}</h1><div class="cm-sub">${res?`<b>${res.verdict}</b> in January 2035`:`${until} to the ${nextW===mw?'halfway check':'final verdict'}, ${MON[dateOf(nextW).getMonth()]} ${dateOf(nextW).getFullYear()}${mid?` · 2030: ${mid.verdict}`:''}`}</div></div>
+    <div class="cm-big" data-a="why" data-k="suff" data-tip="How the share is worked out"><b class="${idx>=1?'okt':idx>=.6?'':'redt'}">${pct(idx)}</b><span>of the requirement<br>you and your allies</span>${o?`<i>2035 outlook ${pct(o.end)}</i>`:''}</div></div>
+   <div class="cm-tl"><div class="cm-line"><i style="width:${X(S.w)}%"></i></div>
+    <span class="cm-pt cm-now" style="left:${X(S.w)}%"><b>Today</b><em>${fmtDate(S.w)}</em></span>
+    <span class="cm-pt ${S.w>=mw?'done':''}" style="left:${X(mw)}%"><b>January 2030</b><em>halfway check</em></span>
+    <span class="cm-pt cm-end ${S.w>=dw?'done':''}" style="left:${X(dw)}%"><b>January 2035</b><em>final verdict</em></span></div></section>`}
 function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w=>dateOf(w).getFullYear(),sl=slipF().f,A=AL();
   const ago=S.hist.filter(h=>h.prod&&h.w<=S.w-52).at(-1),d=ago?(idx-raceIdx(null,ago.w,c=>ago.prod[c]))*100:null;
   const enough=cs.filter(c=>suffLine(c,out[c].yr)>=.999).length;
@@ -7865,15 +7914,9 @@ function renderGame(){
   const nextCr=(CRISES[S.fac]||[]).find(c=>c[1]>S.w);const rate=pcRate();
   const nf=nextFunds(),dpn=decisionsPending(),firstStuck=S.projects.find(p=>p.obs.length&&!p.obs[0].wait)||S.plants.find(pl=>pl.issue&&!pl.issue.wait),shortL=S.order.filter(c=>R.out[c].bott).length;
   const top=`<div id="top"><button class="logo" data-a="home" data-tip="Back to Command"><span class="lgf">ARSENAL <small>of</small> BUREAUCRACY</span><span class="lgs">AoB</span></button>
-    ${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Click for the calculation.`,'why','data-k="suff"')}<i class="tsep"></i>
-    ${res(S.sandbox?'∞':`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Click for its page.`,'why','data-k="pc"')}
-    ${res(S.sandbox?'∞':`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,'Budget',`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.<br>Click for its page.`,'why','data-k="budget"')}
-    ${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,'Request',`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br>Click for its page.<br><br>${OFF_TIP}`,'why','data-k="req"',over.length?'rwarn':'')})()}<i class="tsep"></i>
-    ${res(dpn,TURN()||!dpn?'Decisions':`Decisions · ⏱ ${nextDue()??DECIDE_WK} wk`,dpn?`<b>Waiting on you</b><br>${TURN()?'The turn waits for each one; nothing is decided for you.':`Each takes its default after ${DECIDE_WK} weeks.`} Click for the list.`:'Nothing is waiting on you.','why','data-k="dec"',dpn?'ralert':'rquiet')}
-    ${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short',`<b>Weapon lines short of parts: ${shortL} of ${S.order.length}</b><br>The game tracks ${S.order.length} weapon lines. One counts here when a part or material it needs is short, so it makes less than its own factories could.${shortL?'<br>'+S.order.filter(c=>R.out[c].bott).map(c=>`• ${LINES[c].n}: short of ${lc(ND[R.out[c].chain.at(-1)||R.out[c].bott]?.n||'parts')}`).join('<br>'):''}<br>Click for its page.`,'why','data-k="short"',shortL?'rwarn':'')}<i class="tsep"></i>
-    ${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'Exposure','<b>PRC exposure: Chinese and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Click for its page.','why','data-k="expo"')}
-    ${S.sandbox?'':res(`${Math.round(S.strain)}`,'Strain',`<b>Civilian strain: ${Math.round(S.strain)} of 100</b><br>How hard the defense push squeezes civilian buyers. Above 30 it costs elections and starts events.<br>Click for its page.`,'why','data-k="strain"',S.strain>=50?'ralert':S.strain>=30?'rwarn':'')}
-    ${S.sandbox?'':res(`${Math.round(S.lev)}`,'Leverage',`<b>Prime contractors’ leverage: ${Math.round(S.lev)} of 100</b><br>How much bargaining power the big contractors hold. Above 50 their work costs more and they fight reforms that cut it; above 60 they push back more often.<br>Heading toward ${Math.round(levTarget().v)}, set by who holds the base.<br>Click for its page.`,'why','data-k="lev"',S.lev>=60?'rwarn':'')}
+    <div class="tgrp"><span class="tgl">Position</span><div class="tgi">${res(`${pct(raceIdx(R.out))} ${resDelta('race',raceIdx(R.out)*100,1,x=>fmt(x,0)+'pt')}`,'Sufficiency',`<b>Sufficiency</b><br>Your output plus allied output, as a share of what the plan requires, averaged across the end-item lines. Click for the calculation.`,'why','data-k="suff"')}${res(`${shortL}/${S.order.length} ${resDelta('short',shortL,-1)}`,'Lines short',`<b>Weapon lines short of parts: ${shortL} of ${S.order.length}</b><br>The game tracks ${S.order.length} weapon lines. One counts here when a part or material it needs is short, so it makes less than its own factories could.${shortL?'<br>'+S.order.filter(c=>R.out[c].bott).map(c=>`• ${LINES[c].n}: short of ${lc(ND[R.out[c].chain.at(-1)||R.out[c].bott]?.n||'parts')}`).join('<br>'):''}<br>Click for its page.`,'why','data-k="short"',shortL?'rwarn':'')}${res(`${pct(R.exposure)} ${resDelta('expo',R.exposure*100,-1,x=>fmt(x,0)+'pt')}`,'Exposure','<b>PRC exposure: Chinese and Russian content</b><br>In what you build, including content hidden in allied and domestic supply. Click for its page.','why','data-k="expo"')}</div></div>
+    <div class="tgrp"><span class="tgl">Resources</span><div class="tgi">${res(S.sandbox?'∞':`${Math.floor(S.pc)} <i class="${rate>=0?'green':'red'}">${rate>=0?'+':''}${fmt(rate,1)}/wk</i>${spentTag('pc')}`,'Capital',`<b>Political capital</b><br>Spent on NDAA requests, reforms, rules, carve-outs and workarounds.<br>${pcParts().map(([n,v])=>`${n}: ${v>=0?'+':'−'}${fmt(Math.abs(v*52),0)}/yr`).join('<br>')}<br>Click for its page.`,'why','data-k="pc"')}${res(S.sandbox?'∞':`${money(S.budget)} ${resDelta('budget',S.budget,1,x=>money(x))}${spentTag('$')}`,'Budget',`<b>Industrial budget</b><br>Launches, spot buys, shifts and paid workarounds.<br>Next funding ${fmtDate(nf.w)}: +${money(nf.amt)}.<br>Click for its page.`,'why','data-k="budget"')}${(()=>{const L=officeLoad(),over=Object.keys(L).filter(k=>L[k].f<1);return res(`${pkgItems().length}`,'Request',`<b>FY${pkgFY()} request</b><br>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}${pkgItems().length?` · ${money(pkgSum())}`:''}, waiting for Congress (~${fmtDate(pkgWhen())}).${over.length?`<br><span style='color:#e8a090'>Stretched: ${over.map(k=>OFFICES[k].n).join(', ')}</span>`:''}<br>Click for its page.<br><br>${OFF_TIP}`,'why','data-k="req"',over.length?'rwarn':'')})()}</div></div>
+    <div class="tgrp"><span class="tgl">Pressure</span><div class="tgi">${S.sandbox?'':res(`${Math.round(S.strain)}`,'Strain',`<b>Civilian strain: ${Math.round(S.strain)} of 100</b><br>How hard the defense push squeezes civilian buyers. Above 30 it costs elections and starts events.<br>Click for its page.`,'why','data-k="strain"',S.strain>=50?'ralert':S.strain>=30?'rwarn':'')}${S.sandbox?'':res(`${Math.round(S.lev)}`,'Leverage',`<b>Prime contractors’ leverage: ${Math.round(S.lev)} of 100</b><br>How much bargaining power the big contractors hold. Above 50 their work costs more and they fight reforms that cut it; above 60 they push back more often.<br>Heading toward ${Math.round(levTarget().v)}, set by who holds the base.<br>Click for its page.`,'why','data-k="lev"',S.lev>=60?'rwarn':'')}${res(dpn,TURN()||!dpn?'Decisions':`Decisions · ⏱ ${nextDue()??DECIDE_WK} wk`,dpn?`<b>Waiting on you</b><br>${TURN()?'The turn waits for each one; nothing is decided for you.':`Each takes its default after ${DECIDE_WK} weeks.`} Click for the list.`:'Nothing is waiting on you.','why','data-k="dec"',dpn?'ralert':'rquiet')}</div></div>
     <div class="spacer"></div>
     ${S.cr>0?`<div class="crbadge">CR · ${S.cr} wk</div>`:''}
     ${nextCr?`<div class="sub" style="white-space:nowrap">⚔ ${nextCr[3].replace(/^the /,'')} · ${yrs(nextCr[1]-S.w)}</div>`:''}
@@ -7985,7 +8028,7 @@ function renderGame(){
   pr+=capH;
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog','🏗 Development pipeline'],['fac','🏭 Factories'],['home','🏛 Home front']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${l}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
-  const nd=`<h2>Arming against <span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span></h2>${raceHTML(R)}`;
+  const nd=`${cmMast(R,`<span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span>`)}${raceHTML(R)}`;
   const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').slice(0,140)}</span>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
