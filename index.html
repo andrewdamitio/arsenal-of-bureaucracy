@@ -4574,9 +4574,9 @@ const setTimeout0=f=>f();
 const apQ=()=>(S.apQ=S.apQ||[]),apOf=fy=>{S.apr=S.apr||{};return S.apr[fy]};
 const apCut=fy=>clamp(moodOf(fy).f*.06,.02,.3);
 // the week the next appropriations act can pay for authorized items
-function apWhen(){const fy=FYOF(S.w),a=apOf(fy);if(a&&!a.done&&!a.full)return Math.max(S.w,a.w);
+function apWhen(){const fy=FYOF(S.w),a=apOf(fy);if(a&&!a.done&&!a.full&&a.w!=null)return Math.max(S.w,a.w);
   const d=dateOf(S.w);let y=d.getFullYear();if(d.getMonth()>=9)y++;return weekOf(y,9,1)+10}
-function apNext(){const fy=FYOF(S.w),a=apOf(fy);if(a&&!a.done)return {fy,w:a.w,full:a.full};
+function apNext(){const fy=FYOF(S.w),a=apOf(fy);if(a&&!a.done&&a.w!=null)return {fy,w:a.w,full:a.full};
   const d=dateOf(S.w);let y=d.getFullYear();if(d.getMonth()>=9)y++;return {fy:fy+1,w:weekOf(y,9,1),est:1}}
 function fyPay(fy){const a=apOf(fy)||(S.apr[fy]={});if(a.paid)return;a.paid=1;const fb=fyBud(S.w);gainB(fb,'Annual appropriations');S.repro=0;S.nsr=0;
   log(`FY${fy%100} defense appropriations${a.full?' (a full-year continuing resolution)':''}: your industrial-base budget, +${money(fb)}.`,'good');
