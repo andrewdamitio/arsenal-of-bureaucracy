@@ -954,7 +954,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .acshort{margin-top:4px;font:12.5px "Segoe UI",system-ui,sans-serif;color:#a3261c}
 .pstep[data-tip],.pmiles li[data-tip]{cursor:help}
 .prtab td{vertical-align:middle}.prarr{white-space:nowrap}.prarr .btn{padding:0 6px;margin-right:2px}
-.gtip{cursor:help;text-decoration:underline dotted rgba(140,120,80,.55);text-underline-offset:3px}
+.gtip{cursor:help;text-decoration:none!important}.gtip::after{content:'ⓘ';display:inline-block;margin-left:5px;font:400 .78em var(--f-body);color:#a8915a;vertical-align:1px;text-transform:none;letter-spacing:0}
 .ctp .ctopt .cth b,.ctp .ctopt.on .cth b{color:#2b241a!important}
 .cfp .bd{max-width:860px}.cfsum{font-size:15px;line-height:1.5}.cfch{display:block;margin:6px 0 10px;background:#fbf7ec;border:1px solid #d6c9a4}
 .cft td{vertical-align:top}.cft tr.cfbase td{background:#efe6cf}.cft tr.cfwait td{color:#9a8f72}.cfprog{margin:0 0 10px;font-size:13.5px}.cfprog .pbar{height:8px;background:#e2d6b6;margin-top:4px}.cfprog .pbar i{display:block;height:100%;background:#2f62a0}
@@ -1413,7 +1413,7 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 #app .panel .brc{background:#ffffff08;border:1px solid var(--edge);border-radius:5px;padding:8px 9px 9px}
 #app .panel .brk{font:600 10.5px var(--f-body);letter-spacing:.06em}
 #app .panel .brt{font:700 14px var(--f-head);color:var(--cream)}
-#app .panel .brw{display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;cursor:help}
+#app .panel .brw{display:block;overflow:visible;font-size:12.5px;cursor:default}
 /* the mandate card: quieter section breaks */
 #app .sc-sep{font:600 11px var(--f-body);letter-spacing:.01em;text-transform:none;color:var(--muted);border-top:1px solid var(--edge);margin-top:10px;padding-top:8px}
 #app .sc-sub{font-size:12px;color:#a89f86}
@@ -1885,6 +1885,17 @@ abbr.gl{text-decoration:none;border-bottom:1px dotted currentColor;cursor:help}
 /* side-panel section headings lead their sections */
 html body #supply .csec>span:first-child,html body #right h2.csec,html body #right .csec>span:first-child{font:700 17px/1.25 var(--f-head)!important;letter-spacing:.005em!important;color:#f0e4c4!important}
 html body #supply .csec,html body #right .csec{padding-top:12px!important;padding-bottom:8px!important}
+#log .loglast{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* Command: folded weapon lines */
+#needs .rc-rrow.rc-shut{padding-bottom:10px}#needs .rc-rrow.rc-shut .rc-rh{margin-bottom:6px}
+#needs .rc-sum{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:14px;align-items:center;cursor:pointer;font:13px var(--f-body);color:#d8cfb2}
+#needs .rc-sum:hover .rc-sl{color:#f3e6c4}
+#needs .rc-sbar{height:8px;border-radius:4px;background:#0f110d;border:1px solid #3a382c;overflow:hidden}#needs .rc-sbar i{display:block;height:100%}
+#needs .rc-sl b{color:#efe6cf;font-weight:600}#needs .rc-sst{color:#f0a594}#needs .rc-sf{color:#9c916f;white-space:nowrap;font-size:12.5px}
+#needs .rc-tg{margin-left:12px;padding:3px 10px;border:1px solid #4a4230;border-radius:4px;background:transparent;color:#c9b98f;font:600 12px var(--f-body);cursor:pointer;vertical-align:middle}#needs .rc-tg:hover{border-color:#8a7850;color:#f3e6c4}
+#needs .rc-all{margin-left:auto;margin-right:10px;padding:3px 10px;border:1px solid #4a4230;border-radius:4px;background:transparent;color:#c9b98f;font:600 12px var(--f-body);cursor:pointer}#needs .rc-all:hover{border-color:#8a7850;color:#f3e6c4}
+@media(max-width:760px){#needs .rc-sum{grid-template-columns:1fr}#needs .rc-sf{white-space:normal}}
+#needs .rc-rrow.rc-shut>:is(.rc-rgrid,.rc-mix,.rc-rlim,.rc-rwork){display:none!important}
 </style>
 </head>
 <body>
@@ -3287,7 +3298,7 @@ const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','De
 const fmtDate=w=>{const d=dateOf(w);return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`};
 const fyStart=()=>{const d=dateOf(S.w);return d.getMonth()===9&&d.getDate()<=7};
 // durations in words: months under two years, years after; estimated dates as ~month year
-const yrs=w=>{w=Math.max(0,w);if(w<104){const m=Math.max(1,Math.round(w/4.345));return m+(m===1?' month':' months')}const y=w/52;return (Math.abs(y-Math.round(y))<.05?String(Math.round(y)):fmt(y,1))+' years'};
+const yrs=w=>{w=Math.max(0,w);if(w<104){const m=Math.max(1,Math.round(w/4.345));return m+(m===1?' month':' months')}const h=Math.round(w/26)/2,whole=Math.floor(h);return (h%1?(whole?whole+'½':'½'):String(whole))+' years'};
 const estDate=w=>'~'+MON[dateOf(w).getMonth()]+' '+dateOf(w).getFullYear();
 const clone=o=>JSON.parse(JSON.stringify(o));
 // topological order (inputs before consumers)
@@ -8348,9 +8359,10 @@ function raceHTML(R){const out=R.out,cs=Object.keys(LINES),idx=raceIdx(out),yr=w
    <div ><b>${enough}/${cs.length}</b><span>lines sufficient</span></div>
    <div data-tip="Average growth in ${RV().n}’s output over the last year. As it grows, so does what the plan requires."><b class="red">+${pct(cg)}</b><span>${RV().n}’s growth · raises the bar</span></div>
    <div data-tip="Each time a line’s limit stopped binding, output rose, and the next limit took over."><b>${cleared}</b><span>bottleneck${cleared===1?'':'s'} cleared</span></div></div>`;
-  h+=`<div class="csec rcsort"><span>Your weapon lines</span><div class="rcseg" role="group" aria-label="Order the lines"><i>Order</i>${RC_SORT.map(([k,n,t])=>`<button class="${(S.rcSort||'prio')===k?'on':''}" data-a="rcsort" data-k="${k}" data-tip="${t}">${n}</button>`).join('')}</div></div>`;
+  h+=`<div class="csec rcsort"><span>Your weapon lines</span><button class="rc-all" data-a="rcall">${S.rcAll?'Fold all':'Open all'}</button><div class="rcseg" role="group" aria-label="Order the lines"><i>Order</i>${RC_SORT.map(([k,n,t])=>`<button class="${(S.rcSort||'prio')===k?'on':''}" data-a="rcsort" data-k="${k}" data-tip="${t}">${n}</button>`).join('')}</div></div>`;
   h+=`<div class="rc-leg"><span><i style="background:#5f8fc4"></i>You</span><span><i class="rc-up"></i>Yours on order</span><span><i style="background:#44cbb9"></i>${A.short||'Allies'}</span><span><i class="sc-starve"></i>Capacity, lacking parts</span><span><i class="sc-unord"></i>Capacity, not ordered</span><span><i style="background:#b0453a"></i>${RV().n}</span><span><i style="background:#e8c14a;width:3px"></i>Requirement</span></div>`;
-h+=rcOrder(out).map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOut(c),suf=Math.min(1,(us+al)/Math.max(rq,1e-9)),cn=cnOut(c),dv=allyDivert(c),a=A.lines[c],up=onOrder(c),{st,un}=idleOf(c,R);
+const ordL=rcOrder(out),openL=c=>S.tut||S.rcAll||(S.rcOpen?!!S.rcOpen[c]:c===ordL[0]);
+h+=ordL.map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOut(c),suf=Math.min(1,(us+al)/Math.max(rq,1e-9)),cn=cnOut(c),dv=allyDivert(c),a=A.lines[c],up=onOrder(c),{st,un}=idleOf(c,R);
     const mx=Math.max(rq,us+al+st+un+up,cn,1e-9)*1.04,B=v=>Math.min(100,v/mx*100);
     const lim=limOf(o,c),isL=lim.startsWith('L:'),cur=S.lim?.[c];
     const fx=S.projects.filter(q=>isL?PD[q.def].t.line===c:PD[q.def].t.node===lim),rp=S.plants.filter(pl=>!pl.full&&(isL?pl.kind==='line'&&pl.target===c:pl.target===lim));
@@ -8362,7 +8374,10 @@ h+=rcOrder(out).map(c=>{const o=out[c],L=LINES[c],us=o.yr,al=allyOut(c),rq=reqOu
     const past=(S.limH?.[c]||[]).filter(x=>x.up&&x.w1>=PLAY0).slice(-3);
     const tk=trkOf('L:'+c),loss=o.bott?Math.max(0,1-o.n/Math.max(o.cap,1e-9)):0,tint=tk.s==='met'?' style="box-shadow:inset 6px 0 0 #76b357;border-color:rgba(118,179,87,.55)"':tk.s==='track'||tk.s==='up'?` style="box-shadow:inset 6px 0 0 ${tk.s==='track'?'#4f8fd0':'#5f9fc0'};border-color:rgba(79,143,208,.5)"`:loss>.005?` style="background:linear-gradient(90deg,rgba(176,69,58,${(.04+.22*loss).toFixed(2)}),rgba(176,69,58,0) 70%),linear-gradient(180deg,#252922,#1d201a);border-color:rgba(208,80,63,${(.25+.75*loss).toFixed(2)});box-shadow:inset ${Math.round(2+6*loss)}px 0 0 rgba(208,80,63,${(.4+.6*loss).toFixed(2)})"`:'';
     const alTip=a?tipQ(`<b>${A.n}</b><br>${alMem().filter(m=>alMemOut(m,c)>0).map(m=>`${m.n} ${fmtN(alMemOut(m,c))}/yr`).join(' · ')}<br>${fmtN(a.out)}/yr in Jan 2027, ${fmtN(a.tgt)}/yr planned by 2030${a.est?' (estimate)':''}<br>${a.src.split('[c:').map((x,i)=>i?x.slice(x.indexOf(']')+1):x).join('')}${dv>.005?`<br><span style='color:#e8a090'>−${pct(dv)}: your emergency buys outrun their suppliers’ spare capacity</span>`:''}${upOf('L:'+c).size&&[...upOf('L:'+c)].some(id=>allyGrowth(id)>.01)?`<br><span style='color:#a8d48e'>Their suppliers are expanding: up to ${pct(Math.max(...[...upOf('L:'+c)].map(allyGrowth)))} of the squeeze closed</span>`:''}`):'';
-    return `<div class="rc-rrow trc" id="rc-${c}" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${mvBadge(c)}</span><span class="rc-gapw">${gap}${trkChip(tk,'L:'+c)}</span></div>
+    const op=openL(c),limT=o.bott||isL?`Held by <b>${isL?'its own line capacity':lc(limName(lim))}</b>${st>0&&loss>.005?` · <span class="rc-sst">${fmtN(st)}/yr built but starved</span>`:''}`:'<span class="green">Nothing short: running at the capacity it has</span>';
+    const fixT=fx.length||rp.length?`Fix under way: ${fx.length?projName(fx[0]):rp[0].nm}${fx.length?` ~${yr(Math.round(S.w+remW(fx[0])*sl))}`:''}${fx.length+rp.length>1?` +${fx.length+rp.length-1}`:''}`:(o.bott||isL?'<span class="red">No fix under way</span>':'');
+    const sum=`<div class="rc-sum" data-a="rcopen" data-c="${c}"><div class="rc-sbar"><i style="width:${(suf*100).toFixed(1)}%;background:${suf>=.999?'#76b357':suf>=.6?'#c9952a':'#d0503f'}"></i></div><span class="rc-sl">${limT}</span><span class="rc-sf">${fixT}</span></div>`;
+    return `<div class="rc-rrow trc ${op?'rc-open':'rc-shut'}" id="rc-${c}" data-n="L:${c}"${tint}><div class="rc-rh"><span class="rc-ttl">${lineIcon(c,26)}<b class="linkn" data-a="node" data-n="L:${c}">${L.n}</b>${mvBadge(c)}</span><span class="rc-gapw">${gap}${trkChip(tk,'L:'+c)}<button class="rc-tg" data-a="rcopen" data-c="${c}" aria-expanded="${op}" data-tip="${op?'Fold this line':'Show its bars, limits and fixes'}">${op?'Less ▴':'Details ▾'}</button></span></div>${op?'':sum}
       <div class="rc-rgrid"><div>
        <div class="rc-rb"><span>${F().flag} You + allies</span><div class="nb"><i style="width:${B(us)}%;background:#5f8fc4" data-tip="You: ${fmtN(us)}/yr"></i><i style="left:${B(us)}%;width:${B(al)}%;background:#44cbb9" data-tip="${alTip}"></i>${st/mx>.002?`<i class="sc-starve" style="left:${B(us+al)}%;width:${B(st)}%" data-tip="${tipQ(idleTip(c,'st',st))}"></i>`:''}${un/mx>.002?`<i class="sc-unord" style="left:${B(us+al+st)}%;width:${B(un)}%" data-tip="${tipQ(idleTip(c,'un',un))}"></i>`:''}${up>.5?`<i class="rc-up" style="left:${B(us+al+st+un)}%;width:${B(up)}%" data-tip="${tipQ(`<b>Yours on order: +${fmtN(up)}/yr</b><br>Line capacity from plants under construction and plants still ramping up. Upstream limits can still hold it back.`)}"></i>`:''}<span class="mk rc-req" style="left:${B(rq).toFixed(1)}%" data-tip="Requirement: ${fmtN(rq)}/yr"></span></div><span class="v"><b>${fmtN(us)}</b> + <span data-tip="${alTip}" class="rc-al">${fmtN(al)}</span>${dv>.005?` <span class="red" data-tip="${alTip}">−${pct(dv)}</span>`:''} <span class="dim">/ ${fmtN(rq)}</span></span></div>
        <div class="rc-rb"><span>${RV().f} ${RV().n}</span><div class="nb"><i style="width:${B(cn)}%;background:#b0453a"></i></div><span class="v">~${fmtN(cn)}/yr <span class="${g>.005?'red':'dim'}">${g>.005?'+'+pct(g):'flat'}</span></span></div></div>
@@ -8491,7 +8506,7 @@ function renderGame(){
   const dp=decisionsPending(),rtab=S.rtab||'prog';
   const rt=`<div class="rtabs">${[['prog','🏗 Development pipeline'],['fac','🏭 Factories'],['home','🏛 Home front']].map(([k,l])=>`<button class="vbtn ${rtab===k?'on':''}" data-a="rtab" data-t="${k}">${ttl(l)}</button>`).join('')}</div>`+(rtab==='home'?home:rtab==='fac'?fc:pr);
   const nd=`${cmMast(R,`<span class="rc-pick">${S.scen&&!(SCD[S.scen].open&&S.w===PLAY0)?`<span class="btn sm on rc-fixed" data-tip="${tipQ(SCD[S.scen].open?'Chosen at the start of the open race; it holds to 2035.':`Set by <b>${SCD[S.scen].n}</b>. The open race lets you choose.`)}">${RV().f} ${RV().n}</span>`:Object.entries(RIVALS).map(([t,v])=>`<button class="btn sm ${(S.rival||'pac')===t?'on':''}" data-a="rival" data-t="${t}">${v.f} ${v.n}</button>`).join('')}</span>`)}${raceHTML(R)}`;
-  const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,'').slice(0,140)}</span>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
+  const lg=`<div id="log"><h2><button class="logt" data-a="logt" data-tip="${UIP.log?'Fold the timeline to one line':'Open the timeline'}">${UIP.log?'▾':'▸'} Timeline</button>${!UIP.log&&S.log[0]?`<span class="loglast">${fmtDate(S.log[0].w)} · ${(t=>t.length<=150?t:t.slice(0,150).replace(/\s+\S*$/,'').replace(/[,;:·\s]+$/,'')+'…')(S.log[0].m.replace(/<[^>]+>/g,'').replace(/\[c:[^\]]+\]/g,''))}</span>`:''}</h2>${S.log.slice(0,60).map(l=>`<div class="${l.cls}"><span class="d">${fmtDate(l.w)}</span>${linkify(l.m)}</div>`).join('')}</div>`;
   const sc=['supply','needs','right'].map(id=>document.getElementById(id)?.scrollTop);
   const vs=viewEl&&viewEl.isConnected?viewEl.scrollTop:null;
   document.body.classList.toggle('replaying',!!S.replay);
@@ -9234,7 +9249,7 @@ if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
     case 'parea':{const v=document.getElementById('view'),t=document.querySelector('#view .ptabs'),stuck=v&&t&&t.getBoundingClientRect().top<=v.getBoundingClientRect().top+2&&v.scrollTop>0,y0=t?t.offsetTop:0;S.polArea=b.dataset.d;S._vdirty=true;S._polKeep=stuck?y0:null;break}
     case 'domall':{S.domOpen={};if(b.dataset.v==='1')for(const x of [...DOMAINS,XDOM])S.domOpen[x.id]=1;S._vdirty=true;break}
     case 'pmgo':S.view='rules';S.rbTab='docket';S._vdirty=true;S.pmF={ag:b.dataset.g||'all',st:'open',ph:'all'};if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
-    case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
+    case 'rcgo':S.view='cmd';S._rcJump=b.dataset.c;if(!S.rcAll){if(!S.rcOpen){const R0=S._R||production(false);S.rcOpen={[rcOrder(R0.out)[0]]:1}}S.rcOpen[b.dataset.c]=1}if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
     case 'pvzoom':UIP.pvFull=!UIP.pvFull;uiSave();S._vdirty=true;break;
     case 'sbrief':S.modal='sbrief';S.speed=0;break;
     case 'blgo':S._blHi=+b.dataset.u;S._rcpt=null;renderReceipt();S.view='ndaa';S._vdirty=true;S._scrollTo='#bl-'+b.dataset.u;if(S.modal&&S.modal!=='end'&&!S.queue.length){S.modal=null;S.navBack=[]}break;
@@ -9300,6 +9315,8 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'cntalk':cnTalk();break;
     case 'bnsort':S.bnSort=b.dataset.v;S._vdirty=true;break;
     case 'aldeal':alDeal(b.dataset.d);S._vdirty=true;break;
+    case 'rcopen':{const c=b.dataset.c;if(S.rcAll){S.rcAll=false;S.rcOpen=Object.fromEntries(Object.keys(LINES).map(k=>[k,1]))}if(!S.rcOpen){const R=S._R||production(false);S.rcOpen={[rcOrder(R.out)[0]]:1}}S.rcOpen[c]=!S.rcOpen[c];break}
+    case 'rcall':S.rcAll=!S.rcAll;if(!S.rcAll)S.rcOpen={};break;
     case 'alreq':alReq(b.dataset.d);S._vdirty=true;break;
     case 'aldrop':alDrop(b.dataset.d);S._vdirty=true;break;
     case 'mkfight':mkFight(b.dataset.k);S._vdirty=true;break;
