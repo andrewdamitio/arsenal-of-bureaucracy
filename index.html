@@ -5693,10 +5693,10 @@ function sankeySVG(R,focus,mode,attr){
       svg+=`<rect x="${p.x}" y="${p.y+p.h}" width="${nodeW}" height="${p.g}" fill="url(#skh)" stroke="#d0503f" stroke-width=".5"></rect>`;
       if(cut)svg+=`<path d="M${p.x-1},${yb-2} l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4 l${(nodeW+2)/4},4 l${(nodeW+2)/4},-4" stroke="#efe6cf" stroke-width="3" fill="none"><title>Idle capacity, shortened to fit</title></path>`}
     const ty=labY[id],cyy=p.y+(p.h+p.g)/2;
-    if(Math.abs(ty-4.5-cyy)>5)svg+=`<path d="M${p.x+nodeW},${cyy}L${p.x+nodeW+3},${ty-4.5}" stroke="#8a7850" stroke-width=".6" fill="none"/>`;
-    svg+=`<rect class="lbg" x="${p.x+nodeW+2}" y="${ty-12}" width="${Math.min(isL?240:175,nameOf(id).length*6.8+8)}" height="${isL?31:16}" fill="transparent"/>`;
+    const mv=Math.abs(ty-4.5-cyy)>5,dx=mv?9:0;if(mv)svg+=`<path d="M${p.x+nodeW},${cyy}H${p.x+nodeW+4}L${p.x+nodeW+9},${ty-4.5}" stroke="#5a4a26" stroke-width="1.1" fill="none" opacity=".8"/>`;
+    svg+=`<rect class="lbg" x="${p.x+nodeW+2+dx}" y="${ty-12}" width="${Math.min(isL?240:175,nameOf(id).length*6.8+8)}" height="${isL?31:16}" fill="transparent"/>`;
     const gap=(W-left-right-nodeW)/5-nodeW-10,mx=Math.floor(gap/6.1),nm1=nameOf(id),nm0=nm1.length>mx&&SKN[id]?SKN[id]:nm1.length>mx?nm1.replace(/ *\(.*\)$/,''):nm1,nm=!isL&&nm0.length>mx?nm0.slice(0,mx-1).trimEnd()+'…':nm0;
-    svg+=isL?`<text x="${p.x+nodeW+5}" y="${ty-6}"><tspan font-weight="600">${nm}</tspan><tspan x="${p.x+nodeW+5}" dy="15" class="sub">${pct(R.out[id.slice(2)].n/Math.max(R.out[id.slice(2)].cap,1e-9))} of capacity in use</tspan></text>`:`<text x="${p.x+nodeW+4}" y="${ty}">${nm}</text>`;
+    svg+=isL?`<text x="${p.x+nodeW+5+dx}" y="${ty-6}"><tspan font-weight="600">${nm}</tspan><tspan x="${p.x+nodeW+5+dx}" dy="15" class="sub">${pct(R.out[id.slice(2)].n/Math.max(R.out[id.slice(2)].cap,1e-9))} of capacity in use</tspan></text>`:`<text x="${p.x+nodeW+4+dx}" y="${ty}">${nm}</text>`;
     svg+=`</g>`}
   svg+='</svg>';
   const sv=k2=>links.filter(l=>l.s===k2).reduce((s,l)=>s+l.v,0),st=Object.keys(SRC).reduce((s,k2)=>s+sv(k2),0)||1;
@@ -7071,11 +7071,11 @@ const GL_RE=new RegExp('(?<![\\w-])('+Object.keys(ACRO).sort((a,b)=>b.length-a.l
 const glossify=t=>t.replace(GL_RE,m=>`<abbr class="gl" data-tip="<b>${m}</b><br>${ACRO[m].replace(/"/g,'&quot;')}">${m}</abbr>`);
 const EMO_KEEP=new Set(['↗','↘','⬆','▶','✔','✖']),EMO_ANY=/(\p{Extended_Pictographic})\uFE0F?\u20E3?[ \u00A0]?/gu;
 const emoStrip=t=>t.replace(EMO_ANY,(m,e)=>EMO_KEEP.has(e)||EMO_IC[e]?m:'');
-function emoIcons(h,gl){h=String(h);if(!gl&&!EMO_RE.test(h)&&!/\p{Extended_Pictographic}/u.test(h))return h;EMO_RE.lastIndex=0;let out='',i=0,txt=0,skip=0,ab=0;const n=h.length;const G=t=>gl&&!ab?glossify(t):t;
+function emoIcons(h,gl){h=String(h);if(!gl&&!EMO_RE.test(h)&&!/\p{Extended_Pictographic}/u.test(h))return h;EMO_RE.lastIndex=0;let out='',i=0,txt=0,skip=0,ab=0,svgD=0;const n=h.length;const G=t=>gl&&!ab&&!skip&&!svgD?glossify(t):t;
   while(i<n){const c=h[i];
     if(c==='<'&&/[a-zA-Z\/!]/.test(h[i+1]||'')){if(txt<i){const seg=G(emoStrip(h.slice(txt,i)));out+=skip?seg:seg.replace(EMO_RE,(m,e)=>`<svg class="vic ei" viewBox="0 0 24 24" aria-hidden="true"><path d="${EMO_IC[e]}"/></svg>`)}
       let j=i+1,q=null;while(j<n){const d=h[j];if(q){if(d===q)q=null}else if(d==='"'||d==="'")q=d;else if(d==='>')break;j++}
-      const tag=h.slice(i,j+1),m=/^<(\/?)(text|title|textarea|option|style|script)\b/i.exec(tag);if(m)skip=Math.max(0,skip+(m[1]?-1:1));const ma=/^<(\/?)(abbr|h1|button|select)\b/i.exec(tag);if(ma)ab=Math.max(0,ab+(ma[1]?-1:1));
+      const tag=h.slice(i,j+1),m=/^<(\/?)(text|title|textarea|option|style|script)\b/i.exec(tag);if(m)skip=Math.max(0,skip+(m[1]?-1:1));const ma=/^<(\/?)(abbr|h1|button|select)\b/i.exec(tag);if(ma)ab=Math.max(0,ab+(ma[1]?-1:1));const ms=/^<(\/?)svg\b/i.exec(tag);if(ms&&!/\/>$/.test(tag))svgD=Math.max(0,svgD+(ms[1]?-1:1));
       out+=tag;i=j+1;txt=i;continue}
     i++}
   if(txt<n){const seg=G(emoStrip(h.slice(txt)));out+=skip?seg:seg.replace(EMO_RE,(m,e)=>`<svg class="vic ei" viewBox="0 0 24 24" aria-hidden="true"><path d="${EMO_IC[e]}"/></svg>`)}
