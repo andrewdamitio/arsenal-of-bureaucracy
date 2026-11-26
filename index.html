@@ -1896,6 +1896,20 @@ html body #supply .csec,html body #right .csec{padding-top:12px!important;paddin
 #needs .rc-all{margin-left:auto;margin-right:10px;padding:3px 10px;border:1px solid #4a4230;border-radius:4px;background:transparent;color:#c9b98f;font:600 12px var(--f-body);cursor:pointer}#needs .rc-all:hover{border-color:#8a7850;color:#f3e6c4}
 @media(max-width:760px){#needs .rc-sum{grid-template-columns:1fr}#needs .rc-sf{white-space:normal}}
 #needs .rc-rrow.rc-shut>:is(.rc-rgrid,.rc-mix,.rc-rlim,.rc-rwork){display:none!important}
+/* Command's left panel: coming next, and one ranked list */
+#supply .cnext{display:flex;flex-direction:column;gap:2px;padding:2px 10px 8px}
+#supply .cnx{display:grid;grid-template-columns:74px minmax(0,1fr);gap:8px;padding:6px 6px;border-radius:4px;text-decoration:none!important;color:inherit!important}#supply .cnx:hover{background:#ffffff0a}
+#supply .cnx-d{font:700 13px var(--f-head);color:#c9952a}#supply .cnx-t{display:flex;flex-direction:column;min-width:0}#supply .cnx-t b{font:600 13.5px var(--f-body);color:#efe6cf}#supply .cnx-t em{font:normal 12.5px var(--f-body);color:#9c916f}
+#supply .hb{padding:8px 12px 9px;border-bottom:1px solid #2e2c22;box-shadow:inset 3px 0 0 #b0453a55}#supply .hb:hover{background:#ffffff08}
+#supply .hb1{display:flex;align-items:baseline;gap:8px}#supply .hb1 b{font:600 14.5px var(--f-body);color:#efe6cf}#supply .hb-pt{margin-left:auto;font:700 15px var(--f-head);color:#f0a594;white-space:nowrap}
+#supply .hb2{display:flex;align-items:center;gap:8px;margin-top:4px}#supply .hb-t{font:600 11.5px var(--f-body);color:#9c916f;border:1px solid #4a4230;border-radius:3px;padding:0 5px}
+#supply .hb-bar{flex:1;height:7px;border-radius:4px;background:#0f110d;border:1px solid #3a382c;overflow:hidden}#supply .hb-bar i{display:block;height:100%}
+#supply .hb-pc{font:600 13px var(--f-body);color:#d8cfb2;min-width:36px;text-align:right}#supply .hb-c{font:12px var(--f-body);color:#9c916f}
+#supply .hb3{margin-top:4px;font:12.5px/1.4 var(--f-body);color:#9c916f}#supply .hb3 .linkn{color:#d8cfb2}#supply .hb-m{display:inline-block;width:6px;height:6px;border-radius:50%;background:#c9952a;margin:0 1px 2px 4px;vertical-align:middle}
+#supply .hb-sub{padding:10px 12px 4px;font:600 12.5px var(--f-body);color:#c9b98f}
+#supply .hbq{box-shadow:inset 3px 0 0 #c9952a55;padding:6px 12px}#supply .hbq .hb2{margin-top:0}#supply .hbq .hb2 b{flex:0 1 150px;min-width:0;font:600 13px var(--f-body);color:#d8cfb2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#supply .hb-ft{display:flex;flex-direction:column;gap:6px;padding:10px 12px 14px;font:600 12.5px var(--f-body)}
+#supply .legend.lgoff{display:none}
 </style>
 </head>
 <body>
@@ -4908,7 +4922,7 @@ const TUT=[
  {p:'cmd',sel:'.sc-card',t:'Your mandate',x:'The targets you are judged on, drawn from public goals. In January 2030: halfway floors and a campaign test. In January 2035: the real targets.',next:1},
  {p:'cmd',sel:'#needs .rc-rhead',t:'Where you stand',x:'Your share of the requirement, you plus allies. Under it, the <b>January 2035 outlook</b>: the same share in 2035 if everything under way lands, and how far your decisions have moved it. Then the change on a year ago, lines sufficient, and how fast China’s growth raises the bar.',next:1},
  {p:'cmd',sel:'#rc-interceptors',t:'One end item',x:'Blue is what you make, hatched is capacity on order, green is allies, red is China, the yellow mark is the requirement. <b>Limits, lowest first</b> shows what stops output today, and when the fix under way lands. The chip by its share says where it is heading by 2035: met, on track, rising, holding or slipping, and whether it needs more orders from Congress. When a decision lifts it, you get a notice.',next:1},
- {p:'cmd',sel:'#supply',t:'The supply chain',x:'The parts that leave lines you have already built standing idle, with what each costs you, then the inputs worst covered. Hover one to light up the lines it holds back in the centre.',next:1},
+ {p:'cmd',sel:'#supply',t:'The supply chain',x:'What is coming next, with dates; then the parts holding back lines you have already built, ranked by what each costs you, and the inputs close to short. Hover one to light up the lines it holds back in the centre.',next:1},
  {p:'cmd',sel:'#right',t:'Programs under way',x:'Plants, deals and upgrades already started. Each passes through funding, contract, permits, construction, qualification and ramp-up. Click one to open its page.',next:1},
  {p:'cmd',sel:'#right .rtabs',t:'Factories and Home Front',x:'<b>Factories</b> lists every plant producing for you: the ones you built and the ones you inherited, and any trouble they are in. <b>Home front</b> holds the next NDAA vote, Political Capital, civilian strain, the next election, and defense priority over civilian buyers.',next:1},
  {p:'cmd',sel:'[data-a="savem"]',t:'The Menu',x:'Save or load a game, show or hide the recommended moves, or go back to the title screen.',next:1},
@@ -8403,17 +8417,27 @@ function renderGame(){
   // ---- supply chain panel
   let sup=`<h2>Supply Chain</h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
-   <div class="legend"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#c2a04e"></i>Neutral</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Demand from your lines</span></div>`;
+   <div class="legend${S.tab==='bott'?' lgoff':''}"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#c2a04e"></i>Neutral</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Demand from your lines</span></div>`;
   if(S.tab==='bott'){
-    const G=starveGroups(R),mL=new Set(S.scen?SCD[S.scen].mand.filter(m=>m.c).map(m=>m.c):[]),gmx=Math.max(.1,...G.map(g=>g.pt));
-    sup+=`<div class="csec"><span>What’s starving your lines</span><span class="linkn" data-a="view" data-v="bn">Full analysis →</span></div>`;
-    sup+=G.length?`<div class="sgint">Lines you have already built that can’t get parts. Fix the part and the line runs.</div>`:`<div class="empty" style="padding:10px">No line is short of parts: every line you have built is running.</div>`;
-    for(const g of G){const n=g.ls.length,a=(.35+.65*Math.min(1,g.pt/gmx)).toFixed(2);
-      sup+=`<div class="chain trc sgrp" data-n="${g.id}" style="box-shadow:inset 3px 0 0 rgba(208,80,63,${a})"><div class="ch1"><b class="linkn" data-a="bngo" data-n="${g.id}">${ND[g.id].n}</b><span class="chp" data-tip="${tipQ(g.pt>=.05?`<b>What it costs you</b><br>Fed in full, the lines below would raise your share of the requirement (you + allies) by up to <b>${fmt(g.pt,1)} points</b>. Up to: another limit may bind next.`:'<b>Surplus</b><br>These lines already make enough. The idle part would be surplus.')}">${g.pt>=.05?'−'+fmt(g.pt,1)+' pt':'surplus'}</span></div><div class="ch2">idles ${n} built line${n===1?'':'s'}</div>`+
-        g.ls.map(l=>`<div class="sgl trc" data-n="L:${l.c}"><span class="linkn" data-a="node" data-n="L:${l.c}">${LINES[l.c].n}</span>${mL.has(l.c)?'<span class="sgm" data-tip="One of your mandate’s lines">🎯</span>':''}${l.chain.length>1?`<span class="dim sgd" data-tip="${tipQ(l.chain.map(i=>ND[i].n).join(' ← '))}">via ${lc(ND[l.chain[0]].n)}</span>`:''}<span class="sgv" data-tip="${tipQ(idleTip(l.c,'st',l.st))}">−${fmtN(l.st)}/yr</span></div>`).join('')+'</div>'}
-    if(G.length)sup+=`<div class="sbprio"><span class="linkn" data-a="prjump">⇅ Change which lines get scarce parts first →</span></div>`;
-    const bad=ORDER.filter(id=>['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover);
-    sup+=`<div class="csec"><span>Worst-covered inputs</span>${bad.length?`<span class="linkn" data-a="view" data-v="bn" data-tip="All of them on Bottlenecks, ranked by the output they cost">${bad.length} below need →</span>`:'<span>none below need</span>'}</div>`+bad.slice(0,5).map(id=>nodeRow(id,P)).join('');
+    // coming next: the dated things that will change your position
+    const nx=[],V=billW(),D=mkDates(V),M=S.mk?.[FYOF(V)],cn=S.fac==='US'?cnNext():null,sc=S.scen?SCD[S.scen]:null;
+    if(S.fac==='US'){const st=!M?.h?['House markup of the NDAA',D.h,'your request locks']:!M?.s?['Senate markup of the NDAA',D.s,'its marks on your request']:!M?.c?['NDAA conference',D.c,'the two bills settled']:['Congress votes on the NDAA',D.v,'the money line, then law'];nx.push({t:st[0],w:st[1],d:st[2],a:'data-a="view" data-v="ndaa"'})}
+    if(cn&&isFinite(cn.yrsTo))nx.push({t:`Beijing: ${cn.nx.s.toLowerCase()}`,w:S.w+Math.max(1,Math.round(cn.yrsTo*52)),d:'possible from about then',est:1,a:'data-a="view" data-v="imports"'});
+    if(sc){const cw=S.w<sc.mid?sc.mid:sc.dl;if(cw>S.w)nx.push({t:cw===sc.mid?'The halfway check':'The final verdict',w:cw,d:sc.n,a:'data-a="sbrief"'})}
+    if(S.cr>0)nx.push({t:'Continuing resolution ends',w:S.w+S.cr,d:'new starts frozen until then',a:'data-a="view" data-v="ndaa"'});
+    nx.sort((a,b)=>a.w-b.w);
+    sup+=`<div class="csec"><span>Coming next</span></div><div class="cnext">${nx.slice(0,4).map(x=>`<div class="cnx linkn" ${x.a}><span class="cnx-d">${x.est?'~':''}${MON[dateOf(x.w).getMonth()]} ${dateOf(x.w).getFullYear()}</span><span class="cnx-t"><b>${x.t}</b><em>${x.d}</em></span></div>`).join('')}</div>`;
+    // what holds your lines back: one ranked list
+    const G=starveGroups(R),mL=new Set(S.scen?SCD[S.scen].mand.filter(m=>m.c).map(m=>m.c):[]);
+    const cov=id=>Math.min(1,P[id]?.cover??1),covBar=id=>{const v=cov(id);return `<span class="hb-bar"><i style="width:${(v*100).toFixed(1)}%;background:${v>=.999?'#76b357':v>=.8?'#c9952a':'#d0503f'}"></i></span><span class="hb-pc">${pct(v)}</span>`};
+    sup+=`<div class="csec"><span>What holds your lines back</span></div>`;
+    sup+=G.length?G.slice(0,5).map(g=>`<div class="hb trc" data-n="${g.id}"><div class="hb1"><b class="linkn" data-a="bngo" data-n="${g.id}">${ND[g.id].n}</b><span class="hb-pt" data-tip="${tipQ(g.pt>=.05?`<b>What it costs you</b><br>Fed in full, the lines it holds back would raise your share of the requirement by up to <b>${fmt(g.pt,1)} points</b>.`:'<b>Surplus</b><br>These lines already make enough.')}">${g.pt>=.05?'−'+fmt(g.pt,1)+' pt':'surplus'}</span></div>
+      <div class="hb2"><span class="hb-t">T${ND[g.id].t}</span>${covBar(g.id)}<span class="hb-c">of need</span></div>
+      <div class="hb3">Holds back ${g.ls.map(l=>`<span class="linkn trc" data-a="node" data-n="L:${l.c}" data-tip="${tipQ(idleTip(l.c,'st',l.st))}">${lc(LINES[l.c].n)}${mL.has(l.c)?'<i class="hb-m" data-tip="One of your mandate’s lines"></i>':''}</span>`).join(', ')}</div></div>`).join(''):`<div class="empty" style="padding:10px 12px">No line is short of parts: every line you have built is running.</div>`;
+    // close to short: inputs that are not yet limiting a line
+    const gid=new Set(G.map(g=>g.id)),close=ORDER.filter(id=>!gid.has(id)&&['short','cut','tight'].includes(nodeStatus(P[id]))).sort((a,b)=>P[a].cover-P[b].cover).slice(0,4);
+    if(close.length)sup+=`<div class="hb-sub">Close to short</div>`+close.map(id=>`<div class="hb hbq trc" data-n="${id}"><div class="hb2"><b class="linkn" data-a="node" data-n="${id}">${ND[id].n}</b>${covBar(id)}</div></div>`).join('');
+    sup+=`<div class="hb-ft"><span class="linkn" data-a="view" data-v="bn">All bottlenecks and fixes →</span>${G.length?'<span class="linkn" data-a="prjump">⇅ Which lines get scarce parts first →</span>':''}</div>`;
   } else if(S.tab==5){
     sup+=`<div class="sect"><span>End-item lines · priority order</span><span>per year</span></div>`;
     S.order.forEach((lid,i)=>{const o=R.out[lid],L=LINES[lid],nm=lineName(lid)*L.k,fw=S.fw[lid];
