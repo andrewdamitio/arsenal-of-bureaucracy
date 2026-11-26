@@ -930,8 +930,10 @@ span.trk.t-idle{background:#3a2a0c;color:#ffd27a;border:1px solid #c9a227;cursor
 .ordidle{border:1px solid #c9a227;border-left:4px solid #b8860b;background:#fbf3dc;border-radius:4px;padding:8px 10px;margin:6px 0 10px}.oih{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}.oih b{color:#7a5410}.oih span{flex:1;font-size:12.5px;color:#5a4e38}
 /* less on screen */
 body.xpoff .xp:not(.xpshow){display:none!important}
-.xpi{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:6px;padding:0;border:1px solid currentColor;border-radius:50%;background:none;color:inherit;opacity:.55;font:600 11px/1 "Segoe UI",system-ui,sans-serif;cursor:pointer;vertical-align:middle;text-transform:none;letter-spacing:0}
-.xpi:hover{opacity:1}.xpi-own{display:flex;margin:2px 0 4px auto}
+.xph{cursor:help;text-decoration:underline dotted;text-decoration-color:#a8915a;text-underline-offset:4px;text-decoration-thickness:1px}
+.xpi{display:inline-block;margin:0 0 4px;padding:0;border:0;background:none;color:#8a6a2a;font:600 12px "Segoe UI",system-ui,sans-serif;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;letter-spacing:0;text-transform:none}
+.xpi::before{content:'▸ '}
+.xpi:hover{opacity:1}
 .xp.xpshow{outline:1px dashed rgba(168,146,90,.6);outline-offset:3px}
 #main.vmode.railmin{grid-template-columns:minmax(0,1fr) 64px}#main.vmode.railmin #right{padding:0;overflow:visible}
 .rail{display:flex;flex-direction:column;gap:6px;padding:8px 6px}
@@ -954,7 +956,7 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .acshort{margin-top:4px;font:12.5px "Segoe UI",system-ui,sans-serif;color:#a3261c}
 .pstep[data-tip],.pmiles li[data-tip]{cursor:help}
 .prtab td{vertical-align:middle}.prarr{white-space:nowrap}.prarr .btn{padding:0 6px;margin-right:2px}
-.gtip{cursor:help;text-decoration:none!important}.gtip::after{content:'ⓘ';display:inline-block;margin-left:5px;font:400 .78em var(--f-body);color:#a8915a;vertical-align:1px;text-transform:none;letter-spacing:0}
+.gtip{cursor:help;text-decoration:underline dotted #a8915a!important;text-underline-offset:3px}.gtip::after{content:none}
 .ctp .ctopt .cth b,.ctp .ctopt.on .cth b{color:#2b241a!important}
 .cfp .bd{max-width:860px}.cfsum{font-size:15px;line-height:1.5}.cfch{display:block;margin:6px 0 10px;background:#fbf7ec;border:1px solid #d6c9a4}
 .cft td{vertical-align:top}.cft tr.cfbase td{background:#efe6cf}.cft tr.cfwait td{color:#9a8f72}.cfprog{margin:0 0 10px;font-size:13.5px}.cfprog .pbar{height:8px;background:#e2d6b6;margin-top:4px}.cfprog .pbar i{display:block;height:100%;background:#2f62a0}
@@ -1514,7 +1516,7 @@ svg.vic.ei{width:1.05em;height:1.05em;vertical-align:-.17em;margin:0 .28em 0 0;d
 #top .undob{margin-right:4px;white-space:nowrap}
 .mvlead{border-left:3px solid var(--gold)!important}.mvlead .trh b{font-size:17px}.mvnone .trh{border-bottom:0;margin-bottom:0}
 @media (max-width:760px){body.tiptouch #tip{max-width:calc(100vw - 24px)!important}[data-tip]:not([data-a]){-webkit-tap-highlight-color:rgba(201,149,42,.25)}}
-@media (hover:none){.xpi{min-width:28px;min-height:28px}}
+@media (hover:none){.xpi{min-height:24px}}
 body.g-no-strain #top [data-k="strain"],body.g-no-lev #top [data-k="lev"],body.g-no-expo #top [data-k="expo"],body.g-no-req #top [data-k="req"]{display:none}
 .t3-optg{grid-template-columns:repeat(3,1fr)}
 /* the process strip: one grid, equal boxes, numbered in order, odds at the foot of each */
@@ -4751,7 +4753,7 @@ function prioSec(){const R=S._R||production(false),P=R.P;
 function myoSec(){if(S.fac!=='US')return '';const cs=S.order;
   const row=c=>{const on=myOn(c),q=myReqs().find(x=>x.c===c),sg=mySig(c),why=!on&&!q?myWhy(c):'',pr=S.projects.find(p=>p.priv&&PD[p.def]?.t.line===c);
     return `<tr><td><span class="linkn" data-a="node" data-n="L:${c}">${LINES[c].n}</span>${pr?`<div class="mini okt">${projName(pr)}: ${progStatus(pr,true)[0].replace(/^[^\w]*/,'')}</div>`:''}</td>
-      <td>${on?`<b class="okt">Committed to ${fmtDate(S.myo[c].until)}</b>`:q?'<span class="gold">In the request</span>':sg>0?`<span class="mini">${fmt(sg,1)} years of firm orders (Multiyear Orders reform)</span>`:why?'<span class="mini">one year at a time; not eligible for a five-year order <span class="sct-i" data-tip="'+tipQ(why)+'">ⓘ</span></span>':'<span class="mini">one year at a time</span>'}</td>
+      <td>${on?`<b class="okt">Committed to ${fmtDate(S.myo[c].until)}</b>`:q?'<span class="gold">In the request</span>':sg>0?`<span class="mini">${fmt(sg,1)} years of firm orders (Multiyear Orders reform)</span>`:why?'<span class="mini">one year at a time; <span class="xph" data-tip="'+tipQ(why)+'">not eligible for a five-year order</span></span>':'<span class="mini">one year at a time</span>'}</td>
       <td class="num">${on?'':q?`<button class="btn sm" data-a="mydrop" data-c="${c}">✕</button>`:why?'':`<button class="btn sm" data-a="myadd" data-c="${c}" ${S.pc>=myPC(c)?'':'disabled'} data-tip="${myTip(c)}">Five-year order · ${myPC(c)} PC</button>`}</td></tr>`};
   return `<div class="dsec myosec"><h4>Multiyear orders</h4><p class="mini" style="margin:0 0 6px">Congress usually orders weapons one year at a time, so a firm that adds a line cannot count on selling what it makes. A <b>five-year order</b>, written into this year’s NDAA, commits Congress to buy whatever a line can make for five years: no new capacity on it sits idle, and private firms become likelier to build more of the line with their own money, which costs your budget nothing. Like a reform, it becomes law with the bill. Its price follows what it commits Congress to: 4 PC plus 1 PC per $1B a year the line can make at full rate, so a missile line costs less than a shipyard. As the law on multiyear contracts requires, only designs in stable production qualify.${passed('multiyear')?' The Multiyear Orders reform you passed takes 40% off each, and already gives munitions makers some years of firm orders.':''}</p>
     <table class="ctable bl-t"><tr><th>Line</th><th>Orders a firm can count on</th><th></th></tr>${cs.map(row).join('')}</table></div>`}
@@ -4969,7 +4971,7 @@ function apCard(){if(S.fac!=='US')return '';const fy=FYOF(S.w),a=apOf(fy),Q=apQ(
     :`FY${n.fy} appropriations are due when the fiscal year starts, 1 Oct ${dateOf(n.w).getFullYear()}, or later under a continuing resolution.`;
   const rows=Q.map(x=>{const p=x.t==='plant'?S.projects.find(q=>q.uid===x.uid):null;return `<tr><td><b>${apName(x)}</b><span class="mk-kd">${apKind(x)}${x.cong?' · added by Congress':''}</span></td><td class="num">${x.t==='ord'?'base budget':money(x.req)}</td><td>${x.cong?'<span class="okt">Funded with Congress’s own money</span>':`<span class="amb">~${Math.round(apCut(FYOF(apWhen()))*100)}% risk appropriators leave it out</span>`}</td><td class="num">${p&&!x.cong?`<button class="btn sm" data-a="apnow" data-u="${x.uid}" ${S.budget>=x.req-1e-9?'':'disabled'} data-tip="${tipQ('Stop waiting: pay from your budget and start it today.')}">Build now · ${money(x.req)}</button>`:''}</td></tr>`}).join('');
   const why=tipQ('<b>Two bills</b><br>The NDAA (December) decides what is allowed and writes the law: your reforms take effect with it. The appropriations act pays for the plants, deals, stockpile buys and orders it allowed, top of your list first, until appropriators’ money for requests runs out; it also brings your industrial budget. It passes on 1 October if on time, more often when a continuing resolution ends, between November and March. About one year in sixteen runs on a full-year continuing resolution: no new starts at all.');
-  return `<div class="dsec apcard"><h4>Appropriations <span class="sct-i" data-tip="${why}">ⓘ</span></h4>
+  return `<div class="dsec apcard"><h4><span class="xph" data-tip="${why}">Appropriations</span></h4>
     <p class="ndp">The NDAA allows; the appropriations act pays. A plant or deal starts only when both have passed.</p>
     <p class="ndp apst">${st}</p>
     ${Q.length?`<table class="ctable bl-t"><tr><th>Authorized, awaiting appropriations</th><th class="num">Cost</th><th>Risk</th><th></th></tr>${rows}</table>`:'<p class="mini">Nothing authorized is waiting for money.</p>'}</div>`}
@@ -7511,9 +7513,9 @@ function hoverLocked(){if(PDRAG)return true;if(!lastPt||!viewEl)return false;con
 // display preferences (this browser only): explanations shown, side panel open on tabs, timeline open
 const UIP=(()=>{let v={};try{v=JSON.parse(localStorage.getItem('aob_ui')||'{}')}catch(e){}return v})();
 const uiSave=()=>{try{localStorage.setItem('aob_ui',JSON.stringify(UIP))}catch(e){}};
-const xpOn=()=>!!(S&&S.tut); // explanations fold into ⓘ, except during the tutorial
-// Standing explanations: paragraphs that say what a section is for. With explanations hidden they fold into an ⓘ by their heading
-// (hover to read, click to open in place). Status lines and anything short stay.
+const xpOn=()=>!!(S&&S.tut); // explanations fold away, except during the tutorial
+// Standing explanations: paragraphs that say what a section is for. Outside the tutorial they fold away: hovering the section's
+// heading (dotted underline) shows the explanation; with no heading, a Details link opens it in place. Status lines and anything short stay.
 const XP_SEL=['.pintro','.alintro','.rbintro','.xintro','.wmfoot','.bnsort>.mini:last-child','.ordsec>p.mini','.ctsec',
   '.dsec>h4+p.mini','h4.bh+p.mini','h3+p.mini','h2+.sub','h2+p.mini','.dsec>p.mini:first-of-type','.acard>p.mini'];
 const XP_OPEN=new Set();
@@ -7524,8 +7526,10 @@ function xpPass(root){if(!root)return;const on=xpOn();document.body.classList.to
     el.dataset.xp=1;el.classList.add('xp');const key=t.slice(0,60);if(XP_OPEN.has(key))el.classList.add('xpshow');
     const isH=x=>x&&(/^H[1-6]$/.test(x.tagName)||x.classList.contains('bh')||x.classList.contains('sect'));let hd=null;for(let x=el.previousElementSibling;x;x=x.previousElementSibling)if(isH(x)){hd=x;break}
     if(!hd){const par=el.parentElement;hd=par&&[...par.children].find(isH)||par?.parentElement&&[...par.parentElement.children].find(isH)||null}
-    const btn=document.createElement('button');btn.className='xpi';btn.type='button';btn.dataset.a='xpi';btn.dataset.k=key;btn.dataset.tip=el.innerHTML;btn.textContent='ⓘ';btn.setAttribute('aria-label','Explain this section');
-    if(hd&&!hd.querySelector('.xpi')){const tn=[...hd.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim()).pop();if(tn)tn.after(btn);else hd.appendChild(btn)}else{btn.classList.add('xpi-own');el.before(btn)}}}
+    if(hd&&!hd.querySelector('.xph')&&!hd.dataset.tip){const tn=[...hd.childNodes].filter(n=>(n.nodeType===3&&n.textContent.trim())||(n.nodeType===1&&n.tagName==='B')).pop();
+      if(tn){const sp=document.createElement('span');sp.className='xph';sp.dataset.tip=el.innerHTML;tn.before(sp);sp.appendChild(tn);continue}
+      const t0=hd.querySelector('span:not(.ic):not([class*="ic"]),b,strong');if(t0&&!t0.querySelector('button')&&!t0.dataset.tip){t0.classList.add('xph');t0.dataset.tip=el.innerHTML;continue}}
+    const btn=document.createElement('button');btn.className='xpi';btn.type='button';btn.dataset.a='xpi';btn.dataset.k=key;btn.textContent=el.classList.contains('xpshow')?'Hide details':'Details';btn.setAttribute('aria-label','Show the explanation');el.before(btn)}}
 // ---- the glossary: label text (lower case, symbols dropped) to its explanation; keys starting with ^ match the start of a label
 const GLOSS={
  // the NDAA
@@ -8432,11 +8436,11 @@ function scenBriefHTML(){const sc=S.scen&&SCD[S.scen],yr=w=>dateOf(w).getFullYea
      <p class="sbp">${sc.open?'No official goal sets these: they measure a broad rebuilding of the base, the decisions you made, and how much still depends on the rivals. Under today’s rules the United States is losing ground on all four.':'These are real public goals on real timelines, and the United States is not on track for most of them. Plants take years, inputs come from the rival you are racing, and the rules slow everything down. Meeting some of them, and seeing what it would take to meet the rest, is the game.'}</p>
      <div class="tra"><span class="trlab">What to watch</span>${sc.lesson}</div></div></div></div>
    <div class="ft trft"><button class="pbtn primary" data-a="close">Begin January 2027 →</button></div></div>`}
-// the mandate as a table: one row per target, then the two tests; long explanations sit behind ⓘ
+// the mandate as a table: one row per target, then the two tests; a target's source shows on hovering its name
 function scenCard(){
   if(!S.scen)return S.w===PLAY0?`<div class="sc-reopen"><button class="btn sm" data-a="scenpick">🎯 Choose a mandate</button><span class="mini">Playing the open race to 2035. You can still pick a scenario until the clock starts.</span></div>`:'';
   const sc=SCD[S.scen],res=S.scenRes,lst=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a.at(-1):a.join('');
-  const info=t=>`<span class="sct-i" data-tip="${tipQ(t)}">ⓘ</span>`;
+  const info=(lab,t)=>`<span class="xph" data-tip="${tipQ(t)}">${lab}</span>`;
   const mark=(ok,tr,half)=>`<span class="sc-st ${ok?'met':tr?'on':half?'half':'no'}">${ok?'✓':tr?'↗':half?'◐':'○'}</span>`;
   const row=(m,mi,ms)=>{const x=mandVal(m),tm=res?null:trkMand(m,x),t=x.t??m.tgt,f=m.low?Math.min(1,t/Math.max(x.v,1e-9)):Math.min(1,x.v/Math.max(t,1e-9));
     const fl=m.kind==='expo'?(S.rec0?.expo||S.exposure)*x.fl:x.fl,flF=m.low?Math.min(1,fl===0?0:t/fl):Math.min(1,fl/Math.max(t,1e-9)),u=m.c?'/yr':'';
@@ -8445,7 +8449,7 @@ function scenCard(){
     const out=tm&&tm.v!=null&&!x.ok?`<span class="sct-out">2035: ${mFmt(m,tm.v)}${u}</span>`:'';
     const nm=m.c?`<span class="linkn" data-a="node" data-n="L:${m.c}">${m.n}</span>`:m.kind==='magnets'?`<span class="linkn" data-a="node" data-n="magnets">${m.n}</span>`:m.n;
     const bar=`<div class="nb" data-tip="Tick: the halfway floor, judged January 2030. End: the target, judged January 2035."><i style="width:${f*100}%;background:${col}"></i>${m.c&&!res?idleSegs(m.c,f,t,m):''}${tm&&tm.v!=null&&tm.v/t>f+.005?`<i class="sc-out" style="width:${Math.min(1,tm.v/t)*100}%"></i>`:''}<span class="mk" style="left:${(flF*100).toFixed(1)}%"></span></div>`;
-    return `<tr class="${m.c?'trc':''}"${m.c?` data-n="L:${m.c}"`:''}><td class="sct-n">${mark(x.ok,tr,x.half)}${nm}${m.src?info((m.src||'').split('[c:').map((y,i)=>i?y.slice(y.indexOf(']')+1):y).join('')):''}</td>
+    return `<tr class="${m.c?'trc':''}"${m.c?` data-n="L:${m.c}"`:''}><td class="sct-n">${mark(x.ok,tr,x.half)}${m.src?`<span class="xph" data-tip="${tipQ((m.src||'').split('[c:').map((y,i)=>i?y.slice(y.indexOf(']')+1):y).join(''))}">${nm}</span>`:nm}</td>
       <td class="num sct-now"><b>${mFmt(m,x.v)}</b>${u}</td><td class="sct-bar">${bar}</td><td class="num">${m.low?'≤ ':''}${mFmt(m,fl)}${u}</td><td class="num">${m.low?'≤ ':''}${mFmt(m,t)}${u}</td><td class="sct-st">${st}${out}</td></tr>`};
   const prod=sc.mand.filter(m=>m.c),other=sc.mand.filter(m=>!m.c&&m.kind!=='keep'),keep=sc.mand.filter(m=>m.kind==='keep');
   const grp=(t,sub)=>`<tr class="sct-g"><td colspan="6">${t}${sub?` <span>${sub}</span>`:''}</td></tr>`;
@@ -8455,14 +8459,14 @@ function scenCard(){
   for(const m of keep){const K=keepOf(m.lines),x=mandVal(m),t=x.t??m.tgt,weak=m.lines.slice().sort((a,b)=>K.by[a]-K.by[b]).filter(c=>K.by[c]<.995).slice(0,2).map(c=>`${lc(LINES[c].n)} ${pct(K.by[c])}`);
     const how=[K.div.length?`defense orders would take ${K.div.length} item${K.div.length>1?'s’':'’s'} supply from civilian buyers (${K.div.length>3?K.div.slice(0,3).map(id=>lc(ND[id].n)).join(', ')+' and more':lst(K.div.map(id=>lc(ND[id].n)))}), which raises civilian strain`:'',K.stk.length?`stockpiles of ${lst(K.stk.slice(0,3).map(id=>lc(ND[id].n)))} would be drawn down`:''].filter(Boolean);
     const long=`<b>Cutoff test: if China stopped selling</b><br>The share of these five lines’ output you would keep in the first months after China cut off its exports, counting US, allied and neutral supply, stockpiles, and supply taken from civilian buyers. ${K.v>=.995?`Today they keep all of it${how.length?': '+how.join(', and '):', because other suppliers already cover what China sends'}.`:`Weakest: ${weak.join(', ')}.${how.length?' Even so, '+how.join(', and ')+'.':''}`}`;
-    body+=grp(`Cutoff test: if China stopped selling ${info(long)}`,K.v>=.995&&K.div.length?'kept only by taking civilian supply':weak.length?'weakest: '+weak.join(', '):'')+row(m)}
+    body+=grp(info('Cutoff test: if China stopped selling',long),K.v>=.995&&K.div.length?'kept only by taking civilian supply':weak.length?'weakest: '+weak.join(', '):'')+row(m)}
   // the readiness test
   const rd=(()=>{if(res||!S.rec0)return '';const cut=!!sc.test.cut,pass=cut?.8:CRISIS_WIN;let d,v,lo=null,hi=null;
     if(cut){d=cutDet();v=d.score}else{const tt=sc.test.t,o=S._sc?.[tt];if(!o?.est)return '';d=testDet(tt,o.est);v=o.est.score;lo=o.pes?.score;hi=o.opt?.score}
     const l=d.ls.find(x=>x.c===d.weak),col=v>=pass?'#76b357':v>=CRISIS_TENSE?'#d9a441':'#d0503f';
     const long=cut?`<b>If China cut you off today</b><br>What your lines would still build with every Chinese and Russian input cut, as a share of January 2027 output, averaged over every line. The checkpoints judge this figure.`:`<b>If the fight came today</b><br>Your intelligence estimate of how far your stocks and forces would cover ${SCEN[sc.test.t].short}: the middle of the likely outcomes${lo!=null?`. Eight times in ten the true figure lies between ${pct(lo)} and ${pct(hi)}`:''}. The checkpoints judge the true figure, which can differ.${l?`<br>${v>=pass?'Weakest':'Weak link'}: ${LINES[l.c].n}: ${ckWhat(d,l)}`:''}`;
     const bar=`<div class="nb"><i style="width:${Math.min(1,v)*100}%;background:${col}"></i>${lo!=null?`<i class="rdyband" style="left:${Math.min(1,lo)*100}%;width:${Math.max(0,Math.min(1,hi)-Math.min(1,lo))*100}%"></i>`:''}<span class="mk" style="left:${pass*100}%"></span></div>`;
-    return grp(`${cut?'If China cut you off today':'If the fight came today'} ${info(long)}`,l?`weak link: ${lc(LINES[l.c].n)}`:'')+`<tr class="sct-rdy" data-a="view" data-v="arsenal"><td class="sct-n">${mark(v>=pass,false,v>=CRISIS_TENSE)}${cut?'Output kept, all lines':sc.test.n[0].toUpperCase()+sc.test.n.slice(1)+' (estimate)'}</td><td class="num sct-now"><b>${pct(v)}</b></td><td class="sct-bar">${bar}</td><td class="num">${pct(pass)}</td><td class="num">${pct(pass)}</td><td class="sct-st">${v>=pass?'<b class="okt">Would hold</b>':`<b class="${v>=CRISIS_TENSE?'amber':'redt'}">Would fall short</b>`}${lo!=null?`<span class="sct-out">likely ${pct(lo)}–${pct(hi)}</span>`:''}</td></tr>`})();
+    return grp(info(cut?'If China cut you off today':'If the fight came today',long),l?`weak link: ${lc(LINES[l.c].n)}`:'')+`<tr class="sct-rdy" data-a="view" data-v="arsenal"><td class="sct-n">${mark(v>=pass,false,v>=CRISIS_TENSE)}${cut?'Output kept, all lines':sc.test.n[0].toUpperCase()+sc.test.n.slice(1)+' (estimate)'}</td><td class="num sct-now"><b>${pct(v)}</b></td><td class="sct-bar">${bar}</td><td class="num">${pct(pass)}</td><td class="num">${pct(pass)}</td><td class="sct-st">${v>=pass?'<b class="okt">Would hold</b>':`<b class="${v>=CRISIS_TENSE?'amber':'redt'}">Would fall short</b>`}${lo!=null?`<span class="sct-out">likely ${pct(lo)}–${pct(hi)}</span>`:''}</td></tr>`})();
   body+=rd;
   return `<div class="sc-card ${res?'done':''}"><table class="sct"><thead><tr><th>Target</th><th class="num">Today</th><th></th><th class="num">2030 floor</th><th class="num">2035 target</th><th>Status</th></tr></thead><tbody>${body}</tbody></table>
     ${prod.length&&!res?scLeg():''}<div class="sc-test">${res?`Test: ${res.test.txt}`:`<span class="sck"><b>✓</b> met</span><span class="sck"><b>↗</b> on track</span><span class="sck"><b>◐</b> halfway floor met</span><span class="sck"><b>○</b> not yet</span><span class="linkn sck" data-a="sbrief">How you are judged →</span>`}</div></div>`}
@@ -9778,7 +9782,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'mkndaa':S.queue.shift();S.modal=null;S.view='ndaa';S.ndTab='cong';S._vdirty=true;break;
     case 'ruguard':ruGuard();S._vdirty=true;break;
     case 'yrrec':S.modal=null;S.view='rec';break;
-    case 'xpi':{const k=b.dataset.k;if(XP_OPEN.has(k))XP_OPEN.delete(k);else XP_OPEN.add(k);const el=b.nextElementSibling?.classList?.contains('xp')?b.nextElementSibling:b.parentElement?.nextElementSibling;if(el&&el.classList.contains('xp'))el.classList.toggle('xpshow');return}
+    case 'xpi':{const k=b.dataset.k;if(XP_OPEN.has(k))XP_OPEN.delete(k);else XP_OPEN.add(k);const el=b.nextElementSibling;if(el&&el.classList.contains('xp')){el.classList.toggle('xpshow');b.textContent=el.classList.contains('xpshow')?'Hide details':'Details'}return}
     case 'cfgo':cfStart();return;
     case 'cfopen':S.modal='cf';break;
     case 'timeopen':S.modal='time';break;
