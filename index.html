@@ -1936,11 +1936,7 @@ html body #supply .csec,html body #right .csec{padding-top:12px!important;paddin
  #needs .rc-rh{flex-wrap:wrap;row-gap:6px}
 }
 
-#loadv{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(10,11,8,.82)}
-#loadv>div{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:340px;padding:24px 28px;text-align:center;background:#f4eddb;border:1px solid #b9a77c;border-radius:8px;box-shadow:0 18px 60px #000c}
-#loadv b{font:700 20px var(--f-head);color:#231d14}#loadv span{font:13.5px/1.45 var(--f-body);color:#5a4a26}
-#loadv i{width:160px;height:4px;border-radius:2px;background:linear-gradient(90deg,#c9952a 0 30%,#e0d4b4 30%);background-size:200% 100%;animation:loadv 1.1s linear infinite}
-@keyframes loadv{from{background-position:100% 0}to{background-position:-100% 0}}
+
 </style>
 </head>
 <body>
@@ -9229,7 +9225,7 @@ if(a==='topt'&&!S){TOPT=!TOPT;renderTitle();return}
   if(a==='ttut'){try{localStorage.removeItem(GMEM_K)}catch(e){}TGUIDE=true;TSCR='new';renderTitle();window.scrollTo(0,0);return}
 if(a==='tguide'&&!S){TGUIDE=b.dataset.m==='on';renderTitle();return}
   if(a==='tgno'&&!S){TGNO=gnoNew();renderTitle();return}
-  if(a==='tnew'){const gi=document.getElementById('t3gno')?.value;if(gi&&gnoOk(gi))TGNO=+gi.trim();if(!b._go){const L=document.createElement('div');L.id='loadv';L.innerHTML=`<div><b>Replaying 2025 and 2026</b><span>The two years before you take office, played with game ${TGNO}’s luck. A few seconds on a phone.</span><i></i></div>`;document.body.appendChild(L);const bb=b;requestAnimationFrame(()=>setTimeout(()=>{bb._go=1;bb.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}));bb._go=0;document.getElementById('loadv')?.remove()},30));return}clearSave();NEXT_GNO=TGNO;newGame('US');NEXT_GNO=null;TGNO=null;S.sandbox=TMODE==='sbx';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();{const g=TGUIDE??!gMem().open,m=gMem();if(g){S.guide=1;S.gSeen={...m};S.gOpenDone=!!m.open;S.tips=1;S.tipSeen={decision:1,stuck:1,marks:1,beijing:1}}}S.modal='sbrief';render();saveGame();return}
+  if(a==='tnew'){const gi=document.getElementById('t3gno')?.value;if(gi&&gnoOk(gi))TGNO=+gi.trim();clearSave();NEXT_GNO=TGNO;newGame('US');NEXT_GNO=null;TGNO=null;S.sandbox=TMODE==='sbx';S.modal=null;S.queue=[];chooseScen(TSEL);sbxFill();{const g=TGUIDE??!gMem().open,m=gMem();if(g){S.guide=1;S.gSeen={...m};S.gOpenDone=!!m.open;S.tips=1;S.tipSeen={decision:1,stuck:1,marks:1,beijing:1}}}S.modal='sbrief';render();saveGame();return}
   if(a==='saveul'&&!S){saveUpload();return}
   if(a==='tmenu'){saveGame();S=null;renderTitle();return}
   if(!S)return;
