@@ -8723,11 +8723,11 @@ function renderGame(){
   // coming next: the dated things that will change your position
   const nx=[],V=billW(),D=mkDates(V),M=S.mk?.[FYOF(V)],cn=S.fac==='US'?cnNext():null,sc=S.scen?SCD[S.scen]:null;
   if(S.fac==='US'){const st=!M?.s?['Committee markup of the NDAA',D.s,'your request locks']:!M?.c?['NDAA conference',D.c,'the bill settled']:['Congress votes on the NDAA',D.v,'the money line, then law'];nx.push({t:st[0],w:st[1],d:st[2],a:'data-a="view" data-v="ndaa"'})}
-  if(cn&&isFinite(cn.yrsTo))nx.push({t:`Beijing: ${cn.nx.s.toLowerCase()}`,w:S.w+Math.max(1,Math.round(cn.yrsTo*52)),d:'possible from about then',est:1,a:'data-a="view" data-v="imports"'});
+  if(cn&&isFinite(cn.yrsTo))nx.push({t:`Beijing: ${ttl(cn.nx.s)}`,tc:1,w:S.w+Math.max(1,Math.round(cn.yrsTo*52)),d:'possible from about then',est:1,a:'data-a="view" data-v="imports"'});
   if(sc){const cw=S.w<sc.mid?sc.mid:sc.dl;if(cw>S.w)nx.push({t:cw===sc.mid?'The halfway check':'The final verdict',w:cw,d:sc.n,a:'data-a="sbrief"'})}
   {const n=apNext(),q=apQ().length;if(S.fac==='US')nx.push({t:n.full?'Full-year continuing resolution':n.est?'Fiscal year starts':'Appropriations act',w:n.w,d:n.full?'no new starts this year':n.est?'appropriations due, or a continuing resolution':q?`pays for ${q} authorized item${q===1?'':'s'}`:'brings your industrial budget',est:n.est,a:'data-a="view" data-v="ndaa"'})}
   nx.sort((a,b)=>a.w-b.w);
-  return `<div class="csec"><span>Coming next</span></div><div class="cnext">${nx.slice(0,4).map(x=>`<div class="cnx linkn" ${x.a}><span class="cnx-d">${x.est?'~':''}${MON[dateOf(x.w).getMonth()]} ${dateOf(x.w).getFullYear()}</span><span class="cnx-t"><b>${x.t}</b><em>${x.d}</em></span></div>`).join('')}</div>`;
+  return `<div class="csec"><span>Coming next</span></div><div class="cnext">${nx.slice(0,4).map(x=>`<div class="cnx linkn" ${x.a}><span class="cnx-d">${x.est?'~':''}${MON[dateOf(x.w).getMonth()]} ${dateOf(x.w).getFullYear()}</span><span class="cnx-t"><b>${x.tc?x.t:ttl(x.t)}</b><em>${capF(x.d)}</em></span></div>`).join('')}</div>`;
   })();
   let sup=`${comingH}<h2 class="sch2">Supply Chain</h2>
    <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
