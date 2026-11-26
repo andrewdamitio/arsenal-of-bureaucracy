@@ -1912,6 +1912,30 @@ html body #supply .csec,html body #right .csec{padding-top:12px!important;paddin
 #supply .legend.lgoff{display:none}
 #supply>.csec:first-of-type{margin-top:4px}#supply .cnext{border-bottom:1px solid #2e2c22;margin-bottom:6px}
 #supply>.csec:first-child{margin-top:0;padding-top:12px!important}#supply>h2.sch2{border-top:1px solid #4a4230}
+/* phones: NDAA popup tables as small cards */
+@media(max-width:760px){
+ #ov .mkp2 .mkt{display:block!important;overflow:visible!important}#ov .mkp2 .mkt tbody{display:block}
+ #ov .mkp2 .mkt tr:first-child{display:none}
+ #ov .mkp2 .mkt tr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:9px 0;border-bottom:1px dotted #d6c79f}
+ #ov .mkp2 .mkt td{display:block;padding:0!important;border:0!important}
+ #ov .mkp2 .mkt td:first-child{flex:1 1 100%}
+ #ov .mkp2 .mkt td.num{color:#6b5a35;margin-right:4px}
+ #ov .mkp2 .mkt td.mkact{flex:1 1 100%;text-align:left!important;white-space:normal!important}#ov .mkp2 .mkt td.mkact:empty{display:none}
+ #ov .mkp2 .mkt td.mkact .btn{margin:4px 6px 0 0}
+ #ov .mkp2 .mkv tr td{width:auto!important}#ov .mkp2 .mkv td:nth-child(2){flex:1 1 100%}
+}
+
+/* phones: an opened weapon line stacks its bars */
+@media(max-width:760px){
+ #needs .rc-rgrid{grid-template-columns:minmax(0,1fr)!important}
+ #app #needs .rc-rb{grid-template-columns:minmax(0,1fr) auto!important;row-gap:3px}
+ #app #needs .rc-rb>span:first-child{grid-column:1}#app #needs .rc-rb .v{grid-column:2;grid-row:1}
+ #app #needs .rc-rb .nb{grid-column:1/-1;grid-row:2}
+ #needs .rc-spw{display:none}
+ #app #needs .rc-rrow .rc-ttl b{font-size:17px!important;overflow-wrap:anywhere}#needs .rc-ttl{min-width:0;flex-wrap:wrap}
+ #needs .rc-rh{flex-wrap:wrap;row-gap:6px}
+}
+
 </style>
 </head>
 <body>
