@@ -1272,6 +1272,22 @@ tr.blhl>td{background:#f6e7b8!important}tr.blhl>td:first-child{box-shadow:inset 
 .t3-threat{font:14.5px/1.55 Georgia,serif;color:#3b3122;margin:8px 0 10px}
 .t3-dk{font:700 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.01em;text-transform:none;color:#6b5a35;margin:0 0 4px}
 .t3-tg{margin:0 0 10px;padding-left:18px;columns:2;column-gap:28px;font:13px/1.55 "Segoe UI",system-ui,sans-serif}.t3-tg li{break-inside:avoid}
+.t3-thesis{max-width:760px;margin:-4px auto 14px;text-align:center;font:italic 14.5px/1.5 Georgia,serif;color:#d8cfb2}
+.t3-ctx{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 12px}
+.t3-ctx>div{font:13px/1.5 "Segoe UI",system-ui,sans-serif;color:#3b3122;border-left:3px solid #c9a24a;padding:2px 0 2px 10px}
+.t3-ctx b{display:block;font:700 11px "Segoe UI",system-ui,sans-serif;color:#6b5a35;margin-bottom:2px}
+.t3-tt{width:100%;border-collapse:collapse;margin:0 0 10px;font:13px/1.45 "Segoe UI",system-ui,sans-serif}
+.t3-tt th{text-align:left;font:700 11px "Segoe UI",system-ui,sans-serif;color:#6b5a35;padding:0 8px 4px 0;border-bottom:1px solid #d6c79f}
+.t3-tt th+th,.t3-tt td+td{text-align:right;white-space:nowrap;padding-left:14px}
+.t3-tt td{padding:5px 0;border-bottom:1px solid #e4d9bc;vertical-align:top}
+.t3-tt td+td{padding-left:14px}
+.t3-tt b{color:#231d14}
+.t3-u{color:#8a7a55;font-size:12px}
+.t3-pl{font-size:12px;color:#6b5a35;margin-top:-3px;max-width:640px}
+.t3-tt tr.hp td{border-bottom:0;padding-bottom:2px}.t3-tt tr.t3-plr td{text-align:left;padding:0 0 6px}
+.t3-x{display:inline-block;margin-left:4px;padding:0 5px;border-radius:3px;background:#e8dcbc;color:#7a3b1d;font-size:11.5px;font-weight:700}
+@media (max-width:760px){.t3-ctx{grid-template-columns:1fr}.t3-tt td+td{white-space:normal}.t3-tt td b,.t3-x{white-space:nowrap}
+  .t3-top{grid-template-columns:auto 1fr auto!important;gap:10px}#title.ti3 .t3-brand.sm h1{font-size:17px!important;letter-spacing:.05em}#title.ti3 .t3-brand.sm h1 small{font-size:12px!important}}
 .t3-dates{display:flex;gap:18px;flex-wrap:wrap;font:12.5px "Segoe UI",system-ui,sans-serif;color:#6b5a35}.t3-dates b{color:#231d14;margin-right:4px}
 .t3-opts{margin:12px 0 0;border:1px solid #4a4234;border-radius:6px;background:#221e16}
 .t3-optl{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;color:#d8cfb4;padding:10px 14px;cursor:pointer;font:13px "Segoe UI",system-ui,sans-serif;text-align:left}
@@ -7564,14 +7580,15 @@ ${sv?'':`       <button class="t3-btn ${sv?'plain':'prime'}" data-a="tscr" data-
       <p class="t3-note">The game saves itself in this browser as you play.</p></div></div>`);return}
   // the new-game screen
   const det=cur.sc?`<p class="t3-threat">${cur.sc.threat.replace(/You have until.*$/,'').replace(/\[c:[^\]]*\]/g,'')}</p>
-      <div class="t3-dk">${cur.sc.open?'What you are measured on':'What you must reach, a year'}</div><ul class="t3-tg">${cur.sc.mand.map(m=>`<li>${m.n}${m.c?` <b>${m.dec?fmt(m.tgt,1):fmtN(m.tgt)}</b>`:m.kind==='suff'?` <b>65%</b> against China, <b>85%</b> against Russia`:m.kind==='lines'?` <b>${m.tgt} of 9</b>`:m.kind==='margin'?` <b>+${fmt(m.tgt*100,0)} pt</b>`:''}</li>`).join('')}</ul>
+      <div class="t3-ctx"><div><b>This world</b>${cur.sc.world||''}</div><div><b>What it comes down to</b>${cur.sc.lesson}</div></div>
+      <table class="t3-tt"><tr><th>${cur.sc.open?'What you are measured on':'What you must reach'}</th><th>January 2027</th><th>January 2035</th></tr>${cur.sc.mand.map((m,i)=>{const r=scStartRow(cur.sc,m,i)||{a:'',b:''};return `<tr class="${m.plain?'hp':''}"><td>${m.n}${m.c?' <span class="t3-u">a year</span>':''}</td><td>${r.a}</td><td><b>${r.b}</b>${r.x?` <span class="t3-x">${r.x}</span>`:''}</td></tr>${m.plain?`<tr class="t3-plr"><td colspan="3"><div class="t3-pl">${m.plain}</div></td></tr>`:''}`}).join('')}</table>
       <div class="t3-dates"><span><b>January ${dateOf(cur.sc.mid).getFullYear()}</b> halfway check</span><span><b>January ${dateOf(cur.sc.dl).getFullYear()}</b> ${cur.sc.open?'the verdict':'the real targets'}</span></div>`:'';
   const rad=(a,attr,on,n,d)=>`<button class="t3-rad ${on?'on':''}" data-a="${a}" ${attr}><i></i><span><b>${n}</b><em>${d}</em></span></button>`;
   if(TGNO==null)TGNO=gnoNew();
   const gOn=TGUIDE??!gMem().open;
   const optsTxt=`${TMODE==='sbx'?'Sandbox':'Standard'} · game ${TGNO}${gOn?' · with the guide':''}`;
   app.innerHTML=cz(`<div id="title" class="ti3 t3new"><div class="t3-top"><button class="t3-back" data-a="tscr" data-s="menu">‹ Back</button><div class="t3-brand sm"><h1>ARSENAL <small>of</small> BUREAUCRACY</h1></div><span></span></div>
-    <h2 class="t3-h2">Choose your scenario</h2>${SHARED?`<p class="t3-shared">From a shared link: game <b>${TGNO}</b>, the same world, ready to play. Change the number for a new one.</p>`:''}
+    <h2 class="t3-h2">Choose your scenario</h2><p class="t3-thesis">Under today’s rules, even a capable player falls short of these targets: new plants take years to permit, fund, staff and supply. The rules are yours to change, through the NDAA, other bills and executive action.</p>${SHARED?`<p class="t3-shared">From a shared link: game <b>${TGNO}</b>, the same world, ready to play. Change the number for a new one.</p>`:''}
     <div class="t3-cards">${SC.map(x=>`<button class="t3-card ${x.id===cur.id?'on':''}" data-a="tsel" data-s="${x.id}">${art(x.sc,'t3-thumb')}<span class="t3-cn"><b>${x.n}</b><em>${x.sub}</em></span></button>`).join('')}</div>
     <div class="t3-detail">${art(cur.sc,'t3-dart')}<div class="t3-dtext"><div class="t3-dh"><b>${cur.n}</b><em>${cur.sub}</em></div>${det}</div></div>
     <div class="t3-opts2">
@@ -7924,8 +7941,9 @@ const SCENS=[
         {n:'Submarines',c:'subs',tgt:2,dec:1,src:'The Navy needs two Virginia-class boats a year (2.33 with AUKUS); it has built about 1.2.[c:crsva]'},
         {n:'Surface combatants',c:'surface',tgt:9,dec:1,src:'Growing the fleet takes about 11 battle-force ships a year, roughly 9 of them surface ships; the FY2027 plan funds 7 destroyers and 4 frigates over five years.[c:crsnavy]'},
         {n:'Drones',c:'drones',tgt:330000,src:'INDOPACOM’s “hellscape” plan would fill the Strait with thousands of uncrewed systems; the Army plans to buy a million drones in two to three years.[c:hellscape,army1m]'},
-        {n:'Output kept without China',kind:'keep',lines:['interceptors','strike','subs','surface','drones'],tgt:.8,pct:1,src:'A war over Taiwan ends Chinese exports to the US on day one. Measured across the five lines above: the share of today’s output (or January 2027’s, if higher) you would still build with no Chinese or Russian inputs, before stocks run down. Beijing’s 2023–25 bans on gallium, germanium, antimony and rare earths were the preview.[c:truce]'}],
+        {n:'Output kept without China',kind:'keep',plain:'If China stopped selling, the share of these five lines’ output you could still build. New output that depends on Chinese parts lowers it: keep it at 80% or more.',lines:['interceptors','strike','subs','surface','drones'],tgt:.8,pct:1,src:'A war over Taiwan ends Chinese exports to the US on day one. Measured across the five lines above: the share of today’s output (or January 2027’s, if higher) you would still build with no Chinese or Russian inputs, before stocks run down. Beijing’s 2023–25 bans on gallium, germanium, antimony and rare earths were the preview.[c:truce]'}],
   test:{t:'pac',n:'Taiwan Strait campaign'},
+  world:'Beijing still sells under a trade truce, so Chinese parts keep your lines running for now, but it can tighten its export controls step by step as tensions rise. In January 2030 a Taiwan Strait campaign test asks whether your forces would cover a fight.',
   lesson:'Interceptors, strike missiles and air-to-air missiles all wait on the same solid rocket motors and seekers; ships and submarines on yards that take a decade to grow; drones on cells, magnets and boards that come from China. Whatever still needs China stops the day the fighting starts.'},
  {id:'flank',n:'The Eastern Flank',rival:'eu',ic:FLAGS.ru,art:'art/eastern-flank.webp',artAlt:'Pen-and-ink relief map of NATO’s eastern flank, from the Baltic states and Poland to Romania and Bulgaria, the frontline members shaded',artPos:'58% 45%',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
   threat:'Germany’s military chief points to 2029 and its intelligence service to 2030 as the year Russia could be ready to test NATO.[c:bund29,bnd30] You have until January 2030 to get halfway to the volume a long war on the flank would eat, and until January 2035 to reach it.',
@@ -7933,24 +7951,37 @@ const SCENS=[
         {n:'Army precision fires (GMLRS, PrSM)',c:'fires',tgt:16000,src:'The US share of the Army’s planned 19,002 rockets a year.[c:gmlrs19k]'},
         {n:'Drones',c:'drones',tgt:330000,src:'The Army plans to buy a million drones over two to three years; Ukraine and Russia each build about 4 million a year.[c:army1m]'}],
   test:{t:'eu',n:'eastern-flank campaign'},
+  world:'Russia is the rival. China still sells under a trade truce, though it can tighten its export controls, so the challenge is volume: more than a million shells a year. In January 2030 an eastern-flank campaign test asks whether your forces would cover a fight.',
   lesson:'A long war is won by volume: energetics, shell bodies, rocket motors and cheap drones, most of whose parts come from China.'},
  {id:'cutoff',n:'The Rare-Earth Cutoff',rival:'pac',ic:'🧲',art:'art/rare-earth-mine.webp',artAlt:'Pen-and-ink drawing of an open-pit mine in a desert valley, with a mountain range behind',artPos:'62% 50%',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
   threat:'January 2027: the trade truce collapses. Beijing reimposes its export bans and tightens rare-earth licensing, the way it did in 2023 and 2025.[c:truce] You have until January 2030 to get halfway to a base that keeps running without China, and until January 2035 to finish.',
   setup:()=>{S.truce=false;cnS().heat=30;S.fired.truce27=1;S.inbox=(S.inbox||[]).filter(x=>x.ev!=='truce27');applyChinaBan();cutAll(['ndpr','hree','magnets'],.4);log(`${FLAGS.cn} The truce collapses: export bans are back, and rare-earth licenses stop coming.`,'bad')},
-  mand:[{n:'Magnet demand met without China',kind:'magnets',tgt:.9,pct:1,src:'MP Materials’ 10X plant (2028) and the 2027 DFARS ban on Chinese magnets.[c:mp10x,dfars7018]'},
-        {n:'PRC and Russian content cut in half',kind:'expo',tgt:.5,low:1,pct:1,src:'Measured against January 2027.'},
-        {n:'Drone and aircraft output held',kind:'hold',lines:['drones','aircraft'],tgt:1,pct:1,src:'Both at least at their January 2027 level.'}],
+  mand:[{n:'Magnet demand met without China',kind:'magnets',plain:'Of the magnets your lines need, the share you can get without China.',tgt:.9,pct:1,src:'MP Materials’ 10X plant (2028) and the 2027 DFARS ban on Chinese magnets.[c:mp10x,dfars7018]'},
+        {n:'PRC and Russian content cut in half',kind:'expo',plain:'Of everything your lines use, the share that comes from China or Russia. Lower is better.',tgt:.5,low:1,pct:1,src:'Measured against January 2027.'},
+        {n:'Drone and aircraft output held',kind:'hold',plain:'Drone and aircraft output against January 2027: neither may fall while you cut China out.',lines:['drones','aircraft'],tgt:1,pct:1,src:'Both at least at their January 2027 level.'}],
   test:{cut:1,n:'full Chinese cutoff'},
+  world:'The game opens with the truce over. Chinese gallium, germanium and antimony fall to about a third of normal supply, graphite and battery cells to half, rare earths and magnets to 40%, with the rest leaking through third countries. There is no war: in January 2030 the test is a full Chinese cutoff, and how much of your output would survive it.',
   lesson:'Independence costs output before it pays: every magnet, cell and wafer not bought from China has to be mined, refined and qualified somewhere else first.'},
  {id:'open',open:1,n:'The Open Race',rival:'pac',ic:'🏁',art:'art/pentagon-ink.webp',artAlt:'Pen-and-ink aerial drawing of the Pentagon and the highways around it',artPos:'50% 55%',mid:weekOf(2030,0,7),dl:weekOf(2035,0,8),
   threat:'No crisis is assigned to you. China and Russia both out-produce the United States, and the gap widens every year. Decide what matters most, and measure yourself against either rival, line by line: choose before you begin. You have until January 2030 for a halfway check, and until January 2035 for the verdict.',
-  mand:[{n:'Sufficiency: you and your allies against the requirement',kind:'suff',get tgt(){return S?.rival==='eu'?.85:.65},pct:1,src:'Across all nine weapon lines: what you and Japan, South Korea and Taiwan build a year, against what the plan requires against your rival. Each line counts up to 100%. The target is 65% against China and 85% against Russia, whose requirement grows more slowly and whose theater allies cover more of.'},
-        {n:'Weapon lines that fully meet their requirement',kind:'lines',tgt:3,src:'Lines where you and your allies build at least what the plan requires, out of nine.'},
-        {n:'What your decisions add, against doing nothing',kind:'margin',tgt:.08,pct:1,top:.16,src:'The same game, with the same luck, played again with no decisions at all. Your choices should be worth eight points of sufficiency.'},
-        {n:'Chinese and Russian content cut by a third',kind:'expo',tgt:2/3,low:1,pct:1,src:'The share of what your lines use that comes from China or Russia, measured against January 2027.'}],
+  mand:[{n:'Sufficiency: you and your allies against the requirement',kind:'suff',plain:'What you and your allies build a year against what a war with your rival would need, averaged across all nine lines.',get tgt(){return S?.rival==='eu'?.85:.65},pct:1,src:'Across all nine weapon lines: what you and Japan, South Korea and Taiwan build a year, against what the plan requires against your rival. Each line counts up to 100%. The target is 65% against China and 85% against Russia, whose requirement grows more slowly and whose theater allies cover more of.'},
+        {n:'Weapon lines that fully meet their requirement',kind:'lines',plain:'Lines whose output fully meets what a war would need.',tgt:3,src:'Lines where you and your allies build at least what the plan requires, out of nine.'},
+        {n:'What your decisions add, against doing nothing',kind:'margin',plain:'The same game, with the same luck, replayed with no decisions at all: your choices must add eight points of sufficiency.',tgt:.08,pct:1,top:.16,src:'The same game, with the same luck, played again with no decisions at all. Your choices should be worth eight points of sufficiency.'},
+        {n:'Chinese and Russian content cut by a third',kind:'expo',plain:'Of everything your lines use, the share that comes from China or Russia. Lower is better.',tgt:2/3,low:1,pct:1,src:'The share of what your lines use that comes from China or Russia, measured against January 2027.'}],
+  world:'Nothing is cut off at the start: China still sells under a trade truce, though it can tighten its export controls. The rival you choose sets the requirement and the January 2030 campaign test. No single weapon line has a target of its own.',
   test:{get t(){return S?.rival==='eu'?'eu':'pac'},get n(){return S?.rival==='eu'?'eastern-flank campaign':'Taiwan Strait campaign'}},
   lesson:'Nothing forces a focus, which is the trap. The lines share motors, seekers, yards and Chinese inputs: spread money thin and no line reaches its requirement; fix the shared parts and several lines rise at once.'}];
 const SCD=Object.fromEntries(SCENS.map(x=>[x.id,x]));
+/* Where each target stands in January 2027, for the new-game screen, which comes before a game exists. The same for every
+   game number. tools/smoke.js recomputes them and reports a drift. */
+const SC_START={taiwan:[600,892.5,1.16,6,19951,.9236],flank:[408000,9000,19951],cutoff:[.3489,.2281,1],open:[.5256,0,0,.2281]};
+// a target's January 2027 level and what it must reach, as two short strings, and the stretch for weapon counts
+function scStartRow(sc,m,i){const v=SC_START[sc.id]?.[i];if(v==null)return null;
+  if(m.c){const f=x=>m.dec?fmt(x,1):fmtN(x);return {a:f(v),b:f(m.tgt),x:v>0?`×${fmt(m.tgt/v,1)}`:''}}
+  switch(m.kind){case 'keep':return {a:pct(v),b:`${pct(m.tgt)} or more`};case 'magnets':return {a:pct(v),b:pct(m.tgt)};
+    case 'expo':return {a:pct(v),b:`${pct(v*m.tgt)} or less`};case 'hold':return {a:pct(v),b:'no lower'};
+    case 'suff':return {a:`${pct(v)} (China)`,b:'65% (China) · 85% (Russia)'};case 'lines':return {a:`${v} of 9`,b:`${m.tgt} of 9`};
+    case 'margin':return {a:'+0 pt',b:`+${fmt(m.tgt*100,0)} pt`}}return null}
 // each mandate’s current value, whether the real target is met, and the halfway floor
 // what the given lines would still build with every Chinese and Russian input cut, as a share of what they build now
 function keepOf(lines){const k=`${S.w}|${S.projects.length}|${S.plants.length}|${S.spot?.length||0}|${S.budget.toFixed(3)}`;if(S._kpc?.k===k)return S._kpc.v;

@@ -7,6 +7,8 @@ const b=await chromium.launch({executablePath:CHROME});const p=await b.newPage({
 await p.goto('file:///'+file);await p.waitForTimeout(700);
 const res=await p.evaluate(async()=>{const out=[];const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  for(const sc of ['taiwan','flank','cutoff','open']){localStorage.clear();newGame('US');S.modal=null;if(sc)chooseScen(sc);else S.modal=null;S.queue=[];render();
+  // the new-game screen's January 2027 levels (SC_START) must still match what the model computes
+  S._R=null;SCD[sc].mand.forEach((m,i)=>{const v=mandValRaw(m).v,w=SC_START[sc]?.[i];if(w==null||Math.abs(v-w)>Math.max(.01,Math.abs(w)*.03))console.error(`SC_START drift: ${sc}, ${m.n}: stored ${w}, model ${v}`)});
   for(const [v] of VIEWS){S.view=v;S._vdirty=true;render();await sleep(30)}
   if(S.view!=='cmd'){S.view='cmd';render()}
   // every item page, a program page, an award, the bill, save
