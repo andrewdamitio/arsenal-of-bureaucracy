@@ -3873,10 +3873,12 @@ function production(commit){
   const P={},AV={};const stale=id=>{if(!(id in AV))return;delete AV[id];for(const x of parOf(id))stale(x)};
   for(const id of ORDER){const u=nodeSupply(id);P[id]={...u,extRem:u.ext,domRem:u.dom,stockRem:S.stock[id]||0,usedExt:0,usedDom:0,usedStock:0,starvedBy:null,unmet:0}}
   const avail=id=>{const c=AV[id];if(c!==undefined)return c;const p=P[id];let lim=Infinity;for(const i of ND[id].in)lim=Math.min(lim,avail(i));const v=p.extRem+p.stockRem+Math.min(p.domRem,lim);AV[id]=v;return v};
-  const take=(id,q)=>{const p=P[id];const a=Math.min(q,p.extRem);p.extRem-=a;p.usedExt+=a;if(a)stale(id);let rem=q-a;if(rem<=1e-12)return;
-    let lim=Infinity,limI=null;const memo={};for(const i of ND[id].in){const v=avail(i,memo);if(v<lim){lim=v;limI=i}}
+  // US plants first: an item is made at home as far as its own inputs allow, then imports fill the rest, then any stockpile
+  const take=(id,q)=>{const p=P[id];let rem=q;
+    let lim=Infinity;for(const i of ND[id].in){const v=avail(i);if(v<lim)lim=v}
     const d=Math.max(0,Math.min(rem,p.domRem,lim));
-    p.domRem-=d;p.usedDom+=d;if(d)stale(id);for(const i of ND[id].in)take(i,d);rem-=d;
+    p.domRem-=d;p.usedDom+=d;if(d)stale(id);for(const i of ND[id].in)take(i,d);rem-=d;if(rem<=1e-12)return;
+    {const a=Math.min(rem,p.extRem);p.extRem-=a;p.usedExt+=a;if(a)stale(id);rem-=a;if(rem<=1e-12)return}
     if(rem>1e-12){const s=Math.min(rem,p.stockRem);p.stockRem-=s;p.usedStock+=s;if(s)stale(id);rem-=s}p.unmet+=rem};
   // rated defense orders come first: where an item is short, defense takes what civilian buyers would have had, up to the pool, before any stockpile is touched
   let need=needCalc(P),divLoad=0;
@@ -3917,7 +3919,7 @@ function production(commit){
 function needCalc(P){
   const need={};for(const id of ORDER)need[id]=0;
   for(const l in LINES){const c=Math.min(lineCap(l),ordOf(l)/LINES[l].k);for(const i of LINES[l].in)need[i]+=c}
-  for(let k=ORDER.length-1;k>=0;k--){const id=ORDER[k],p=P[id];const domProd=Math.min(Math.max(0,need[id]-p.ext-(S.stock[id]||0)),p.dom);for(const i of ND[id].in)need[i]+=domProd}
+  for(let k=ORDER.length-1;k>=0;k--){const id=ORDER[k],p=P[id];const domProd=Math.min(need[id],p.dom); /* US plants run first, so their inputs are needed whatever imports could cover */for(const i of ND[id].in)need[i]+=domProd}
   return need;
 }
 function chainOf(P,id){const path=[id];let cur=id;while(P[cur].starvedBy&&path.length<7&&!path.includes(P[cur].starvedBy)){cur=P[cur].starvedBy;path.push(cur)}return path}
@@ -6322,7 +6324,7 @@ function supplyWeb(id,P){
   // inputs
   ins.forEach((i,k)=>{const y=rowY(k,nIn),st=nodeStatus(P[i]),b=i===bind;
     g+=`<path d="M${IX},${y+20} C${IX+50},${y+20} ${CX-60},${cyM} ${CX-4},${cyM}" fill="none" stroke="${b?ST_C.short:ST_C[st]}" stroke-opacity="${b?.9:.55}" stroke-width="${b?2.6:1.5}"/>`;
-    g+=`<g class="swr" data-a="node" data-n="${i}" data-tip="${srcTip(i,P)}"><rect x="0" y="${y}" width="300" height="${RH-4}" fill="transparent"/><text x="0" y="${y+11}" class="swn${b?' swb':''}">${ND[i].n}${b?' · ⛓ binds':''}</text><text x="296" y="${y+11}" text-anchor="end" class="swp" fill="${ST_C[st]}">${P[i].need>1e-6?pct(Math.min(P[i].cover,9.99)):'no demand'}</text>${srcBar(i,P,0,y+15,296,10)}</g>`});
+    g+=`<g class="swr" data-a="node" data-n="${i}" data-tip="${P[i].need>1e-6?srcTip(i,P):tipQ(`<b>${ND[i].n}: not used now</b><br>${idleWhy(i,P)}`)}"><rect x="0" y="${y}" width="300" height="${RH-4}" fill="transparent"/><text x="0" y="${y+11}" class="swn${b?' swb':''}">${ND[i].n}${b?' · ⛓ binds':''}</text><text x="296" y="${y+11}" text-anchor="end" class="swp" fill="${ST_C[st]}">${P[i].need>1e-6?pct(Math.min(P[i].cover,9.99)):'not used now'}</text>${srcBar(i,P,0,y+15,296,10)}</g>`});
   if(!ins.length)g+=`<text x="0" y="${cyM+4}" class="swm">Mined or made from raw stock: no tracked inputs.</text>`;
   // what allies make of this weapon: it does not pass through US plants, so it feeds the total directly
   if(isL&&alv>1e-9){const y=rowY(ins.length,nIn)+gapA,tot=o.yr+alv,A=AL();g+=`<text x="0" y="${y-10}" class="swh">Made abroad · share of total output</text>`;
