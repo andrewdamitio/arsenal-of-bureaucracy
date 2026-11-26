@@ -1950,6 +1950,12 @@ html body #supply .csec,html body #right .csec{padding-top:12px!important;paddin
 .trap .trap-h{margin:0 0 6px;font:13.5px/1.5 var(--f-body);color:#2b241a}
 .trap .trap-l{display:flex;flex-direction:column;gap:3px;font:13px/1.45 var(--f-body);color:#3a3020}.trap .trap-l>div{display:grid;grid-template-columns:18px minmax(0,1fr);column-gap:4px}.trap .trap-l>div>b{font-weight:600;color:#231d14}.trap .trap-l>div>span:last-child{grid-column:2;color:#6b5a35}
 .trap .trap-i{grid-row:span 2;color:#3f7a34;font-weight:700}.trap .trap-no .trap-i{color:#a3261c}.trap .trap-no>b{color:#7a2a20}
+/* precedents, what held you back, the trades pipeline */
+.ob2 .ob-pre{margin:-2px 0 8px!important;padding:6px 10px;border-left:3px solid #8a6a1f;background:#0000000a;font:12.5px/1.45 var(--f-body)!important}.ob2 .ob-pre b{font:700 11.5px var(--f-body);letter-spacing:.02em;margin-right:4px}
+.paper .ob2 .ob-pre{background:#efe5c9;color:#3a3020}
+.trp .hb-lede{margin-bottom:10px}.trp .hb-l{padding:7px 0;border-bottom:1px dotted #d6c79f}.trp .hb-h{display:flex;justify-content:space-between;gap:10px}.trp .hb-h b{font:700 14.5px var(--f-head);color:#231d14}.trp .hb-h span{font:12.5px var(--f-body);color:#6b5a35}
+.trp .hb-r{margin-top:3px;font:13px/1.5 var(--f-body);color:#3a3020}.trp .hb-r .okt{font-weight:600}
+#right .wfp p{margin:0 0 6px}#right .wfp .wfrows{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin:4px 0 6px}#right .wfp .wfrows>div{display:contents}#right .wfp .wfrows b{text-align:right}#right .wfp .wftr{color:#c9b98f}#right .wfp .wfbtn{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 </style>
 </head>
 <body>
@@ -4328,9 +4334,20 @@ const POOLS={
  trades:{n:'Skilled trades',ic:'👷',stage:'build',layer:'LABOR',tags:['labor','shipyard','heavy','energetic','mine'],cap:{US:7}},
  ranges:{n:'Test ranges & qualification slots',ic:'🎯',stage:'qual',layer:'QUAL',tags:['energetic','assembly','line'],cap:{US:4}},
 };
+// Skilled trades, in crews (each lets one program build at full pace). Trained crews arrive slowly: the Industrial Workforce Act
+// adds two over about three years as its trainees qualify, and each apprenticeship cohort you fund adds half a crew two years
+// later. Civilian projects (chip fabs, battery plants, data centers) hire the same welders and electricians; their demand
+// peaks in 2027–29. Emergency hiring authority borrows a crew from elsewhere while it lasts.
+const WF_CIV={2027:1,2028:1.1,2029:1,2030:.8,2031:.6,2032:.5,2033:.4,2034:.4,2035:.4},WF_CO$=.25,WF_CO_WK=104,WF_CO_N=.5;
+const wfCivF=()=>S.wfCivF??(S.wfCivF=.7+.6*mulb((S.seed^hstr('wfciv'))|0)());
+const wfCiv=()=>S.fac!=='US'||S.histMode||S.w<PLAY0?0:(WF_CIV[dateOf(S.w).getFullYear()]??.4)*wfCivF();
+function wfAct(){if(!passed('workforce')){return 0}if(S.wfAt==null)S.wfAt=S.w;return 2*clamp((S.w-S.wfAt-26)/130,0,1)}
+const wfCo=()=>(S.wfCo=S.wfCo||[]),wfCoDone=()=>wfCo().filter(x=>x.due<=S.w).length,wfCoTrain=()=>wfCo().filter(x=>x.due>S.w);
+function wfFund(){if(S.budget<WF_CO$-1e-9||wfCoTrain().length>=4)return;spendB(WF_CO$,'Workforce');wfCo().push({w0:S.w,due:S.w+WF_CO_WK});actRec('wfco',{});
+  log(`👷 Apprenticeship cohort funded (${money(WF_CO$)}): about half a crew of welders, pipefitters and electricians, qualified about ${fmtDate(S.w+WF_CO_WK)}.`,'ev')}
 function poolCap(k){let c=POOLS[k].cap[S.fac];
   if(k==='tools')c+=plantsFor('node','machine_tools').reduce((a,pl)=>a+2*Math.min(1,pl.yield),0); // each US machine-tool plant you build: +2 at full rate
-  if(k==='trades'){if(passed('workforce'))c+=2;if(carveOn('cvHire'))c+=1}
+  if(k==='trades'){c+=wfAct()+wfCoDone()*WF_CO_N-wfCiv();if(carveOn('cvHire'))c+=1;c=Math.max(3,c)}
   if(k==='ranges'){c+=Object.values(S.nflags).filter(f=>f.test).length*.5;if(carveOn('cvQual'))c+=1}
   return c}
 const poolsOf=def=>def.ally?[]:Object.keys(POOLS).filter(k=>!POOLS[k].tags||POOLS[k].tags.some(t=>def.tags.includes(t)));
@@ -5685,9 +5702,14 @@ function endHTML(L,tot){const out=S.lastOut||production(false).out,idx=raceIdx(o
   const kv=(k,v)=>`<div class="endkv"><span>${k}</span><b>${v}</b></div>`;
   const rec=card('The record in numbers','',kv('Plants built',`${S.plants.length} (${S.plants.filter(p=>p.full).length} at full rate)`)+kv('Allied deals',S.done.filter(d=>PD[d.def].ally).length)+kv('Reforms passed',REFORMS.filter(R=>passed(R.id)).length)+kv('Programs abandoned or cut',S.gone.length)+kv('Waivers and exceptions',S.waivers)+kv('Chinese and Russian content',pct(S.exposure)));
   const time=card('Where the time went',`${fmt(tot,0)} program-weeks lost`,L.filter(x=>x[1].wk>0).map(([k,v])=>`<div class="endkv"><span>${LAYERS[k].n}</span><span class="whys"><span class="yrvb"><i class="pt" style="width:${(v.wk/Math.max(1,tot)*100).toFixed(1)}%"></i></span><b>${fmt(v.wk,0)} wk</b></span></div>`).join('')||'<p class="trnone">No program lost a week.</p>');
+  const held=(()=>{const top=L.filter(x=>x[1].wk>0).slice(0,3);if(!top.length)return '';
+    const refsFor=k=>REF_LAYER.filter(x=>x.L.includes(k)&&RD[x.r]).map(x=>x.r).filter((r,i,a)=>a.indexOf(r)===i);
+    const [k0,v0]=top[0];
+    const lines=top.map(([k,v])=>{const rs=refsFor(k);return `<div class="hb-l"><div class="hb-h"><b>${LAYERS[k].n}</b><span>${fmt(v.wk,0)} program-weeks · ${Math.round(v.wk/Math.max(1,tot)*100)}%</span></div>${rs.length?`<div class="hb-r">${rs.map(r=>`<span class="${passed(r)?'okt':''}">${passed(r)?'✓ ':''}${rname(RD[r])}${passed(r)?' (passed)':''}</span>`).join(' · ')}</div>`:'<div class="hb-r mini">No reform in the game targets this; it is cut by plants, deals and better luck.</div>'}</div>`}).join('');
+    return card('What held you back','and the reforms that cut it',`<p class="endp hb-lede">Your biggest limit was <b>${lc(LAYERS[k0].n)}</b>: ${Math.round(v0.wk/Math.max(1,tot)*100)}% of the program-weeks your programs lost. Below, the three largest causes and the reforms that make each one rarer or shorter; those you passed are ticked. <span class="linkn" data-a="cfopen">What it would have taken →</span></p>${lines}`)})();
   const bt=billTable();
   return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('ndaa',22)}</span>After-action report · ${fmtDate(S.w)}</div><div class="bd">
-    ${lead}${tiles}${outT}<div class="trgrid">${rec}${time}</div>
+    ${lead}${tiles}${held}${outT}<div class="trgrid">${rec}${time}</div>
     ${card('Debrief','go deeper',debCards())}
     ${card('What your reforms were worth','',refWorthHTML(true))}
     ${bt?card('The bill','everything the effort has cost, by fiscal year (Oct–Sep)',bt.replace(/^<div class="pdg">[\s\S]*?<\/div>/,'')):''}
@@ -7516,10 +7538,57 @@ function optExplain(od,o){const t=[],w=o.wait?Math.round(o.wait*waitMult(od)):0,
   if(o.req&&!passed(o.req))t.push(`Needs ${rname(RD[o.req])} first.`);
   return t.join(' ')}
 function failTip(o,od){if(!o.fail)return '';const f=o.fail;return ` If it fails: ${f.spawn?'triggers a new obstacle':f.cancel?'project mothballed':f.adv?'PRC dependence added':f.gain?'output reduced':Math.round((f.wait||0)*waitMult(od))+' wk'}.`}
+// what really happened: one line per obstacle and plant problem, shown where the problem is
+const OBS_PRE={
+ nostart:'FY2024 ran on continuing resolutions until March 2024, almost six months into the year; no new program could start until then.',
+ scoring:'Budget rules score a long lease or a multiyear commitment at its full cost up front; the plan to lease Air Force tankers fell apart over that in 2003–04.',
+ far:'A losing bidder can protest an award to GAO, which has 100 days to decide; GAO received about 1,700 protests a year in the early 2020s.',
+ cas:'The Section 809 Panel (2019) found cost accounting standards among the rules that keep commercial firms out of defense work.',
+ cmmc:'The Pentagon’s cybersecurity certification rule (CMMC) took effect in December 2024; small suppliers warned the cost could push some out of defense work.',
+ demand:'Munitions makers said they would not add lines on one-year orders; Congress authorized multiyear buys of several munitions in the FY2023 NDAA.',
+ reqcreep:'The Army’s Future Combat Systems grew in scope and cost until it was cancelled in 2009.',
+ eis:'Federal environmental impact statements took about four and a half years on average to complete (Council on Environmental Quality, 2020).',
+ ea:'Environmental assessments are far shorter than full statements, but still add months of studies and public comment before a site can be cleared.',
+ caa:'In 2024 the Radford Army Ammunition Plant, the Army’s main propellant source, signed a Clean Air Act compliance order with EPA.[c:raapepa]',
+ qd:'Pentagon explosives safety standards set quantity-distance arcs around energetics, which limit where existing plants can add buildings.',
+ obod:'Open burning of propellant waste at Radford drew community opposition when its permit came up for renewal in the late 2010s.',
+ esa:'By law a formal consultation should take 135 days; it often runs longer when a listed species lives near the site.',
+ cwa:'Individual wetlands permits took about two years on average in a widely cited study (Sunding and Zilberman, 2002).',
+ nhpa:'Section 106 requires consulting state historic officers and tribes before a federal action; disputes over sites have held projects up for years.',
+ local:'Local opposition held up the Gotion battery plant in Big Rapids, Michigan, through 2023 and 2024.',
+ mineplan:'The Stibnite gold-antimony mine in Idaho got its federal record of decision in January 2025, after nearly a decade of permitting.[c:stibnite]',
+ queue:'By 2023 projects waiting to connect to the US grid took about five years from request to operation (Lawrence Berkeley National Laboratory).',
+ power:'Alcoa closed its Intalco aluminum smelter in Washington in 2020, citing power costs and low prices.',
+ labor:'General Dynamics Electric Boat planned to hire thousands of workers a year in 2024–25 to keep up with submarine orders.',
+ clearance:'The backlog of security background investigations peaked at about 725,000 cases in 2018.',
+ buyam:'Most heavy machine tools in US plants are imported, and specialty-metals rules have forced waivers when no compliant source existed.',
+ jones:'US yards build only a handful of large oceangoing commercial ships a year; Chinese yards build hundreds.',
+ qualE:'The Joint Production Accelerator Cell named slow qualification of new energetics among the main barriers to making more munitions.[c:jpac]',
+ srmqual:'GAO (2018) found only two US makers of large solid rocket motors; moving a motor to a new line means qualifying it again.[c:gaosrm]',
+ rayonQual:'When Avtex, the only maker of missile-grade rayon, closed in 1989, NASA and the Pentagon spent years qualifying a replacement.[c:avtex]',
+ fat:'First-article tests often fail the first time; each failure means finding the cause, fixing it and testing again before production.',
+ dump:'Molycorp, the only US rare-earth miner, went bankrupt in 2015 after Chinese prices collapsed.',
+ nzTerms:'Mali and Niger rewrote their mining codes and seized assets from foreign miners in 2023–25.',
+ nzBid:'Chinese firms outbid Western buyers for lithium projects in Argentina, Zimbabwe and Mali in the early 2020s.',
+ nzUnrest:'Community blockades shut Peru’s Las Bambas copper mine again and again between 2016 and 2022.',
+ offsets:'Allied buyers routinely require offsets, work at home in return for a purchase, which can move production abroad.',
+ allyneeds:'In 2023 the US and European militaries were buying artillery shells from the same South Korean makers.',
+ hidden:'F-35 deliveries were paused in 2022 when a magnet alloy made in China was found in a supplier’s part.[c:f35magnet]',
+ yield:'New lines usually start well below rated output; Intel’s 10-nanometer chips ran years late on yields.',
+ zero:'Northvolt’s Swedish battery plant struggled with high scrap rates before the company filed for bankruptcy in 2024.',
+ quality:'KC-46 tanker deliveries were halted in 2019 after debris was found inside new aircraft.',
+ turnover:'Shipyards have reported losing a large share of new hires within their first year.',
+ precursor:'Small sub-tier suppliers leave defense work when orders are thin, often with no warning to the primes above them.',
+ freeze:'Century Aluminum idled its Hawesville, Kentucky smelter in 2022 as power prices soared.',
+ tooldown:'Spare parts and service for imported machine tools can take months to arrive.',
+ remote:'In 2025 US officials examining Chinese-made solar inverters reported finding undocumented communication devices in some.',
+ permitRenew:'Operating permits come up for renewal every few years and can be contested; Radford’s air case ended in a 2024 compliance order.[c:raapepa]',
+ latemat:'The first Columbia-class submarine ran more than a year late, largely from late parts and design work (GAO, 2024).',
+ safety:'The 1988 PEPCON explosion in Nevada destroyed one of the two US ammonium perchlorate plants.[c:pepcon]'};
 function obsBlock(od,inst,action,uid,extra=''){
   const Ly=LAYERS[od.layer],D=LAYER_DOM(od.layer);
   const more=`${remedies(od)}${D&&S.fac==='US'?`<div class="ob-ft"><span class="linkn" data-a="rbgo" data-d="${D.id}">How ${lc(D.n)} works →</span></div>`:''}`;
-  let h=`<div class="obs ob2" style="border-left-color:${Ly.c}"><div class="ob-hd"><div class="ob-t"><b>${V(od.n)}</b><span class="ob-l"><i style="background:${Ly.c}"></i>${Ly.n}</span>${extra}</div>${inst.wait>0?`<div class="ob-st"><b>${inst.wait}</b><span>week${inst.wait===1?'':'s'} left</span></div>`:'<div class="ob-st dec"><span>Your decision</span></div>'}</div><p class="ob-d">${V(od.t)}</p>`;
+  let h=`<div class="obs ob2" style="border-left-color:${Ly.c}"><div class="ob-hd"><div class="ob-t"><b>${V(od.n)}</b><span class="ob-l"><i style="background:${Ly.c}"></i>${Ly.n}</span>${extra}</div>${inst.wait>0?`<div class="ob-st"><b>${inst.wait}</b><span>week${inst.wait===1?'':'s'} left</span></div>`:'<div class="ob-st dec"><span>Your decision</span></div>'}</div><p class="ob-d">${V(od.t)}</p>${OBS_PRE[od.id]?`<p class="ob-pre"><b>Real precedent</b> ${OBS_PRE[od.id]}</p>`:''}`;
   if(inst.wait>0){const done=Math.max(0,1-inst.wait/Math.max(1,inst.total));h+=`<div class="ob-w"><div class="ob-wl"><span>Getting past it</span><b>${inst.label}</b><em>${pct(done)} done · clears about ${fmtDate(S.w+inst.wait)}${inst.after==='cancel'?' · <span class="redt">then the project is mothballed</span>':''}</em></div><div class="ob-bar"><i style="width:${Math.max(1.5,done*100)}%;background:${Ly.c}"></i></div></div>`}
   else{const dk=defOpt(od);
     if(dk>=0&&!TURN())h+=dTimer(inst.due,V(od.o[dk].l));
@@ -8583,7 +8652,7 @@ function renderGame(){
   }
   // ---- projects + plants
   let pr=`<h2 style="flex-wrap:wrap;row-gap:3px"><span style="white-space:nowrap">Development Pipeline</span></h2><div class="pintro">Plants, allied deals and upgrades you have started. Each passes through up to six stages: fund, contract, permit, build, qualify, market. Hover a stage for what it means.</div><div class="pkgrow" data-tip="${tipQ(`Two ways to pay for a new plant: build it now from your budget, or request it in the annual ${billN()} with Political Capital, and Congress pays if it funds it. The bill passes every 18 December and brings next year’s budget.`)}">🏛 FY${pkgFY()} request: <b>${pkgItems().length} new plant${pkgItems().length===1?'':'s'}</b>${pkgItems().length?` · ${money(pkgSum())}`:''} · Congress votes ~${fmtDate(pkgWhen())}<span class="r">${suppBtn('btn sm')}<button class="btn sm" data-a="rtab" data-t="fac">🏭 Factories</button> <button class="btn sm" data-a="cat">+ New order</button></span></div>`;
-  const PSu=poolState(),OLd=officeLoad(),lv=(id,t,on)=>`<span class="linkn" data-a="remedy" data-r="${id}">${t}</span>${on?' <span class="okt">✓</span>':''}`,POOL_UP={tools:`<span class="linkn" data-a="node" data-n="machine_tools">a new US machine-tool plant</span> +2 each at full rate (most machine tools are imported)`,trades:`${lv('workforce','Industrial Workforce Act',passed('workforce'))} +2 · ${lv('cvHire','emergency hiring authority',carveOn('cvHire'))} +1`,ranges:`<span class="linkn" data-a="catup">a test-range upgrade, in New order under Upgrades</span> +0.5 each · ${lv('cvQual','emergency qualification authority',carveOn('cvQual'))} +1`};
+  const PSu=poolState(),OLd=officeLoad(),lv=(id,t,on)=>`<span class="linkn" data-a="remedy" data-r="${id}">${t}</span>${on?' <span class="okt">✓</span>':''}`,POOL_UP={tools:`<span class="linkn" data-a="node" data-n="machine_tools">a new US machine-tool plant</span> +2 each at full rate (most machine tools are imported)`,trades:`${lv('workforce','Industrial Workforce Act',passed('workforce'))} +2, trained over about three years · apprenticeship cohorts +0.5 each, two years after you fund them · ${lv('cvHire','emergency hiring authority',carveOn('cvHire'))} +1 while it lasts · civilian projects hire some away`,ranges:`<span class="linkn" data-a="catup">a test-range upgrade, in New order under Upgrades</span> +0.5 each · ${lv('cvQual','emergency qualification authority',carveOn('cvQual'))} +1`};
   const bar=(n,cap)=>{const m=Math.max(cap,n,1);return `<div class="nb"><i style="width:${n/m*100}%;background:${n>cap+1e-9?'#b0453a':'#8a7440'}"></i><span class="mk" style="left:${Math.min(99,cap/m*100)}%"></span></div>`};
   const xfw=S.projects.filter(p=>p.xf&&STAGES[p.stage]==='build').length,X=xfS();
   const capH=`<h2 id="capanel" class="csec">What slows your programs</h2><div class="pintro">Your programs share people and equipment. When more programs need them than there is room for, every one of those programs slows down. The bar shows programs using each now; the mark is the room.</div>
@@ -8591,6 +8660,12 @@ function renderGame(){
    <div class="pools" id="cap-off">${Object.entries(OFFICES).map(([k,o])=>{const v=OLd[k];return `<div class="pool ${v.f<1?'over':''}" id="cap-o-${k}" data-tip="${tipQ(`<b>${o.n} office</b><br>${v.n} program${v.n===1?'':'s'} running, staff for about ${fmt(v.cap,0)}.${v.f<1?` Every program here moves at ${pct(v.f)} speed.`:''}`)}"><span class="pic">${o.ic}</span><span class="pnm">${o.n}</span>${bar(v.n,v.cap)}<b>${v.n}/${fmt(v.cap,0)}</b></div>`}).join('')}</div>
    <div class="sect"><span>Shared resources</span><span>programs / room</span></div><div class="sub" style="padding:4px 10px">Some things every program shares. When more programs need one at the same stage than there is room for, each of them moves slower.</div>
    <div class="pools">${Object.entries(PSu).map(([k,v])=>`<div class="pool ${v.d>v.cap?'over':''}" id="cap-p-${k}" ${S._capFlash==='p-'+k?'data-fl="1"':''} data-tip="${tipQ(`<b>${POOLS[k].n}</b><br>${v.d} program${v.d===1?'':'s'} in ${STAGE_L[POOLS[k].stage].toLowerCase()} need${v.d===1?'s':''} it; room for ${fmt(v.cap,1)}.${v.d>v.cap?` Each moves at ×${fmt(v.f,2)}.`:''}`)}"><span class="pic">${POOLS[k].ic}</span><span class="pnm">${POOLS[k].n}</span>${bar(v.d,v.cap)}<b>${v.d}/${fmt(v.cap,0)}</b><div class="pup pwhat">${POOL_WHAT[k]||''}</div><div class="pup">Raise it: ${POOL_UP[k]||'—'}</div></div>`).join('')}</div>
+   ${S.fac==='US'?(()=>{const act=wfAct(),co=wfCoDone()*WF_CO_N,civ=wfCiv(),hire=carveOn('cvHire')?1:0,tr=wfCoTrain(),cap=poolCap('trades');
+     const parts=[['Base',`${POOLS.trades.cap.US}`],act>0||passed('workforce')?['Industrial Workforce Act',`+${fmt(act,1)}${act<1.99?' of 2':''}`]:null,co>0?['Apprentices qualified',`+${fmt(co,1)}`]:null,hire?['Emergency hiring',`+1`]:null,civ>0?['Hired away by civilian projects',`−${fmt(civ,1)}`]:null].filter(Boolean);
+     return `<div class="sect" id="cap-wf"><span>👷 Skilled trades pipeline</span><span>crews</span></div><div class="sub wfp"><p><b>Welders, pipefitters and electricians take two to four years to train.</b> Chip fabs, battery plants and data centers hire the same trades, and their building boom peaks in 2027–29. You have <b>${fmt(cap,1)} crews</b> now: each lets one program build at full pace.</p>
+       <div class="wfrows">${parts.map(([n,v])=>`<div><span>${n}</span><b class="${v.startsWith('−')?'redt':v.startsWith('+')?'okt':''}">${v}</b></div>`).join('')}</div>
+       ${tr.length||(passed('workforce')&&act<1.99)?`<p class="wftr">In training: ${[passed('workforce')&&act<1.99?`Workforce Act trainees, ${fmt(2-act,1)} crews more by ${fmtDate(S.wfAt+156)}`:'',...tr.map(x=>`a cohort, half a crew, ${fmtDate(x.due)}`)].filter(Boolean).join('; ')}.</p>`:''}
+       <div class="wfbtn"><button class="btn sm" data-a="wfco" ${S.budget>=WF_CO$-1e-9&&tr.length<4?'':'disabled'} data-tip="${tipQ(`<b>Fund an apprenticeship cohort</b><br>${money(WF_CO$)} from your budget. About half a crew qualifies in two years, and stays. Up to four cohorts can train at once.`)}">Fund an apprenticeship cohort · ${money(WF_CO$)}</button> ${passed('workforce')?'':lv('workforce','Industrial Workforce Act',false)+' trains two crews over about three years'}</div></div>`})():''}
    <div class="sect"><span>⚡ Large power transformers</span><span>lead time</span></div><div class="sub" id="cap-xf" style="padding:4px 10px"><b>Why it matters.</b> Energetics plants, smelters and new greenfield sites each need a large power transformer to switch on. It is ordered when the contract is signed; if it arrives after construction ends, the plant stands finished but cannot run until it does. A new order takes <b>${xfLead()} weeks</b>, about as long as building one of these plants, so a short build or a late award leaves the plant waiting.${(()=>{const ws=S.projects.filter(p=>p.xf&&S.w<p.xf.due).map(xfWait),late=ws.filter(w=>w>0);const tw=late.reduce((a,b)=>a+b,0);return !xfw?' None of your programs is waiting on one now.':xfw===1?(late.length?` <b class="redt">Your program waiting on one will finish building about ${tw} weeks before it arrives.</b>`:' Your program waiting on one should get it in time.'):` Of your ${xfw} programs waiting on one, ${late.length?`<b class="redt">${late.length} will finish building before their transformers arrive</b>, about ${tw} weeks of waiting in all`:'all should get theirs in time'}.`})()} The reserve holds ${X.res?X.res+(X.res===1?' unit':' units'):'none'}. About 80% are imported, and one US company makes the electrical steel inside them.</div>${xfActs()}`;
 
   {const ld=(n,c)=>n>c+1e-9?'over':n>=c-.5?'full':'ok',chips=[...Object.entries(OFFICES).filter(([k])=>OLd[k].n>0).map(([k,o])=>{const v=OLd[k];return `<span class="cpc ${ld(v.n,v.cap)}" data-a="capgo" data-k="o-${k}" data-tip="${tipQ(`<b>${o.n} office</b><br>${v.n} of your programs, room for ${fmt(v.cap,1)} at full speed.${v.f<1?` All of them move at ${pct(v.f)} speed.`:''}<br><i>Click for what adds room.</i>`)}">${o.ic} ${o.n.split(' ')[0]} office <b>${v.n}/${fmt(v.cap,0)}</b></span>`}),
@@ -9486,6 +9561,7 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'mkfight':mkFight(b.dataset.k);S._vdirty=true;break;
     case 'mkopp':mkOppose(b.dataset.i);S._vdirty=true;break;
     case 'apnow':apNow(b.dataset.u);S._vdirty=true;break;
+    case 'wfco':wfFund();S._vdirty=true;break;
     case 'share':shareCopy();return;
     case 'mkndaa':S.queue.shift();S.modal=null;S.view='ndaa';S.ndTab='cong';S._vdirty=true;break;
     case 'ruguard':ruGuard();S._vdirty=true;break;
