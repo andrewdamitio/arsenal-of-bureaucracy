@@ -5069,7 +5069,7 @@ function enterStage(p){
   p.prog=0;p.sched=[];
   if(STAGES[p.stage]==='qual'&&!S.histMode&&!p.qAdj){const def0=PD[p.def],m=qualJointM(def0),ov=qualOverlap(def0,p.dur);p.qAdj=1;const q0=typeof p.qPlan==='object'?p.qPlan:{m:1,o:false},mm=m/q0.m,oo=q0.o?0:ov;if(mm<1||oo){const q0=p.dur[4];p.dur[4]=Math.max(1,Math.round(p.dur[4]*Math.min(1,mm))-oo);if(q0>p.dur[4])(p.rw=p.rw||{})['x:qual']=(p.rw['x:qual']||0)+q0-p.dur[4];pmark(p,{note:'qualification shortened by policy'})}}
   const st=STAGES[p.stage],D=p.dur[p.stage],def=PD[p.def];
-  if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(c>0&&rand('r38')<c)p.sched.push({id:o.id,at:Math.floor(rand('r39')*D)})}
+  if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(o.mods)cvObs(o,def,c);if(c>0&&rand('r38')<c)p.sched.push({id:o.id,at:Math.floor(rand('r39')*D)})}
   p.sched.sort((a,b)=>a.at-b.at);
 }
 function notify(html,cls,act){if(S.autoPause&&!S.sim)S.speed=0} // decisions show in the decisions bar, not as toasts
@@ -5399,7 +5399,34 @@ const stkMark=(id,fy)=>{if(!S.histMode)(S.stkBy=S.stkBy||{})[id]={w:S.w,fy}};
 function stkRunTick(P){if(!S.stkBy||S.histMode)return;const R=(S.stkRun=S.stkRun||{});
   for(const id in S.stkBy){const u=P[id]?.usedStock||0;if(u>1e-9){R[id]=R[id]||{w0:S.w,n:0};R[id].n++}
     else if(R[id]){const r=R[id];delete R[id];if(r.n>=6)cbAdd('stock',r.n*.5,`The ${lc(ND[id].n)} stockpile you added to through the NDAA covered ${r.n} weeks of shortfall, ${monYr(r.w0)} to ${monYr(S.w)}.`,{id,a:r.w0,n:r.n})}}}
-function cbTick(){if(S.fac!=='US'||S.histMode||S.sim)return;
+/* Waivers (emergency carve-outs) kept or allowed to lapse. While one is in force: the delay it spares (problems it makes
+   rarer, counted as expected weeks where they are rolled, and the shorter qualification waits) and, for the three that change
+   supply, its effect on sufficiency, sampled every four weeks by running production with and without it. Reported when its
+   term ends. When one expires and is not renewed, the same counted the other way: reported on renewal or after 26 weeks. */
+const CV_OUT=['cvDfars','cvBuyAm','cvJones'],cvAcc=()=>({w0:S.w,wk:0,pt:0,ns:0,ln:{}});
+function cvStart(id){if(S.histMode)return;S.cvL=S.cvL||{};if(S.cvL[id]){cvLapse(id,1);delete S.cvL[id]}(S.cvT=S.cvT||{})[id]=cvAcc()}
+function cvEnd(id,why){if(S.histMode)return;const T=S.cvT?.[id];if(T){delete S.cvT[id];cvTerm(id,T,why)}if(why==='expired')(S.cvL=S.cvL||{})[id]=cvAcc()}
+const obsEW=(o,def)=>{const k=defOpt(o);if(k<0)return 0;const x=o.o[k];if(x.spawn||x.cancel)return 0;const pr=optP(o,x),f=x.fail||{};return (pr*(+V(x.wait)||0)+(1-pr)*(+V(f.wait)||0))*waitMult(o,def)};
+function cvObs(o,def,c){if(S.histMode||S.sim)return;let ew=null;
+  for(const k in o.mods){if(!CD[k])continue;const m=o.mods[k];
+    if(carveOn(k)&&S.cvT?.[k]){if(m<=0)continue;ew??=obsEW(o,def);S.cvT[k].wk+=(Math.min(1,c/m)-c)*ew}
+    else if(!carveOn(k)&&S.cvL?.[k]){ew??=obsEW(o,def);S.cvL[k].wk+=(c-c*m)*ew}}}
+// the supply waivers: sufficiency with and without, every four weeks
+function cvTick(){if(S.w%4)return;for(const id of CV_OUT){const T=carveOn(id)?S.cvT?.[id]:S.cvL?.[id];if(!T||!S.carve[id])continue;
+    const on=carveOn(id),R0=S._R||production(false),k0=S.carve[id].left;S.carve[id].left=on?0:1;let R1;try{R1=production(false)}finally{S.carve[id].left=k0}
+    const Ron=on?R0:R1,Roff=on?R1:R0;T.pt+=(raceIdx(Ron.out)-raceIdx(Roff.out))*100;T.ns++;
+    for(const c in LINES){const a=Ron.out[c].yr,b=Roff.out[c].yr;if(b>1e-9&&a>b)T.ln[c]=(T.ln[c]||0)+(a-b)/b}}
+  for(const id in S.cvL||{})if(S.w-S.cvL[id].w0>=26){cvLapse(id,0);delete S.cvL[id]}}
+// the line whose output the waiver moved most, on average over the samples
+/* the average gain with the waiver over without; low: the same gap as a share of output with it (85% higher with = 46% lower without) */
+function cvLine(T,low){const e=Object.entries(T.ln).sort((a,b)=>b[1]-a[1])[0];if(!e||!T.ns)return '';let v=e[1]/T.ns;if(low)v=v/(1+v);return v>=.02?`${lc(LINES[e[0]].n)} ${pct(v)}`:''}
+function cvTerm(id,T,why){const pt=T.ns?T.pt/T.ns:0,wk=Math.round(T.wk),ln=cvLine(T);if(wk<4&&pt<.2)return;
+  const parts=[wk>=4?`about ${wk} program-weeks of delay spared, by making problems rarer${id==='cvQual'?' and shorter':''}`:'',pt>=.2?`sufficiency about ${fmt(pt,1)} pt higher${ln?`, ${ln} higher`:''}`:''].filter(Boolean);
+  cbAdd('cv',wk+pt*20,`<b>${cname(CD[id])}</b>, in force ${monYr(T.w0)} to ${monYr(S.w)}${why&&why!=='expired'?` (${why})`:''}: ${parts.join('; ')}.`)}
+function cvLapse(id,renewed){const T=S.cvL?.[id];if(!T)return;const pt=T.ns?T.pt/T.ns:0,wk=Math.round(T.wk),ln=cvLine(T,1);if(wk<4&&pt<.2)return;
+  const parts=[pt>=.2?`sufficiency ${renewed?"ran":"has run"} about ${fmt(pt,1)} pt lower${ln?` (${ln.replace(/ (\d+%)$/,' $1 lower')})`:''}`:'',wk>=4?`problems it would have made rarer ${renewed?"cost":"have cost"} your programs about ${wk} program-weeks`:''].filter(Boolean);
+  cbAdd('cv',-(wk+pt*20),renewed?`<b>${cname(CD[id])}</b> lapsed from ${monYr(T.w0)} until you renewed it in ${monYr(S.w)}. In that time ${parts.join(', and ')}.`:`<b>${cname(CD[id])}</b> lapsed in ${monYr(T.w0)} and has not been renewed. Since then ${parts.join(', and ')}.`)}
+function cbTick(){if(S.fac!=='US'||S.histMode||S.sim)return;cvTick();
   for(const D of ALLY_DEALS){const x=alS(D.m).deals[D.id];if(!x||x.w0==null||x.w0<PLAY0||x.cbd||!D.add)continue;
     if(S.w>=x.w0+(D.ramp||0)){x.cbd=1;const f=D.add/Math.max(reqOut(D.c),1e-9),M=alMem().find(m=>m.k===D.m);
       cbAdd('deal',f*400,`<b>${D.n}</b>, signed ${monYr(x.w0)}, reached full rate: ${M?M.n+' adds':'it adds'} ${fmtN(D.add)} ${LINES[D.c].u} a year, ${pct(f)} of the requirement.`)}}
@@ -5420,7 +5447,7 @@ function chooseOpt(uid,k){
   if(eff.gain)p.gm*=eff.gain;if(eff.adv)p.adv=Math.min(1,p.adv+eff.adv);
   log(`${S._auto?'⏱ No decision in time. ':''}${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');if(prob<1)rollRec(projName(p),`${V(od.n)} → ${V(opt.l)}`,prob,ok,failWhat(opt.fail,od,PD[p.def]));
   if(eff.spawn){p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)});spawnObs(p,V(eff.spawn),true);return}
-  const w=Math.round((eff.wait||0)*waitMult(od,PD[p.def]));
+  const w=Math.round((eff.wait||0)*waitMult(od,PD[p.def]));if(w>0&&od.layer==='QUAL'&&carveOn('cvQual')&&S.cvT?.cvQual)S.cvT.cvQual.wk+=w/.6-w;
   if(w>0){inst.wait=w;inst.total=w;inst.label=V(opt.l)+(prob<1&&!ok?' (failed — fallback)':'');inst.after=eff.cancel?'cancel':null}
   else if(eff.cancel)cancelProject(p,'mothballed');else{p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)})}
 }
@@ -5547,10 +5574,10 @@ function carveAvail(C){return facOk(C)&&!carveOn(C.id)&&!carveNeed(C)}
 function declareNE(){if(S.ne||S.pc<NE_COST)return;S.pc-=NE_COST;S.ne={since:S.w};S.waivers++;lawRec('Emergency','National emergency on the defense industrial base');S.strain=clamp(S.strain+5,0,100);log('🚨 National emergency on the defense industrial base declared (National Emergencies Act). Emergency carve-outs that rest on it are now available.','ev')}
 function endNE(why){if(!S.ne)return;S.ne=null;for(const C of CARVES)if(C.need==='ne'&&carveOn(C.id))endCarve(C.id,'ends with the emergency');log(`🚨 The national emergency ${why}.`,'bad')}
 function startCarve(id,free){const C=CD[id];if(!C||carveOn(id))return;const c=carveCost(C);if(!free){if(S.pc<c||carveNeed(C))return;S.pc-=c}actRec('carve',{id});
-  const r=S.carve[id]?.n||0;S.carve[id]={left:C.wk,total:C.wk,n:r+1};S.waivers++;lawRec('Waiver',cname(C));log(`🖋 Carve-out issued: ${cname(C)} (${C.wk} wk).`,'ev')}
-function endCarve(id,why){if(S.carve[id]){S.carve[id].left=0;log(`⚖ Carve-out ${why}: ${cname(CD[id])}.`,'bad')}}
+  const r=S.carve[id]?.n||0;cvStart(id);S.carve[id]={left:C.wk,total:C.wk,n:r+1};S.waivers++;lawRec('Waiver',cname(C));log(`🖋 Carve-out issued: ${cname(C)} (${C.wk} wk).`,'ev')}
+function endCarve(id,why){if(S.carve[id]){if(S.carve[id].left>0)cvEnd(id,why);S.carve[id].left=0;log(`⚖ Carve-out ${why}: ${cname(CD[id])}.`,'bad')}}
 function carvesTick(){
-  for(const id in S.carve){const c=S.carve[id];if(c.left>0){c.left--;if(c.left===0)log(`⌛ Carve-out expired: ${cname(CD[id])}. Renew it or lose it.`,'bad');
+  for(const id in S.carve){const c=S.carve[id];if(c.left>0){c.left--;if(c.left===0){cvEnd(id,'expired');log(`⌛ Carve-out expired: ${cname(CD[id])}. Renew it or lose it.`,'bad')}
     else if(CD[id].court&&!S.queue.some(q=>q.ev==='enjoin')&&rand('r49')<CD[id].court){S._enj=id;queueEvent('enjoin')}}}
 }
 const L_U=c=>LINES[c].u;
