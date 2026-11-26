@@ -1956,6 +1956,7 @@ html body #supply .csec,html body #right .csec{padding-top:12px!important;paddin
 .trp .hb-lede{margin-bottom:10px}.trp .hb-l{padding:7px 0;border-bottom:1px dotted #d6c79f}.trp .hb-h{display:flex;justify-content:space-between;gap:10px}.trp .hb-h b{font:700 14.5px var(--f-head);color:#231d14}.trp .hb-h span{font:12.5px var(--f-body);color:#6b5a35}
 .trp .hb-r{margin-top:3px;font:13px/1.5 var(--f-body);color:#3a3020}.trp .hb-r .okt{font-weight:600}
 #right .wfp p{margin:0 0 6px}#right .wfp .wfrows{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin:4px 0 6px}#right .wfp .wfrows>div{display:contents}#right .wfp .wfrows b{text-align:right}#right .wfp .wftr{color:#c9b98f}#right .wfp .wfbtn{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ivb{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:5px}.ivb.col{flex-direction:column;align-items:flex-start;margin-top:0}
 </style>
 </head>
 <body>
@@ -4251,21 +4252,23 @@ function xfAct(k){const X=xfS();
   if(k==='dpa'){const c=XF_DPA_PC[X.dpa?1:0];if(S.pc<c)return;S.pc-=c;X.dpa=!X.dpa;
     if(X.dpa){for(const p of S.projects)if(p.xf&&!p.xf.res)p.xf.due=S.w+Math.round((p.xf.due-S.w)*.6);S.strain=clamp(S.strain+4,0,100);lawRec('Executive action','DPA priority ratings for defense transformer orders');log('⚡ DPA priority ratings for defense transformer orders: defense orders move to the front of the makers’ queues. Utilities’ own projects slip.','ev')}
     else log('⚡ DPA priority for transformers lifted.','ev')}
-  if(k==='res'&&!X.resBought&&S.pc>=XF_RES_PC&&S.budget>=XF_RES_C){S.pc-=XF_RES_PC;spendB(XF_RES_C,'Programs');X.resBought=S.w;const L=xfLead();
-    for(let i=0;i<XF_RES_N;i++)X.resIn.push({w:S.w+Math.round(L*(.5+.5*i/(XF_RES_N-1)))});log(`⚡ Strategic transformer reserve ordered: ${XF_RES_N} large transformers, arriving over ${Math.round(L/4.35)} months (${money(XF_RES_C)}).`,'ev')}
-  if(k==='co'&&X.co==null&&S.pc>=XF_CO_PC&&S.budget>=XF_CO_C){S.pc-=XF_CO_PC;spendB(XF_CO_C,'Programs');X.co=S.w;log(`⚡ DPA Title III awards to US transformer makers and electrical-steel lines (${money(XF_CO_C)}): lead times fall from about ${fmtDate(S.w+104)}.`,'ev')}}
+  if(k==='res')ivNow('xfres');if(k==='co')ivNow('xfco')}
+function xfResGo(cg){const X=xfS();X.resBought=S.w;const L=xfLead();
+  for(let i=0;i<XF_RES_N;i++)X.resIn.push({w:S.w+Math.round(L*(.5+.5*i/(XF_RES_N-1)))});log(`⚡ Strategic transformer reserve ordered${cg?' with the money Congress provided':''}: ${XF_RES_N} large transformers, arriving over ${Math.round(L/4.35)} months (${money(XF_RES_C)}).`,'ev')}
+function xfCoGo(cg){xfS().co=S.w;log(`⚡ DPA Title III awards to US transformer makers and electrical-steel lines (${money(XF_CO_C)}${cg?', paid by Congress':''}): lead times fall from about ${fmtDate(S.w+104)}.`,'ev')}
 // the three ways to cut the wait, compact, for the side panel
-function xfActs(){const X=xfS(),row=(on,ctl,n,d)=>`<div class="xfa ${on?'on':''}"><div class="xfc">${ctl}</div><div><b>${n}</b><div class="mini">${d}</div></div></div>`;
+function xfActs(){const X=xfS(),row=(on,ctl,n,d)=>`<div class="xfa ${on?'on':''}"><div class="xfc">${ctl}</div><div><b>${n}</b><div class="mini">${d}</div></div></div>`,
+    prow=(on,id,done,n,d)=>on?row(1,`<span class="okt">${done}</span>`,n,d):`<div class="xfa"><div class="xfc"></div><div><b>${n}</b><div class="mini">${d}</div><div class="ivb">${ivBtns(id)}</div></div></div>`;
   return `<div class="xfas"><div class="xfh">Cut the wait</div>${row(X.dpa,`<button class="tog ${X.dpa?'on':''}" data-a="xf" data-k="dpa" ${S.pc>=XF_DPA_PC[X.dpa?1:0]?'':'disabled'} data-tip="${X.dpa?'Reverse':'Adopt'}: ${XF_DPA_PC[X.dpa?1:0]} PC"><i></i></button>`,'DPA priority for defense transformer orders',`Executive action, ${XF_DPA_PC[X.dpa?1:0]} PC. Defense orders jump the queue: lead time ×0.6, including orders already placed. Utilities’ hookups slip (+4 strain).`)}
-   ${row(X.resBought,X.resBought?'<span class="okt">Ordered</span>':`<button class="btn sm" data-a="xf" data-k="res" ${S.pc>=XF_RES_PC&&S.budget>=XF_RES_C?'':'disabled'}>${money(XF_RES_C)} · ${XF_RES_PC} PC</button>`,'Strategic transformer reserve',`${XF_RES_N} spare units bought ahead of need. Once they arrive, a program that needs one gets it in ${XF_RES_WK} weeks.`)}
-   ${row(X.co!=null,X.co!=null?'<span class="okt">Funded</span>':`<button class="btn sm" data-a="xf" data-k="co" ${S.pc>=XF_CO_PC&&S.budget>=XF_CO_C?'':'disabled'}>${money(XF_CO_C)} · ${XF_CO_PC} PC</button>`,'Co-fund US transformer and electrical-steel lines',`DPA Title III awards. Lead time −25% for everyone, from the third year.`)}</div>`}
+   ${prow(X.resBought,'xfres','Ordered','Strategic transformer reserve',`${XF_RES_N} spare units bought ahead of need. Once they arrive, a program that needs one gets it in ${XF_RES_WK} weeks.`)}
+   ${prow(X.co!=null,'xfco','Funded','Co-fund US transformer and electrical-steel lines',`DPA Title III awards. Lead time −25% for everyone, from the third year.`)}</div>`}
 function xfPanel(){const X=xfS(),L=xfLead(),wait=S.projects.filter(p=>xfHold(p)||(p.xf&&STAGES[p.stage]==='build')),inc=X.resIn.length;
   return `<h3 class="bltt" style="margin-top:16px">Large power transformers</h3><p class="mini" style="margin:2px 0 8px">Every new energetics plant, smelter and greenfield site needs a large power transformer, ordered when its contract is awarded; construction cannot finish until it arrives. A new order now takes <b>${L} weeks</b> (about ${fmt(L/52,1)} years), against 12-18 months before 2020. About 80% are imported, and one US company makes the electrical steel inside them.[c:woodmac25][c:goes]</p>
    <div class="xfst"><div><b>${L} wk</b><span>lead time for a new order</span></div><div><b>${wait.length}</b><span>of your programs waiting on one</span></div><div><b>${X.res}</b><span>in the reserve${inc?` · ${inc} on the way`:''}</span></div></div>
-   <table class="ctable lev rbt"><colgroup><col style="width:120px"><col style="width:44%"><col></colgroup>
+   <table class="ctable lev rbt"><colgroup><col style="width:150px"><col style="width:42%"><col></colgroup>
     <tr class="${X.dpa?'rlon':''}"><td><button class="tog ${X.dpa?'on':''}" data-a="xf" data-k="dpa" ${S.pc>=XF_DPA_PC[X.dpa?1:0]?'':'disabled'}><i></i></button></td><td><b>DPA priority ratings for defense transformer orders</b><div class="mini">Executive action · ${X.dpa?'in force · reverse':'adopt'} for ${XF_DPA_PC[X.dpa?1:0]} PC</div></td><td>${fxChips(['defense orders jump the queue: lead time ×0.6, including orders already placed'],['utilities’ interconnections slip (+4 strain)'])}</td></tr>
-    <tr class="${X.resBought?'rlon':''}"><td>${X.resBought?'<span class="rkind">Ordered</span>':`<button class="btn sm" data-a="xf" data-k="res" ${S.pc>=XF_RES_PC&&S.budget>=XF_RES_C?'':'disabled'}>${money(XF_RES_C)} · ${XF_RES_PC} PC</button>`}</td><td><b>Strategic transformer reserve</b><div class="mini">Buy ${XF_RES_N} spare units ahead of need. They arrive over the next lead time; after that, a program that needs one gets it in ${XF_RES_WK} weeks.</div></td><td>${fxChips([`${XF_RES_N} programs skip the queue`],['the units themselves wait in the same queue first'])}</td></tr>
-    <tr class="${X.co!=null?'rlon':''}"><td>${X.co!=null?'<span class="rkind">Funded</span>':`<button class="btn sm" data-a="xf" data-k="co" ${S.pc>=XF_CO_PC&&S.budget>=XF_CO_C?'':'disabled'}>${money(XF_CO_C)} · ${XF_CO_PC} PC</button>`}</td><td><b>Co-fund US transformer and electrical-steel capacity</b><div class="mini">DPA Title III awards to transformer makers and grain-oriented electrical steel lines, as with the Defense Logistics Agency’s 2026 steel contract with Cleveland-Cliffs.[c:goesdla] New lines open in two to three years.</div></td><td>${fxChips(['lead time −25% for everyone, phased in during the third year'],['slow: nothing changes for two years'])}</td></tr>
+    <tr class="${X.resBought?'rlon':''}"><td>${X.resBought?'<span class="rkind">Ordered</span>':`<div class="ivb col">${ivBtns('xfres')}</div>`}</td><td><b>Strategic transformer reserve</b><div class="mini">Buy ${XF_RES_N} spare units ahead of need. They arrive over the next lead time; after that, a program that needs one gets it in ${XF_RES_WK} weeks.</div></td><td>${fxChips([`${XF_RES_N} programs skip the queue`],['the units themselves wait in the same queue first'])}</td></tr>
+    <tr class="${X.co!=null?'rlon':''}"><td>${X.co!=null?'<span class="rkind">Funded</span>':`<div class="ivb col">${ivBtns('xfco')}</div>`}</td><td><b>Co-fund US transformer and electrical-steel capacity</b><div class="mini">DPA Title III awards to transformer makers and grain-oriented electrical steel lines, as with the Defense Logistics Agency’s 2026 steel contract with Cleveland-Cliffs.[c:goesdla] New lines open in two to three years.</div></td><td>${fxChips(['lead time −25% for everyone, phased in during the third year'],['slow: nothing changes for two years'])}</td></tr>
    </table>`}
 // ---- builder commitment: the private builder’s willingness to keep going, 0-100. It opens where the contract and the rules put it,
 // falls while the program is stalled, late, unfunded or without orders, and recovers with steady progress. Below 30 the builder asks for
@@ -4372,8 +4375,9 @@ const wfCivF=()=>S.wfCivF??(S.wfCivF=.7+.6*mulb((S.seed^hstr('wfciv'))|0)());
 const wfCiv=()=>S.fac!=='US'||S.histMode||S.w<PLAY0?0:(WF_CIV[dateOf(S.w).getFullYear()]??.4)*wfCivF();
 function wfAct(){if(!passed('workforce')){return 0}if(S.wfAt==null)S.wfAt=S.w;return 2*clamp((S.w-S.wfAt-26)/130,0,1)}
 const wfCo=()=>(S.wfCo=S.wfCo||[]),wfCoDone=()=>wfCo().filter(x=>x.due<=S.w).length,wfCoTrain=()=>wfCo().filter(x=>x.due>S.w);
-function wfFund(){if(S.budget<WF_CO$-1e-9||wfCoTrain().length>=4)return;spendB(WF_CO$,'Workforce');wfCo().push({w0:S.w,due:S.w+WF_CO_WK});actRec('wfco',{});
-  log(`👷 Apprenticeship cohort funded (${money(WF_CO$)}): about half a crew of welders, pipefitters and electricians, qualified about ${fmtDate(S.w+WF_CO_WK)}.`,'ev')}
+function wfFund(){ivNow('wfco')}
+function wfCoGo(cg){wfCo().push({w0:S.w,due:S.w+WF_CO_WK});
+  log(`👷 Apprenticeship cohort funded (${money(WF_CO$)}${cg?', paid by Congress':''}): about half a crew of welders, pipefitters and electricians, qualified about ${fmtDate(S.w+WF_CO_WK)}.`,'ev')}
 function poolCap(k){let c=POOLS[k].cap[S.fac];
   if(k==='tools')c+=plantsFor('node','machine_tools').reduce((a,pl)=>a+2*Math.min(1,pl.yield),0); // each US machine-tool plant you build: +2 at full rate
   if(k==='trades'){c+=wfAct()+wfCoDone()*WF_CO_N-wfCiv();if(carveOn('cvHire'))c+=1;c=Math.max(3,c)}
@@ -4489,6 +4493,7 @@ function mkItems(V){const fy=FYOF(V),m=moodOf(fy),r=[];
   for(const p of S.projects)if(p.pkg===V){const d=PD[p.def],{s:sv}=billSev(d);r.push({k:'p:'+p.uid,kind:'plant',n:projName(p),def:d,pc:p.pc||0,cost:p.req,q:clamp(m.f*(.03+.22*Math.pow(1-sv,1.5))*(p.champ?.3:1)*(p.pledge?.6:1)*credF(),.02,.75),uid:p.uid})}
   for(const x of alReqs())if(x.pkg===V){const D=ADD[x.id];r.push({k:'a:'+x.id,kind:'deal',n:D.n,pc:x.pc,cost:x.req,q:alCut(),id:x.id})}
   for(const x of ndsReqs())if(x.pkg===V)r.push({k:'n:'+x.id,kind:'nds',n:'Stockpile: '+ND[x.id].n,def:{t:{node:x.id}},pc:x.pc,cost:x.req,q:clamp(m.f*.08,.02,.5),id:x.id});
+  for(const x of ivReqs())if(x.pkg===V)r.push({k:'v:'+x.id,kind:'iv',n:IV[x.id].n,pc:x.pc,cost:x.req,q:clamp(m.f*.08,.02,.5),id:x.id});
   for(const x of ordReqs())if(x.pkg===V)r.push({k:'o:'+x.c,kind:'ord',n:`Orders: ${LINES[x.c].n}, +${fmtN(x.add)} a year`,pc:x.pc,cost:x.add*UC[x.c],q:ordCut(fy),c:x.c});
   return r}
 const mkPrioF=(it,pr)=>{if(!pr||!it.def)return 1;const k=officeOf(it.def);return pr.hi.includes(k)?.5:pr.lo===k?1.5:1};
@@ -4571,6 +4576,36 @@ const ruleWhat=r=>[...(r.up||[]).map(t=>'▲ '+capF(t)),...(r.dn||[]).map(t=>'�
 // last year's levels and funds no new starts, so authorized items wait for the next year's act. The money line for
 // requests sits in the appropriations act, and appropriators can decline an item the NDAA allowed.
 const setTimeout0=f=>f();
+/* Paid steps that are not plants (a transformer reserve, co-funded transformer lines, apprenticeship cohorts) are paid
+   like everything else: from your budget now, or requested in the NDAA, where Congress pays if it authorizes and appropriates. */
+const IV={
+ xfres:{n:'Strategic transformer reserve',$:()=>XF_RES_C,cat:'Programs',ok:()=>!xfS().resBought,what:()=>`${XF_RES_N} spare large power transformers bought ahead of need; a program that needs one then gets it in ${XF_RES_WK} weeks`,go:cg=>xfResGo(cg)},
+ xfco:{n:'Co-funded US transformer and electrical-steel lines',$:()=>XF_CO_C,cat:'Programs',ok:()=>xfS().co==null,what:()=>'DPA Title III awards: transformer lead times −25% for everyone, from the third year',go:cg=>xfCoGo(cg)},
+ wfco:{n:'Apprenticeship cohort',multi:1,$:()=>WF_CO$,cat:'Workforce',ok:()=>wfCoTrain().length+ivPendN('wfco')<4,what:()=>'About half a crew of welders, pipefitters and electricians, qualified two years after funding',go:cg=>wfCoGo(cg)}};
+const ivReqs=()=>(S.ivReq=S.ivReq||[]),ivPendN=id=>ivReqs().filter(x=>x.id===id).length+(S.apQ||[]).filter(x=>x.t==='iv'&&x.id===id).length;
+const ivFree=id=>S.fac==='US'&&!!IV[id]&&IV[id].ok()&&(IV[id].multi||!ivPendN(id)),ivPC=id=>REQ_PC(IV[id].$()),ivCut=()=>clamp(moodOf(pkgFY()).f*.08*credF(),.02,.5);
+function ivNow(id){const I=IV[id];if(!I||!I.ok()||(!I.multi&&ivPendN(id)))return;const c=I.$();if(S.budget<c-1e-9)return;spendB(c,I.cat);spent('$',c);actRec('ivnow',{id});I.go()}
+function ivAdd(id){if(!ivFree(id)||ivReqs().some(x=>x.id===id))return;const k=ivPC(id),c=IV[id].$();if(S.pc<k)return;S.pc-=k;spent('pc',k);actRec('ivreq',{id});ivReqs().push({id,pc:k,req:c,pkg:pkgW()});
+  log(`🏛 Requested in the FY${pkgFY()} NDAA: ${IV[id].n.toLowerCase()} (${money(c)}; ${k} PC).`,'ev')}
+function ivDrop(id){const x=ivReqs().find(y=>y.id===id);if(x){S.pc+=x.pc||0;spent('pc',-(x.pc||0))}S.ivReq=ivReqs().filter(y=>y!==x)}
+function ivEnact(got,lost,fy,room,auth,apT){const its=ivReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.ivReq=ivReqs().filter(x=>!its.includes(x));
+  for(const x of its){const I=IV[x.id];if(!I)continue;const mr=mkRes(fy,'v:'+x.id),why=room.r<x.req-1e-9?'below the money line':(mr?mr==='cut':rand('r38'+x.id)<ivCut())?(mr?'cut in conference':'cut in markup'):null,w=I.what();
+    if(why){if(!/^cut/.test(why))room.r=-1;lost.push(`${I.n} (${why})`);bRow({kind:'Industrial investment',n:I.n,what:w,out:capF(why),ok:0});log(`✂ FY${fy%100} ${billN()}: ${I.n} not funded, ${why}.`,'bad');continue}
+    if(auth){auth({t:'iv',id:x.id,req:x.req},w);got.push(`${I.n} (authorized)`);bRow({kind:'Industrial investment',n:I.n,what:w,out:`Authorized · ${apT()}`,ok:1});continue}
+    room.r-=x.req;fyLed('cong',x.req);I.go(1);got.push(I.n);bRow({kind:'Industrial investment',n:I.n,what:w,out:`Funded · ${money(x.req)}`,ok:1})}}
+// both routes, wherever the step is offered
+function ivBtns(id){const I=IV[id],c=I.$(),q=ivReqs().find(x=>x.id===id),aq=(S.apQ||[]).some(x=>x.t==='iv'&&x.id===id);
+  const st=q?`<span class="mini gold">In the FY${FYOF(q.pkg)} NDAA request</span> <button class="btn sm" data-a="ivdrop" data-k="${id}" data-tip="Take it out of the request. Its PC comes back.">✕</button>`:aq?'<span class="mini gold">Authorized · awaits appropriations</span>':'';
+  if(st&&!I.multi)return st;
+  const ok=I.ok()&&(I.multi||!ivPendN(id));
+  return `<button class="btn sm" data-a="ivnow" data-k="${id}" ${ok&&S.budget>=c-1e-9?'':'disabled'} data-tip="${tipQ(`<b>Pay now</b><br>${money(c)} from your budget; it starts today.`)}">Pay now · ${money(c)}</button>`
+    +(S.fac==='US'&&!q?` <button class="btn sm" data-a="ivreq" data-k="${id}" ${ok&&S.pc>=ivPC(id)?'':'disabled'} data-tip="${tipQ(`<b>Request it in the NDAA</b><br>${ivPC(id)} PC now. If Congress authorizes it in December and appropriations pay for it, Congress pays the ${money(c)}, not your budget, and it starts then. It comes after your plants on the money line and can be cut in markup.`)}">NDAA · ${ivPC(id)} PC</button>`:'')+(st?' '+st:'')}
+function ivReqSec(){if(S.fac!=='US')return '';const q=ivCut();
+  const rows=ivReqs().map(x=>`<tr><td><b>${IV[x.id].n}</b><div class="mini">${IV[x.id].what()}</div></td><td class="num">${money(x.req)}<div class="mini">${x.pc} PC spent</div></td><td>${mkTag('v:'+x.id)||`<span class="okt">~${Math.round(q*100)}% markup risk</span>`}</td><td><button class="btn sm" data-a="ivdrop" data-k="${x.id}" data-tip="Take it out of the request. Its PC comes back.">✕</button></td></tr>`).join('');
+  const open=Object.keys(IV).filter(id=>ivFree(id)&&!ivReqs().some(x=>x.id===id));
+  return `<div class="dsec" id="ivsec"><h4>Industrial investments</h4><p class="mini" style="margin:0 0 6px">Steps that are not plants but still cost money: a transformer reserve, co-funded transformer lines, apprenticeship cohorts. Pay for them now from your budget where they are offered, or request them here and Congress pays if it funds them. They come last on the money line and can be cut in markup.</p>
+    ${rows?`<table class="ctable bl-t"><tr><th>Investment</th><th>Cost</th><th>Outlook</th><th></th></tr>${rows}</table>`:'<p class="mini">No industrial investments in the request.</p>'}
+    ${open.length?`<table class="ctable bl-t aldopen"><tr><th>Open investments</th><th class="num">Cost</th><th></th></tr>${open.map(id=>`<tr><td>${IV[id].n}<div class="mini">${IV[id].what()}</div></td><td class="num">${money(IV[id].$())}</td><td class="num"><button class="btn sm" data-a="ivreq" data-k="${id}" ${S.pc>=ivPC(id)?'':'disabled'}>Request · ${ivPC(id)} PC</button></td></tr>`).join('')}</table>`:''}</div>`}
 const apQ=()=>(S.apQ=S.apQ||[]),apOf=fy=>{S.apr=S.apr||{};return S.apr[fy]};
 const apCut=fy=>clamp(moodOf(fy).f*.06,.02,.3);
 // the week the next appropriations act can pay for authorized items
@@ -4585,14 +4620,15 @@ function fyPay(fy){const a=apOf(fy)||(S.apr[fy]={});if(a.paid)return;a.paid=1;co
 function apApply(x,fy){if(x.t==='plant'){const p=S.projects.find(q=>q.uid===x.uid);if(!p)return false;p.spent=p.req;p.cong=1;p.pkg=null;p.apw=null;p.prog=p.dur[0];if(x.fence){p.dur[1]+=x.fence;pmark(p,{fence:x.fence})}pmark(p,{funded:1});fyLed('cong',x.req);return true}
   if(x.t==='nds'){fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);return true}
   if(x.t==='deal'){const D=ADD[x.id];if(!D||alS(D.m).deals[x.id])return false;fyLed('cong',x.req);alSign(x.id,S.w+(x.fence||0));return true}
+  if(x.t==='iv'){const I=IV[x.id];if(!I||!I.ok())return false;fyLed('cong',x.req);I.go(1);return true}
   if(x.t==='ord'){S.ord[x.c]+=x.add;return true}return false}
-function apName(x){return x.t==='plant'?projName(S.projects.find(q=>q.uid===x.uid)||{def:x.def}):x.t==='nds'?'Stockpile: '+ND[x.id].n:x.t==='deal'?ADD[x.id].n:`Orders: +${fmtN(x.add)} ${LINES[x.c].u} a year`}
-const apKind=x=>({plant:'Plant',nds:'Stockpile buy',deal:'Allied deal',ord:'Weapons order'})[x.t];
+function apName(x){return x.t==='plant'?projName(S.projects.find(q=>q.uid===x.uid)||{def:x.def}):x.t==='nds'?'Stockpile: '+ND[x.id].n:x.t==='deal'?ADD[x.id].n:x.t==='iv'?IV[x.id].n:`Orders: +${fmtN(x.add)} ${LINES[x.c].u} a year`}
+const apKind=x=>({plant:'Plant',nds:'Stockpile buy',deal:'Allied deal',iv:'Industrial investment',ord:'Weapons order'})[x.t];
 function apDropPlant(uid){const p=S.projects.find(q=>q.uid===uid);if(!p)return;S.projects=S.projects.filter(q=>q!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1)}
 // the act: pay for what the NDAA allowed, top of your list first, until appropriators' money runs out
 function apFund(fy,supp){const a=apOf(fy)||{},Q=apQ();if(!Q.length&&!supp)return;
   const rows=[];const room={r:supp?Infinity:billTop(fy)},cut=apCut(fy);
-  const ord=x=>x.cong?0:x.t==='plant'?1:x.t==='nds'?2:x.t==='deal'?3:4,pri=x=>x.t==='plant'?(S.projects.find(q=>q.uid===x.uid)?.pri??x.uid):0;
+  const ord=x=>x.cong?0:x.t==='plant'?1:x.t==='nds'?2:x.t==='deal'?3:x.t==='iv'?3.5:4,pri=x=>x.t==='plant'?(S.projects.find(q=>q.uid===x.uid)?.pri??x.uid):0;
   const its=Q.slice().sort((p,q)=>ord(p)-ord(q)||pri(p)-pri(q));S.apQ=[];
   for(const x of its){const n=apName(x),what=x.what||'';
     const why=supp||x.cong?null:x.t!=='ord'&&room.r<x.req-1e-9?'below the money line':rand('ap'+x.t+(x.uid??x.id??x.c))<cut?'not appropriated':null;
@@ -4614,9 +4650,9 @@ function enactPkg(src){
   // items requested after conference miss this bill: they roll to next year's
   if(!src){const late=(x,k)=>x.pkg&&x.pkg<S.w&&S.mk?.[FYOF(x.pkg)]?.c&&!(k in S.mk[FYOF(x.pkg)].c.res);const nx=billW();
     for(const p of S.projects)if(late(p,'p:'+p.uid)){p.pkg=nx;log(`🏛 ${projName(p)} came after the conference: it goes to the FY${FYOF(nx)} bill.`)}
-    for(const [L,f] of [[alReqs(),x=>'a:'+x.id],[ndsReqs(),x=>'n:'+x.id],[ordReqs(),x=>'o:'+x.c]])for(const x of L)if(late(x,f(x)))x.pkg=nx}
-  const its=pkgOrd().filter(p=>p.pkg<S.w),nds=ndsReqs().filter(x=>x.pkg<S.w),rfs=refReqs().filter(x=>x.pkg<S.w),ors=ordReqs().filter(x=>x.pkg<S.w),als=alReqs().filter(x=>x.pkg<S.w);const due=src?null:Object.entries(S.mk||{}).find(([,M])=>M.c&&!M.done&&M.c.V!=null&&S.w>M.c.V),mys=src?[]:myReqs().filter(x=>x.pkg<S.w);if(!its.length&&!nds.length&&!rfs.length&&!ors.length&&!als.length&&!codReqs().some(x=>x.pkg<S.w)&&!due&&!mys.length)return;
-  const fy=(its[0]||nds[0]||rfs[0]||ors[0]||als[0]||mys[0]||codReqs().find(x=>x.pkg<S.w))?FYOF((its[0]||nds[0]||rfs[0]||ors[0]||als[0]||mys[0]||codReqs().find(x=>x.pkg<S.w)).pkg):+due[0],got=[],lost=[],added=[];
+    for(const [L,f] of [[alReqs(),x=>'a:'+x.id],[ndsReqs(),x=>'n:'+x.id],[ordReqs(),x=>'o:'+x.c],[ivReqs(),x=>'v:'+x.id]])for(const x of L)if(late(x,f(x)))x.pkg=nx}
+  const its=pkgOrd().filter(p=>p.pkg<S.w),nds=ndsReqs().filter(x=>x.pkg<S.w),rfs=refReqs().filter(x=>x.pkg<S.w),ors=ordReqs().filter(x=>x.pkg<S.w),als=alReqs().filter(x=>x.pkg<S.w),ivs=ivReqs().filter(x=>x.pkg<S.w);const due=src?null:Object.entries(S.mk||{}).find(([,M])=>M.c&&!M.done&&M.c.V!=null&&S.w>M.c.V),mys=src?[]:myReqs().filter(x=>x.pkg<S.w);if(!its.length&&!nds.length&&!rfs.length&&!ors.length&&!als.length&&!ivs.length&&!codReqs().some(x=>x.pkg<S.w)&&!due&&!mys.length)return;
+  const fy=(its[0]||nds[0]||rfs[0]||ors[0]||als[0]||ivs[0]||mys[0]||codReqs().find(x=>x.pkg<S.w))?FYOF((its[0]||nds[0]||rfs[0]||ors[0]||als[0]||ivs[0]||mys[0]||codReqs().find(x=>x.pkg<S.w)).pkg):+due[0],got=[],lost=[],added=[];
   BROWS=[];const drop=(p,why)=>{bRow({kind:'Plant',n:projName(p),what:plantWhat(p),out:capF(why),ok:0});S.projects=S.projects.filter(x=>x!==p);S.built[p.def]=Math.max(0,(S.built[p.def]||1)-1);lost.push(`${projName(p)} (${why})`);log(`✂ FY${fy%100} ${billN()}: ${projName(p)} not funded, ${why}.`,'bad')};
   const fund=p=>{p.spent=p.req;p.cong=1;p.pkg=null;p.prog=p.dur[0];pmark(p,{funded:1});fyLed('cong',p.req)},room={r:src?Infinity:Infinity};
   const auth=(x,what)=>{x.what=what;x.fy=fy;apQ().push(x)},apT=()=>{const a=apOf(fy);return a&&a.done&&!a.full?'funded below':a&&!a.done&&!a.full?`awaits appropriations, ~${fmtDate(a.w)}`:a&&a.full?'awaits next year’s appropriations (a full-year continuing resolution)':'awaits appropriations'};
@@ -4625,13 +4661,13 @@ function enactPkg(src){
     if(!src){const fz=mr==='fence'?mkFence():0;p.pkg=null;p.apw=fy;auth({t:'plant',uid:p.uid,def:p.def,req:p.req,fence:fz},pw);got.push(`${projName(p)} (authorized)`);bRow({kind:'Plant',n:projName(p),what:pw,out:`Authorized · ${apT()}`,ok:1});continue}
     fund(p);if(mr==='fence'){const fw=mkFence();p.dur[1]+=fw;pmark(p,{fence:fw});got.push(`${projName(p)} (funds fenced: contract about ${fw} weeks later)`);bRow({kind:'Plant',n:projName(p),what:pw,out:`Funded · funds fenced, contract about ${fw} weeks later`,ok:1})}else{got.push(projName(p));bRow({kind:'Plant',n:projName(p),what:pw,out:`Funded · ${money(p.req)}, contracting starts now`,ok:1})}}
   refEnact(got,lost,fy,{r:Infinity});
-  if(mys.length){S.myReq=myReqs().filter(x=>!mys.includes(x));S.myo=S.myo||{};for(const x of mys){S.myo[x.c]={w0:S.w,until:S.w+MYO_WK};const n=`Five-year order: ${LINES[x.c].n}`;got.push(n);bRow({kind:'Multiyear order',n,what:`Congress buys whatever the ${lc(LINES[x.c].n)} lines can make, until ${fmtDate(S.w+MYO_WK)}; firms can count on the orders and are likelier to build capacity themselves`,out:`Law · orders committed to ${fmtDate(S.w+MYO_WK)}`,ok:1});log(`🏛 FY${fy%100} NDAA: a five-year order for ${lc(LINES[x.c].n)}, to ${fmtDate(S.w+MYO_WK)}.`,'good')}}ndsEnact(got,lost,fy,room,src?null:auth,apT);alEnact(got,lost,fy,room,src?null:auth,apT);ordEnact(got,lost,fy,src?null:auth,apT);
+  if(mys.length){S.myReq=myReqs().filter(x=>!mys.includes(x));S.myo=S.myo||{};for(const x of mys){S.myo[x.c]={w0:S.w,until:S.w+MYO_WK};const n=`Five-year order: ${LINES[x.c].n}`;got.push(n);bRow({kind:'Multiyear order',n,what:`Congress buys whatever the ${lc(LINES[x.c].n)} lines can make, until ${fmtDate(S.w+MYO_WK)}; firms can count on the orders and are likelier to build capacity themselves`,out:`Law · orders committed to ${fmtDate(S.w+MYO_WK)}`,ok:1});log(`🏛 FY${fy%100} NDAA: a five-year order for ${lc(LINES[x.c].n)}, to ${fmtDate(S.w+MYO_WK)}.`,'good')}}ndsEnact(got,lost,fy,room,src?null:auth,apT);alEnact(got,lost,fy,room,src?null:auth,apT);ivEnact(got,lost,fy,room,src?null:auth,apT);ordEnact(got,lost,fy,src?null:auth,apT);
   if(!src&&S.fac==='US'&&!mkApplyAdds(fy,added)&&rand('r35')<PLUS_OK){const d=plusUpPick();if(d){const c=projCost(d),p={uid:uidN++,def:d.id,stage:0,prog:0,dur:[...d.dur],sched:[],obs:[],gm:1,adv:0,started:S.w,spent:0,plus:1,req:c,apw:fy};
     S.projects.push(p);S.built[d.id]=(S.built[d.id]||0)+1;apQ().push({t:'plant',uid:p.uid,def:d.id,req:c,cong:1,fy,what:plantWhat(p)});added.push(`${d.n} (a plus-up for a member’s district, ${money(c)} Congress added)`);log(`🏛 FY${fy%100} ${billN()}: Congress adds ${d.n}, unrequested.`,'ev')}}
   S.bills=S.bills||[];S.bills.unshift({fy,src:src||'',w:S.w,got,lost,added,rows:BROWS||[]});BROWS=null;S.bills.length=Math.min(S.bills.length,4);
   if(!src){S.apr=S.apr||{};if(!S.apr[fy])S.apr[fy]={w:S.w};const a=S.apr[fy];if(a.done&&!a.full)setTimeout0(()=>apFund(fy))}else if(apQ().length)apFund(fy,1);
   const n=got.length+added.length;if(!src&&S.mk?.[fy]?.c&&!S.sim)S.queue.push({sys:'mk',ch:'v',fy});
-  log(`🏛 ${src||`FY${fy%100} ${billN()}`} enacted: ${got.length} of ${its.length+nds.length+rfs.length+ors.length+als.length} requested items ${src?'funded':'authorized or enacted'}${added.length?`, ${added.length} added`:''}.`,n?'good':'bad');
+  log(`🏛 ${src||`FY${fy%100} ${billN()}`} enacted: ${got.length} of ${its.length+nds.length+rfs.length+ors.length+als.length+ivs.length} requested items ${src?'funded':'authorized or enacted'}${added.length?`, ${added.length} added`:''}.`,n?'good':'bad');
   if(src||!S.mk?.[fy]?.c)receipt({ic:'🏛',lab:`${src||`FY${fy} ${billN()}`} enacted`,title:`${got.length} funded · ${added.length} added · ${lost.length} not funded`,ok:!lost.length,act:'data-a="bill"',actL:'See the bill →',
     lines:[got.length?`Funded: ${got.join(', ')}. Contracting starts now.`:'',added.length?`Added: ${added.join(', ')}.`:'',lost.length?`<span class="redt">Not funded: ${lost.join(', ')}. The Political Capital is spent. Request it again next year, or build it now from your budget.</span>`:'']})}
 // National Defense Stockpile buys are authorized in the NDAA (Strategic and Critical Materials Stock Piling Act). Each buy
@@ -4795,7 +4831,7 @@ function agendaHTML(mode){const nd=mode!=='bills'&&S.fac==='US';
   const pas=REFORMS.filter(R=>(passed(R.id)||enacted(R.id))&&(S.fac!=='US'||(vehOf(R)==='ndaa')===nd));if(pas.length)ag+=`<div class="sect"><span>Enacted</span><span></span></div>`+pas.map(R=>`<div class="ref pass" id="ag-${R.id}" data-fk="ag:${R.id}"><span class="nm">✓ ${rname(R)}</span>${enacted(R.id)?`<span class="sub gold">In force about ${fmtDate(S.impl[R.id].due)}</span>`:''}</div>`).join('');
   return ag}
 function billBody(asParts){const fy=pkgFY(),cp=cprioOf(fy),pl=pkgPlan(),room=pkgRoom(),inS=pl.filter(x=>x.st==='in').reduce((a,x)=>a+x.p.req,0),P=S._R?.P||production(false).P;
-  const when=fmtDate(pkgWhen()),pcIn=pl.reduce((a,x)=>a+(x.p.pc||0),0)+ndsReqs().reduce((a,x)=>a+(x.pc||0),0)+refReqs().reduce((a,x)=>a+(x.pc||0),0);
+  const when=fmtDate(pkgWhen()),pcIn=pl.reduce((a,x)=>a+(x.p.pc||0),0)+ndsReqs().reduce((a,x)=>a+(x.pc||0),0)+refReqs().reduce((a,x)=>a+(x.pc||0),0)+ivReqs().reduce((a,x)=>a+(x.pc||0),0);
   const gainOf=p=>{const d=PD[p.def];return d.t.line?`+${fmtN(projGain(d,p.gm)*lineMultOf(d.t.line)*LINES[d.t.line].k)} ${LINES[d.t.line].u}/yr`:`+${pct(projGain(d,p.gm)/Math.max(P[d.t.node].need,S.nodes[d.t.node].scale*.5))} of need`};
   const tgt=p=>{const d=PD[p.def];return d.t.node?pill(d.t.node,P):`<span class="linkn" data-a="node" data-n="L:${d.t.line}">${LINES[d.t.line].n}</span>`};
   const odds=x=>x.st==='out'?'<span class="redt">Not funded: below the money line</span>':(()=>{const q=cutP(x.p),b=billSev(PD[x.p.def]),mt=mkTag('p:'+x.p.uid);if(mt)return mt+`<div class="mini">${b.why}</div>`;return `<span class="${q>.25?'amb':'okt'}">~${Math.round(q*100)}% markup risk</span>${x.p.champ?' <span class="mini">(championed)</span>':''}<div class="mini">${b.why}</div>`})();
@@ -4918,9 +4954,9 @@ function congOutlook(B){const fy=B.fy,m=moodOf(fy),mi=S.moods?.[fy]?.i??1,pl=pkg
     +row('New plants, allied deals, stockpile buys and weapons orders','can be cut, or fall below the money line'));
   const app=card('This year’s appetite',`FY${fy}`,`<p class="ndp"><b class="${['okt','','amb','redt'][mi]}">${m.n}.</b> Appropriators have about <b>${money(billTop(fy))}</b> for new plants, deals and stockpile buys you request (${money(BILL_TOP)} in an ordinary year), and cuts items in markup ${mi===1?'at the usual rate':`about ${fmt(m.f,1)} times as often as usual`}.</p>`
     +`<p class="ndp mini">Set each year by the budget fight and the news: generous one year in five, ordinary nearly half the time, tight one in four, very tight one in ten. A shock you can point to, such as Chinese export bans or a disaster at a plant, makes a more generous year likelier.</p>`);
-  const out=card('Your request’s outlook','if the vote were today',pl.length||law||ordReqs().length||ndsReqs().length||alReqs().length?
+  const out=card('Your request’s outlook','if the vote were today',pl.length||law||ordReqs().length||ndsReqs().length||alReqs().length||ivReqs().length?
     row('New plants above the money line',`${inL.length}${inL.length?` · about ${fmt(exp,exp<10?1:0)} likely funded`:''}`)+(outL.length?row('Below the money line',`<span class="redt">${outL.length} not funded</span>`):'')
-    +row('Weapons orders',ordReqs().length?`${ordReqs().length} · can be cut in markup`:'none requested')+row('Stockpile buys',ndsReqs().length?`${ndsReqs().length} · share the money line`:'none requested')+row('Allied deals',alReqs().length?`${alReqs().length} · share the money line`:'none requested')+row('Laws',law?`${law} · certain`:'none requested')
+    +row('Weapons orders',ordReqs().length?`${ordReqs().length} · can be cut in markup`:'none requested')+row('Stockpile buys',ndsReqs().length?`${ndsReqs().length} · share the money line`:'none requested')+row('Allied deals',alReqs().length?`${alReqs().length} · share the money line`:'none requested')+(ivReqs().length?row('Industrial investments',`${ivReqs().length} · share the money line`):'')+row('Laws',law?`${law} · certain`:'none requested')
     :`<p class="ndp">Nothing in the request yet. Reforms are on the Reforms tab; new plants join the request when you order one for the NDAA.</p>`);
   const own=card('What Congress does on its own','whatever you ask',`<ul class="ndul">
     <li><b>Markup.</b> In June the Armed Services Committees mark up the bill. They back a few sectors and question one or two, following members’ districts and the headlines: items in sectors they back are cut about half as often, in sectors they question about 1.5 times as often. Items marked down in one bill are settled in conference.</li>
@@ -4943,10 +4979,10 @@ function ndaaBody(){if(S.fac!=='US')return `<div class="ndaav"><div class="billv
   {const k=ndTabFor();if(k)S.ndTab=k}const B=billBody(true),wk=Math.max(0,Math.round(pkgWhen()-S.w));if(S.ndTab==='cod')S.ndTab='ref';const t=S.ndTab||'cong';
   const nRef=REFORMS.filter(R=>vehOf(R)==='ndaa'&&reformAvail(R)&&!inReq(R.id)).length,inRef=refReqs().filter(x=>!x.rider).length+refReqs().filter(x=>x.rider).length;
   const nCod=RULES.filter(r=>isExec(r)&&ruleOn(r.id)&&!codified(r.id)).length;
-  const cnt={ref:`${inRef+codReqs().length} in the request · ${nRef} reforms available`,plant:`${B.pl.length} plant${B.pl.length===1?'':'s'} · ${alReqs().length} deal${alReqs().length===1?'':'s'} · ${money(pkgSum()+alReqs().reduce((a,x)=>a+x.req,0))}`,ord:`${ordReqs().length} orders · ${ndsReqs().length} stockpile buys`,cong:`votes ${fmtDate(pkgWhen()).replace(/ \d{4}$/,'')} · ${moodOf(B.fy).n.toLowerCase()} year`};
-  const body={ref:`${B.ref}${B.cod}<div class="ndaaref">${agendaHTML('ndaa')}</div>`,plant:B.work+alReqSec(),ord:myoSec()+B.ord+B.nds,cong:B.supp+congOutlook(B)+apCard()+B.cp+B.cred+B.last}[t]||'';
+  const cnt={ref:`${inRef+codReqs().length} in the request · ${nRef} reforms available`,plant:`${B.pl.length} plant${B.pl.length===1?'':'s'} · ${alReqs().length} deal${alReqs().length===1?'':'s'}${ivReqs().length?` · ${ivReqs().length} other`:''} · ${money(pkgSum()+alReqs().reduce((a,x)=>a+x.req,0)+ivReqs().reduce((a,x)=>a+x.req,0))}`,ord:`${ordReqs().length} orders · ${ndsReqs().length} stockpile buys`,cong:`votes ${fmtDate(pkgWhen()).replace(/ \d{4}$/,'')} · ${moodOf(B.fy).n.toLowerCase()} year`};
+  const body={ref:`${B.ref}${B.cod}<div class="ndaaref">${agendaHTML('ndaa')}</div>`,plant:B.work+alReqSec()+ivReqSec(),ord:myoSec()+B.ord+B.nds,cong:B.supp+congOutlook(B)+apCard()+B.cp+B.cred+B.last}[t]||'';
   return `${B.alert}<section class="ndhead"><span class="sr-k">The annual bill</span><div class="ndh1"><h2>FY${B.fy} National Defense Authorization Act</h2><div class="ndvote"><b>${B.when}</b><span>Congress votes${wk?`, in ${wk} week${wk===1?'':'s'}`:' this week'}</span></div></div>
-    <div class="sr-tiles"><div><b>${B.pl.length+refReqs().length+codReqs().length+ordReqs().length+ndsReqs().length+alReqs().length}</b><span>items in your request</span><i>plants, deals, reforms, orders, stockpile buys</i></div><div><b>${money(pkgSum())}</b><span>asked for new plants</span><i>of ~${money(B.room)} Congress has for requests</i></div><div><b>${B.pcIn}</b><span>Political Capital committed</span><i>${Math.floor(S.pc)} left to spend</i></div><div><b class="${credOf()>=60?'okt':credOf()<40?'redt':''}">${Math.round(credOf())}</b><span>standing with the committees</span><i>appetite: ${moodOf(B.fy).n.toLowerCase()}</i></div></div></section>
+    <div class="sr-tiles"><div><b>${B.pl.length+refReqs().length+codReqs().length+ordReqs().length+ndsReqs().length+alReqs().length+ivReqs().length+myReqs().length}</b><span>items in your request</span><i>plants, deals, reforms, orders, stockpile buys</i></div><div><b>${money(pkgSum())}</b><span>asked for new plants</span><i>of ~${money(B.room)} Congress has for requests</i></div><div><b>${B.pcIn}</b><span>Political Capital committed</span><i>${Math.floor(S.pc)} left to spend</i></div><div><b class="${credOf()>=60?'okt':credOf()<40?'redt':''}">${Math.round(credOf())}</b><span>standing with the committees</span><i>appetite: ${moodOf(B.fy).n.toLowerCase()}</i></div></div></section>
    <div class="ptabs ndtabs" role="tablist">${NDAA_TABS.map(([k,n])=>`<button class="ptab ${k===t?'on':''}" role="tab" aria-selected="${k===t}" data-a="ndtab" data-k="${k}"><span class="ptn">${n}</span><span class="ptc">${cnt[k]}</span></button>`).join('')}</div>
    <div class="rbdom pdom1 ndbody">${body}</div>`}
 function billHTML(){return `<div class="paper xl" style="display:flex;flex-direction:column;max-height:94vh"><div class="dmain">${pinTop(billBody())}</div></div>`}
@@ -8704,7 +8740,7 @@ function renderGame(){
      return `<div class="sect" id="cap-wf"><span>👷 Skilled trades pipeline</span><span>crews</span></div><div class="sub wfp"><p><b>Welders, pipefitters and electricians take two to four years to train.</b> Chip fabs, battery plants and data centers hire the same trades, and their building boom peaks in 2027–29. You have <b>${fmt(cap,1)} crews</b> now: each lets one program build at full pace.</p>
        <div class="wfrows">${parts.map(([n,v])=>`<div><span>${n}</span><b class="${v.startsWith('−')?'redt':v.startsWith('+')?'okt':''}">${v}</b></div>`).join('')}</div>
        ${tr.length||(passed('workforce')&&act<1.99)?`<p class="wftr">In training: ${[passed('workforce')&&act<1.99?`Workforce Act trainees, ${fmt(2-act,1)} crews more by ${fmtDate(S.wfAt+156)}`:'',...tr.map(x=>`a cohort, half a crew, ${fmtDate(x.due)}`)].filter(Boolean).join('; ')}.</p>`:''}
-       <div class="wfbtn"><button class="btn sm" data-a="wfco" ${S.budget>=WF_CO$-1e-9&&tr.length<4?'':'disabled'} data-tip="${tipQ(`<b>Fund an apprenticeship cohort</b><br>${money(WF_CO$)} from your budget. About half a crew qualifies in two years, and stays. Up to four cohorts can train at once.`)}">Fund an apprenticeship cohort · ${money(WF_CO$)}</button> ${passed('workforce')?'':lv('workforce','Industrial Workforce Act',false)+' trains two crews over about three years'}</div></div>`})():''}
+       <p class="wfco"><b>Apprenticeship cohorts.</b> Each adds about half a crew two years after it is funded; up to four train at once.</p><div class="ivb">${ivBtns('wfco')}</div>${passed('workforce')?'':`<p class="wfco" style="margin-top:6px">The ${lv('workforce','Industrial Workforce Act',false)} trains two crews over about three years.</p>`}</div>`})():''}
    <div class="sect"><span>⚡ Large power transformers</span><span>lead time</span></div><div class="sub" id="cap-xf" style="padding:4px 10px"><b>Why it matters.</b> Energetics plants, smelters and new greenfield sites each need a large power transformer to switch on. It is ordered when the contract is signed; if it arrives after construction ends, the plant stands finished but cannot run until it does. A new order takes <b>${xfLead()} weeks</b>, about as long as building one of these plants, so a short build or a late award leaves the plant waiting.${(()=>{const ws=S.projects.filter(p=>p.xf&&S.w<p.xf.due).map(xfWait),late=ws.filter(w=>w>0);const tw=late.reduce((a,b)=>a+b,0);return !xfw?' None of your programs is waiting on one now.':xfw===1?(late.length?` <b class="redt">Your program waiting on one will finish building about ${tw} weeks before it arrives.</b>`:' Your program waiting on one should get it in time.'):` Of your ${xfw} programs waiting on one, ${late.length?`<b class="redt">${late.length} will finish building before their transformers arrive</b>, about ${tw} weeks of waiting in all`:'all should get theirs in time'}.`})()} The reserve holds ${X.res?X.res+(X.res===1?' unit':' units'):'none'}. About 80% are imported, and one US company makes the electrical steel inside them.</div>${xfActs()}`;
 
   {const ld=(n,c)=>n>c+1e-9?'over':n>=c-.5?'full':'ok',chips=[...Object.entries(OFFICES).filter(([k])=>OLd[k].n>0).map(([k,o])=>{const v=OLd[k];return `<span class="cpc ${ld(v.n,v.cap)}" data-a="capgo" data-k="o-${k}" data-tip="${tipQ(`<b>${o.n} office</b><br>${v.n} of your programs, room for ${fmt(v.cap,1)} at full speed.${v.f<1?` All of them move at ${pct(v.f)} speed.`:''}<br><i>Click for what adds room.</i>`)}">${o.ic} ${o.n.split(' ')[0]} office <b>${v.n}/${fmt(v.cap,0)}</b></span>`}),
@@ -8853,6 +8889,7 @@ function cfApply(a){try{switch(a.t){
   case 'obuy':(S.ordBuy=S.ordBuy||[]).push({c:a.c,add:a.add,left:52});return true;
   case 'deal':alDeal(a.id);return true;
   case 'alreq':alReq(a.id);return true;
+  case 'ivnow':ivNow(a.id);return true;case 'ivreq':ivAdd(a.id);return true;
   case 'myo':myAdd(a.c);return true;
   case 'mkf':mkFight(a.k);return true;
   case 'mko':mkOppose(a.i);return true;
@@ -9597,6 +9634,9 @@ if(S.modal==='prog'&&S.progBack){S.modal=S.progBack.m;S.sel=S.progBack.sel||S.se
     case 'rcopen':{const c=b.dataset.c;if(S.rcAll){S.rcAll=false;S.rcOpen=Object.fromEntries(Object.keys(LINES).map(k=>[k,1]))}if(!S.rcOpen){const R=S._R||production(false);S.rcOpen={[rcOrder(R.out)[0]]:1}}S.rcOpen[c]=!S.rcOpen[c];break}
     case 'rcall':S.rcAll=!S.rcAll;if(!S.rcAll)S.rcOpen={};break;
     case 'alreq':alReq(b.dataset.d);S._vdirty=true;break;
+    case 'ivnow':ivNow(b.dataset.k);S._vdirty=true;break;
+    case 'ivreq':ivAdd(b.dataset.k);S._vdirty=true;break;
+    case 'ivdrop':ivDrop(b.dataset.k);S._vdirty=true;break;
     case 'aldrop':alDrop(b.dataset.d);S._vdirty=true;break;
     case 'mkfight':mkFight(b.dataset.k);S._vdirty=true;break;
     case 'mkopp':mkOppose(b.dataset.i);S._vdirty=true;break;
