@@ -5146,7 +5146,11 @@ function decList(){const L=[];
   for(const p of S.projects){const o=p.obs[0];if(o&&!o.wait)L.push({a:'prog',d:`data-u="${p.uid}"`,ic:'⛔',t:V(OD[o.id].n),sub:projName(p),due:o.due})}
   for(const pl of S.plants){const o=pl.issue;if(o&&!o.wait)L.push({a:'prog',d:`data-u="${pl.uid}"`,ic:'⚠',t:OPSD[o.id].n,sub:pl.nm,due:o.due})}
   return L.sort((a,b)=>dLeft(a.due)-dLeft(b.due))}
-// open the first waiting decision, as if its card were clicked
+// open the first waiting decision, as if its card were clicked: a news item opens its popup, a program's problem its page at Why it's stuck
+function decFirst(){const x=decList()[0];if(!x)return;S.speed=0;
+  if(x.a==='evdo'){const e=x.d.match(/data-e="([^"]+)"/)[1],it=(S.inbox||[]).find(y=>y.ev===e);S.inbox=(S.inbox||[]).filter(y=>y.ev!==e);S.queue.unshift({ev:e,fxDone:1,due:it?.due});return}
+  const u=x.d.match(/data-u="([^"]+)"/)[1];if(S.modal&&S.modal!=='prog')S.progBack={m:S.modal,sel:S.sel};else if(!S.modal)S.progBack=null;S.modal='prog';S.selP=u;
+  setTimeout(()=>document.getElementById('stuck')?.scrollIntoView({block:'start',behavior:'smooth'}),80)}
 // ---- the tutorial: parts, one per tab. The full tutorial runs them in order and plays the first two months; each tab’s Tour button
 // runs its own part alone. After the full tutorial, first-year tips explain each new thing the first time it appears.
 // a tour step on the NDAA page opens the tab it points into
@@ -5753,12 +5757,12 @@ function turnEndW(w=S.w){const d=dateOf(w+2);let y=d.getFullYear(),m=TURN_M.find
 function turnLabel(w=S.w){w=Math.round((w+turnEndW(w))/2);const d=dateOf(w),m=d.getMonth()-d.getMonth()%2;return `${MON[m]}–${MON[m+1]} ${d.getFullYear()}`}
 function trnSnap(){const R=S._R||production(false),out={};for(const c in LINES)out[c]=R.out[c].yr;
   return {w:S.w,race:raceIdx(R.out),out,short:S.order.filter(c=>R.out[c].bott).length,pc:S.pc,budget:S.budget,cred:credOf()}}
-function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play on soon, or end the tutorial.</span>');return}if(decisionsPending()){toast('<b>Decide what is waiting first</b><br><span class="dim">Nothing is decided for you.</span>');return}
+function turnGo(){if(!TURN()||S.over)return;if(S.tut&&!S.tut.solo&&S.tut.i<TUT.findIndex(x=>x.sel==='.turnbtn')){toast('<b>Follow the tutorial</b><br><span class="dim">It will ask you to play on soon, or end the tutorial.</span>');return}if(decisionsPending()){decFirst();return}
   if(S.turnEnd==null){S.turnEnd=turnEndW();S.trn0=trnSnap()}S.modal=null;S.speed=S.tspd||3}
 function turnDone(){S.speed=0;S._blHi=null;const a=S.trn0||trnSnap();S.turnEnd=null;S.trnRep={a,b:trnSnap(),rolls:(S.rolls||[]).filter(x=>!x.shown),moves:S.moves||[]};S.moves=[];S.mvAll=false;for(const x of S.rolls||[])x.shown=1;if((S.modal&&S.modal!=='turn')||S.queue.length||decisionsPending())S._trnDue=1;else S.modal='turn'}
 function turnCtl(){const pend=decisionsPending(),run=S.turnEnd!=null&&S.speed>0,mid=S.turnEnd!=null&&!S.speed;
   if(S.over)return '';
-  return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause.':pend?`${pend} decision${pend>1?'s':''} waiting. Decide, then continue: nothing is decided for you.`:mid?`Continue to the end of the two months, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next ▸ ${turnLabel(S.w)}`}</button>`}
+  return `<button class="turnbtn ${pend&&!run?'blocked':''} ${waitingToStart()?'go-pulse':''}" data-a="${run?'tpause':'turn'}" data-tip="${tipQ(run?'Pause.':pend?`${pend} decision${pend>1?'s':''} waiting. Click to open ${pend>1?'the most urgent':'it'}; once decided, continue. Nothing is decided for you.`:mid?`Continue to the end of the two months, ${fmtDate(S.turnEnd)}.`:`Play the next two months, to ${fmtDate(turnEndW())}. Time stops for anything that needs you. Space works too.`)}">${run?'❚❚ Pause':pend?`Decide ${pend} first`:mid?`Continue ▸ to ${fmtDate(S.turnEnd).replace(/ \d{4}$/,'')}`:`Next ▸ ${turnLabel(S.w)}`}</button>`}
 const ACK_RE=/^(understood|noted|onward|ok|okay|continue|close)[.!]?$/i;
 function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=>w>w0&&w<=b.w,yr=w=>dateOf(w).getFullYear();
   const dl=(x,y,f,good=1)=>{const v=y-x;return Math.abs(v)<.05?'<i class="trd">no change</i>':`<i class="trd ${(v>0)===(good>0)?'up':'dn'}">${v>0?'▲':'▼'} ${f(Math.abs(v))}</i>`};
