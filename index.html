@@ -1046,7 +1046,9 @@ body.logmin #main{height:calc(100vh - 56px - 38px - 34px)}body.logmin.hasdec #ma
 .tra{padding:5px 0 5px 8px;border-bottom:1px dotted #d6c79f;box-shadow:inset 3px 0 0 #c9a227;margin:3px 0}.tra .linkn{color:#5a4a26}
 .trn{display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px;align-items:baseline;padding:4px 0 4px 8px;margin:2px 0;border-bottom:1px dotted #d6c79f;box-shadow:inset 3px 0 0 #b9a77c}
 .trn.prob,.trn.bad{box-shadow:inset 3px 0 0 #c0452f}.trn.good{box-shadow:inset 3px 0 0 #76b357}.trn.ev{box-shadow:inset 3px 0 0 #c9a227}
-.trn .linkn{color:#5a2a1c}.trn.good .linkn{color:#2f5a24}.trdt{font:600 11px "Segoe UI",system-ui,sans-serif;color:#7a6a48;white-space:nowrap}
+.trn .linkn{color:#5a2a1c}.trn.good .linkn{color:#2f5a24}
+.cbrep .trn{grid-template-columns:62px minmax(0,1fr)}
+.cbcost{font:700 11px "Segoe UI",system-ui,sans-serif;color:#7a3b1d;margin:10px 0 2px}.trdt{font:600 11px "Segoe UI",system-ui,sans-serif;color:#7a6a48;white-space:nowrap}
 .trmore{font-size:11.5px;color:#7a6a48;margin-top:4px}.trnone{font-size:12px;color:#7a6a48;margin:4px 0;font-style:italic}
 .paper .ft.trft{flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 18px 14px;border-top:1px solid #cdb98a;background:#e9dfc4}
 .trft .pbtn{width:auto;flex:none;font:var(--ds-btn);padding:9px 18px;border-radius:3px;text-align:center}.trft .pbtn.primary{padding:9px 22px;font-size:13.5px}
@@ -3965,7 +3967,7 @@ function production(commit){
   let num=0,den=0;for(const lid in out){const L=LINES[lid];const e=L.in.reduce((a,i)=>a+expo[i],0)/L.in.length;out[lid].expo=e;num+=out[lid].n*e;den+=out[lid].n}
   const exposure=den?num/den:0;
   for(const id of ORDER)P[id].expo=expo[id];
-  if(commit){for(const id of ORDER)if(S.stock[id]!=null)S.stock[id]=P[id].stockRem;S.exposure=exposure;S.divLoad=divLoad;S.divIds=ORDER.filter(id=>P[id].div>1e-9)}
+  if(commit){stkRunTick(P);for(const id of ORDER)if(S.stock[id]!=null)S.stock[id]=P[id].stockRem;S.exposure=exposure;S.divLoad=divLoad;S.divIds=ORDER.filter(id=>P[id].div>1e-9)}
   return {P,out,exposure};
 }
 function needCalc(P){
@@ -4634,7 +4636,7 @@ function fyPay(fy){const a=apOf(fy)||(S.apr[fy]={});if(a.paid)return;a.paid=1;co
   if(fy===IB_RECON_END+1)log(S.reforms?.ibfPerm==='passed'?`Reconciliation money ran out after FY${IB_RECON_END%100}; the permanent Industrial Base Fund keeps your budget at ${money(fb)}.`:`<b>Reconciliation money ran out after FY${IB_RECON_END%100}.</b> Your industrial-base budget falls by ${money(IB_RECON)} a year, to ${money(fb)}. A permanent Industrial Base Fund in the NDAA would restore it.`,S.reforms?.ibfPerm==='passed'?'good':'bad');S._yrDue=1}
 // what funding does to each kind of item
 function apApply(x,fy){if(x.t==='plant'){const p=S.projects.find(q=>q.uid===x.uid);if(!p)return false;p.spent=p.req;p.cong=1;p.pkg=null;p.apw=null;p.prog=p.dur[0];if(x.fence){p.dur[1]+=x.fence;pmark(p,{fence:x.fence})}pmark(p,{funded:1});fyLed('cong',x.req);return true}
-  if(x.t==='nds'){fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);return true}
+  if(x.t==='nds'){fyLed('nds',x.req);S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);stkMark(x.id,fy);return true}
   if(x.t==='deal'){const D=ADD[x.id];if(!D||alS(D.m).deals[x.id])return false;fyLed('cong',x.req);alSign(x.id,S.w+(x.fence||0));return true}
   if(x.t==='iv'){const I=IV[x.id];if(!I||!I.ok())return false;fyLed('cong',x.req);I.go(1);return true}
   if(x.t==='ord'){S.ord[x.c]+=x.add;return true}return false}
@@ -4695,7 +4697,7 @@ function ndsDrop(id){const x=ndsReqs().find(y=>y.id===id);if(x){S.pc+=x.pc||0;sp
 function ndsCut(id){const fy=pkgFY();return clamp(moodOf(fy).f*.08*cpF({t:{node:id}},fy),.02,.5)}
 function ndsEnact(got,lost,fy,room,auth,apT){const its=ndsReqs().filter(x=>x.pkg<S.w);if(!its.length)return;S.ndsReq=ndsReqs().filter(x=>!its.includes(x));
   for(const x of its){const n=ND[x.id].n,mr=mkRes(fy,'n:'+x.id),why=room.r<x.req-1e-9?'below the money line':(mr?mr==='cut':rand('r36')<ndsCut(x.id))?(mr?'cut in conference':'cut in markup'):null;
-    const nw=`Holds ${ndsWk(x.id)===52?'a year':ndsWk(x.id)+' weeks'} of ${lc(n)} demand in the National Defense Stockpile, drawn only when supply falls short`;if(why){if(!/^cut/.test(why))room.r=-1;lost.push(`Stockpile: ${n} (${why})`);bRow({kind:'Stockpile buy',n,what:nw,out:capF(why),ok:0});continue}if(auth){auth({t:'nds',id:x.id,req:x.req},nw);got.push(`Stockpile: ${n} (authorized)`);bRow({kind:'Stockpile buy',n,what:nw,out:`Authorized · ${apT()}`,ok:1});continue}room.r-=x.req;fyLed('nds',x.req);bRow({kind:'Stockpile buy',n,what:nw,out:`Funded · ${money(x.req)}`,ok:1});S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
+    const nw=`Holds ${ndsWk(x.id)===52?'a year':ndsWk(x.id)+' weeks'} of ${lc(n)} demand in the National Defense Stockpile, drawn only when supply falls short`;if(why){if(!/^cut/.test(why))room.r=-1;lost.push(`Stockpile: ${n} (${why})`);bRow({kind:'Stockpile buy',n,what:nw,out:capF(why),ok:0});continue}if(auth){auth({t:'nds',id:x.id,req:x.req},nw);got.push(`Stockpile: ${n} (authorized)`);bRow({kind:'Stockpile buy',n,what:nw,out:`Authorized · ${apT()}`,ok:1});continue}room.r-=x.req;fyLed('nds',x.req);bRow({kind:'Stockpile buy',n,what:nw,out:`Funded · ${money(x.req)}`,ok:1});S.stock[x.id]=(S.stock[x.id]||0)+S.nodes[x.id].scale*ndsWk(x.id);stkMark(x.id,fy);got.push(`Stockpile: ${n}`);log(`📦 FY${fy%100} ${billN()}: stockpile buy of ${n.toLowerCase()} funded, about ${NDS_WK} weeks of demand.`,'good')}}
 function billAct(a,uid,d){const p=S.projects.find(x=>x.uid===+uid);if(!p||!p.pkg)return;const o=pkgOrd();o.forEach((x,i)=>x.pri=i);
   if(a==='mv'){const i=o.indexOf(p),j=i+(+d);if(j<0||j>=o.length)return;[o[i].pri,o[j].pri]=[o[j].pri,o[i].pri]}
   else if(a==='top'){p.pri=-1}
@@ -5016,7 +5018,7 @@ function startProject(id,ct,mode){
   const def=PD[id],c=ct?ctCost(def,ct):projCost(def),pk=mode==='pkg'&&!S.histMode;if(!canStart(def,c))return;
   if(!pk&&S.budget<c-1e-9)return;const rk=REQ_PC(c);if(pk){if(S.pc<rk)return;S.pc-=rk;spent('pc',rk)}
   if(!pk)spendB(c,'Programs');S.built[id]=(S.built[id]||0)+1;
-  const p={uid:uidN++,qPlan:{m:qualJointM(def),o:ruleOn('rConcQual')&&qualTag(def)},def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):planDur(def),sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};refStageCredit(def,def.dur);refMoneyCredit(def,c);if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
+  const p={uid:uidN++,qPlan:{m:qualJointM(def),o:ruleOn('rConcQual')&&qualTag(def)},def:id,stage:0,prog:0,dur:ct?ctDur(def,ct):planDur(def),sched:[],obs:[],gm:1,adv:0,started:S.w,spent:pk?0:c};refStageCredit(def,def.dur,p);cbQual0(p,def,ct);refMoneyCredit(def,c);if(pk){p.pkg=pkgW();p.req=c;p.pc=rk}
   if(ct){const tm=ctTerms(def,ct);p.ct=ct;p.lm=tm.lm;p.price=c;S.lev=clamp(S.lev+tm.lev,0,100)}
   S.projects.push(p);enterStage(p);actRec('prj',{id,ct:ct||null,mode:mode||null});
   log(`${pk?`Requested in the FY${FYOF(p.pkg)} NDAA (${rk} PC)`:mode==='now'?'Built now from the budget':'Ordered'}: ${def.n} (${money(c)}${ct?`; ${BUILDERS[ct.b].n.toLowerCase()}, ${CONTRACTS[ct.k].n.toLowerCase()}`:''}).`);
@@ -5058,14 +5060,14 @@ const planDur=def=>{const d=def.dur.map((d,i)=>d?Math.max(1,Math.round(d*stageM(
 function needEnact(){let n=0;for(const p of S.projects){if(PD[p.def]?.ally)continue;const k=p.obs.length;p.obs=p.obs.filter(o=>!['ea','eis','esa','cwa','lawsuit'].includes(o.id));n+=k-p.obs.length}
   if(n)log(`⚖ The defense exemption ends ${n} pending review${n>1?'s':''} and lawsuit${n>1?'s':''} under NEPA, the ESA and the Clean Water Act.`,'good')}
 function refRescale(id){for(const p of S.projects){const def=PD[p.def];for(const x of REF_STAGE){if(x.r!==id||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(!p.dur[i])continue;const d0=p.dur[i];
-  const xm=x.mf?x.mf(def):x.m;if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*xm));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*xm))}if(!S.histMode)(S.refW=S.refW||{})[id]=(S.refW[id]||0)+Math.max(0,d0-p.dur[i])}}PJC.clear()}
+  const xm=x.mf?x.mf(def):x.m;if(i>p.stage||p.pkg)p.dur[i]=Math.max(1,Math.round(p.dur[i]*xm));else if(i===p.stage){const rem=Math.max(0,p.dur[i]-p.prog);p.dur[i]=Math.max(1,Math.round(p.prog+rem*xm))}if(!S.histMode)refAddW(p,id,Math.max(0,d0-p.dur[i]))}}PJC.clear()}
 function enterStage(p){
   while(p.stage<STAGES.length&&p.dur[p.stage]===0)p.stage++;
   if(p.stage>=STAGES.length){pmark(p,{done:1});return complete(p)}
   pmark(p,{st:p.stage});xfOrder(p);
   if(p.uca&&STAGES[p.stage]==='build'&&!S.histMode&&rand('r37')<.25)spawnObs(p,'costOverrun',true);
   p.prog=0;p.sched=[];
-  if(STAGES[p.stage]==='qual'&&!S.histMode&&!p.qAdj){const def0=PD[p.def],m=qualJointM(def0),ov=qualOverlap(def0,p.dur);p.qAdj=1;const q0=typeof p.qPlan==='object'?p.qPlan:{m:1,o:false},mm=m/q0.m,oo=q0.o?0:ov;if(mm<1||oo){p.dur[4]=Math.max(1,Math.round(p.dur[4]*Math.min(1,mm))-oo);pmark(p,{note:'qualification shortened by policy'})}}
+  if(STAGES[p.stage]==='qual'&&!S.histMode&&!p.qAdj){const def0=PD[p.def],m=qualJointM(def0),ov=qualOverlap(def0,p.dur);p.qAdj=1;const q0=typeof p.qPlan==='object'?p.qPlan:{m:1,o:false},mm=m/q0.m,oo=q0.o?0:ov;if(mm<1||oo){const q0=p.dur[4];p.dur[4]=Math.max(1,Math.round(p.dur[4]*Math.min(1,mm))-oo);if(q0>p.dur[4])(p.rw=p.rw||{})['x:qual']=(p.rw['x:qual']||0)+q0-p.dur[4];pmark(p,{note:'qualification shortened by policy'})}}
   const st=STAGES[p.stage],D=p.dur[p.stage],def=PD[p.def];
   if(!S.histMode)for(const o of OBSTACLES){if(o.stage!==st)continue;let c=obsChance(o,def);if(p.inh)c*=.6;if(p.lm?.[o.layer]!=null)c*=p.lm[o.layer];if(c>0&&rand('r38')<c)p.sched.push({id:o.id,at:Math.floor(rand('r39')*D)})}
   p.sched.sort((a,b)=>a.at-b.at);
@@ -5079,7 +5081,7 @@ function spawnObs(p,id,front){
     if(p.ct.k==='cp'){const x=.06*p.price;if(S.budget>=x){spendB(x,'Cost-plus delays');p.spent+=x;log(`🧾 Cost-plus: ${projName(p)} bills ${money(x)} for the delay.`,'bad')}else if(!p.obs.some(i=>i.id==='costOverrun'))spawnObs(p,'costOverrun')}
     if(p.ct.k==='fp'&&rand('r40')<.22*(p.ct.b==='prime'?reaF():1)&&!p.obs.some(i=>i.id==='reprice'))spawnObs(p,'reprice')}
 }
-function complete(p){credDone(p);pcResult(p);
+function complete(p){credDone(p);pcResult(p);cbDone(p);
   const def=PD[p.def];const plan=(p.dur||[]).reduce((a,b)=>a+b,0);
   if(def.kind==='maint'){for(const c of [def.t.line,...(def.also||[])])S.mxAdd[c]+=def.eff;if(def.sideLine)S.lines[def.t.line].base*=def.sideLine;S.mxDone[def.id]=1;
     S.projects=S.projects.filter(x=>x!==p);S.done.push({def:p.def,nm:projName(p),w:S.w,weeks:S.w-p.started,g:0,plan,inh:p.inh,uid:p.uid,h:p.h,lost:p.lost,dur:p.dur,started:p.started,ct:p.ct,spent:p.spent});
@@ -5362,10 +5364,59 @@ function autoDecide(){
     if(S.w<o.due)continue;const k=defOpt(OD[o.id]);if(k<0){o.due=S.w+DECIDE_WK;continue}S._auto=1;chooseOpt(p.uid,k);S._auto=0}
   for(const pl of S.plants){const o=pl.issue;if(!o||o.wait>0)continue;if(o.due==null){o.due=S.w+DECIDE_WK;continue}
     if(S.w<o.due)continue;const k=defOpt(OPSD[o.id]);if(k<0){o.due=S.w+DECIDE_WK;continue}S._auto=1;chooseOps(pl.uid,k);S._auto=0}}
+/* Callbacks: the game remembers your choices and, when their effect lands, says what they did. Only effects the game can
+   count are reported: weeks a reform or a problem choice took off a program, a deal or cohort coming good, a stockpile drawn
+   in a shortage, and a transformer wait a remedy on offer would have cut. */
+const cbs=()=>(S.cbs=S.cbs||[]);
+function cbAdd(k,v,t,x){if(S.histMode||S.sim||CF_RUN||S.replay)return;cbs().push({w:S.w,k,v:Math.round(v),t,...(x||{})})}
+const cbRefN=r=>{if(r==='x:qual')return 'the qualification rules you set';const at=(S.lawLog||[]).find(x=>x.n===rname(RD[r]))?.w;return `${rname(RD[r])}${at!=null&&at>=PLAY0?`, passed ${monYr(at)},`:''}`};
+function cbQual0(p,def,ct){if(S.histMode||ct||!def.dur[4])return;const q0=Math.max(1,Math.round(def.dur[4]*stageM(def,'qual')));if(p.dur[4]<q0)(p.rw=p.rw||{})['x:qual']=q0-p.dur[4]}
+// a problem choice: the weeks it should take against the option passed up (the default, or if you took the default, the fastest you could afford)
+function cbOpt(p,od,k){if(S.histMode||S.sim||CF_RUN)return;const def=PD[p.def],O=od.o;
+  const ew=o=>{if(o.spawn||o.cancel)return null;const pr=optP(od,o),f=o.fail||{};return (pr*(+V(o.wait)||0)+(1-pr)*(+V(f.wait)||0))*waitMult(od,def)};
+  const me=ew(O[k]);if(me==null)return;const di=defOpt(od);let alt=null;
+  if(di>=0&&di!==k&&ew(O[di])!=null)alt=di;else{const c=O.map((o,i)=>[o,i]).filter(([o,i])=>i!==k&&optOk(o)&&ew(o)!=null).sort((a,b)=>ew(a[0])-ew(b[0]))[0];if(c)alt=c[1]}
+  if(alt==null)return;const d=Math.round(ew(O[alt])-me);if(Math.abs(d)<4)return;
+  (p.cbo=p.cbo||[]).push({n:V(od.n),ch:optSplit(V(O[k].l))[0],al:optSplit(V(O[alt].l))[0],d,auto:!!S._auto,w:S.w})}
+// a program finishes: what your reforms and problem choices did to its schedule
+function cbDone(p){if(S.histMode||S.sim||CF_RUN||p.inh)return;const def=PD[p.def];if(!def)return;
+  const rs=Object.entries(p.rw||{}).filter(([,x])=>x>=2).sort((a,b)=>b[1]-a[1]),os=p.cbo||[],good=os.filter(o=>o.d>0).sort((a,b)=>b.d-a.d),bad=os.filter(o=>o.d<0).sort((a,b)=>a.d-b.d);
+  const rw=rs.reduce((a,x)=>a+x[1],0),gw=good.reduce((a,o)=>a+o.d,0),bw=-bad.reduce((a,o)=>a+o.d,0),net=Math.round(rw+gw-bw);
+  if(!p.priv&&rw+gw+bw<8)return;
+  const sh=rs.slice(0,2).reduce((a,x)=>a+x[1],0)+good.slice(0,2).reduce((a,o)=>a+o.d,0),rest=Math.round(rw+gw-sh);
+  const parts=[...rs.slice(0,2).map(([r,x])=>`${cbRefN(r)} cut about ${Math.round(x)} weeks`),...good.slice(0,2).map(o=>`choosing “${lc(o.ch)}” on <i>${o.n}</i> in ${monYr(o.w)} saved about ${o.d} weeks`),...(rest>=4?[`other reforms and choices, about ${rest} more`]:[])];
+  const neg=bad[0]?(bad[0].auto?`Leaving <i>${bad[0].n}</i> undecided in ${monYr(bad[0].w)} cost about ${-bad[0].d} weeks.`:`Choosing “${lc(bad[0].ch)}” over “${lc(bad[0].al)}” on <i>${bad[0].n}</i> in ${monYr(bad[0].w)} cost about ${-bad[0].d} weeks.`):'';
+  const verb=def.ally||def.nt?'came online':def.kind&&def.kind!=='cap'?'was completed':'opened';
+  const lede=net>=4?`, about ${net} weeks sooner than without your choices`:net<=-4?`, about ${-net} weeks later than it could have`:'';
+  const t=`<b>${projName(p)}</b> ${verb}${lede}${parts.length?`: ${parts.join('; ')}`:''}.${neg?' '+neg:''}${p.priv&&def.t.line?` It was built with private money, on the strength of the five-year order for ${lc(LINES[def.t.line].n)}.`:''}`;
+  cbAdd('done',p.priv?Math.max(net,30):net,t)}
+// a finished plant waiting on its transformer, when a remedy on offer would have cut the wait
+function cbXf(p){const X=xfS(),left=Math.round((p.xf?.due??S.w)-S.w);if(left<13||(X.resBought&&X.dpa))return;
+  const fx=[!X.resBought?`a strategic transformer reserve would have delivered one in ${XF_RES_WK} weeks`:'',!X.dpa?'DPA priority for defense transformer orders would cut the wait by 40%':''].filter(Boolean);
+  cbAdd('xf',-(X.resBought?left*.4:left-XF_RES_WK),`<b>${projName(p)}</b> stands finished and waits about ${left} weeks for its large power transformer. ${capF(fx.join(', and '))}. You have ${fx.length>1?'taken neither':'not taken it'}.`)}
+const stkMark=(id,fy)=>{if(!S.histMode)(S.stkBy=S.stkBy||{})[id]={w:S.w,fy}};
+// a stockpile you bought being drawn in a shortage: counted in weeks, reported when the draw ends
+function stkRunTick(P){if(!S.stkBy||S.histMode)return;const R=(S.stkRun=S.stkRun||{});
+  for(const id in S.stkBy){const u=P[id]?.usedStock||0;if(u>1e-9){R[id]=R[id]||{w0:S.w,n:0};R[id].n++}
+    else if(R[id]){const r=R[id];delete R[id];if(r.n>=6)cbAdd('stock',r.n*.5,`The ${lc(ND[id].n)} stockpile you added to through the NDAA covered ${r.n} weeks of shortfall, ${monYr(r.w0)} to ${monYr(S.w)}.`,{id,a:r.w0,n:r.n})}}}
+function cbTick(){if(S.fac!=='US'||S.histMode||S.sim)return;
+  for(const D of ALLY_DEALS){const x=alS(D.m).deals[D.id];if(!x||x.w0==null||x.w0<PLAY0||x.cbd||!D.add)continue;
+    if(S.w>=x.w0+(D.ramp||0)){x.cbd=1;const f=D.add/Math.max(reqOut(D.c),1e-9),M=alMem().find(m=>m.k===D.m);
+      cbAdd('deal',f*400,`<b>${D.n}</b>, signed ${monYr(x.w0)}, reached full rate: ${M?M.n+' adds':'it adds'} ${fmtN(D.add)} ${LINES[D.c].u} a year, ${pct(f)} of the requirement.`)}}
+  for(const x of wfCo())if(!x.cbd&&x.due<=S.w&&x.w0>=PLAY0){x.cbd=1;cbAdd('wf',20,`The apprenticeship cohort you funded in ${monYr(x.w0)} has qualified: half a crew more of welders, pipefitters and electricians, for good.`)}}
+// one line per stockpile in the final report: its draws added up
+function cbMerge(L){const out=[],st={};for(const x of L){if(x.k!=='stock'||!x.id){out.push(x);continue}const m=st[x.id];if(!m){st[x.id]={...x};out.push(st[x.id]);continue}m.n+=x.n;m.w=Math.max(m.w,x.w);m.a=Math.min(m.a,x.a);m.v=Math.round(m.n*.5);m.t=`The ${lc(ND[x.id].n)} stockpile you added to through the NDAA covered ${m.n} weeks of shortfall in all, between ${monYr(m.a)} and ${monYr(m.w)}.`}return out}
+const cbRow=x=>`<div class="trn ${x.v<0?'bad':'good'}"><span class="trdt">${monYr(x.w)}</span><span>${x.t}</span></div>`;
+function cbRep(a,b){const xs=cbs().filter(x=>x.w>a&&x.w<=b);if(!xs.length)return '';
+  const g=xs.filter(x=>x.v>=0).sort((p,q)=>q.v-p.v).slice(0,3),n=xs.filter(x=>x.v<0).sort((p,q)=>p.v-q.v).slice(0,1);
+  return `<div class="trcol cbrep"><div class="trh"><b>Your earlier choices</b><span>what they did in these two months</span></div>${[...g,...n].map(cbRow).join('')}</div>`}
+function cbEnd(card){const xs=cbMerge(cbs());if(!xs.length)return '';
+  const g=xs.filter(x=>x.v>0).sort((p,q)=>q.v-p.v).slice(0,5),n=xs.filter(x=>x.v<0).sort((p,q)=>p.v-q.v).slice(0,2);if(!g.length&&!n.length)return '';
+  return card('The choices that mattered','by the game’s own count',`${g.map(cbRow).join('')}${n.length?`<div class="cbcost">What cost you</div>${n.map(cbRow).join('')}`:''}`,'cbrep')}
 function chooseOpt(uid,k){
   const p=S.projects.find(x=>x.uid==uid);if(!p)return;const inst=p.obs[0];if(!inst||inst.wait>0)return;
   const od=OD[inst.id],opt=od.o[k];if(!opt||!optOk(opt))return;
-  S._mcause=`${mclean(V(od.n))} (${mclean(projName(p))}): ${mclean(optSplit(V(opt.l))[0])}`;const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
+  S._mcause=`${mclean(V(od.n))} (${mclean(projName(p))}): ${mclean(optSplit(V(opt.l))[0])}`;cbOpt(p,od,k);const {ok,prob,eff}=applyOpt(od,opt);decRec(S._auto);
   if(eff.gain)p.gm*=eff.gain;if(eff.adv)p.adv=Math.min(1,p.adv+eff.adv);
   log(`${S._auto?'⏱ No decision in time. ':''}${projName(p)}: ${V(od.n)} → ${V(opt.l)}${prob<1?(ok?' ✔':' ✘ failed'):''}`,ok?'':'bad');if(prob<1)rollRec(projName(p),`${V(od.n)} → ${V(opt.l)}`,prob,ok,failWhat(opt.fail,od,PD[p.def]));
   if(eff.spawn){p.obs.shift();pmark(p,{clr:inst.id,how:V(opt.l)});spawnObs(p,V(eff.spawn),true);return}
@@ -5395,7 +5446,7 @@ function projectsTick(){
     p.qf=1;if(PS){const st=STAGES[p.stage];for(const k of poolsOf(PD[p.def]))if(POOLS[k].stage===st&&PS[k].f<p.qf){p.qf=PS[k].f;p.qk=k}
       if(p.qf<1){S.ledger[POOLS[p.qk].layer].wk+=rate*(1-p.qf);plose(p,POOLS[p.qk].layer,rate*(1-p.qf));rate*=p.qf}}
     p.of=1;if(OL&&staffed(p)){p.of=OL[officeOf(PD[p.def])].f;if(p.of<1){S.ledger.PROCURE.wk+=rate*(1-p.of);plose(p,'PROCURE',rate*(1-p.of));rate*=p.of}}
-    p.prog+=rate;if(p.prog>=p.dur[p.stage]){if(STAGES[p.stage]==='build'&&xfHold(p)){p.prog=p.dur[p.stage];S.ledger.GRID.wk++;plose(p,'GRID',1);continue}p.stage++;enterStage(p)}
+    p.prog+=rate;if(p.prog>=p.dur[p.stage]){if(STAGES[p.stage]==='build'&&xfHold(p)){if(!p.xfN){p.xfN=S.w;cbXf(p)}p.prog=p.dur[p.stage];S.ledger.GRID.wk++;plose(p,'GRID',1);continue}p.stage++;enterStage(p)}
   }
 }
 function opsMatch(o,pl){const def=PD[pl.def];if(o.manual)return false;if(o.icOff&&icOn(o.icOff))return false;if(o.kind&&o.kind!==pl.kind)return false;return !o.tags||o.tags.some(t=>def.tags.includes(t)||t===pl.target)}
@@ -5634,7 +5685,7 @@ function tick0(){
   if(S.fac==='US'&&S.histMode&&fyStart()){S.apr=S.apr||{};(S.apr[FYOF(S.w)]=S.apr[FYOF(S.w)]||{}).paid=1;const fb=F().fyBudget;gainB(fb,'Annual appropriations');S.repro=0;S.nsr=0;log(`FY${FYOF(S.w)%100} ${S.histMode?'industrial-base funding':billN()+' enacted: your industrial-base budget'}: +${money(fb)}.`,'good');
    if(!S.histMode&&FYOF(S.w)===IB_RECON_END+1)log(S.reforms?.ibfPerm==='passed'?`Reconciliation money ran out after FY${IB_RECON_END%100}; the permanent Industrial Base Fund keeps your budget at ${money(fb)}.`:`<b>Reconciliation money ran out after FY${IB_RECON_END%100}.</b> Your industrial-base budget falls by ${money(IB_RECON)} a year, to ${money(fb)}. A permanent Industrial Base Fund in the NDAA would restore it.`,S.reforms?.ibfPerm==='passed'?'good':'bad');if(!S.histMode)S._yrDue=1}
   if(S.cr>0&&--S.cr===0)log(S.crFull?'The full-year continuing resolution ends with the fiscal year.':'The continuing resolution ends: the full-year appropriations act passes, and new starts may proceed.','good');
-  if(!S.histMode){apTick();enactPkg();poTick();mkTick();suppTick();billAlertTick();cnTick();alTick();ruTick()}
+  if(!S.histMode){apTick();enactPkg();poTick();cbTick();mkTick();suppTick();billAlertTick();cnTick();alTick();ruTick()}
   S.tmods.forEach(m=>m.left--);S.tmods=S.tmods.filter(m=>m.left>0);
   S.gmods.forEach(m=>m.left--);S.gmods=S.gmods.filter(m=>m.left>0);
   S.costMods.forEach(m=>m.left--);S.costMods=S.costMods.filter(m=>m.left>0);
@@ -5708,6 +5759,7 @@ function turnHTML(){const r=S.trnRep;if(!r)return '';const {a,b}=r,w0=a.w,inW=w=
     <div class="trcol"><div class="trh"><b>What changed</b><span>${turnLabel(w0)}</span></div><div class="trsub">Output per year</div>${outH}${progH}</div>
     <div class="trcol"><div class="trh"><b>Coming next</b><span>${turnLabel(n0)}</span></div>${aheadH}</div>
    </div>
+   ${cbRep(w0,b.w)}
    ${apRep(w0,b.w)}
    <div class="trcol trass"><div class="trh"><b>Assessment</b><span>where things stand</span></div>${sitFindings()}</div>
    ${tbHTML(1)}
@@ -5725,8 +5777,9 @@ function pcResult(p){if(S.histMode||p.inh||p.priv)return;const def=PD[p.def];if(
 function refCredit(p,l,x){if(S.histMode||!p||p.pkg||!x)return;const def=PD[p.def];if(!def)return;
   const fs=REF_LAYER.filter(e=>e.L.includes(l)&&passed(e.r)&&(!e.tags||e.tags.some(t=>def.tags.includes(t))));if(!fs.length)return;
   let M=1,lnM=0;for(const e of fs){M*=e.c*e.w;lnM+=Math.log(1/(e.c*e.w))}const tot=x*(1/M-1);
-  for(const e of fs)(S.refW=S.refW||{})[e.r]=(S.refW[e.r]||0)+tot*Math.log(1/(e.c*e.w))/lnM}
-function refStageCredit(def,dur0){if(S.histMode)return;for(const x of REF_STAGE){if(!passed(x.r)||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(dur0[i])(S.refW=S.refW||{})[x.r]=(S.refW[x.r]||0)+dur0[i]*(1-x.m)}}
+  for(const e of fs)refAddW(p,e.r,tot*Math.log(1/(e.c*e.w))/lnM)}
+const refAddW=(p,r,x)=>{if(!(x>0))return;(S.refW=S.refW||{})[r]=(S.refW[r]||0)+x;if(p)(p.rw=p.rw||{})[r]=(p.rw[r]||0)+x};
+function refStageCredit(def,dur0,p){if(S.histMode)return;for(const x of REF_STAGE){if(!passed(x.r)||!refFits(x,def))continue;const i=STAGES.indexOf(x.st);if(dur0[i])refAddW(p,x.r,dur0[i]*(1-(x.mf?x.mf(def):x.m)))}}
 function refMoneyCredit(def,c){if(S.histMode)return;for(const x of REF_COST)if(passed(x.r)&&x.fit(def))(S.refM=S.refM||{})[x.r]=(S.refM[x.r]||0)+c*(1/x.m-1)}
 function refWorthHTML(full){const ids=REFORMS.filter(R=>passed(R.id)).map(R=>R.id);
   if(!ids.length)return full?'<p class="mini">You passed no reforms. Every week your programs lost, they lost under the rules as you found them.</p>':'';
@@ -5799,7 +5852,7 @@ function endHTML(L,tot){const out=S.lastOut||production(false).out,idx=raceIdx(o
     return card('What held you back','and the reforms that cut it',`<p class="endp hb-lede">Your biggest limit was <b>${lc(LAYERS[k0].n)}</b>: ${Math.round(v0.wk/Math.max(1,tot)*100)}% of the program-weeks your programs lost. Below, the three largest causes and the reforms that make each one rarer or shorter; those you passed are ticked. <span class="linkn" data-a="cfopen">What it would have taken →</span></p>${lines}`)})();
   const bt=billTable();
   return `<div class="paper wide yrp trp"><div class="hd"><span class="ic">${vic('ndaa',22)}</span>After-action report · ${fmtDate(S.w)}</div><div class="bd">
-    ${lead}${tiles}${held}${outT}<div class="trgrid">${rec}${time}</div>
+    ${lead}${tiles}${held}${cbEnd(card)}${outT}<div class="trgrid">${rec}${time}</div>
     ${card('Debrief','go deeper',debCards())}
     ${card('What your reforms were worth','',refWorthHTML(true))}
     ${bt?card('The bill','everything the effort has cost, by fiscal year (Oct–Sep)',bt.replace(/^<div class="pdg">[\s\S]*?<\/div>/,'')):''}
