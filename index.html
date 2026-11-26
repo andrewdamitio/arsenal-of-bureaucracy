@@ -4987,11 +4987,12 @@ const TUT=[
  {p:'stocks',sel:'#view .rec-cols',t:'Where it went',x:'Where your money came from and where it went. Below: where your programs lost time, by cause.',next:1},
  // Sources
  {p:'src',...NAV('src','Sources')},
+ {p:'src',...SUB('src','Sources & Assumptions')},
  {p:'src',sel:'#view .acard',t:'The model check',x:'The game replays 2025 and 2026 before you take over, and checks itself against what actually happened.',next:1},
  {p:'src',sel:'#view .srcgrid',t:'Every source',x:'Every number in the game, with its source. The small numbers throughout the game link here; the assumptions list says what is estimated.',next:1},
  // the first turn
  {p:'turn',...NAV('cmd','Command')},
- {p:'turn',sel:'.turnbtn',t:'Play your first turn',x:'<b>Press Next.</b> It plays two months, and stops for anything that needs you.',wait:()=>S.turnEnd!=null||S.trnRep},
+ {p:'turn',sel:'.turnbtn',t:'Play your first two months',x:'<b>Press Next.</b> It plays two months, and stops for anything that needs you.',wait:()=>S.turnEnd!=null||S.trnRep},
  {p:'turn',dyn:1,wait:()=>S.modal==='turn'},
  {p:'turn',sel:'#ov .yrp',t:'The bimonthly report',x:'What changed in the last two months, and what is coming in the next.',next:1},
  {p:'turn',t:'You have the controls',x:'That is the whole loop: find what holds output back, start programs, push reforms, play two months at a time. For the rest of your first year, a tip explains each new thing the first time it appears. Any tab you skipped gets its tour the first time you open it, and every tab has a <b>Tour this tab</b> button on its title line.',next:'Finish'}];
@@ -5009,7 +5010,7 @@ const GUIDE={
   {sel:'#ov .ctp .ctsec',skip:()=>S.modal!=='contract',t:'Who builds it, on what terms',x:'An incumbent prime knows the work but gains leverage over you; a new entrant is cheaper and faster to build but must qualify from scratch. The terms trade price against speed and risk. Then pay at the bottom: <b>Build now</b> from your budget, or <b>Request it</b> in the NDAA for Political Capital.',wait:()=>!S.modal},
   {skip:()=>!S.modal,t:'Close the window to go on',x:'Finish what you started in the window, or close it with ✕ or Esc.',wait:()=>!S.modal},
   {sel:'.mvp',skip:()=>!document.querySelector('.mvp'),t:'Set in motion',x:'Every move you make while the clock is stopped is listed here, with what it does. Changed your mind? <b>↶ Undo</b>, by the date, takes it back until time moves on.',next:1},
-  {sel:'.turnbtn',t:'Play your first turn',x:'<b>Press Next.</b> It plays two months and stops for anything that needs you.',wait:()=>S.turnEnd!=null||S.trnRep},
+  {sel:'.turnbtn',t:'Play your first two months',x:'<b>Press Next.</b> It plays two months and stops for anything that needs you.',wait:()=>S.turnEnd!=null||S.trnRep},
   {dyn:1,wait:()=>S.modal==='turn'},
   {sel:'#ov .mvlead',t:'What your moves did',x:'The bimonthly report opens with your moves: what each did, and what it does by 2035.',next:1},
   {sel:'#ov .yrp',t:'The bimonthly report',x:'Below: what changed, what is coming, the brief for the next two months, problems your programs hit, and the news. Then play on.',next:1},
@@ -9187,7 +9188,7 @@ document.addEventListener('pointerdown',e=>{
   const a=b.dataset.a;
   if(a==='undo'){undoDo();return}
   {const pre=undoTake(a);if(pre)setTimeout(()=>undoAfter(pre),0)}
-  if(S&&!b._now&&(a==='view'||a==='rtab')&&b.matches('#views .vbtn,.vsubbar>button,.rtabs .vbtn')&&!b.classList.contains('on')){for(const x of b.parentElement.children)x.classList.remove('on');b.classList.add('on');document.body.style.cursor='progress';requestAnimationFrame(()=>setTimeout(()=>{b._now=1;b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}));b._now=0;document.body.style.cursor=''},0));return}
+  if(S&&!b._now&&(a==='view'||a==='rtab')&&b.matches('#views .vbtn,.vsubbar>button,.rtabs .vbtn')&&!b.classList.contains('on')){for(const x of b.parentElement.children)x.classList.remove('on');b.classList.add('on');document.body.style.cursor='progress';requestAnimationFrame(()=>setTimeout(()=>{const d={...b.dataset};if(b.isConnected){b._now=1;b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}));b._now=0}else act(d.a,d);document.body.style.cursor=''},0));return}
   if(a==='start'){newGame(b.dataset.f);render();return}
   if(a==='tmode'&&!S){TMODE=b.dataset.m;renderTitle();return}
 if(a==='tscr'&&!S){TSCR=b.dataset.s;renderTitle();window.scrollTo(0,0);return}
