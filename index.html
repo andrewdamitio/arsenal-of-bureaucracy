@@ -1910,6 +1910,8 @@ html body #supply .csec,html body #right .csec{padding-top:12px!important;paddin
 #supply .hbq{box-shadow:inset 3px 0 0 #c9952a55;padding:6px 12px}#supply .hbq .hb2{margin-top:0}#supply .hbq .hb2 b{flex:0 1 150px;min-width:0;font:600 13px var(--f-body);color:#d8cfb2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #supply .hb-ft{display:flex;flex-direction:column;gap:6px;padding:10px 12px 14px;font:600 12.5px var(--f-body)}
 #supply .legend.lgoff{display:none}
+#supply>.csec:first-of-type{margin-top:4px}#supply .cnext{border-bottom:1px solid #2e2c22;margin-bottom:6px}
+#supply>.csec:first-child{margin-top:0;padding-top:12px!important}#supply>h2.sch2{border-top:1px solid #4a4230}
 </style>
 </head>
 <body>
@@ -4922,7 +4924,7 @@ const TUT=[
  {p:'cmd',sel:'.sc-card',t:'Your mandate',x:'The targets you are judged on, drawn from public goals. In January 2030: halfway floors and a campaign test. In January 2035: the real targets.',next:1},
  {p:'cmd',sel:'#needs .rc-rhead',t:'Where you stand',x:'Your share of the requirement, you plus allies. Under it, the <b>January 2035 outlook</b>: the same share in 2035 if everything under way lands, and how far your decisions have moved it. Then the change on a year ago, lines sufficient, and how fast China’s growth raises the bar.',next:1},
  {p:'cmd',sel:'#rc-interceptors',t:'One end item',x:'Blue is what you make, hatched is capacity on order, green is allies, red is China, the yellow mark is the requirement. <b>Limits, lowest first</b> shows what stops output today, and when the fix under way lands. The chip by its share says where it is heading by 2035: met, on track, rising, holding or slipping, and whether it needs more orders from Congress. When a decision lifts it, you get a notice.',next:1},
- {p:'cmd',sel:'#supply',t:'The supply chain',x:'What is coming next, with dates; then the parts holding back lines you have already built, ranked by what each costs you, and the inputs close to short. Hover one to light up the lines it holds back in the centre.',next:1},
+ {p:'cmd',sel:'#supply',t:'The supply chain',x:'At the top, what is coming next, with dates. Below, the supply chain: under Short, the parts holding back lines you have already built, ranked by what each costs you, and the inputs close to short; T1 to T4 list every item by tier. Hover one to light up the lines it holds back in the centre.',next:1},
  {p:'cmd',sel:'#right',t:'Programs under way',x:'Plants, deals and upgrades already started. Each passes through funding, contract, permits, construction, qualification and ramp-up. Click one to open its page.',next:1},
  {p:'cmd',sel:'#right .rtabs',t:'Factories and Home Front',x:'<b>Factories</b> lists every plant producing for you: the ones you built and the ones you inherited, and any trouble they are in. <b>Home front</b> holds the next NDAA vote, Political Capital, civilian strain, the next election, and defense priority over civilian buyers.',next:1},
  {p:'cmd',sel:'[data-a="savem"]',t:'The Menu',x:'Save or load a game, show or hide the recommended moves, or go back to the title screen.',next:1},
@@ -8415,18 +8417,21 @@ function renderGame(){
     ${res('☰ Menu',S._svAt?'Saved':'Not saved',`<b>Menu</b><br>Save, load, main menu or a new game.<br>${S._svAt?'Saved automatically in this browser, last at '+fmtDate(S._svW)+'.':'Saves automatically once play starts.'}`,'savem','',S._svErr?'rwarn':'rquiet rmenu')}
     ${undoOK()?`<button class="btn sm undob" data-a="undo" data-tip="${tipQ('<b>Undo</b><br>'+UNDO.at(-1).lab.slice(0,160)+'<br>Works until the clock moves on. Ctrl+Z too.')}">↶ Undo</button>`:''}<div class="date">${fmtDate(S.w)}</div>${S.replay?'':TURN()?turnCtl():[0,1,2,3,4].map(s=>`<button class="btn sm ${S.speed===s?'on':''} ${s===1&&waitingToStart()?'go-pulse':''}" data-a="speed" data-s="${s}">${s===0?'❚❚':s}</button>`).join('')}</div>`;
   // ---- supply chain panel
-  let sup=`<h2>Supply Chain</h2>
-   <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems'],[5,'Lines','End-item lines']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
+  if(S.tab==5)S.tab='bott';
+  const comingH=(()=>{
+  // coming next: the dated things that will change your position
+  const nx=[],V=billW(),D=mkDates(V),M=S.mk?.[FYOF(V)],cn=S.fac==='US'?cnNext():null,sc=S.scen?SCD[S.scen]:null;
+  if(S.fac==='US'){const st=!M?.h?['House markup of the NDAA',D.h,'your request locks']:!M?.s?['Senate markup of the NDAA',D.s,'its marks on your request']:!M?.c?['NDAA conference',D.c,'the two bills settled']:['Congress votes on the NDAA',D.v,'the money line, then law'];nx.push({t:st[0],w:st[1],d:st[2],a:'data-a="view" data-v="ndaa"'})}
+  if(cn&&isFinite(cn.yrsTo))nx.push({t:`Beijing: ${cn.nx.s.toLowerCase()}`,w:S.w+Math.max(1,Math.round(cn.yrsTo*52)),d:'possible from about then',est:1,a:'data-a="view" data-v="imports"'});
+  if(sc){const cw=S.w<sc.mid?sc.mid:sc.dl;if(cw>S.w)nx.push({t:cw===sc.mid?'The halfway check':'The final verdict',w:cw,d:sc.n,a:'data-a="sbrief"'})}
+  if(S.cr>0)nx.push({t:'Continuing resolution ends',w:S.w+S.cr,d:'new starts frozen until then',a:'data-a="view" data-v="ndaa"'});
+  nx.sort((a,b)=>a.w-b.w);
+  return `<div class="csec"><span>Coming next</span></div><div class="cnext">${nx.slice(0,4).map(x=>`<div class="cnx linkn" ${x.a}><span class="cnx-d">${x.est?'~':''}${MON[dateOf(x.w).getMonth()]} ${dateOf(x.w).getFullYear()}</span><span class="cnx-t"><b>${x.t}</b><em>${x.d}</em></span></div>`).join('')}</div>`;
+  })();
+  let sup=`${comingH}<h2 class="sch2">Supply Chain</h2>
+   <div class="tabs">${[['bott','⚠ Short','What is short and why'],[1,'T1','Raw & critical minerals'],[2,'T2','Processed materials & energetics'],[3,'T3','Components'],[4,'T4','Subsystems']].map(([k,l,t])=>`<button class="btn ${S.tab==k?'on':''}" data-a="tab" data-t="${k}" data-tip="${t}">${l}</button>`).join('')}</div>
    <div class="legend${S.tab==='bott'?' lgoff':''}"><span><i style="background:var(--green)"></i>Domestic</span><span><i style="background:var(--blue)"></i>Allied/spot</span><span><i style="background:#c2a04e"></i>Neutral</span><span><i style="background:#a03a30"></i>PRC/Russia</span><span><i class="hatch"></i>Cut off</span><span><i style="background:#fff;width:2px"></i>Demand from your lines</span></div>`;
   if(S.tab==='bott'){
-    // coming next: the dated things that will change your position
-    const nx=[],V=billW(),D=mkDates(V),M=S.mk?.[FYOF(V)],cn=S.fac==='US'?cnNext():null,sc=S.scen?SCD[S.scen]:null;
-    if(S.fac==='US'){const st=!M?.h?['House markup of the NDAA',D.h,'your request locks']:!M?.s?['Senate markup of the NDAA',D.s,'its marks on your request']:!M?.c?['NDAA conference',D.c,'the two bills settled']:['Congress votes on the NDAA',D.v,'the money line, then law'];nx.push({t:st[0],w:st[1],d:st[2],a:'data-a="view" data-v="ndaa"'})}
-    if(cn&&isFinite(cn.yrsTo))nx.push({t:`Beijing: ${cn.nx.s.toLowerCase()}`,w:S.w+Math.max(1,Math.round(cn.yrsTo*52)),d:'possible from about then',est:1,a:'data-a="view" data-v="imports"'});
-    if(sc){const cw=S.w<sc.mid?sc.mid:sc.dl;if(cw>S.w)nx.push({t:cw===sc.mid?'The halfway check':'The final verdict',w:cw,d:sc.n,a:'data-a="sbrief"'})}
-    if(S.cr>0)nx.push({t:'Continuing resolution ends',w:S.w+S.cr,d:'new starts frozen until then',a:'data-a="view" data-v="ndaa"'});
-    nx.sort((a,b)=>a.w-b.w);
-    sup+=`<div class="csec"><span>Coming next</span></div><div class="cnext">${nx.slice(0,4).map(x=>`<div class="cnx linkn" ${x.a}><span class="cnx-d">${x.est?'~':''}${MON[dateOf(x.w).getMonth()]} ${dateOf(x.w).getFullYear()}</span><span class="cnx-t"><b>${x.t}</b><em>${x.d}</em></span></div>`).join('')}</div>`;
     // what holds your lines back: one ranked list
     const G=starveGroups(R),mL=new Set(S.scen?SCD[S.scen].mand.filter(m=>m.c).map(m=>m.c):[]);
     const cov=id=>Math.min(1,P[id]?.cover??1),covBar=id=>{const v=cov(id);return `<span class="hb-bar"><i style="width:${(v*100).toFixed(1)}%;background:${v>=.999?'#76b357':v>=.8?'#c9952a':'#d0503f'}"></i></span><span class="hb-pc">${pct(v)}</span>`};
