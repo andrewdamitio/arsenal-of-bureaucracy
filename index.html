@@ -2017,6 +2017,7 @@ details.dtl>summary{cursor:pointer;color:#8a6a2a;font:600 12px "Segoe UI",system
 .sfcalc td.redt,.sfcalc td .redt{color:#8a2a1c}.sfcalc td.okt,.sfcalc td .okt{color:#2f5a24}
 .sfcalc tr.sftot td{border-top:1.5px solid #3a3020;border-bottom:3px double #3a3020;background:none!important;font-weight:700}
 .sfcalc .mini{color:#7a6a48}
+.basetab tr.bgrp td{padding:10px 8px 4px;border-bottom:1.5px solid #8a7850;font:700 13px var(--f-head);color:#231d14}.basetab tr.bgrp td span{font:600 11px var(--f-body);color:#7a6a48;margin-left:6px}
 </style>
 </head>
 <body>
@@ -6989,12 +6990,14 @@ function baseRows(P,R){const rows=[],tm=(k,f)=>S.tmods.find(m=>f(m)&&m.mult<1);
     if(nshiftOn(id))st+=' · ⏩ extra shifts';st=st.replace(/^([^A-Za-z]*)([a-z])/,(m,p,c)=>p+c.toUpperCase());
     rows.push({k:id,n:ND[id].n,who:I.who?(I.who[S.fac]||I.who.US||(typeof I.who==='string'?I.who:'')):'',out:p.need>1e-6?`US plants: ${pct(Math.min(9.99,nd.base/p.need))} of need`:'',st,cls,sev})}
   return rows}
+// weapon lines by type, for the list of the base you inherited
+const BASE_KIND=[['Munitions',['shells','fires']],['Missiles',['interceptors','strike','a2a']],['Aircraft & Drones',['aircraft','drones']],['Ships & Submarines',['surface','subs']]];
 function baseHTML(P,R){const rows=baseRows(P,R),ls=rows.filter(r=>r.line),ns=rows.filter(r=>!r.line).sort((a,b)=>b.sev-a.sev),bad=rows.filter(r=>r.sev>0).length,all=!!S.baseAll,shown=all?ns:ns.filter(r=>r.sev>0);
   const row=r=>`<div class="prow brow trc" data-tn="${r.k}"><span><span class="linkn" data-a="node" data-n="${r.k}">${r.n}</span>${r.who?`<div class="sub">${whoShort(r.who)}</div>`:''}</span><span class="bst"><b class="${r.cls}">${r.st}</b>${r.out?`<div class="sub">${r.out}</div>`:''}</span></div>`;
   return `<div class="csec"><span>Plants you inherited</span><span>${rows.length} items · ${bad?`<b class="redt">${bad} in trouble</b>`:'none in trouble'}</span></div>
     <div class="pintro">The US plants and lines already running when you took office, by what they make. Open one for its producers, permits and what holds it back.</div>
-    <div class="sect"><span>Weapon lines</span><span>${ls.length}</span></div>${ls.map(row).join('')}
-    <div class="sect"><span>Materials and parts</span><span>${all?ns.length:`${shown.length} of ${ns.length} shown`}</span></div>${shown.length?shown.map(row).join(''):'<div class="empty" style="padding:8px 10px">None in trouble.</div>'}
+    ${BASE_KIND.map(([n,cs])=>{const xs=ls.filter(r=>cs.includes(r.k.slice(2)));return xs.length?`<div class="sect bsect"><span>${n}</span><span>${xs.length}</span></div>${xs.map(row).join('')}`:''}).join('')}
+    ${[1,2,3,4].map(t=>{const all_=ns.filter(r=>ND[r.k]?.t===t),xs=(all?all_:all_.filter(r=>r.sev>0)).slice().sort((a,b)=>b.sev-a.sev||a.n.localeCompare(b.n));return xs.length?`<div class="sect bsect"><span>T${t} · ${TIERS[t]}</span><span>${all?xs.length:`${xs.length} of ${all_.length}`}</span></div>${xs.map(row).join('')}`:''}).join('')||'<div class="empty" style="padding:8px 10px">No material or part is in trouble.</div>'}
     <div class="sbmore"><span class="linkn" data-a="baseall">${all?'Show only those in trouble':`Show all ${ns.length} →`}</span></div>`}
 function facList(){const out=[];
   for(const p of S.projects){const def=PD[p.def];if(def.ally||!(p.dur[3]>0))continue;const st=STAGES[p.stage];
@@ -7031,7 +7034,8 @@ function facBody(){const all=facList(),f=S.fcF||'all',n=k=>all.filter(x=>x.ph===
   const al=S.projects.filter(p=>PD[p.def].ally).length;if(al)h+=`<p class="mini" style="margin-top:10px">🤝 ${al} allied deal${al>1?'s are':' is'} being built abroad; see the development pipeline.</p>`;
   if(f==='all'||f==='stalled'){const R=S._R,rs=baseRows(R.P,R).filter(r=>f==='all'||r.sev>=2).sort((a,b)=>(b.line||0)-(a.line||0)||b.sev-a.sev);
     const nxt=k=>{const o=(S.sites?.[k]?.ops||[]).slice().sort((a,b)=>a.next-b.next)[0];return o?`${(S.sites[k].ops||[]).length} · next renewal ${fmtDate(o.next)}`:'—'};
-    h+=`<div class="pdg">Plants you inherited · ${rs.length}</div><p class="mini">The US plants and lines running when you took office, one row per item they make.</p><table class="ctable basetab"><tr><th>Makes</th><th>Producers</th><th>Capacity</th><th>Status</th><th>Operating permits</th></tr>${rs.map(r=>`<tr><td><span class="linkn" data-a="node" data-n="${r.k}">${r.n}</span></td><td class="mini">${whoShort(r.who)||'—'}</td><td>${r.out||'—'}</td><td class="${r.cls}">${r.st}</td><td class="mini">${nxt(r.k)}</td></tr>`).join('')}</table>`}
+    h+=`<div class="pdg">Plants you inherited · ${rs.length}</div><p class="mini">The US plants and lines running when you took office, one row per item they make.</p><table class="ctable basetab"><tr><th>Makes</th><th>Producers</th><th>Capacity</th><th>Status</th><th>Operating permits</th></tr>${(()=>{const tr=r=>`<tr><td><span class="linkn" data-a="node" data-n="${r.k}">${r.n}</span></td><td class="mini">${whoShort(r.who)||'—'}</td><td>${r.out||'—'}</td><td class="${r.cls}">${r.st}</td><td class="mini">${nxt(r.k)}</td></tr>`,grp=(n,xs)=>xs.length?`<tr class="bgrp"><td colspan="5">${n} <span>${xs.length}</span></td></tr>${xs.map(tr).join('')}`:'';
+      return BASE_KIND.map(([n,cs])=>grp(n,rs.filter(r=>r.line&&cs.includes(r.k.slice(2))))).join('')+[1,2,3,4].map(t=>grp(`T${t} · ${TIERS[t]}`,rs.filter(r=>!r.line&&ND[r.k]?.t===t).sort((a,b)=>b.sev-a.sev||a.n.localeCompare(b.n)))).join('')})()}</table>`}
   return h}
 const shrF=v=>v>=3?fmt(v,v>=10?0:1)+'×':pct(v);
 function pipeSummary(){
